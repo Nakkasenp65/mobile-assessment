@@ -1,6 +1,22 @@
+"use client";
 import { useState, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+
+import { useMobile } from "@/hooks/useMobile";
 import { DeviceInfo } from "../page";
+
+// Import shadcn/ui components
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
@@ -8,7 +24,7 @@ interface AssessStep1Props {
   onNext: () => void;
 }
 
-// Mock data
+// Mock data remains the same
 const MOCK_DATA = {
   brands: ["Apple", "Samsung", "Google"],
   models: {
@@ -32,11 +48,11 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [availableStorage, setAvailableStorage] = useState<string[]>([]);
+  const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
 
   useEffect(() => {
     if (localInfo.brand && MOCK_DATA.models[localInfo.brand]) {
       setAvailableModels(MOCK_DATA.models[localInfo.brand]);
-      // Reset model and storage when brand changes
       if (localInfo.brand !== deviceInfo.brand) {
         setLocalInfo((prev) => ({ ...prev, model: "", storage: "" }));
       }
@@ -48,7 +64,6 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
   useEffect(() => {
     if (localInfo.model && MOCK_DATA.storage[localInfo.model]) {
       setAvailableStorage(MOCK_DATA.storage[localInfo.model]);
-      // Reset storage when model changes
       if (localInfo.model !== deviceInfo.model) {
         setLocalInfo((prev) => ({ ...prev, storage: "" }));
       }
@@ -68,86 +83,136 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
   const isComplete = localInfo.brand && localInfo.model && localInfo.storage;
 
   return (
-    <div className="card-assessment">
+    <motion.div
+      className="flex flex-col h-full p-6 bg-background"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">ระบุรุ่นมือถือของคุณ</h2>
-        <p className="text-muted-foreground">เลือกยี่ห้อ รุ่น และความจุเก็บข้อมูลของเครื่องที่ต้องการประเมิน</p>
+        <h2 className="text-3xl font-bold text-foreground mb-2">ระบุรุ่นมือถือของคุณ</h2>
+        <p className="text-muted-foreground text-base">เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 flex-grow">
         {/* Brand Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">ยี่ห้อ *</label>
-          <div className="relative">
-            <select
-              value={localInfo.brand}
-              onChange={(e) => handleSelectChange("brand", e.target.value)}
-              className="w-full p-4 bg-card border border-border rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-primary transition-smooth text-foreground"
-            >
-              <option value="">เลือกยี่ห้อ</option>
-              {MOCK_DATA.brands.map((brand) => (
-                <option key={brand} value={brand}>
-                  {brand}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-          </div>
+          <label className="block text-sm font-medium text-foreground mb-2 ml-1">ยี่ห้อ *</label>
+          <Select onValueChange={(value) => handleSelectChange("brand", value)} value={localInfo.brand}>
+            <SelectTrigger className="w-full h-14 text-base px-4 border-border/50 rounded-xl focus:ring-orange-500">
+              <SelectValue placeholder="เลือกยี่ห้อ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>ยี่ห้อ</SelectLabel>
+                {MOCK_DATA.brands.map((brand) => (
+                  <SelectItem key={brand} value={brand}>
+                    {brand}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Model Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">รุ่น *</label>
-          <div className="relative">
-            <select
-              value={localInfo.model}
-              onChange={(e) => handleSelectChange("model", e.target.value)}
-              disabled={!localInfo.brand}
-              className="w-full p-4 bg-card border border-border rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-primary transition-smooth text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">เลือกรุ่น</option>
-              {availableModels.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-          </div>
+          <label className="block text-sm font-medium text-foreground mb-2 ml-1">รุ่น *</label>
+          <Select
+            onValueChange={(value) => handleSelectChange("model", value)}
+            value={localInfo.model}
+            disabled={!localInfo.brand}
+          >
+            <SelectTrigger className="w-full h-14 text-base px-4 border-border/50 rounded-xl focus:ring-orange-500">
+              <SelectValue placeholder="เลือกรุ่น" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>รุ่น</SelectLabel>
+                {availableModels.map((model) => (
+                  <SelectItem key={model} value={model}>
+                    {model}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Storage Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">ความจุ *</label>
-          <div className="relative">
-            <select
-              value={localInfo.storage}
-              onChange={(e) => handleSelectChange("storage", e.target.value)}
-              disabled={!localInfo.model}
-              className="w-full p-4 bg-card border border-border rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-primary transition-smooth text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">เลือกความจุ</option>
-              {availableStorage.map((storage) => (
-                <option key={storage} value={storage}>
-                  {storage}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-          </div>
+          <label className="block text-sm font-medium text-foreground mb-2 ml-1">ความจุ *</label>
+          <Select
+            onValueChange={(value) => handleSelectChange("storage", value)}
+            value={localInfo.storage}
+            disabled={!localInfo.model}
+          >
+            <SelectTrigger className="w-full h-14 text-base p-4 border-border/50 rounded-xl focus:ring-orange-500">
+              <SelectValue placeholder="เลือกความจุ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>ความจุ</SelectLabel>
+                {availableStorage.map((storage) => (
+                  <SelectItem key={storage} value={storage}>
+                    {storage}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div
+          className={`flex justify-center items-center ${
+            productData?.image_url ? "h-48" : "h-0"
+          } bg-card-foreground/5 rounded-xl overflow-hidden`}
+        >
+          <AnimatePresence mode="wait">
+            {isImageLoading && (
+              <motion.div
+                key="loader"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-muted-foreground"
+              >
+                กำลังโหลดรูปภาพ...
+              </motion.div>
+            )}
+            {!isImageLoading && productData?.image_url && (
+              <motion.div
+                key="image"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Image
+                  width={160}
+                  height={160}
+                  src={productData.image_url}
+                  alt={`${localInfo.brand} ${localInfo.model}`}
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       <div className="mt-8 flex justify-end">
-        <button
+        <Button
           onClick={onNext}
           disabled={!isComplete}
-          className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-hover transition-smooth shadow-soft hover:shadow-card transform hover:scale-105 disabled:hover:scale-100"
+          size="lg"
+          className="w-full text-lg font-semibold rounded-xl h-14 bg-gradient-to-r from-orange-500 to-pink-500 text-primary-foreground shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:shadow-none transition-all duration-300 transform-gpu hover:-translate-y-1 disabled:transform-none"
         >
           ถัดไป
-        </button>
+        </Button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

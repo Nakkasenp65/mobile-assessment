@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import AssessStep1 from "./components/AssessStep1";
-import AssessStep2 from "./components/AssessStep2";
+import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/AssessStep3";
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
@@ -70,7 +70,7 @@ export default function AssessPage() {
           {currentStep === 2 && (
             <AssessStep2
               conditionInfo={conditionInfo}
-              onConditionUpdate={handleConditionUpdate}
+              onConditionUpdate={setConditionInfo}
               onNext={handleNext}
               onBack={handleBack}
             />
