@@ -103,13 +103,15 @@
 @layer base {
   @font-face {
     font-family: "LINESeedSansTH";
-    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff") format("woff");
+    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff")
+      format("woff");
     font-weight: 400;
   }
 
   @font-face {
     font-family: "LINESeedSansTH";
-    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff") format("woff");
+    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff")
+      format("woff");
     font-weight: 700;
   }
 
@@ -156,9 +158,21 @@
     --chart-5: 70 65% 67%; /* oklch(0.769 0.188 70.08) */
 
     /* Gradients */
-    --gradient-main: linear-gradient(135deg, hsl(33 100% 97%) 0%, hsl(330 100% 97%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(33 100% 98%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(330 81% 60%) 100%);
+    --gradient-main: linear-gradient(
+      135deg,
+      hsl(33 100% 97%) 0%,
+      hsl(330 100% 97%) 100%
+    );
+    --gradient-card: linear-gradient(
+      135deg,
+      hsl(0 0% 100%) 0%,
+      hsl(33 100% 98%) 100%
+    );
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(24 95% 53%) 0%,
+      hsl(330 81% 60%) 100%
+    );
 
     --sidebar-background: 0 0% 98%;
 
@@ -210,9 +224,21 @@
     --input: 24 5.7% 18%;
     --ring: 24 95% 53%;
 
-    --gradient-main: linear-gradient(135deg, hsl(20 14.3% 4.1%) 0%, hsl(330 20% 8%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(24 9.8% 10%) 0%, hsl(330 10% 12%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(330 81% 60%) 100%);
+    --gradient-main: linear-gradient(
+      135deg,
+      hsl(20 14.3% 4.1%) 0%,
+      hsl(330 20% 8%) 100%
+    );
+    --gradient-card: linear-gradient(
+      135deg,
+      hsl(24 9.8% 10%) 0%,
+      hsl(330 10% 12%) 100%
+    );
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(24 95% 53%) 0%,
+      hsl(330 81% 60%) 100%
+    );
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -232,13 +258,18 @@
 
   /* --- Global Style Application (Integrated from Shadcn) --- */
   * {
-    @apply border-border;
+    border-color: var(--color-border);
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: "LINESeedSansTH", sans-serif;
     min-height: 100vh;
+  }
+
+  button {
+    cursor: pointer;
   }
 }
 
@@ -250,7 +281,10 @@
   }
 
   body {
-    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+    background-image: linear-gradient(
+      to bottom right,
+      var(--tw-gradient-stops)
+    );
     /* --tw-gradient-from: hsl(33 100% 97%) var(--tw-gradient-from-position);
     --tw-gradient-to: hsl(330 100% 97%) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); */
@@ -281,7 +315,11 @@
 
   /* components moved into utilities */
   .btn-hero {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)));
+    background-image: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
     color: white;
     font-weight: 600;
     padding-left: 2rem;

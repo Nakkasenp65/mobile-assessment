@@ -1,24 +1,48 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConditionInfo } from "../../page"; // โปรดตรวจสอบ Path ของ Type ให้ถูกต้องตามโครงสร้างโปรเจกต์ของท่าน
+import { DiagnosticsResult } from "./AutomatedDiagnostics";
 
 // Import a new sub-components
-import { PhysicalReport } from "./PhysicalReport";
-import { AutomatedDiagnostics } from "./AutomatedDiagnostics";
-import { InteractiveTests } from "./InteractiveTests";
+import PhysicalReport from "./PhysicalReport";
+import AutomatedDiagnostics from "./AutomatedDiagnostics";
+import InteractiveTests from "./InteractiveTests";
 
 interface AssessStep2Props {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
+  onConditionUpdate: (
+    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
+  ) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
 type SubStep = "physical" | "automated" | "interactive";
 
-const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack }: AssessStep2Props) => {
+const AssessStep2 = ({
+  conditionInfo,
+  onConditionUpdate,
+  onNext,
+  onBack,
+}: AssessStep2Props) => {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
+
+  const handleAutomatedComplete = useCallback(
+    () => setCurrentSubStep("interactive"),
+    [],
+  );
+
+  const handleDiagnosticsCompletion = useCallback(
+    (result: DiagnosticsResult) => {
+      onConditionUpdate((prev) => ({
+        ...prev,
+        wifi: result.wifi,
+        charger: result.charger,
+      }));
+    },
+    [onConditionUpdate],
+  );
 
   // Aria's touch: Variants for phase transitions
   const variants = {
@@ -60,12 +84,16 @@ const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack }: Asses
           )}
 
           {currentSubStep === "automated" && (
-            <AutomatedDiagnostics onComplete={() => setCurrentSubStep("interactive")} onBack={handleBackNavigation} />
+            <AutomatedDiagnostics
+              onComplete={handleAutomatedComplete}
+              onBack={handleBackNavigation}
+              onDiagnosticsComplete={handleDiagnosticsCompletion}
+            />
           )}
 
           {currentSubStep === "interactive" && (
             <InteractiveTests
-              onComplete={onNext} // When this is done, we go to AssessStep3
+              onComplete={onNext}
               onBack={handleBackNavigation}
             />
           )}

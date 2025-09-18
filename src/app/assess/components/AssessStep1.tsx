@@ -28,8 +28,19 @@ interface AssessStep1Props {
 const MOCK_DATA = {
   brands: ["Apple", "Samsung", "Google"],
   models: {
-    Apple: ["iPhone 15 Pro Max", "iPhone 15 Pro", "iPhone 15", "iPhone 14 Pro Max", "iPhone 14 Pro"],
-    Samsung: ["Galaxy S24 Ultra", "Galaxy S24+", "Galaxy S24", "Galaxy S23 Ultra"],
+    Apple: [
+      "iPhone 15 Pro Max",
+      "iPhone 15 Pro",
+      "iPhone 15",
+      "iPhone 14 Pro Max",
+      "iPhone 14 Pro",
+    ],
+    Samsung: [
+      "Galaxy S24 Ultra",
+      "Galaxy S24+",
+      "Galaxy S24",
+      "Galaxy S23 Ultra",
+    ],
     Google: ["Pixel 8 Pro", "Pixel 8", "Pixel 7 Pro", "Pixel 7"],
   } as Record<string, string[]>,
   storage: {
@@ -44,11 +55,18 @@ const MOCK_DATA = {
   } as Record<string, string[]>,
 };
 
-const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) => {
+const AssessStep1 = ({
+  deviceInfo,
+  onDeviceUpdate,
+  onNext,
+}: AssessStep1Props) => {
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [availableStorage, setAvailableStorage] = useState<string[]>([]);
-  const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
+  const { data: productData, isLoading: isImageLoading } = useMobile(
+    localInfo.brand,
+    localInfo.model,
+  );
 
   useEffect(() => {
     if (localInfo.brand && MOCK_DATA.models[localInfo.brand]) {
@@ -84,22 +102,31 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
 
   return (
     <motion.div
-      className="flex flex-col h-full p-6 bg-background"
+      className="card-assessment flex h-full flex-col rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-2">ระบุรุ่นมือถือของคุณ</h2>
-        <p className="text-muted-foreground text-base">เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน</p>
+      <div className="mb-8 text-center">
+        <h2 className="text-foreground mb-2 text-3xl font-bold">
+          ระบุรุ่นมือถือของคุณ
+        </h2>
+        <p className="text-muted-foreground text-base">
+          เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน
+        </p>
       </div>
 
-      <div className="space-y-6 flex-grow">
+      <div className="flex-grow space-y-6">
         {/* Brand Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2 ml-1">ยี่ห้อ *</label>
-          <Select onValueChange={(value) => handleSelectChange("brand", value)} value={localInfo.brand}>
-            <SelectTrigger className="w-full h-14 text-base px-4 border-border/50 rounded-xl focus:ring-orange-500">
+          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+            ยี่ห้อ *
+          </label>
+          <Select
+            onValueChange={(value) => handleSelectChange("brand", value)}
+            value={localInfo.brand}
+          >
+            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
               <SelectValue placeholder="เลือกยี่ห้อ" />
             </SelectTrigger>
             <SelectContent>
@@ -117,13 +144,15 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
 
         {/* Model Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2 ml-1">รุ่น *</label>
+          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+            รุ่น *
+          </label>
           <Select
             onValueChange={(value) => handleSelectChange("model", value)}
             value={localInfo.model}
             disabled={!localInfo.brand}
           >
-            <SelectTrigger className="w-full h-14 text-base px-4 border-border/50 rounded-xl focus:ring-orange-500">
+            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
               <SelectValue placeholder="เลือกรุ่น" />
             </SelectTrigger>
             <SelectContent>
@@ -141,13 +170,15 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
 
         {/* Storage Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2 ml-1">ความจุ *</label>
+          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+            ความจุ *
+          </label>
           <Select
             onValueChange={(value) => handleSelectChange("storage", value)}
             value={localInfo.storage}
             disabled={!localInfo.model}
           >
-            <SelectTrigger className="w-full h-14 text-base p-4 border-border/50 rounded-xl focus:ring-orange-500">
+            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl p-4 text-base focus:ring-orange-500">
               <SelectValue placeholder="เลือกความจุ" />
             </SelectTrigger>
             <SelectContent>
@@ -164,9 +195,9 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
         </div>
 
         <div
-          className={`flex justify-center items-center ${
+          className={`flex items-center justify-center ${
             productData?.image_url ? "h-48" : "h-0"
-          } bg-card-foreground/5 rounded-xl overflow-hidden`}
+          } bg-card-foreground/5 overflow-hidden rounded-xl`}
         >
           <AnimatePresence mode="wait">
             {isImageLoading && (
@@ -207,7 +238,7 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext }: AssessStep1Props) =
           onClick={onNext}
           disabled={!isComplete}
           size="lg"
-          className="w-full text-lg font-semibold rounded-xl h-14 bg-gradient-to-r from-orange-500 to-pink-500 text-primary-foreground shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:shadow-none transition-all duration-300 transform-gpu hover:-translate-y-1 disabled:transform-none"
+          className="text-primary-foreground h-14 w-full transform-gpu cursor-pointer rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:opacity-50 disabled:shadow-none"
         >
           ถัดไป
         </Button>

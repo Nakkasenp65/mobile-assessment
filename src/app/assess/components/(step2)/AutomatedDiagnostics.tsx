@@ -1,78 +1,110 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle, Wifi, Zap } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NetworkQuality } from "../../../../hooks/useNetwork"; // Import Type
+import WifiDetection from "./(automated-components)/WifiDetection";
+import BatteryDetection from "./(automated-components)/BatteryDetection";
+
+export interface DiagnosticsResult {
+  wifi: WifiStatus;
+  charger: BatteryStatus;
+}
 
 interface AutomatedDiagnosticsProps {
   onComplete: () => void;
   onBack: () => void;
+  onDiagnosticsComplete: (result: DiagnosticsResult) => void;
 }
 
-type Status = "checking" | "success" | "failed";
+// Define the possible concluded statuses for each test
+type WifiStatus = NetworkQuality | "ignore";
+type BatteryStatus = "success" | "unsupported" | "ignore" | "failed";
 
-export const AutomatedDiagnostics = ({ onComplete, onBack }: AutomatedDiagnosticsProps) => {
-  const [wifiStatus, setWifiStatus] = useState<Status>("checking");
-  const [chargingStatus, setChargingStatus] = useState<Status>("checking");
-  const [isComplete, setIsComplete] = useState(false);
+const AutomatedDiagnostics = ({
+  onComplete,
+  onBack,
+  onDiagnosticsComplete,
+}: AutomatedDiagnosticsProps) => {
+  const [wifiFinalStatus, setWifiFinalStatus] = useState<WifiStatus | null>(
+    null,
+  );
+  const [batteryFinalStatus, setBatteryFinalStatus] =
+    useState<BatteryStatus | null>(null);
 
+  const handleWifiConcluded = useCallback((status: WifiStatus) => {
+    setWifiFinalStatus(status);
+  }, []);
+
+  const handleBatteryConcluded = useCallback((status: BatteryStatus) => {
+    setBatteryFinalStatus(status);
+  }, []);
+
+  // The completion logic now depends on the final statuses of both checks.
   useEffect(() => {
-    // Simulate diagnostics
-    const timer1 = setTimeout(() => setWifiStatus("success"), 1500);
-    const timer2 = setTimeout(() => setChargingStatus("success"), 2500);
-    const timer3 = setTimeout(() => {
-      setIsComplete(true);
-      onComplete(); // Automatically move to the next step after a delay
-    }, 4000);
+    const allTestsConcluded =
+      wifiFinalStatus !== null && batteryFinalStatus !== null;
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, [onComplete]);
+    if (allTestsConcluded) {
+      onDiagnosticsComplete({
+        wifi: wifiFinalStatus,
+        charger: batteryFinalStatus,
+      });
 
-  const StatusIndicator = ({ status }: { status: Status }) => {
-    if (status === "checking")
-      return <motion.div className="w-4 h-4 rounded-full bg-muted-foreground/50 animate-pulse" />;
-    if (status === "success") return <CheckCircle className="w-5 h-5 text-success" />;
-    return null;
-  };
+      const completionTimer = setTimeout(() => {
+        onComplete();
+      }, 1500);
+
+      return () => clearTimeout(completionTimer);
+    }
+  }, [wifiFinalStatus, batteryFinalStatus, onComplete, onDiagnosticsComplete]);
+
+  const allTestsConcluded =
+    wifiFinalStatus !== null && batteryFinalStatus !== null;
 
   return (
     <div className="flex flex-col">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">ขั้นตอนที่ 2: ตรวจสอบอัตโนมัติ</h2>
-        <p className="text-muted-foreground">ระบบกำลังตรวจสอบการเชื่อมต่อพื้นฐานของเครื่อง</p>
+      <div className="mb-8 text-center">
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
+          ขั้นตอนที่ 2: ตรวจสอบอัตโนมัติ
+        </h2>
+        <p className="text-muted-foreground">
+          ระบบกำลังตรวจสอบการเชื่อมต่อพื้นฐานของเครื่อง
+        </p>
       </div>
 
-      <div className="space-y-4 my-8 min-h-[250px] flex flex-col justify-center">
-        <div className="flex items-center justify-between p-4 bg-accent rounded-lg">
-          <div className="flex items-center">
-            <Wifi className="w-5 h-5 mr-4 text-primary" />
-            <span className="text-foreground font-medium">การเชื่อมต่อ Wi-Fi</span>
-          </div>
-          <StatusIndicator status={wifiStatus} />
-        </div>
-        <div className="flex items-center justify-between p-4 bg-accent rounded-lg">
-          <div className="flex items-center">
-            <Zap className="w-5 h-5 mr-4 text-primary" />
-            <span className="text-foreground font-medium">การชาร์จไฟ</span>
-          </div>
-          <StatusIndicator status={chargingStatus} />
-        </div>
+      <div className="my-8 flex min-h-[250px] flex-col justify-center space-y-4">
+        <WifiDetection onStatusConcluded={handleWifiConcluded} />
+        <BatteryDetection onStatusConcluded={handleBatteryConcluded} />
       </div>
 
-      <div className="mt-8 flex justify-between items-center">
-        <Button variant="ghost" onClick={onBack} className="flex items-center text-foreground rounded-xl h-12 px-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+      <div className="mt-8 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="text-foreground flex h-12 cursor-pointer items-center rounded-xl px-6"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           ย้อนกลับ
         </Button>
-        <Button disabled className="h-12 px-8 rounded-xl">
-          <motion.div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-          กำลังตรวจสอบ...
+        <Button
+          disabled
+          size="lg"
+          className="h-12 w-[180px] cursor-pointer rounded-xl px-8"
+        >
+          {allTestsConcluded ? (
+            "เสร็จสิ้น"
+          ) : (
+            <>
+              <motion.div className="border-primary-foreground mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+              กำลังตรวจสอบ...
+            </>
+          )}
         </Button>
       </div>
     </div>
   );
 };
+
+export default AutomatedDiagnostics;

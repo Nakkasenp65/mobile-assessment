@@ -19,6 +19,8 @@ export interface ConditionInfo {
   powerOn: string;
   cameras: string;
   biometric: string;
+  charger: string;
+  wifi: string;
 }
 
 export default function AssessPage() {
@@ -35,6 +37,8 @@ export default function AssessPage() {
     powerOn: "",
     cameras: "",
     biometric: "",
+    charger: "",
+    wifi: "",
   });
 
   const handleNext = () => {
@@ -53,18 +57,20 @@ export default function AssessPage() {
     setDeviceInfo(info);
   };
 
-  const handleConditionUpdate = (info: ConditionInfo) => {
-    setConditionInfo(info);
-  };
+  console.log(conditionInfo);
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="mx-auto max-w-2xl px-4 py-8">
         <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         <div className="mt-8">
           {currentStep === 1 && (
-            <AssessStep1 deviceInfo={deviceInfo} onDeviceUpdate={handleDeviceUpdate} onNext={handleNext} />
+            <AssessStep1
+              deviceInfo={deviceInfo}
+              onDeviceUpdate={handleDeviceUpdate}
+              onNext={handleNext}
+            />
           )}
 
           {currentStep === 2 && (
@@ -77,7 +83,11 @@ export default function AssessPage() {
           )}
 
           {currentStep === 3 && (
-            <AssessStep3 deviceInfo={deviceInfo} conditionInfo={conditionInfo} onBack={handleBack} />
+            <AssessStep3
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              onBack={handleBack}
+            />
           )}
         </div>
       </div>

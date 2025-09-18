@@ -5,27 +5,31 @@ import Link from "next/link";
 
 const Navbar = () => {
   const pathname = usePathname();
-  console.log(pathname);
 
   const isActive = (path: string) => pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/50 bg-card/95 backdrop-blur-sm">
+    <nav className="border-border/50 bg-card/95 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 transition-smooth hover:scale-105">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
+          <Link
+            href="/"
+            className="transition-smooth flex items-center space-x-2 hover:scale-105"
+          >
+            <div className="gradient-primary flex h-8 w-8 items-center justify-center rounded-lg">
               <Smartphone className="h-5 w-5 text-white" />
             </div>
-            <span className=" sm:block text-lg font-semibold text-foreground">OK Mobile</span>
+            <span className="text-foreground text-lg font-semibold sm:block">
+              OK Mobile
+            </span>
           </Link>
 
           {/* Navigation Links */}
           <div className="flex items-center space-x-1">
             <Link
               href="/"
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-smooth ${
+              className={`transition-smooth rounded-lg px-4 py-2 text-sm font-medium ${
                 isActive("/")
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -35,7 +39,7 @@ const Navbar = () => {
             </Link>
             <Link
               href="/assess"
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-smooth ${
+              className={`transition-smooth rounded-lg px-4 py-2 text-sm font-medium ${
                 isActive("/assess")
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"

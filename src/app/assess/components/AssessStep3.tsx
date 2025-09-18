@@ -19,7 +19,11 @@ interface ServiceOption {
   features: string[];
 }
 
-const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
+const AssessStep3 = ({
+  deviceInfo,
+  conditionInfo,
+  onBack,
+}: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
   // Mock price calculation based on device and condition
@@ -43,7 +47,11 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
         condition.includes("works")
       ) {
         conditionMultiplier *= 1.0;
-      } else if (condition.includes("minor") || condition.includes("good") || condition.includes("sometimes")) {
+      } else if (
+        condition.includes("minor") ||
+        condition.includes("good") ||
+        condition.includes("sometimes")
+      ) {
         conditionMultiplier *= 0.85;
       } else {
         conditionMultiplier *= 0.6;
@@ -62,7 +70,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "รับเงินสดเต็มจำนวนทันที",
       icon: Banknote,
       price: basePrice,
-      features: ["รับเงินสดทันที", "โอนเงินภายใน 30 นาที", "ไม่มีค่าธรรมเนียม", "รับประกันราคา 7 วัน"],
+      features: [
+        "รับเงินสดทันที",
+        "โอนเงินภายใน 30 นาที",
+        "ไม่มีค่าธรรมเนียม",
+        "รับประกันราคา 7 วัน",
+      ],
     },
     {
       id: "pawn",
@@ -70,7 +83,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
       icon: Shield,
       price: Math.round(basePrice * 0.7),
-      features: ["รับเงินสดทันที", "ไถ่คืนได้ภายใน 6 เดือน", "อัตราดอกเบี้ย 2% ต่อเดือน", "เก็บเครื่องในสภาพดี"],
+      features: [
+        "รับเงินสดทันที",
+        "ไถ่คืนได้ภายใน 6 เดือน",
+        "อัตราดอกเบี้ย 2% ต่อเดือน",
+        "เก็บเครื่องในสภาพดี",
+      ],
     },
   ];
 
@@ -83,32 +101,40 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
 
   return (
     <div className="card-assessment">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">เลือกบริการและดูราคา</h2>
+      <div className="mb-8 text-center">
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
+          เลือกบริการและดูราคา
+        </h2>
         <p className="text-muted-foreground">
           {deviceInfo.brand} {deviceInfo.model} {deviceInfo.storage}
         </p>
       </div>
 
       {/* Price Display */}
-      <div className="bg-linear-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 mb-8 text-center border border-primary/20">
-        <p className="text-sm font-medium text-muted-foreground mb-2">ราคาประเมินเบื้องต้น</p>
-        <p className="text-4xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
+      <div className="from-primary/10 to-secondary/10 border-primary/20 mb-8 rounded-2xl border bg-linear-to-r p-6 text-center">
+        <p className="text-muted-foreground mb-2 text-sm font-medium">
+          ราคาประเมินเบื้องต้น
+        </p>
+        <p className="from-primary to-secondary bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
           ฿{basePrice.toLocaleString()}
         </p>
-        <p className="text-sm text-muted-foreground mt-2">*ราคาสุดท้ายขึ้นอยู่กับการตรวจสอบเครื่องจริง</p>
+        <p className="text-muted-foreground mt-2 text-sm">
+          *ราคาสุดท้ายขึ้นอยู่กับการตรวจสอบเครื่องจริง
+        </p>
       </div>
 
       {/* Service Options */}
-      <div className="space-y-4 mb-8">
-        <h3 className="text-lg font-semibold text-foreground mb-4">เลือกบริการที่ต้องการ</h3>
+      <div className="mb-8 space-y-4">
+        <h3 className="text-foreground mb-4 text-lg font-semibold">
+          เลือกบริการที่ต้องการ
+        </h3>
 
         {services.map((service) => {
           const Icon = service.icon;
           return (
             <div
               key={service.id}
-              className={`border rounded-2xl p-6 cursor-pointer transition-smooth hover:shadow-card ${
+              className={`transition-smooth hover:shadow-card cursor-pointer rounded-2xl border p-6 ${
                 selectedService === service.id
                   ? "border-primary bg-primary/5 shadow-card"
                   : "border-border hover:border-primary/50"
@@ -117,26 +143,36 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
             >
               <div className="flex items-start space-x-4">
                 <div
-                  className={`p-3 rounded-xl ${
-                    selectedService === service.id ? "gradient-primary text-white" : "bg-muted text-muted-foreground"
+                  className={`rounded-xl p-3 ${
+                    selectedService === service.id
+                      ? "gradient-primary text-white"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <Icon className="w-6 h-6" />
+                  <Icon className="h-6 w-6" />
                 </div>
 
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-lg font-semibold text-foreground">{service.title}</h4>
-                    <p className="text-2xl font-bold text-primary">฿{service.price.toLocaleString()}</p>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-foreground text-lg font-semibold">
+                      {service.title}
+                    </h4>
+                    <p className="text-primary text-2xl font-bold">
+                      ฿{service.price.toLocaleString()}
+                    </p>
                   </div>
 
-                  <p className="text-muted-foreground text-sm mb-4">{service.description}</p>
+                  <p className="text-muted-foreground mb-4 text-sm">
+                    {service.description}
+                  </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {service.features.map((feature, index) => (
                       <div key={index} className="flex items-center space-x-2">
-                        <CheckCircle className="w-4 h-4 text-success" />
-                        <span className="text-sm text-foreground">{feature}</span>
+                        <CheckCircle className="text-success h-4 w-4" />
+                        <span className="text-foreground text-sm">
+                          {feature}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -151,16 +187,16 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       <div className="flex justify-between">
         <button
           onClick={onBack}
-          className="flex items-center px-6 py-3 border border-border text-foreground rounded-xl hover:bg-accent transition-smooth"
+          className="border-border text-foreground hover:bg-accent transition-smooth flex items-center rounded-xl border px-6 py-3"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           ย้อนกลับ
         </button>
 
         <button
           onClick={handleConfirm}
           disabled={!selectedService}
-          className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-hover transition-smooth shadow-soft hover:shadow-card transform hover:scale-105 disabled:hover:scale-100"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover transition-smooth shadow-soft hover:shadow-card transform rounded-xl px-8 py-3 font-semibold hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
         >
           ยืนยันการเลือก
         </button>
