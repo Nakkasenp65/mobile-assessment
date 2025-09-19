@@ -63,6 +63,9 @@ export const useNetworkStatus = (): NetworkStatus => {
     message: "กำลังเตรียมระบบตรวจสอบ...",
   });
 
+  console.log("window: ", window);
+  console.log("navigator: ", navigator);
+
   // --- [STRUCTURAL ADDITION] ---
   // ใช้ useRef เพื่อเก็บ ID ของ interval โดยไม่ทำให้เกิด re-render
   const intervalRef = useRef<NodeJS.Timeout | null>(null);

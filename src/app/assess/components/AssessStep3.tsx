@@ -26,6 +26,9 @@ const AssessStep3 = ({
 }: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
+  console.log("deviceInfo Assess 3 : ", deviceInfo);
+  console.log("conditionInfo Assess 3 : ", conditionInfo);
+
   // Mock price calculation based on device and condition
   const calculateBasePrice = () => {
     let basePrice = 20000; // Base price for iPhone 15 Pro
@@ -187,16 +190,16 @@ const AssessStep3 = ({
       <div className="flex justify-between">
         <button
           onClick={onBack}
-          className="border-border text-foreground hover:bg-accent transition-smooth flex items-center rounded-xl border px-6 py-3"
+          className="border-border text-foreground hover:bg-accent transition-smooth flex items-center rounded-xl border p-2 px-3"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           ย้อนกลับ
         </button>
 
         <button
           onClick={handleConfirm}
           disabled={!selectedService}
-          className="bg-primary text-primary-foreground hover:bg-primary-hover transition-smooth shadow-soft hover:shadow-card transform rounded-xl px-8 py-3 font-semibold hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="text-primary-foreground h-14 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-3 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ยืนยันการเลือก
         </button>

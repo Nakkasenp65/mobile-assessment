@@ -1,133 +1,90 @@
-// icon: React.ForwardRefExoticComponent<
-//     Omit<React.SVGProps<SVGSVGElement>, "ref"> & {
-//       "stroke-width"?: string | number;
-//     }
-//   >;
-
 "use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Check, X, Mic, Volume2, Camera } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { ArrowLeft, Mic, Volume2, Camera, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import SpeakerDetection from "./(interactive-tests)/SpeakerDetection";
 import MicrophoneDetection from "./(interactive-tests)/MicrophoneDetection";
 import CameraDetection from "./(interactive-tests)/CameraDetection";
+import { TouchscreenTest } from "./(interactive-tests)/TouchscreenTest";
+import TestButton from "./(interactive-tests)/TestButton";
+import { ConditionInfo } from "../../page";
+
+export type TestName = "speaker" | "mic" | "camera" | "touchScreen";
+export type TestStatus = "pending" | "passed" | "failed";
 
 interface InteractiveTestsProps {
-  onComplete: () => void;
+  onFlowComplete: () => void;
   onBack: () => void;
+  onTestsConcluded: (
+    results: Partial<
+      Pick<ConditionInfo, "speaker" | "mic" | "cameras" | "touchScreen">
+    >,
+  ) => void;
 }
 
-type TestName = "speaker" | "mic" | "camera";
-type TestStatus = "pending" | "passed" | "failed";
-
-const TestButton = ({
-  icon: Icon,
-  label,
-  status,
-  onClick,
-  isNextTest,
-}: {
-  icon: React.ForwardRefExoticComponent<
-    Omit<React.SVGProps<SVGSVGElement>, "ref"> & {
-      "stroke-width"?: string | number;
-    }
-  >;
-  label: string;
-  status: TestStatus;
-  onClick: () => void;
-  isNextTest: boolean;
-}) => (
-  <motion.button
-    onClick={onClick}
-    disabled={!isNextTest || status !== "pending"}
-    className={cn(
-      "relative flex h-28 w-full flex-col items-center justify-center rounded-xl border-2 p-4 transition-all duration-200",
-      status === "pending" && "border-border bg-accent",
-      status === "passed" && "border-success bg-success/10",
-      status === "failed" && "border-destructive bg-destructive/10",
-      !isNextTest && status === "pending" && "cursor-not-allowed opacity-50",
-    )}
-    animate={
-      isNextTest && status === "pending"
-        ? {
-            scale: [1, 1.05, 1],
-            boxShadow: [
-              "0px 0px 0px 0px hsl(var(--primary) / 0.3)",
-              "0px 0px 0px 5px hsl(var(--primary) / 0)",
-              "0px 0px 0px 0px hsl(var(--primary) / 0)",
-            ],
-          }
-        : {}
-    }
-    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-  >
-    <div className="relative">
-      <Icon
-        className={cn(
-          "mb-2 h-8 w-8",
-          status === "pending" && "text-primary",
-          status === "passed" && "text-success",
-          status === "failed" && "text-destructive",
-        )}
-      />
-      {status !== "pending" && (
-        <motion.div
-          className={cn(
-            "border-background absolute -top-1 -right-1 flex items-center justify-center rounded-full border-2 p-0.5",
-            status === "passed" && "bg-success",
-            status === "failed" && "bg-destructive",
-          )}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-        >
-          {status === "passed" && (
-            <Check className="text-success-foreground h-3 w-3" />
-          )}
-          {status === "failed" && (
-            <X className="text-destructive-foreground h-3 w-3" />
-          )}
-        </motion.div>
-      )}
-    </div>
-    <span
-      className={cn(
-        "font-medium",
-        status === "passed" && "text-success",
-        status === "failed" && "text-destructive",
-      )}
-    >
-      {label}
-    </span>
-  </motion.button>
-);
-
-const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
-  const testSequence: TestName[] = ["speaker", "mic", "camera"];
+const InteractiveTests = ({
+  onFlowComplete,
+  onBack,
+  onTestsConcluded,
+}: InteractiveTestsProps) => {
+  // [FIX] Updated test sequence for better UX flow
+  const testSequence = useMemo<TestName[]>(
+    () => ["speaker", "mic", "camera", "touchScreen"],
+    [],
+  );
   const [currentTestIndex, setCurrentTestIndex] = useState(0);
   const [activeTest, setActiveTest] = useState<TestName | null>(null);
   const [testResults, setTestResults] = useState<Record<TestName, TestStatus>>({
     speaker: "pending",
     mic: "pending",
     camera: "pending",
+    touchScreen: "pending",
   });
+  const [touchscreenPercentage, setTouchscreenPercentage] = useState<
+    number | null
+  >(null);
 
-  const handleConclude = (testName: TestName, result: boolean) => {
-    setTestResults((prev) => ({
-      ...prev,
-      [testName]: result ? "passed" : "failed",
-    }));
-    setActiveTest(null);
+  // [FIX] Unified handler for all test conclusions
+  const handleTestConcluded = useCallback(
+    (testName: TestName, result: boolean | number) => {
+      setActiveTest(null);
 
-    if (currentTestIndex < testSequence.length - 1) {
-      setCurrentTestIndex(currentTestIndex + 1);
-    }
-  };
+      // ใช้ Functional Update สำหรับ State ทุกตัวที่เกี่ยวข้อง
+      if (testName === "touchScreen" && typeof result === "number") {
+        setTouchscreenPercentage(result); // This can stay as it is, as it's just one piece of data
+        const resultStatus = result >= 90 ? "passed" : "failed";
+        setTestResults((prevResults) => ({
+          ...prevResults,
+          touchScreen: resultStatus,
+        }));
+      } else if (typeof result === "boolean") {
+        setTestResults((prevResults) => ({
+          ...prevResults,
+          [testName]: result ? "passed" : "failed",
+        }));
+      }
+
+      setCurrentTestIndex((prevIndex) =>
+        prevIndex < testSequence.length - 1 ? prevIndex + 1 : prevIndex,
+      );
+    },
+    [testSequence.length], // <--- Dependency ที่เสถียรอย่างสมบูรณ์!
+  );
 
   const allTestsConcluded = Object.values(testResults).every(
     (status) => status !== "pending",
   );
+
+  useEffect(() => {
+    if (allTestsConcluded) {
+      onTestsConcluded({
+        speaker: testResults.speaker,
+        mic: testResults.mic,
+        cameras: testResults.camera,
+        touchScreen: `${touchscreenPercentage}%`,
+      });
+    }
+  }, [allTestsConcluded, testResults, touchscreenPercentage, onTestsConcluded]);
 
   const getInstructionText = () => {
     if (allTestsConcluded) {
@@ -137,6 +94,7 @@ const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
       speaker: "ลำโพง",
       mic: "ไมโครโฟน",
       camera: "กล้อง",
+      touchScreen: "ระบบสัมผัส",
     }[testSequence[currentTestIndex]];
 
     return `ขั้นตอนต่อไป: กรุณากดทดสอบ "${nextTestLabel}"`;
@@ -153,7 +111,7 @@ const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
         </p>
       </div>
 
-      <div className="my-8 grid min-h-[250px] grid-cols-3 content-center gap-4">
+      <div className="my-8 grid min-h-[250px] grid-cols-2 content-center gap-4 md:grid-cols-4">
         <TestButton
           icon={Volume2}
           label="ลำโพง"
@@ -183,6 +141,16 @@ const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
               setActiveTest("camera");
           }}
         />
+        <TestButton
+          icon={PenTool}
+          label="ระบบสัมผัส"
+          status={testResults.touchScreen}
+          isNextTest={testSequence[currentTestIndex] === "touchScreen"}
+          onClick={() => {
+            if (testSequence[currentTestIndex] === "touchScreen")
+              setActiveTest("touchScreen");
+          }}
+        />
       </div>
 
       <div className="mt-8 flex items-center justify-between">
@@ -195,7 +163,7 @@ const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
           ย้อนกลับ
         </Button>
         <Button
-          onClick={onComplete}
+          onClick={onFlowComplete}
           disabled={!allTestsConcluded}
           size="lg"
           className="text-primary-foreground shadow-lg... h-12 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold"
@@ -204,17 +172,22 @@ const InteractiveTests = ({ onComplete, onBack }: InteractiveTestsProps) => {
         </Button>
       </div>
 
+      {/* [FIX] All child components now correctly call the unified handler */}
       <SpeakerDetection
         isOpen={activeTest === "speaker"}
-        onConclude={(result) => handleConclude("speaker", result)}
+        onConclude={(result) => handleTestConcluded("speaker", result)}
       />
       <MicrophoneDetection
         isOpen={activeTest === "mic"}
-        onConclude={(result) => handleConclude("mic", result)}
+        onConclude={(result) => handleTestConcluded("mic", result)}
       />
       <CameraDetection
         isOpen={activeTest === "camera"}
-        onConclude={(result) => handleConclude("camera", result)}
+        onConclude={(result) => handleTestConcluded("camera", result)}
+      />
+      <TouchscreenTest
+        isOpen={activeTest === "touchScreen"}
+        onConclude={(result) => handleTestConcluded("touchScreen", result)}
       />
     </div>
   );

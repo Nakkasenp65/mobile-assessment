@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 import { useMobile } from "@/hooks/useMobile";
-import { DeviceInfo } from "../page";
+import { DeviceInfo } from "../page"; // ตรวจสอบให้แน่ใจว่า DeviceInfo ใน page.tsx ถูกอัปเดตแล้ว
 
 // Import shadcn/ui components
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ interface AssessStep1Props {
   onNext: () => void;
 }
 
-// Mock data remains the same
 const MOCK_DATA = {
   brands: ["Apple", "Samsung", "Google"],
   models: {
@@ -55,6 +54,16 @@ const MOCK_DATA = {
   } as Record<string, string[]>,
 };
 
+// [FIX] Add Mock Data for Battery Health
+const BATTERY_HEALTH_OPTIONS = [
+  "100%",
+  "95% - 99%",
+  "90% - 94%",
+  "85% - 89%",
+  "ต่ำกว่า 85%",
+  "เปลี่ยนแบตเตอรี่",
+];
+
 const AssessStep1 = ({
   deviceInfo,
   onDeviceUpdate,
@@ -68,11 +77,22 @@ const AssessStep1 = ({
     localInfo.model,
   );
 
+  // [FIX] Updated useEffect for brand changes
   useEffect(() => {
     if (localInfo.brand && MOCK_DATA.models[localInfo.brand]) {
       setAvailableModels(MOCK_DATA.models[localInfo.brand]);
       if (localInfo.brand !== deviceInfo.brand) {
-        setLocalInfo((prev) => ({ ...prev, model: "", storage: "" }));
+        // Clear subsequent fields when brand changes
+        setLocalInfo((prev) => ({
+          ...prev,
+          model: "",
+          storage: "",
+          batteryHealth: undefined,
+        }));
+      }
+      // Clear battery health if the selected brand is not Apple
+      if (localInfo.brand !== "Apple") {
+        setLocalInfo((prev) => ({ ...prev, batteryHealth: undefined }));
       }
     } else {
       setAvailableModels([]);
@@ -98,7 +118,16 @@ const AssessStep1 = ({
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
   };
 
-  const isComplete = localInfo.brand && localInfo.model && localInfo.storage;
+  // [FIX] Updated logic for completion check
+  const isAppleDevice = localInfo.brand === "Apple";
+  const isComplete = isAppleDevice
+    ? !!(
+        localInfo.brand &&
+        localInfo.model &&
+        localInfo.storage &&
+        localInfo.batteryHealth
+      )
+    : !!(localInfo.brand && localInfo.model && localInfo.storage);
 
   return (
     <motion.div
@@ -194,10 +223,49 @@ const AssessStep1 = ({
           </Select>
         </div>
 
+        {/* [FIX] Conditional Battery Health Field */}
+        <AnimatePresence>
+          {isAppleDevice && (
+            <motion.div
+              key="battery-health-field"
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: "1.5rem" }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div>
+                <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+                  สุขภาพแบตเตอรี่ *
+                </label>
+                <Select
+                  onValueChange={(value) =>
+                    handleSelectChange("batteryHealth", value)
+                  }
+                  value={localInfo.batteryHealth || ""}
+                  disabled={!isAppleDevice}
+                >
+                  <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
+                    <SelectValue placeholder="เลือกเปอร์เซ็นต์แบตเตอรี่" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>สุขภาพแบตเตอรี่</SelectLabel>
+                      {BATTERY_HEALTH_OPTIONS.map((health) => (
+                        <SelectItem key={health} value={health}>
+                          {health}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div
-          className={`flex items-center justify-center ${
-            productData?.image_url ? "h-48" : "h-0"
-          } bg-card-foreground/5 overflow-hidden rounded-xl`}
+          className="bg-card-foreground/5 flex items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
+          style={{ height: productData?.image_url ? "12rem" : "0" }}
         >
           <AnimatePresence mode="wait">
             {isImageLoading && (
@@ -238,7 +306,7 @@ const AssessStep1 = ({
           onClick={onNext}
           disabled={!isComplete}
           size="lg"
-          className="text-primary-foreground h-14 w-full transform-gpu cursor-pointer rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:opacity-50 disabled:shadow-none"
+          className="text-primary-foreground h-14 w-full transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ถัดไป
         </Button>

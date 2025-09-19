@@ -1,13 +1,13 @@
 "use client";
 import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ConditionInfo } from "../../page"; // โปรดตรวจสอบ Path ของ Type ให้ถูกต้องตามโครงสร้างโปรเจกต์ของท่าน
+import { ConditionInfo } from "../../page";
 import { DiagnosticsResult } from "./AutomatedDiagnostics";
 
-// Import a new sub-components
-import PhysicalReport from "./PhysicalReport";
+import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
+import QuestionReport from "./QuestionReport";
 import AutomatedDiagnostics from "./AutomatedDiagnostics";
-import InteractiveTests from "./InteractiveTests";
+import InteractiveTests, { TestName, TestStatus } from "./InteractiveTests"; // Import types
 
 interface AssessStep2Props {
   conditionInfo: ConditionInfo;
@@ -27,6 +27,17 @@ const AssessStep2 = ({
   onBack,
 }: AssessStep2Props) => {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
+  const { isDesktop, isAndroid } = useDeviceDetection();
+
+  const handleQuestionReportComplete = useCallback(() => {
+    if (isDesktop) {
+      onNext();
+    } else if (isAndroid) {
+      setCurrentSubStep("automated");
+    } else {
+      setCurrentSubStep("interactive");
+    }
+  }, [isDesktop, isAndroid, onNext]);
 
   const handleAutomatedComplete = useCallback(
     () => setCurrentSubStep("interactive"),
@@ -44,26 +55,37 @@ const AssessStep2 = ({
     [onConditionUpdate],
   );
 
-  // Aria's touch: Variants for phase transitions
+  // [FIX] New callback handler for interactive test results.
+  const handleTestsCompletion = useCallback(
+    (results: Record<TestName, TestStatus>) => {
+      onConditionUpdate((prev) => ({
+        ...prev,
+        cameras: results.camera,
+        speaker: results.speaker,
+        mic: results.mic,
+      }));
+    },
+    [onConditionUpdate],
+  );
+
+  const handleBackNavigation = useCallback(() => {
+    if (currentSubStep === "interactive") {
+      if (isAndroid) setCurrentSubStep("automated");
+      else setCurrentSubStep("physical");
+    } else if (currentSubStep === "automated") {
+      setCurrentSubStep("physical");
+    } else {
+      onBack();
+    }
+  }, [currentSubStep, isAndroid, onBack]);
+
   const variants = {
     enter: { opacity: 0, y: 20 },
     center: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
   };
 
-  // Kaia's insight: A centralized back navigation logic for a predictable user experience.
-  const handleBackNavigation = () => {
-    if (currentSubStep === "interactive") {
-      setCurrentSubStep("automated");
-    } else if (currentSubStep === "automated") {
-      setCurrentSubStep("physical");
-    } else {
-      onBack(); // Go back to AssessStep1
-    }
-  };
-
   return (
-    // Silas's structure: The 'card-assessment' acts as the main container for the wizard.
     <div className="card-assessment flex flex-col">
       <AnimatePresence mode="wait">
         <motion.div
@@ -75,15 +97,15 @@ const AssessStep2 = ({
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           {currentSubStep === "physical" && (
-            <PhysicalReport
+            <QuestionReport
               conditionInfo={conditionInfo}
               onConditionUpdate={onConditionUpdate}
-              onComplete={() => setCurrentSubStep("automated")}
+              onComplete={handleQuestionReportComplete}
               onBack={handleBackNavigation}
             />
           )}
 
-          {currentSubStep === "automated" && (
+          {isAndroid && currentSubStep === "automated" && (
             <AutomatedDiagnostics
               onComplete={handleAutomatedComplete}
               onBack={handleBackNavigation}
@@ -93,8 +115,9 @@ const AssessStep2 = ({
 
           {currentSubStep === "interactive" && (
             <InteractiveTests
-              onComplete={onNext}
+              onFlowComplete={onNext} // [FIX] Renamed prop
               onBack={handleBackNavigation}
+              onTestsConcluded={handleTestsCompletion} // [FIX] Pass the new handler
             />
           )}
         </motion.div>

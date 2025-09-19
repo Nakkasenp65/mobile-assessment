@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AssessStep1 from "./components/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/AssessStep3";
@@ -10,17 +10,19 @@ export interface DeviceInfo {
   brand: string;
   model: string;
   storage: string;
+  batteryHealth: string;
 }
 
 export interface ConditionInfo {
   screenGlass: string;
   screenDisplay: string;
-  bodyCondition: string;
   powerOn: string;
   cameras: string;
-  biometric: string;
   charger: string;
   wifi: string;
+  touchScreen: string;
+  mic: string;
+  speaker: string;
 }
 
 export default function AssessPage() {
@@ -29,16 +31,18 @@ export default function AssessPage() {
     brand: "",
     model: "",
     storage: "",
+    batteryHealth: "",
   });
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
     screenGlass: "",
     screenDisplay: "",
-    bodyCondition: "",
     powerOn: "",
     cameras: "",
-    biometric: "",
     charger: "",
     wifi: "",
+    touchScreen: "",
+    mic: "",
+    speaker: "",
   });
 
   const handleNext = () => {
@@ -57,7 +61,10 @@ export default function AssessPage() {
     setDeviceInfo(info);
   };
 
-  console.log(conditionInfo);
+  useEffect(() => {
+    console.log("Condition: ", conditionInfo);
+    console.log("Device: ", deviceInfo);
+  }, [conditionInfo, deviceInfo]);
 
   return (
     <Layout>
