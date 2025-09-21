@@ -10,12 +10,16 @@ import HowItWorksSection from "./components/HowItWorksSection";
 import ReviewsSection from "./components/ReviewsSection";
 import WhyUsSection from "./components/WhyUsSection";
 import AnimatedButton from "./components/AnimatedButton";
+import { BackgroundBeams } from "../../components/ui/shadcn-io/background-beams";
 
 const MainPage = () => {
   return (
     <Layout>
       <AnimatedButton />
-      <main>
+      <div className="absolute inset-0 z-0">
+        <BackgroundBeams className="opacity-45" />
+      </div>
+      <main className="container mx-auto">
         <HeroSection />
         <HowItWorksSection />
         <WhyUsSection />

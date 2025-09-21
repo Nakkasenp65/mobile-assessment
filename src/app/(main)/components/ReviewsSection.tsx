@@ -34,7 +34,7 @@ const ReviewsSection = () => (
   <section className="bg-white">
     <div className="mx-auto flex flex-col p-16 text-center">
       <h2 className="mb-4 text-3xl font-bold">ลูกค้าพูดถึงเรา</h2>
-      <p className="text-muted-foreground mb-12 text-lg">
+      <p className="text-muted-foreground mb-12 text-sm md:text-lg">
         ความคิดเห็นจากลูกค้าที่ใช้บริการของเรา
       </p>
       <Carousel opts={{ loop: true }} className="w-full">
@@ -44,26 +44,29 @@ const ReviewsSection = () => (
               key={index}
               className="pl-4 md:basis-1/2 lg:basis-1/3"
             >
-              <div className="p-1">
-                <Card className="border-border h-full rounded-2xl shadow-lg">
-                  <CardContent className="flex flex-col p-6">
-                    <div className="mb-4 flex items-center gap-4">
-                      <img
-                        src={review.img}
-                        alt="Customer"
-                        className="h-16 w-16 rounded-full border-2 border-pink-200"
-                      />
-                      <div>
-                        <h5 className="text-secondary font-bold">
-                          {review.name}
-                        </h5>
-                        <div className="text-yellow-500">★★★★★</div>
+              <Card className="card-section h-full rounded-2xl shadow-lg">
+                <CardContent className="flex flex-col p-2 md:p-6">
+                  <div className="mb-2 flex items-center gap-4 md:mb-4">
+                    <img
+                      src={review.img}
+                      alt="Customer"
+                      className="h-16 w-16 rounded-full border-2 border-pink-200"
+                    />
+                    <div className="flex flex-col items-start justify-start">
+                      <div className="text-xl text-yellow-500 drop-shadow-md drop-shadow-amber-200 md:text-2xl">
+                        ★★★★★
                       </div>
+
+                      <h5 className="text-secondary text-sm font-bold md:text-base">
+                        {review.name}
+                      </h5>
                     </div>
-                    <p className="text-muted-foreground">“{review.text}”</p>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                  <p className="text-muted-foreground text-xs md:text-base">
+                    “{review.text}”
+                  </p>
+                </CardContent>
+              </Card>
             </CarouselItem>
           ))}
         </CarouselContent>

@@ -22,9 +22,9 @@ const faqs = [
 
 const FaqSection = () => (
   <section>
-    <div className="mx-auto flex flex-col p-16 text-center">
+    <div className="mx-auto flex flex-col p-4 text-center md:p-16">
       <h2 className="mb-4 text-3xl font-bold">คำถามที่พบบ่อย</h2>
-      <p className="text-muted-foreground mb-12 text-lg">
+      <p className="text-muted-foreground mb-12 text-sm md:text-lg">
         คำตอบสำหรับคำถามที่ลูกค้าสงสัยมากที่สุด
       </p>
       <Accordion
@@ -38,7 +38,7 @@ const FaqSection = () => (
             value={`item-${index + 1}`}
             className="bg-card border-border mb-4 rounded-xl shadow-lg"
           >
-            <AccordionTrigger className="p-6 text-lg font-bold hover:no-underline">
+            <AccordionTrigger className="p-4 text-sm font-bold hover:no-underline md:p-6 md:text-lg">
               {faq.q}
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground p-6 pt-0 text-base">

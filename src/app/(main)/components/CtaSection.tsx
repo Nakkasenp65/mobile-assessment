@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 
 const CtaSection = () => (
-  <section className="container mx-auto">
+  <section className="container mx-auto p-4">
     <div className="rounded-3xl bg-gradient-to-br from-pink-200 to-pink-300 p-12 text-center shadow-lg">
-      <h3 className="text-secondary mb-2 text-3xl font-bold">
+      <h3 className="text-secondary mb-2 text-xl font-bold md:text-3xl">
         ยังมีคำถามอื่นๆ อีกไหม?
       </h3>
       <p className="text-muted-foreground mb-6 text-lg">

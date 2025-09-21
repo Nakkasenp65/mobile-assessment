@@ -262,7 +262,6 @@
   }
 
   body {
-    background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: "LINESeedSansTH", sans-serif;
     min-height: 100vh;
@@ -289,16 +288,11 @@
   }
 
   body {
-    background-image: linear-gradient(
-      to bottom right,
-      var(--tw-gradient-stops)
-    );
     /* --tw-gradient-from: hsl(33 100% 97%) var(--tw-gradient-from-position);
     --tw-gradient-to: hsl(330 100% 97%) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); */
     color: hsl(var(--foreground));
     min-height: 100vh;
-    background: var(--gradient-main);
   }
 
   .gradient-card {
@@ -352,6 +346,14 @@
     box-shadow: var(--shadow-card);
   }
 
+  .card-section {
+    background: var(--gradient-card);
+    /* border: 1px solid hsl(var(--border) / 0.5); */
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+  }
+
   .progress-step {
     height: 0.5rem;
     border-radius: 9999px;
@@ -374,13 +376,4 @@
 
 @theme inline {
   --animate-spin: spin 2s linear infinite;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }

@@ -86,7 +86,7 @@ const AssessStep3 = ({
         </p>
       </div>
 
-      <div className="from-primary/10 to-secondary/10 border-primary/20 mb-8 rounded-2xl border bg-gradient-to-r p-6 text-center">
+      <div className="from-primary/10 to-secondary/10 border-primary/20 mb-8 rounded-2xl border bg-gradient-to-r px-4 pt-4 text-center">
         <p className="text-muted-foreground mb-2 text-sm font-medium">
           ราคาประเมินเบื้องต้น
         </p>
@@ -96,9 +96,6 @@ const AssessStep3 = ({
         <p className="text-muted-foreground mt-2 text-sm">
           *ราคาสุดท้ายขึ้นอยู่กับการตรวจสอบเครื่องจริง
         </p>
-      </div>
-
-      <div className="mb-8">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1">
             <AccordionTrigger className="text-lg font-semibold hover:no-underline">
