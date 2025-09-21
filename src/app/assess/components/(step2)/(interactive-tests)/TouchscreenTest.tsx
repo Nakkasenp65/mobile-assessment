@@ -7,7 +7,7 @@ interface TouchscreenTestProps {
   onConclude: (percentage: number) => void;
 }
 
-const GRID_SIZE = 20;
+const GRID_SIZE = 15;
 const TIMER_DURATION = 30;
 
 export const TouchscreenTest = ({
@@ -16,25 +16,25 @@ export const TouchscreenTest = ({
 }: TouchscreenTestProps) => {
   const [timer, setTimer] = useState(TIMER_DURATION);
   const [fillPercentage, setFillPercentage] = useState(0);
-  const [isDrawing, setIsDrawing] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const touchedCellsRef = useRef<Set<string>>(new Set());
-  const animationFrameRef = useRef<number>(0);
-
   const isDrawingRef = useRef(false);
   const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const isConcludedRef = useRef(false);
 
   const totalCells = GRID_SIZE * GRID_SIZE;
 
   const handleConclude = useCallback(() => {
+    if (isConcludedRef.current) return;
+    isConcludedRef.current = true;
+
     const finalPercentage = Math.floor(
       (touchedCellsRef.current.size / totalCells) * 100,
     );
     onConclude(finalPercentage);
   }, [onConclude, totalCells]);
 
-  // [FIX - PART 1] This useEffect is now ONLY responsible for counting down.
   useEffect(() => {
     if (isOpen && timer > 0) {
       const intervalId = setInterval(() => setTimer((prev) => prev - 1), 1000);
@@ -47,12 +47,12 @@ export const TouchscreenTest = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Reset state when modal opens
     setTimer(TIMER_DURATION);
     setFillPercentage(0);
     touchedCellsRef.current.clear();
     isDrawingRef.current = false;
     lastPositionRef.current = null;
+    isConcludedRef.current = false;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -63,7 +63,7 @@ export const TouchscreenTest = ({
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       ctx.lineCap = "round";
-      ctx.lineWidth = 30; // Increased for better coverage
+      ctx.lineWidth = 35;
 
       const styles = getComputedStyle(canvas);
       const primaryColor = `hsl(${styles.getPropertyValue("--primary").trim()})`;
@@ -80,7 +80,6 @@ export const TouchscreenTest = ({
     };
     resizeCanvas();
 
-    // --- [CHIRON'S FIX - PART 2] - Self-contained drawing logic ---
     const cellWidth = canvas.width / GRID_SIZE;
     const cellHeight = canvas.height / GRID_SIZE;
 
@@ -122,26 +121,26 @@ export const TouchscreenTest = ({
 
       if (!touchedCellsRef.current.has(cellKey)) {
         touchedCellsRef.current.add(cellKey);
-        // [CRITICAL FIX] We only call setState when the percentage actually changes.
-        // This is the only state update that happens during drawing.
         const newPercentage = Math.floor(
           (touchedCellsRef.current.size / totalCells) * 100,
         );
         setFillPercentage(newPercentage);
+
+        if (newPercentage >= 100) {
+          handleConclude();
+        }
       }
     };
 
-    // Attach event listeners
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseleave", stopDrawing); // Important for desktop
+    canvas.addEventListener("mouseleave", stopDrawing);
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("touchstart", startDrawing, { passive: false });
     canvas.addEventListener("touchend", stopDrawing);
     canvas.addEventListener("touchmove", draw, { passive: false });
     window.addEventListener("resize", resizeCanvas);
 
-    // Cleanup function
     return () => {
       canvas.removeEventListener("mousedown", startDrawing);
       canvas.removeEventListener("mouseup", stopDrawing);
@@ -152,7 +151,7 @@ export const TouchscreenTest = ({
       canvas.removeEventListener("touchmove", draw);
       window.removeEventListener("resize", resizeCanvas);
     };
-  }, [isOpen, totalCells]);
+  }, [isOpen, totalCells, handleConclude]);
 
   return (
     <AnimatePresence>
@@ -165,7 +164,7 @@ export const TouchscreenTest = ({
         >
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
-          <div className="absolute top-0 right-0 left-0 flex items-center justify-between rounded-xl bg-black/30 p-4 text-white">
+          <div className="absolute top-5 right-5 left-5 flex items-center justify-between rounded-xl bg-black/30 p-4 text-white">
             <div className="text-center">
               <div className="text-4xl font-bold">{timer}</div>
               <div className="text-xs uppercase">วินาที</div>

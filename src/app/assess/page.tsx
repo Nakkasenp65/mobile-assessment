@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import AssessStep1 from "./components/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
-import AssessStep3 from "./components/AssessStep3";
+import AssessStep3 from "./components/(step3)/AssessStep3";
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
 
@@ -17,7 +17,7 @@ export interface ConditionInfo {
   screenGlass: string;
   screenDisplay: string;
   powerOn: string;
-  cameras: string;
+  camera: string;
   charger: string;
   wifi: string;
   touchScreen: string;
@@ -37,7 +37,7 @@ export default function AssessPage() {
     screenGlass: "",
     screenDisplay: "",
     powerOn: "",
-    cameras: "",
+    camera: "",
     charger: "",
     wifi: "",
     touchScreen: "",

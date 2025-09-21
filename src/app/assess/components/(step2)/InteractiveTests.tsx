@@ -17,7 +17,7 @@ interface InteractiveTestsProps {
   onBack: () => void;
   onTestsConcluded: (
     results: Partial<
-      Pick<ConditionInfo, "speaker" | "mic" | "cameras" | "touchScreen">
+      Pick<ConditionInfo, "speaker" | "mic" | "camera" | "touchScreen">
     >,
   ) => void;
 }
@@ -68,7 +68,7 @@ const InteractiveTests = ({
         prevIndex < testSequence.length - 1 ? prevIndex + 1 : prevIndex,
       );
     },
-    [testSequence.length], // <--- Dependency ที่เสถียรอย่างสมบูรณ์!
+    [testSequence.length],
   );
 
   const allTestsConcluded = Object.values(testResults).every(
@@ -80,7 +80,7 @@ const InteractiveTests = ({
       onTestsConcluded({
         speaker: testResults.speaker,
         mic: testResults.mic,
-        cameras: testResults.camera,
+        camera: testResults.camera,
         touchScreen: `${touchscreenPercentage}%`,
       });
     }

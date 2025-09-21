@@ -30,7 +30,6 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   const [showCheckmark, setShowCheckmark] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Silas's logic: A robust cleanup function is crucial.
   const cleanupStream = () => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
@@ -41,7 +40,7 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   const startTest = async () => {
     setPhase("prompt_permission");
     setPermissionError(null);
-    cleanupStream(); // Clean up any previous stream
+    cleanupStream();
 
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({
@@ -69,7 +68,6 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
       });
       setStream(newStream);
     } catch (err) {
-      // Kaia's insight: Graceful degradation. If back camera fails, the test still passes.
       console.warn(
         "Back camera not found or failed, concluding as success.",
         err,
@@ -78,14 +76,12 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
     }
   };
 
-  // Effect to attach stream to video element
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
 
-  // Effect for the 1.5s checkmark delay
   useEffect(() => {
     if (phase === "testing_front" || phase === "testing_back") {
       const timer = setTimeout(() => setShowCheckmark(true), 1500);
@@ -93,12 +89,10 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
     }
   }, [phase]);
 
-  // Effect for cleanup on unmount
   useEffect(() => {
     return cleanupStream;
   }, []);
 
-  // Reset state when modal is closed
   useEffect(() => {
     if (!isOpen) {
       cleanupStream();
@@ -146,48 +140,49 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
             muted
             className="h-full w-full object-cover"
           />
-          {/* Aria's touch: The beautiful overlay UI */}
-          <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-t from-black/50 to-transparent p-4">
-            <AnimatePresence>
-              {showCheckmark && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="self-end"
-                >
-                  <Check className="bg-success/80 text-success-foreground h-8 w-8 rounded-full p-1" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <div className="text-center">
-              <p className="mb-4 font-semibold text-white">
-                {phase === "testing_front"
-                  ? "กำลังทดสอบกล้องหน้า..."
-                  : "กำลังทดสอบกล้องหลัง..."}
-              </p>
-              <AnimatePresence>
-                {showCheckmark && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    {phase === "testing_front" ? (
-                      <Button onClick={switchToBackCamera} className="gap-2">
-                        ทดสอบกล้องหลัง <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => onConclude(true)}
-                        className="bg-success hover:bg-success/90"
-                      >
-                        เสร็จสิ้น
-                      </Button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+
+          {/* [FIX] This overlay is now for the instructional text at the bottom */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/50 to-transparent p-4">
+            <p className="text-center font-semibold text-white">
+              {phase === "testing_front"
+                ? "กำลังทดสอบกล้องหน้า..."
+                : "กำลังทดสอบกล้องหลัง..."}
+            </p>
           </div>
+
+          {/* [FIX] New centered overlay for the confirmation UI */}
+          <AnimatePresence>
+            {showCheckmark && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1, duration: 0.3, ease: "easeOut" }}
+                  className="flex flex-col items-center gap-4 rounded-2xl bg-black/50 p-8 backdrop-blur-md"
+                >
+                  <Check className="bg-success/80 text-success-foreground h-12 w-12 rounded-full p-2" />
+
+                  {phase === "testing_front" ? (
+                    <Button onClick={switchToBackCamera} className="gap-2">
+                      ทดสอบกล้องหลัง <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => onConclude(true)}
+                      className="bg-success hover:bg-success/90"
+                    >
+                      เสร็จสิ้น
+                    </Button>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }

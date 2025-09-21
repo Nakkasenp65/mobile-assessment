@@ -55,12 +55,11 @@ const AssessStep2 = ({
     [onConditionUpdate],
   );
 
-  // [FIX] New callback handler for interactive test results.
   const handleTestsCompletion = useCallback(
     (results: Record<TestName, TestStatus>) => {
       onConditionUpdate((prev) => ({
         ...prev,
-        cameras: results.camera,
+        camera: results.camera,
         speaker: results.speaker,
         mic: results.mic,
       }));

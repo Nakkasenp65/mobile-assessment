@@ -129,7 +129,7 @@ export const PHYSICAL_QUESTIONS: Array<{
         ],
       },
       {
-        id: "cameras",
+        id: "camera",
         question: "การทำงานของกล้อง?",
         options: [
           {

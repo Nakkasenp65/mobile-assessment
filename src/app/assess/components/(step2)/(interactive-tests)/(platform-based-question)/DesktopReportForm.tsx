@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ConditionInfo } from "../../../../page";
 import { Button } from "@/components/ui/button";
 import { Question } from "../../../../../../util/info";
-import ChoiceBar from "./ChoiceBar"; // [FIX] Import the new component
+import ChoiceBar from "./ChoiceBar";
 
 interface DesktopReportFormProps {
   conditionInfo: ConditionInfo;
@@ -22,35 +22,39 @@ const DesktopReportForm = ({
   onConditionUpdate,
   questions,
 }: DesktopReportFormProps) => {
-  const [selectedIssues, setSelectedIssues] = useState<Partial<ConditionInfo>>(
-    {},
+  const allQuestions = useMemo(
+    () => questions.flatMap((section) => section.questions),
+    [questions],
   );
-  const allQuestions = questions.flatMap((section) => section.questions);
 
-  const handleIssueSelect = (
-    questionId: keyof ConditionInfo,
-    value: string,
-  ) => {
-    const normalStateValue = allQuestions.find((q) => q.id === questionId)
-      ?.options[0].value;
-    setSelectedIssues((prev) => {
-      const newIssues = { ...prev };
-      if (value === normalStateValue) {
-        delete newIssues[questionId];
-      } else {
-        newIssues[questionId] = value;
-      }
-      return newIssues;
+  // [FIX] State is renamed and pre-populated with all question IDs.
+  const [formValues, setFormValues] = useState<Partial<ConditionInfo>>(() => {
+    const initialValues: Partial<ConditionInfo> = {};
+    allQuestions.forEach((q) => {
+      initialValues[q.id] = undefined; // Use undefined to signify "not selected"
     });
+    return initialValues;
+  });
+
+  // [FIX] Simplified selection handler.
+  const handleSelection = (questionId: keyof ConditionInfo, value: string) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
   };
 
+  // [FIX] New validation logic.
+  const isComplete = useMemo(() => {
+    return allQuestions.every(
+      (q) => formValues[q.id] !== undefined && formValues[q.id] !== null,
+    );
+  }, [formValues, allQuestions]);
+
+  // [FIX] Simplified submission handler.
   const handleSubmit = () => {
-    const finalResult: Partial<ConditionInfo> = {};
-    allQuestions.forEach((q) => {
-      finalResult[q.id] = q.options[0].value;
-    });
-    Object.assign(finalResult, selectedIssues);
-    onConditionUpdate(finalResult as ConditionInfo);
+    if (!isComplete) return; // Extra guard clause
+    onConditionUpdate(formValues as ConditionInfo);
     onComplete();
   };
 
@@ -60,9 +64,9 @@ const DesktopReportForm = ({
         <h2 className="text-foreground mb-2 text-2xl font-bold">
           ประเมินสภาพเครื่อง
         </h2>
+        {/* Updated instruction text */}
         <p className="text-muted-foreground">
-          โดยปกติเครื่องจะอยู่ในสภาพดีเยี่ยม หากมีปัญหาใดๆ
-          กรุณาเลือกจากรายการด้านล่าง
+          กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ
         </p>
       </div>
 
@@ -74,7 +78,6 @@ const DesktopReportForm = ({
             </h3>
             <div className="space-y-4">
               {section.questions.map((question) => (
-                // [FIX] Updated layout for each question to be horizontal
                 <div
                   key={question.id}
                   className="grid grid-cols-1 items-start gap-x-4 gap-y-2 md:grid-cols-[minmax(0,_1fr)_minmax(0,_2fr)] md:items-center"
@@ -84,10 +87,9 @@ const DesktopReportForm = ({
                   </label>
                   <ChoiceBar
                     options={question.options}
-                    selectedValue={
-                      selectedIssues[question.id] || question.options[0].value
-                    }
-                    onSelect={(value) => handleIssueSelect(question.id, value)}
+                    // [FIX] Pass the direct value or an empty string if not selected.
+                    selectedValue={formValues[question.id] || ""}
+                    onSelect={(value) => handleSelection(question.id, value)}
                   />
                 </div>
               ))}
@@ -106,17 +108,13 @@ const DesktopReportForm = ({
           ย้อนกลับ
         </Button>
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={handleSubmit}
-            className="text-muted-foreground"
-          >
-            ไม่พบปัญหาใดๆ
-          </Button>
+          {/* [FIX] "No issues" button is removed. */}
           <Button
             onClick={handleSubmit}
             size="lg"
-            className="text-primary-foreground h-14 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+            // [FIX] Disabled state is now controlled by the new validation logic.
+            disabled={!isComplete}
+            className="text-primary-foreground h-12 transform-gpu cursor-pointer rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
             ดำเนินการต่อ
           </Button>

@@ -1,8 +1,17 @@
 "use client";
 import { useState } from "react";
 import { ArrowLeft, Banknote, Shield, CheckCircle } from "lucide-react";
-import { DeviceInfo, ConditionInfo } from "../page";
+import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
+import { usePriceCalculation } from "../../../../hooks/usePriceCalculation";
+import AssessmentLedger from "./AssessmentLedger";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
@@ -26,45 +35,10 @@ const AssessStep3 = ({
 }: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
-  console.log("deviceInfo Assess 3 : ", deviceInfo);
-  console.log("conditionInfo Assess 3 : ", conditionInfo);
-
-  // Mock price calculation based on device and condition
-  const calculateBasePrice = () => {
-    let basePrice = 20000; // Base price for iPhone 15 Pro
-
-    // Adjust by storage
-    if (deviceInfo.storage.includes("256")) basePrice += 3000;
-    if (deviceInfo.storage.includes("512")) basePrice += 6000;
-    if (deviceInfo.storage.includes("1 TB")) basePrice += 10000;
-
-    // Condition adjustments
-    const conditions = Object.values(conditionInfo);
-    let conditionMultiplier = 1.0;
-
-    conditions.forEach((condition) => {
-      if (
-        condition.includes("perfect") ||
-        condition.includes("excellent") ||
-        condition.includes("yes") ||
-        condition.includes("works")
-      ) {
-        conditionMultiplier *= 1.0;
-      } else if (
-        condition.includes("minor") ||
-        condition.includes("good") ||
-        condition.includes("sometimes")
-      ) {
-        conditionMultiplier *= 0.85;
-      } else {
-        conditionMultiplier *= 0.6;
-      }
-    });
-
-    return Math.round(basePrice * conditionMultiplier);
-  };
-
-  const basePrice = calculateBasePrice();
+  const { finalPrice, basePrice, adjustments } = usePriceCalculation(
+    deviceInfo,
+    conditionInfo,
+  );
 
   const services: ServiceOption[] = [
     {
@@ -72,7 +46,7 @@ const AssessStep3 = ({
       title: "ขายทันที",
       description: "รับเงินสดเต็มจำนวนทันที",
       icon: Banknote,
-      price: basePrice,
+      price: finalPrice,
       features: [
         "รับเงินสดทันที",
         "โอนเงินภายใน 30 นาที",
@@ -85,7 +59,7 @@ const AssessStep3 = ({
       title: "บริการจำนำ",
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
       icon: Shield,
-      price: Math.round(basePrice * 0.7),
+      price: Math.round(finalPrice * 0.7),
       features: [
         "รับเงินสดทันที",
         "ไถ่คืนได้ภายใน 6 เดือน",
@@ -97,7 +71,6 @@ const AssessStep3 = ({
 
   const handleConfirm = () => {
     if (selectedService) {
-      // Handle confirmation logic here
       alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
     }
   };
@@ -113,20 +86,34 @@ const AssessStep3 = ({
         </p>
       </div>
 
-      {/* Price Display */}
-      <div className="from-primary/10 to-secondary/10 border-primary/20 mb-8 rounded-2xl border bg-linear-to-r p-6 text-center">
+      <div className="from-primary/10 to-secondary/10 border-primary/20 mb-8 rounded-2xl border bg-gradient-to-r p-6 text-center">
         <p className="text-muted-foreground mb-2 text-sm font-medium">
           ราคาประเมินเบื้องต้น
         </p>
         <p className="from-primary to-secondary bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
-          ฿{basePrice.toLocaleString()}
+          ฿{finalPrice.toLocaleString()}
         </p>
         <p className="text-muted-foreground mt-2 text-sm">
           *ราคาสุดท้ายขึ้นอยู่กับการตรวจสอบเครื่องจริง
         </p>
       </div>
 
-      {/* Service Options */}
+      <div className="mb-8">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+              ดูรายละเอียดการประเมิน
+            </AccordionTrigger>
+            <AccordionContent>
+              <AssessmentLedger
+                basePrice={basePrice}
+                adjustments={adjustments}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+
       <div className="mb-8 space-y-4">
         <h3 className="text-foreground mb-4 text-lg font-semibold">
           เลือกบริการที่ต้องการ
@@ -137,18 +124,18 @@ const AssessStep3 = ({
           return (
             <div
               key={service.id}
-              className={`transition-smooth hover:shadow-card cursor-pointer rounded-2xl border p-6 ${
+              className={`hover:shadow-card cursor-pointer rounded-2xl border p-6 transition-all duration-200 ${
                 selectedService === service.id
-                  ? "border-primary bg-primary/5 shadow-card"
+                  ? "border-primary bg-primary/5 shadow-card ring-primary ring-2"
                   : "border-border hover:border-primary/50"
               }`}
               onClick={() => setSelectedService(service.id)}
             >
               <div className="flex items-start space-x-4">
                 <div
-                  className={`rounded-xl p-3 ${
+                  className={`rounded-xl p-3 transition-colors ${
                     selectedService === service.id
-                      ? "gradient-primary text-white"
+                      ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -186,23 +173,24 @@ const AssessStep3 = ({
         })}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex justify-between">
-        <button
+        <Button
+          variant="ghost"
           onClick={onBack}
-          className="border-border text-foreground hover:bg-accent transition-smooth flex items-center rounded-xl border p-2 px-3"
+          className="border-border text-foreground hover:bg-accent flex h-12 items-center rounded-xl border px-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          ย้อนกลับ
-        </button>
+          <span className="ml-2 hidden sm:inline">ย้อนกลับ</span>
+        </Button>
 
-        <button
+        <Button
           onClick={handleConfirm}
           disabled={!selectedService}
-          className="text-primary-foreground h-14 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-3 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          size="lg"
+          className="text-primary-foreground h-12 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ยืนยันการเลือก
-        </button>
+        </Button>
       </div>
     </div>
   );
