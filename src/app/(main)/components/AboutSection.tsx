@@ -1,7 +1,7 @@
 import { InteractiveGridPattern } from "../../../components/ui/shadcn-io/interactive-grid-pattern";
 
 const AboutSection = () => (
-  <section className="relative container">
+  <section className="relative container mx-auto">
     <div className="mx-auto">
       <p className="text-foreground mx-auto max-w-4xl p-2 py-16 text-center text-sm leading-relaxed whitespace-pre-wrap md:p-16 md:text-lg">
         Ok Mobile บริการรับซื้อ iPhone ราคาสูงประเมินไว้ราคาภายใน 1 นาที ปลอดภัย

@@ -21,7 +21,7 @@ const faqs = [
 ];
 
 const FaqSection = () => (
-  <section>
+  <section className="container mx-auto">
     <div className="mx-auto flex flex-col p-4 text-center md:p-16">
       <h2 className="mb-4 text-3xl font-bold">คำถามที่พบบ่อย</h2>
       <p className="text-muted-foreground mb-12 text-sm md:text-lg">

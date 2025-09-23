@@ -1,3 +1,9 @@
+// src/app/(main)/components/ReviewsSection.tsx
+"use client";
+
+import React from "react";
+import Autoplay from "embla-carousel-autoplay"; // 1. Import ปลั๊กอินเข้ามา
+
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -30,51 +36,66 @@ const reviews = [
   },
 ];
 
-const ReviewsSection = () => (
-  <section className="bg-white">
-    <div className="mx-auto flex flex-col p-16 text-center">
-      <h2 className="mb-4 text-3xl font-bold">ลูกค้าพูดถึงเรา</h2>
-      <p className="text-muted-foreground mb-12 text-sm md:text-lg">
-        ความคิดเห็นจากลูกค้าที่ใช้บริการของเรา
-      </p>
-      <Carousel opts={{ loop: true }} className="w-full">
-        <CarouselContent className="-ml-4">
-          {reviews.map((review, index) => (
-            <CarouselItem
-              key={index}
-              className="pl-4 md:basis-1/2 lg:basis-1/3"
-            >
-              <Card className="card-section h-full rounded-2xl shadow-lg">
-                <CardContent className="flex flex-col p-2 md:p-6">
-                  <div className="mb-2 flex items-center gap-4 md:mb-4">
-                    <img
-                      src={review.img}
-                      alt="Customer"
-                      className="h-16 w-16 rounded-full border-2 border-pink-200"
-                    />
-                    <div className="flex flex-col items-start justify-start">
-                      <div className="text-xl text-yellow-500 drop-shadow-md drop-shadow-amber-200 md:text-2xl">
-                        ★★★★★
-                      </div>
+const ReviewsSection = () => {
+  // 2. สร้าง Reference สำหรับปลั๊กอิน Autoplay
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true }),
+  );
 
-                      <h5 className="text-secondary text-sm font-bold md:text-base">
-                        {review.name}
-                      </h5>
+  return (
+    <section className="container mx-auto bg-white">
+      <div className="mx-auto flex flex-col p-16 text-center">
+        <h2 className="mb-4 text-3xl font-bold">ลูกค้าพูดถึงเรา</h2>
+        <p className="text-muted-foreground mb-12 text-sm md:text-lg">
+          ความคิดเห็นจากลูกค้าที่ใช้บริการของเรา
+        </p>
+        <Carousel
+          // 3. ส่งปลั๊กอินเข้าไปใน Carousel Component
+
+          plugins={[plugin.current]}
+          opts={{ loop: true }}
+          className="w-full"
+          // 4. (แนะนำ) เพิ่มให้หยุดเลื่อนเมื่อเอาเมาส์ไปวาง
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+        >
+          <CarouselContent className="-ml-4">
+            {reviews.map((review, index) => (
+              <CarouselItem
+                key={index}
+                className="pl-4 md:basis-1/2 lg:basis-1/3"
+              >
+                <Card className="card-section h-full rounded-2xl shadow-lg">
+                  <CardContent className="flex flex-col p-2 md:p-6">
+                    <div className="mb-2 flex items-center gap-4 md:mb-4">
+                      <img
+                        src={review.img}
+                        alt="Customer"
+                        className="h-16 w-16 rounded-full border-2 border-pink-200"
+                      />
+                      <div className="flex flex-col items-start justify-start">
+                        <div className="text-xl text-yellow-500 drop-shadow-md drop-shadow-amber-200 md:text-2xl">
+                          ★★★★★
+                        </div>
+                        <h5 className="text-secondary text-sm font-bold md:text-base">
+                          {review.name}
+                        </h5>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-muted-foreground text-xs md:text-base">
-                    “{review.text}”
-                  </p>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="hidden sm:flex" />
-        <CarouselNext className="hidden sm:flex" />
-      </Carousel>
-    </div>
-  </section>
-);
+                    <p className="text-muted-foreground text-xs md:text-base">
+                      “{review.text}”
+                    </p>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+      </div>
+    </section>
+  );
+};
 
 export default ReviewsSection;

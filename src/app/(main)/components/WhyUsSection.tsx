@@ -28,7 +28,10 @@ const features = [
 
 const WhyUsSection = () => {
   return (
-    <section aria-labelledby="why-us-title" className="relative isolate mx-4">
+    <section
+      aria-labelledby="why-us-title"
+      className="relative isolate container mx-auto"
+    >
       {/* พื้นหลัง soft gradient + pattern เบา ๆ */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 rounded-4xl bg-gradient-to-br from-pink-50 via-white to-orange-50/60" />
