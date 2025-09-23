@@ -1,13 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 import { useMobile } from "@/hooks/useMobile";
-import { DeviceInfo } from "../page"; // ตรวจสอบให้แน่ใจว่า DeviceInfo ใน page.tsx ถูกอัปเดตแล้ว
+import { DeviceInfo } from "../page";
 
-// Import shadcn/ui components
-import { Button } from "@/components/ui/button";
+// shadcn/ui select
 import {
   Select,
   SelectContent,
@@ -17,11 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Box, Smartphone } from "lucide-react";
+import { cn } from "../../../lib/utils";
+import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
+import FramerButton from "../../../components/ui/framer/FramerButton";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
   onDeviceUpdate: (info: DeviceInfo) => void;
   onNext: () => void;
+  onUserDeviceUpdate: (value: boolean) => void;
 }
 
 const MOCK_DATA = {
@@ -35,10 +39,10 @@ const MOCK_DATA = {
       "iPhone 14 Pro",
     ],
     Samsung: [
-      "Galaxy S24 Ultra",
-      "Galaxy S24+",
-      "Galaxy S24",
-      "Galaxy S23 Ultra",
+      "Samsung S24 Ultra",
+      "Samsung S24 Plus",
+      "Samsung S24",
+      "Samsung S23 Ultra",
     ],
     Google: ["Pixel 8 Pro", "Pixel 8", "Pixel 7 Pro", "Pixel 7"],
   } as Record<string, string[]>,
@@ -46,15 +50,14 @@ const MOCK_DATA = {
     "iPhone 15 Pro Max": ["128 GB", "256 GB", "512 GB", "1 TB"],
     "iPhone 15 Pro": ["128 GB", "256 GB", "512 GB", "1 TB"],
     "iPhone 15": ["128 GB", "256 GB", "512 GB"],
-    "Galaxy S24 Ultra": ["256 GB", "512 GB", "1 TB"],
-    "Galaxy S24+": ["256 GB", "512 GB"],
-    "Galaxy S24": ["128 GB", "256 GB", "512 GB"],
+    "Samsung S24 Ultra": ["256 GB", "512 GB", "1 TB"],
+    "Samsung S24 Plus": ["256 GB", "512 GB"],
+    "Samsung S24": ["128 GB", "256 GB", "512 GB"],
     "Pixel 8 Pro": ["128 GB", "256 GB", "512 GB"],
     "Pixel 8": ["128 GB", "256 GB"],
   } as Record<string, string[]>,
 };
 
-// [FIX] Add Mock Data for Battery Health
 const BATTERY_HEALTH_OPTIONS = [
   "100%",
   "95% - 99%",
@@ -68,47 +71,65 @@ const AssessStep1 = ({
   deviceInfo,
   onDeviceUpdate,
   onNext,
+  onUserDeviceUpdate,
 }: AssessStep1Props) => {
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [availableStorage, setAvailableStorage] = useState<string[]>([]);
+  const { isDesktop } = useDeviceDetection();
+
   const { data: productData, isLoading: isImageLoading } = useMobile(
     localInfo.brand,
     localInfo.model,
   );
 
-  // [FIX] Updated useEffect for brand changes
-  useEffect(() => {
-    if (localInfo.brand && MOCK_DATA.models[localInfo.brand]) {
-      setAvailableModels(MOCK_DATA.models[localInfo.brand]);
-      if (localInfo.brand !== deviceInfo.brand) {
-        // Clear subsequent fields when brand changes
-        setLocalInfo((prev) => ({
-          ...prev,
-          model: "",
-          storage: "",
-          batteryHealth: undefined,
-        }));
-      }
-      // Clear battery health if the selected brand is not Apple
-      if (localInfo.brand !== "Apple") {
-        setLocalInfo((prev) => ({ ...prev, batteryHealth: undefined }));
-      }
-    } else {
-      setAvailableModels([]);
-    }
-  }, [localInfo.brand, deviceInfo.brand]);
+  const [userDeviceSelection, setUserDeviceSelection] = useState<
+    "this_device" | "other_device" | null
+  >(null);
+
+  // === จำค่าเดิมเพื่อจับการเปลี่ยนจริง ๆ
+  const prevBrandRef = useRef(localInfo.brand);
+  const prevModelRef = useRef(localInfo.model);
 
   useEffect(() => {
-    if (localInfo.model && MOCK_DATA.storage[localInfo.model]) {
-      setAvailableStorage(MOCK_DATA.storage[localInfo.model]);
-      if (localInfo.model !== deviceInfo.model) {
-        setLocalInfo((prev) => ({ ...prev, storage: "" }));
+    if (localInfo.brand !== prevBrandRef.current) {
+      const nextModels = MOCK_DATA.models[localInfo.brand] ?? [];
+      setAvailableModels(nextModels);
+
+      setLocalInfo((prev) => ({
+        ...prev,
+        model: "",
+        storage: "",
+        batteryHealth:
+          localInfo.brand === "Apple" ? prev.batteryHealth : undefined,
+      }));
+
+      if (nextModels.length === 1) {
+        setLocalInfo((prev) => ({ ...prev, model: nextModels[0] }));
       }
+
+      prevBrandRef.current = localInfo.brand;
     } else {
-      setAvailableStorage([]);
+      setAvailableModels(MOCK_DATA.models[localInfo.brand] ?? []);
     }
-  }, [localInfo.model, deviceInfo.model]);
+  }, [localInfo.brand]);
+
+  useEffect(() => {
+    if (localInfo.model !== prevModelRef.current) {
+      const nextStorage = MOCK_DATA.storage[localInfo.model] ?? [];
+      setAvailableStorage(nextStorage);
+
+      setLocalInfo((prev) => ({ ...prev, storage: "" }));
+
+      if (nextStorage.length === 1) {
+        setLocalInfo((prev) => ({ ...prev, storage: nextStorage[0] }));
+      }
+
+      prevModelRef.current = localInfo.model;
+    } else {
+      setAvailableStorage(MOCK_DATA.storage[localInfo.model] ?? []);
+    }
+  }, [localInfo.model]);
 
   useEffect(() => {
     onDeviceUpdate(localInfo);
@@ -118,20 +139,34 @@ const AssessStep1 = ({
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
   };
 
-  // [FIX] Updated logic for completion check
+  const handleUserDeviceSelect = (
+    selection: "this_device" | "other_device",
+  ) => {
+    setUserDeviceSelection(selection);
+    onUserDeviceUpdate(selection === "this_device");
+  };
+
   const isAppleDevice = localInfo.brand === "Apple";
-  const isComplete = isAppleDevice
-    ? !!(
-        localInfo.brand &&
-        localInfo.model &&
-        localInfo.storage &&
-        localInfo.batteryHealth
-      )
-    : !!(localInfo.brand && localInfo.model && localInfo.storage);
+
+  // === ตรวจความสอดคล้องกับลิสต์จริง
+  const isValidBrand = MOCK_DATA.brands.includes(localInfo.brand);
+  const isValidModel =
+    isValidBrand && availableModels.includes(localInfo.model);
+  const isValidStorage =
+    isValidModel && availableStorage.includes(localInfo.storage);
+  const isValidBattery = !isAppleDevice || !!localInfo.batteryHealth;
+  const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
+
+  const isComplete =
+    isValidBrand &&
+    isValidModel &&
+    isValidStorage &&
+    isValidBattery &&
+    isUserDeviceOk;
 
   return (
     <motion.div
-      className="card-assessment flex h-full flex-col rounded-2xl p-6"
+      className="card-assessment mx-auto flex h-full max-w-2xl flex-col rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -140,10 +175,55 @@ const AssessStep1 = ({
         <h2 className="text-foreground mb-2 text-3xl font-bold">
           ระบุรุ่นมือถือของคุณ
         </h2>
-        <p className="text-muted-foreground text-base">
+        <p className="text-muted-foreground text-sm md:text-base">
           เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน
         </p>
       </div>
+
+      {!isDesktop && (
+        <div className="mb-8 space-y-3">
+          <label className="text-foreground block text-center text-lg font-semibold">
+            คุณต้องการประเมินอุปกรณ์เครื่องใด?
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <motion.button
+              onClick={() => handleUserDeviceSelect("this_device")}
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
+                userDeviceSelection === "this_device"
+                  ? "border-primary bg-primary/10 ring-primary animate-pulse ring-2"
+                  : "border-border bg-accent/50 hover:border-primary/50",
+              )}
+              role="button"
+              aria-pressed={userDeviceSelection === "this_device"}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Smartphone className="text-primary h-8 w-8" />
+              <span className="text-foreground font-medium">
+                ประเมินเครื่องนี้
+              </span>
+            </motion.button>
+
+            <motion.button
+              onClick={() => handleUserDeviceSelect("other_device")}
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
+                userDeviceSelection === "other_device"
+                  ? "border-secondary bg-secondary/10 ring-secondary animate-pulse ring-2"
+                  : "border-border bg-accent/50 hover:border-secondary/50",
+              )}
+              role="button"
+              aria-pressed={userDeviceSelection === "other_device"}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Box className={cn("text-secondary h-8 w-8")} />
+              <span className="text-foreground font-medium">
+                ประเมินเครื่องอื่น
+              </span>
+            </motion.button>
+          </div>
+        </div>
+      )}
 
       <div className="flex-grow space-y-6">
         {/* Brand Selection */}
@@ -207,7 +287,7 @@ const AssessStep1 = ({
             value={localInfo.storage}
             disabled={!localInfo.model}
           >
-            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl p-4 text-base focus:ring-orange-500">
+            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
               <SelectValue placeholder="เลือกความจุ" />
             </SelectTrigger>
             <SelectContent>
@@ -223,11 +303,12 @@ const AssessStep1 = ({
           </Select>
         </div>
 
-        {/* [FIX] Conditional Battery Health Field */}
+        {/* Battery Health (เฉพาะ Apple) */}
         <AnimatePresence>
           {isAppleDevice && (
             <motion.div
               key="battery-health-field"
+              className="overflow-hidden"
               initial={{ opacity: 0, height: 0, marginTop: 0 }}
               animate={{ opacity: 1, height: "auto", marginTop: "1.5rem" }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -263,22 +344,12 @@ const AssessStep1 = ({
           )}
         </AnimatePresence>
 
+        {/* รูปตัวอย่างรุ่น (กัน layout jump ด้วย min-height) */}
         <div
-          className="bg-card-foreground/5 flex items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
-          style={{ height: productData?.image_url ? "12rem" : "0" }}
+          className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
+          style={{ height: productData?.image_url ? "12rem" : "3rem" }}
         >
           <AnimatePresence mode="wait">
-            {isImageLoading && (
-              <motion.div
-                key="loader"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-muted-foreground"
-              >
-                กำลังโหลดรูปภาพ...
-              </motion.div>
-            )}
             {!isImageLoading && productData?.image_url && (
               <motion.div
                 key="image"
@@ -302,14 +373,14 @@ const AssessStep1 = ({
       </div>
 
       <div className="mt-8 flex justify-end">
-        <Button
+        <FramerButton
           onClick={onNext}
           disabled={!isComplete}
           size="lg"
           className="text-primary-foreground h-14 w-full transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ถัดไป
-        </Button>
+        </FramerButton>
       </div>
     </motion.div>
   );

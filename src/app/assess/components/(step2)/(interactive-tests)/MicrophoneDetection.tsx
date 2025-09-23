@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface MicrophoneDetectionProps {
   isOpen: boolean;
@@ -135,14 +136,14 @@ const MicrophoneDetection = ({
             <p className="text-muted-foreground text-sm">
               กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์
             </p>
-            <Button
+            <FramerButton
               variant="outline"
               size="sm"
               className="mt-4"
               onClick={() => onConclude(false)}
             >
               ปิด
-            </Button>
+            </FramerButton>
           </div>
         );
       case "testing":
@@ -175,9 +176,13 @@ const MicrophoneDetection = ({
       default:
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
-            <Button size="lg" className="h-14 px-8 text-lg" onClick={startTest}>
+            <FramerButton
+              size="lg"
+              className="h-14 px-8 text-lg"
+              onClick={startTest}
+            >
               เริ่มการทดสอบ
-            </Button>
+            </FramerButton>
           </div>
         );
     }

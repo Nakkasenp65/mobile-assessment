@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { NetworkQuality } from "../../../../hooks/useNetwork"; // Import Type
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Info } from "lucide-react";
+import { NetworkQuality } from "../../../../hooks/useNetwork";
 import WifiDetection from "./(automated-components)/WifiDetection";
 import BatteryDetection from "./(automated-components)/BatteryDetection";
+import FramerButton from "../../../../components/ui/framer/FramerButton";
 
 export interface DiagnosticsResult {
   wifi: WifiStatus;
@@ -22,6 +22,46 @@ interface AutomatedDiagnosticsProps {
 type WifiStatus = NetworkQuality | "ignore";
 type BatteryStatus = "success" | "unsupported" | "ignore" | "failed";
 
+/** แบนเนอร์แจ้งเตือนด้านบน */
+function PermissionBanner({
+  show,
+  onClose,
+}: {
+  show: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          className="mb-4 rounded-xl border border-amber-200/70 bg-amber-50 p-3 text-amber-900 shadow-sm dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-start gap-2">
+            <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <p className="text-sm">
+              กรุณาอนุญาตการเข้าถึง <span className="font-semibold">กล้อง</span>{" "}
+              และ <span className="font-semibold">ไมโครโฟน</span>{" "}
+              เมื่อเบราว์เซอร์มีคำขอสิทธิ์
+              เพื่อให้การประเมินอัตโนมัติทำงานได้อย่างถูกต้อง
+            </p>
+            <button
+              onClick={onClose}
+              className="ml-auto rounded-lg px-2 text-xs font-semibold text-amber-900/70 hover:text-amber-900 dark:text-amber-200/80 dark:hover:text-amber-100"
+            >
+              ปิด
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 const AutomatedDiagnostics = ({
   onComplete,
   onBack,
@@ -32,6 +72,9 @@ const AutomatedDiagnostics = ({
   );
   const [batteryFinalStatus, setBatteryFinalStatus] =
     useState<BatteryStatus | null>(null);
+
+  // แสดงแบนเนอร์คำเตือนเมื่อเข้าหน้านี้
+  const [showBanner, setShowBanner] = useState(true);
 
   const handleWifiConcluded = useCallback((status: WifiStatus) => {
     setWifiFinalStatus(status);
@@ -74,21 +117,26 @@ const AutomatedDiagnostics = ({
         </p>
       </div>
 
+      <PermissionBanner
+        show={showBanner}
+        onClose={() => setShowBanner(false)}
+      />
+
       <div className="my-8 flex min-h-[250px] flex-col justify-center space-y-4">
         <WifiDetection onStatusConcluded={handleWifiConcluded} />
         <BatteryDetection onStatusConcluded={handleBatteryConcluded} />
       </div>
 
       <div className="mt-8 flex items-center justify-between">
-        <Button
+        <FramerButton
           variant="ghost"
           onClick={onBack}
           className="text-foreground flex h-12 cursor-pointer items-center rounded-xl px-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           ย้อนกลับ
-        </Button>
-        <Button
+        </FramerButton>
+        <FramerButton
           disabled
           size="lg"
           className="h-12 w-[180px] cursor-pointer rounded-xl px-8"
@@ -101,7 +149,7 @@ const AutomatedDiagnostics = ({
               กำลังตรวจสอบ...
             </>
           )}
-        </Button>
+        </FramerButton>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/QuestionReport.tsx
+
 "use client";
 import { useMemo } from "react";
 import { ConditionInfo } from "../../page";
@@ -17,6 +19,7 @@ interface QuestionReportProps {
   ) => void;
   onComplete: () => void;
   onBack: () => void;
+  showFullReport: boolean;
 }
 
 const QuestionReport = ({
@@ -24,6 +27,7 @@ const QuestionReport = ({
   onConditionUpdate,
   onComplete,
   onBack,
+  showFullReport,
 }: QuestionReportProps) => {
   const { isDesktop, isIOS } = useDeviceDetection();
 
@@ -39,7 +43,7 @@ const QuestionReport = ({
 
   return (
     <>
-      {isDesktop ? (
+      {isDesktop || showFullReport ? (
         // Render the desktop-specific form
         <DesktopReportForm
           conditionInfo={conditionInfo}

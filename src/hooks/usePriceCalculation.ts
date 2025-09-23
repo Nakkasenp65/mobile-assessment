@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo } from "react";
 import { DeviceInfo, ConditionInfo } from "../app/assess/page";
 
@@ -12,7 +13,7 @@ const BASE_PRICES: Record<string, number> = {
   "iPhone 15": 19000,
   "Galaxy S24 Ultra": 23000,
   "Pixel 8 Pro": 18000,
-  default: 15000, // Fallback price
+  default: 15000,
 };
 
 const STORAGE_ADJUSTMENTS: Record<string, number> = {
@@ -27,8 +28,8 @@ const CONDITION_ADJUSTMENTS: Record<string, Record<string, number>> = {
   screenDisplay: { perfect: 0, spots: -3000, not_working: -8000 },
   powerOn: { yes: 0, sometimes: -4000 },
   cameras: { passed: 0, failed: -2500 },
-  charger: { success: 0, failed: -1000, ignore: 0 },
-  wifi: { good: 0, excellent: 0, poor: -1200, ignore: 0 },
+  charger: { success: 0, failed: -1000, ignore: 0, unsupported: 0 },
+  wifi: { good: 0, excellent: 0, poor: -1200, ignore: 0, unsupported: 0 },
   touchScreen: { passed: 0, failed: -3500 },
   mic: { passed: 0, failed: -1800 },
   speaker: { passed: 0, failed: -1500 },
@@ -54,9 +55,34 @@ const TRANSLATION_MAP: Record<string, string> = {
   failed: "มีปัญหา",
   success: "ชาร์จปกติ",
   good: "เชื่อมต่อได้",
-  excellent: "เชื่อมต่อได้",
-  poor: "เชื่อมต่อไม่ได้",
+  excellent: "เชื่อมต่อได้ดี",
+  poor: "การเชื่อมต่อช้า",
   ignore: "ข้ามการตรวจสอบ",
+  unsupported: "ไม่รองรับ",
+};
+
+const LABEL_MAP: Record<string, string> = {
+  brand: "ยี่ห้อ",
+  model: "รุ่น",
+  storage: "ความจุ",
+  batteryHealth: "สุขภาพแบตเตอรี่",
+  screenGlass: "สภาพกระจกหน้าจอ",
+  screenDisplay: "คุณภาพการแสดงผล",
+  powerOn: "การเปิดเครื่อง",
+  touchScreen: "ระบบสัมผัส",
+  wifi: "Wi-Fi",
+  charger: "การชาร์จ",
+  speaker: "ลำโพง",
+  mic: "ไมโครโฟน",
+  cameras: "กล้อง",
+};
+
+const GRADE_THRESHOLDS = { A: 0, B: 2, C: 4 };
+const GRADE_TEXT_STYLES = {
+  A: "from-yellow-500 to-amber-500",
+  B: "from-green-500 to-emerald-500",
+  C: "from-blue-500 to-cyan-500",
+  D: "from-red-500 to-rose-500",
 };
 
 // =================================================================
@@ -64,6 +90,7 @@ const TRANSLATION_MAP: Record<string, string> = {
 // =================================================================
 
 export interface PriceAdjustment {
+  key: string;
   label: string;
   value: string;
   impact: number;
@@ -73,6 +100,8 @@ export interface PriceCalculationResult {
   basePrice: number;
   adjustments: PriceAdjustment[];
   finalPrice: number;
+  grade: "A" | "B" | "C" | "D";
+  gradeTextStyle: string;
 }
 
 export const usePriceCalculation = (
@@ -80,62 +109,58 @@ export const usePriceCalculation = (
   conditionInfo: ConditionInfo,
 ): PriceCalculationResult => {
   return useMemo(() => {
-    const { model, storage, batteryHealth } = deviceInfo;
-
-    // 1. Calculate Base Price
-    let calculatedBasePrice = BASE_PRICES[model] || BASE_PRICES["default"];
-    calculatedBasePrice += STORAGE_ADJUSTMENTS[storage] || 0;
+    const { model, storage } = deviceInfo;
+    const calculatedBasePrice =
+      (BASE_PRICES[model] || BASE_PRICES["default"]) +
+      (STORAGE_ADJUSTMENTS[storage] || 0);
 
     const adjustments: PriceAdjustment[] = [];
     let totalAdjustment = 0;
+    const allInfo = { ...deviceInfo, ...conditionInfo };
 
-    // 2. Create Adjustments Array
-    const allConditions = { ...conditionInfo, batteryHealth };
+    for (const key in LABEL_MAP) {
+      const typedKey = key as keyof typeof allInfo;
+      const value = allInfo[typedKey];
+      const label = LABEL_MAP[typedKey];
 
-    for (const key in allConditions) {
-      const typedKey = key as keyof typeof allConditions;
-      const value = allConditions[typedKey];
+      if (!value) continue;
 
-      if (!value) continue; // Skip if value is empty
+      let impact = 0;
+      let displayValue = TRANSLATION_MAP[value] || value;
 
-      // Handle touchscreen percentage
       if (typedKey === "touchScreen" && value.includes("%")) {
         const percentage = parseInt(value, 10);
         const status = percentage >= 90 ? "passed" : "failed";
-        const impact =
+        impact =
           status === "passed" ? 0 : CONDITION_ADJUSTMENTS.touchScreen.failed;
-        adjustments.push({
-          label: "ระบบสัมผัส",
-          value: `${percentage}% (${status})`,
-          impact,
-        });
-        totalAdjustment += impact;
-        continue;
-      }
-
-      const adjustmentRule = CONDITION_ADJUSTMENTS[typedKey];
-      if (adjustmentRule) {
-        const impact = adjustmentRule[value] ?? 0;
-
-        // Don't show items with 0 impact unless it's a specific positive one like battery
-        if (impact !== 0 || typedKey === "batteryHealth") {
-          adjustments.push({
-            label: key.charAt(0).toUpperCase() + key.slice(1), // Simple label generation
-            value: TRANSLATION_MAP[value] || value,
-            impact,
-          });
-          totalAdjustment += impact;
+        displayValue = `${percentage}% (${TRANSLATION_MAP[status]})`;
+      } else {
+        const adjustmentRule = CONDITION_ADJUSTMENTS[typedKey];
+        if (adjustmentRule) {
+          impact = adjustmentRule[value] ?? 0;
         }
       }
+
+      adjustments.push({ key: typedKey, label, value: displayValue, impact });
+      totalAdjustment += impact;
     }
 
-    // 3. Calculate Final Price
+    const issueCount = adjustments.filter((adj) => adj.impact < 0).length;
+    let grade: "A" | "B" | "C" | "D" = "D";
+    if (issueCount <= GRADE_THRESHOLDS.A) grade = "A";
+    else if (issueCount <= GRADE_THRESHOLDS.B) grade = "B";
+    else if (issueCount <= GRADE_THRESHOLDS.C) grade = "C";
+
+    const gradeTextStyle = GRADE_TEXT_STYLES[grade];
+
     const finalPrice = calculatedBasePrice + totalAdjustment;
 
     return {
       basePrice: calculatedBasePrice,
       adjustments,
-      finalPrice: Math.max(0, finalPrice), // Price cannot be negative
+      finalPrice: Math.max(0, finalPrice),
+      grade,
+      gradeTextStyle,
     };
   }, [deviceInfo, conditionInfo]);
 };

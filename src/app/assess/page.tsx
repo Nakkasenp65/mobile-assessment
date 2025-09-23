@@ -27,6 +27,7 @@ export interface ConditionInfo {
 
 export default function AssessPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
     brand: "",
     model: "",
@@ -61,14 +62,22 @@ export default function AssessPage() {
     setDeviceInfo(info);
   };
 
+  const handleUserDeviceUpdate = (value: boolean) => {
+    setIsUserDevice(value);
+  };
+
   useEffect(() => {
     console.log("Condition: ", conditionInfo);
     console.log("Device: ", deviceInfo);
   }, [conditionInfo, deviceInfo]);
 
+  useEffect(() => {
+    console.log("เป็นเครื่องที่ถืออยู่: ", isUserDevice);
+  }, [isUserDevice]);
+
   return (
     <Layout>
-      <div className="mx-auto max-w-2xl px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24">
         <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         <div className="mt-8">
@@ -76,12 +85,14 @@ export default function AssessPage() {
             <AssessStep1
               deviceInfo={deviceInfo}
               onDeviceUpdate={handleDeviceUpdate}
+              onUserDeviceUpdate={handleUserDeviceUpdate}
               onNext={handleNext}
             />
           )}
 
           {currentStep === 2 && (
             <AssessStep2
+              isOwnDevice={isUserDevice}
               conditionInfo={conditionInfo}
               onConditionUpdate={setConditionInfo}
               onNext={handleNext}

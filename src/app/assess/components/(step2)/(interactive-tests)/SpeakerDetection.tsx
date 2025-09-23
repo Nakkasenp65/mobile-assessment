@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface SpeakerDetectionProps {
   isOpen: boolean;
@@ -106,20 +107,20 @@ const SpeakerDetection = ({ isOpen, onConclude }: SpeakerDetectionProps) => {
             </DialogDescription>
             <div className="grid grid-cols-5 gap-2">
               {[1, 2, 3, 4, 5].map((num) => (
-                <Button
+                <FramerButton
                   key={num}
                   variant="outline"
                   className="h-16 text-2xl font-bold"
                   onClick={() => handleNumberSelect(num)}
                 >
                   {num}
-                </Button>
+                </FramerButton>
               ))}
             </div>
             <div className="mt-4 text-center">
-              <Button variant="link" onClick={handleStartTest}>
+              <FramerButton onClick={handleStartTest}>
                 เล่นเสียงซ้ำ
-              </Button>
+              </FramerButton>
             </div>
           </div>
         );
@@ -147,13 +148,13 @@ const SpeakerDetection = ({ isOpen, onConclude }: SpeakerDetectionProps) => {
       default:
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
-            <Button
+            <FramerButton
               size="lg"
               className="h-14 px-8 text-lg"
               onClick={handleStartTest}
             >
               เริ่มทดสอบ
-            </Button>
+            </FramerButton>
           </div>
         );
     }

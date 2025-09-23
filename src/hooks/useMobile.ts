@@ -9,7 +9,11 @@ export const useMobile = (product: string, model: string) => {
 
     // 2. Query Function: คือฟังก์ชันที่จะทำงานเพื่อดึงข้อมูล
     queryFn: async () => {
-      const queryProduct = product === "Apple" ? "iPhone" : product;
+      const getProduct = (product) => {
+        if (product === "Apple") return "iPhone";
+        else return product;
+      };
+      const queryProduct = getProduct(product);
 
       const { data, error } = await supabase
         .from("Mobile")

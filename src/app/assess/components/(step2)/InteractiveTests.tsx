@@ -1,13 +1,15 @@
+// src/app/assess/components/(step2)/InteractiveTests.tsx
+
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ArrowLeft, Mic, Volume2, Camera, PenTool } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import SpeakerDetection from "./(interactive-tests)/SpeakerDetection";
 import MicrophoneDetection from "./(interactive-tests)/MicrophoneDetection";
 import CameraDetection from "./(interactive-tests)/CameraDetection";
 import { TouchscreenTest } from "./(interactive-tests)/TouchscreenTest";
 import TestButton from "./(interactive-tests)/TestButton";
 import { ConditionInfo } from "../../page";
+import FramerButton from "../../../../components/ui/framer/FramerButton";
 
 export type TestName = "speaker" | "mic" | "camera" | "touchScreen";
 export type TestStatus = "pending" | "passed" | "failed";
@@ -86,29 +88,16 @@ const InteractiveTests = ({
     }
   }, [allTestsConcluded, testResults, touchscreenPercentage, onTestsConcluded]);
 
-  const getInstructionText = () => {
-    if (allTestsConcluded) {
-      return "การทดสอบทั้งหมดเสร็จสิ้นแล้ว";
-    }
-    const nextTestLabel = {
-      speaker: "ลำโพง",
-      mic: "ไมโครโฟน",
-      camera: "กล้อง",
-      touchScreen: "ระบบสัมผัส",
-    }[testSequence[currentTestIndex]];
-
-    return `ขั้นตอนต่อไป: กรุณากดทดสอบ "${nextTestLabel}"`;
-  };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="flex flex-col">
-      <div className="mb-8 text-center">
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
+      <div className="text-center">
+        <h2 className="text-foreground text-xl font-bold">
           ขั้นตอนที่ 3: ทดสอบการใช้งาน
         </h2>
-        <p className="text-muted-foreground min-h-[24px]">
-          {getInstructionText()}
-        </p>
       </div>
 
       <div className="my-8 grid min-h-[250px] grid-cols-2 content-center gap-4 md:grid-cols-4">
@@ -154,22 +143,22 @@ const InteractiveTests = ({
       </div>
 
       <div className="mt-8 flex items-center justify-between">
-        <Button
+        <FramerButton
           variant="ghost"
           onClick={onBack}
           className="text-foreground flex h-12 items-center rounded-xl px-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           ย้อนกลับ
-        </Button>
-        <Button
+        </FramerButton>
+        <FramerButton
           onClick={onFlowComplete}
           disabled={!allTestsConcluded}
           size="lg"
           className="text-primary-foreground shadow-lg... h-12 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold"
         >
           คำนวณราคา
-        </Button>
+        </FramerButton>
       </div>
 
       {/* [FIX] All child components now correctly call the unified handler */}

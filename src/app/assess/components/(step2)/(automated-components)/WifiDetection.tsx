@@ -8,6 +8,7 @@ import {
   NetworkQuality,
   useNetworkStatus,
 } from "../../../../../hooks/useNetwork";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 // The final status can now be 'ignore'
 type ConcludedStatus = NetworkQuality | "ignore";
@@ -169,17 +170,16 @@ export const WifiDetection = ({ onStatusConcluded }: WifiDetectionProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center justify-end space-x-2 pt-2"
           >
-            <Button
-              variant="link"
+            <FramerButton
               size="sm"
               onClick={handleSkip}
               className="text-primary cursor-pointer"
             >
               ข้าม
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleRetry}>
+            </FramerButton>
+            <FramerButton variant="outline" size="sm" onClick={handleRetry}>
               ลองอีกครั้ง
-            </Button>
+            </FramerButton>
           </motion.div>
         )}
       </AnimatePresence>

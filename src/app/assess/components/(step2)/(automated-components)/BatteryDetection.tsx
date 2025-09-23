@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBattery } from "../../../../../hooks/useBattery";
-import { Button } from "@/components/ui/button";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 type ConcludedStatus = "success" | "unsupported" | "ignore" | "failed";
 
@@ -137,17 +137,16 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center justify-end space-x-2 pt-2"
           >
-            <Button
-              variant="link"
+            <FramerButton
               size="sm"
               onClick={handleSkip}
               className="text-primary"
             >
               ข้าม
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleFailure}>
+            </FramerButton>
+            <FramerButton variant="outline" size="sm" onClick={handleFailure}>
               การชาร์จมีปัญหา
-            </Button>
+            </FramerButton>
           </motion.div>
         )}
       </AnimatePresence>

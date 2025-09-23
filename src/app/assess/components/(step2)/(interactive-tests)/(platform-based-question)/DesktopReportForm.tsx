@@ -5,6 +5,7 @@ import { ConditionInfo } from "../../../../page";
 import { Button } from "@/components/ui/button";
 import { Question } from "../../../../../../util/info";
 import ChoiceBar from "./ChoiceBar";
+import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 
 interface DesktopReportFormProps {
   conditionInfo: ConditionInfo;
@@ -59,7 +60,7 @@ const DesktopReportForm = ({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="container flex flex-col">
       <div className="mb-8 text-center">
         <h2 className="text-foreground mb-2 text-2xl font-bold">
           ประเมินสภาพเครื่อง
@@ -99,17 +100,17 @@ const DesktopReportForm = ({
       </div>
 
       <div className="border-border mt-8 flex items-center justify-between border-t pt-6">
-        <Button
+        <FramerButton
           variant="ghost"
           onClick={onBack}
           className="text-foreground flex h-12 cursor-pointer items-center rounded-xl px-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           ย้อนกลับ
-        </Button>
+        </FramerButton>
         <div className="flex items-center gap-4">
           {/* [FIX] "No issues" button is removed. */}
-          <Button
+          <FramerButton
             onClick={handleSubmit}
             size="lg"
             // [FIX] Disabled state is now controlled by the new validation logic.
@@ -117,7 +118,7 @@ const DesktopReportForm = ({
             className="text-primary-foreground h-12 transform-gpu cursor-pointer rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
             ดำเนินการต่อ
-          </Button>
+          </FramerButton>
         </div>
       </div>
     </div>

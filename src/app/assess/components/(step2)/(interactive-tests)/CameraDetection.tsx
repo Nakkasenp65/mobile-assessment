@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface CameraDetectionProps {
   isOpen: boolean;
@@ -110,14 +111,14 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
         <div className="flex h-64 flex-col items-center justify-center text-center">
           <XCircle className="text-destructive mb-4 h-12 w-12" />
           <p className="text-destructive-foreground">{permissionError}</p>
-          <Button
+          <FramerButton
             variant="outline"
             size="sm"
             className="mt-4"
             onClick={() => onConclude(false)}
           >
             ปิด
-          </Button>
+          </FramerButton>
         </div>
       );
     }
@@ -168,16 +169,19 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
                   <Check className="bg-success/80 text-success-foreground h-12 w-12 rounded-full p-2" />
 
                   {phase === "testing_front" ? (
-                    <Button onClick={switchToBackCamera} className="gap-2">
+                    <FramerButton
+                      onClick={switchToBackCamera}
+                      className="gap-2"
+                    >
                       ทดสอบกล้องหลัง <RefreshCw className="h-4 w-4" />
-                    </Button>
+                    </FramerButton>
                   ) : (
-                    <Button
+                    <FramerButton
                       onClick={() => onConclude(true)}
                       className="bg-success hover:bg-success/90"
                     >
                       เสร็จสิ้น
-                    </Button>
+                    </FramerButton>
                   )}
                 </motion.div>
               </motion.div>
@@ -190,9 +194,13 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
     // Default is 'idle'
     return (
       <div className="flex h-64 flex-col items-center justify-center text-center">
-        <Button size="lg" className="h-14 px-8 text-lg" onClick={startTest}>
+        <FramerButton
+          size="lg"
+          className="h-14 px-8 text-lg"
+          onClick={startTest}
+        >
           เริ่มการทดสอบ
-        </Button>
+        </FramerButton>
       </div>
     );
   };

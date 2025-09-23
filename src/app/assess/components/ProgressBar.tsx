@@ -5,21 +5,21 @@ interface ProgressBarProps {
 
 const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-sm font-medium text-muted-foreground">
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="text-muted-foreground text-sm font-medium">
           ขั้นตอนที่ {currentStep} จาก {totalSteps}
         </span>
-        <span className="text-sm font-medium text-primary">
+        <span className="text-primary text-sm font-medium">
           {Math.round((currentStep / totalSteps) * 100)}%
         </span>
       </div>
-      
+
       <div className="flex space-x-2">
         {Array.from({ length: totalSteps }, (_, index) => (
           <div
             key={index}
-            className={`flex-1 progress-step ${
+            className={`progress-step flex-1 ${
               index + 1 <= currentStep
                 ? "progress-step-active"
                 : "progress-step-inactive"

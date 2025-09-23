@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, easeInOut } from "framer-motion";
+import { Brush, Pointer } from "lucide-react";
 
 interface TouchscreenTestProps {
   isOpen: boolean;
   onConclude: (percentage: number) => void;
 }
 
-const GRID_SIZE = 15;
-const TIMER_DURATION = 30;
+const GRID_SIZE = 12;
+const TIMER_DURATION = 90000;
 
 export const TouchscreenTest = ({
   isOpen,
@@ -63,11 +64,11 @@ export const TouchscreenTest = ({
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       ctx.lineCap = "round";
-      ctx.lineWidth = 35;
+      ctx.lineWidth = 50;
 
       const styles = getComputedStyle(canvas);
-      const primaryColor = `hsl(${styles.getPropertyValue("--primary").trim()})`;
-      const secondaryColor = `hsl(${styles.getPropertyValue("--secondary").trim()})`;
+      const primaryColor = `${styles.getPropertyValue("--primary").trim()}`;
+      const secondaryColor = `${styles.getPropertyValue("--secondary").trim()}`;
       const gradient = ctx.createLinearGradient(
         0,
         0,
@@ -159,23 +160,30 @@ export const TouchscreenTest = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md"
         >
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
-          <div className="absolute top-5 right-5 left-5 flex items-center justify-between rounded-xl bg-black/30 p-4 text-white">
+          <div className="flex flex-col items-center justify-between rounded-xl text-white">
+            {/* Painting */}
             <div className="text-center">
+              <p className="text-md flex flex-col items-center justify-center gap-2">
+                <div className="rounded-full border-2 p-3">
+                  <Pointer strokeWidth={1} size={32} />
+                </div>
+                กรุณาระบายสีให้ทั่วทั้งหน้าจอ
+              </p>
+            </div>
+            {/* Timer */}
+            <div className="absolute bottom-24 z-60 text-center">
               <div className="text-4xl font-bold">{timer}</div>
-              <div className="text-xs uppercase">วินาที</div>
             </div>
-            <div className="text-center">
-              <p className="text-lg">กรุณาระบายสีให้ทั่วทั้งหน้าจอ</p>
-            </div>
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="text-4xl font-bold">{fillPercentage}%</div>
               <div className="text-xs uppercase">พื้นที่</div>
-            </div>
+            </div> */}
           </div>
         </motion.div>
       )}
