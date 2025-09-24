@@ -1,4 +1,6 @@
+// src/app/assess/step3/AssessStep3.tsx
 "use client";
+
 import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +23,13 @@ import AssessmentLedger from "./AssessmentLedger";
 import Services from "./Services";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 
+// จำนำ turn refinance ซ่อม
+// ไม่จำเป็นต้อง import PawnService ที่นี่แล้ว เพราะ Services เป็นผู้จัดการ
+// import PawnService from "./(services)/PawnService";
+
+// ----------------------------------------------------------------------------------------------------
+// Interfaces
+// ----------------------------------------------------------------------------------------------------
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
@@ -36,14 +45,19 @@ export interface ServiceOption {
   features: string[];
 }
 
+// ----------------------------------------------------------------------------------------------------
+// Component: AssessStep3
+// ทำหน้าที่เป็น Orchestrator อย่างสมบูรณ์ โดยจัดการ State หลักและส่งข้อมูลลงไปยัง Child Components
+// ตรรกะการแสดงผล PawnService ถูกย้ายไปจัดการที่ Services component แล้ว
+// ----------------------------------------------------------------------------------------------------
 const AssessStep3 = ({
   deviceInfo,
   conditionInfo,
-  onBack,
+  onBack: handleGlobalBack,
 }: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
-  const { finalPrice, basePrice, adjustments, grade, gradeTextStyle } =
+  const { finalPrice, adjustments, grade, gradeTextStyle } =
     usePriceCalculation(deviceInfo, conditionInfo);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(
@@ -51,108 +65,52 @@ const AssessStep3 = ({
     deviceInfo.model,
   );
 
+  console.log(deviceInfo);
+  console.log(conditionInfo);
+
+  const pawnPrice = Math.round(finalPrice * 0.7);
+
   const services: ServiceOption[] = [
     {
-      id: "sell", // primary → pink
+      id: "sell",
       title: "ขายทันที",
       description: "รับเงินสดเต็มจำนวนทันที",
       icon: Banknote,
       price: finalPrice,
-      features: [
-        "รับเงินสดทันที",
-        "โอนเงินภายใน 30 นาที",
-        "ไม่มีค่าธรรมเนียม",
-        "รับประกันราคา 7 วัน",
-      ],
+      features: ["รับเงินสดทันที", "โอนเงินภายใน 30 นาที", "ไม่มีค่าธรรมเนียม"],
     },
     {
-      id: "pawn", // secondary → orange
+      id: "pawn",
       title: "บริการจำนำ",
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
       icon: Shield,
-      price: Math.round(finalPrice * 0.7),
-      features: [
-        "รับเงินสดทันที",
-        "ไถ่คืนได้ภายใน 6 เดือน",
-        "อัตราดอกเบี้ย 2% ต่อเดือน",
-        "เก็บเครื่องในสภาพดี",
-      ],
+      price: pawnPrice,
+      features: [], // Features จะไม่แสดง เพราะจะแสดงเป็นฟอร์มแทน
     },
     {
-      id: "tradein", // violet/indigo
+      id: "tradein",
       title: "แลกซื้อเครื่องใหม่ (Trade-in)",
-      description: "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่ที่ร้าน",
+      description: "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่",
       icon: RefreshCw,
-      price: Math.round(finalPrice * 1.05), // ม็อกให้มี +โบนัส 5%
-      features: [
-        "บวกส่วนลดเพิ่ม",
-        "เลือกรุ่นใหม่ได้ทันที",
-        "โอนย้ายข้อมูลให้",
-        "ประกันความพึงพอใจ 7 วัน",
-      ],
-    },
-    {
-      id: "consignment", // teal/cyan
-      title: "ฝากขาย (Consignment)",
-      description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
-      icon: ShoppingBag,
-      price: Math.round(finalPrice * 1.15), // ม็อก: ถ้าขายได้จะได้มากขึ้น
-      features: [
-        "ทีมการตลาดลงประกาศ",
-        "ถ่ายรูปสินค้าโปร",
-        "อัปเดตสถานะเป็นระยะ",
-        "คิดค่าบริการเมื่อขายได้",
-      ],
-    },
-    {
-      id: "refurbish", // emerald/green
-      title: "ฟื้นฟูสภาพก่อนขาย (Refurbish)",
-      description: "บริการทำความสะอาด/ปรับสภาพ เพิ่มโอกาสขายได้ราคาสูง",
-      icon: Wrench,
-      price: Math.round(finalPrice * 1.1), // ม็อก: หลังฟื้นฟูมูลค่าเพิ่ม
-      features: [
-        "ทำความสะอาดภายนอก",
-        "ขัดลบรอยเบื้องต้น",
-        "ตรวจเช็กฮาร์ดแวร์",
-        "รายงานผลก่อนขาย",
-      ],
-    },
-    {
-      id: "installment", // rose/pink
-      title: "ผ่อนชำระ",
-      description: "แบ่งจ่ายสบายใจ ไม่ต้องจ่ายเต็ม",
-      icon: CreditCard,
-      price: Math.round(finalPrice / 6), // ม็อก: แสดงค่างวด/เดือน (6 เดือน)
-      features: [
-        "ยืนยันตัวตนออนไลน์",
-        "อนุมัติไว",
-        "ดอกเบี้ยโปรโมชัน",
-        "ผ่อนยาวได้ตามโปร",
-      ],
-    },
-    {
-      id: "delivery", // amber/yellow
-      title: "รับส่งเครื่องถึงบ้าน",
-      description: "เรียกแมสเซนเจอร์รับเครื่อง/ส่งคืน สะดวกปลอดภัย",
-      icon: Truck,
-      price: 199, // ม็อกค่าบริการคงที่
-      features: [
-        "รับ-ส่งถึงที่",
-        "แพ็กอย่างแน่นหนา",
-        "ติดตามสถานะเรียลไทม์",
-        "มีประกันการขนส่ง",
-      ],
+      price: Math.round(finalPrice * 1.05),
+      features: ["บวกส่วนลดเพิ่ม", "เลือกรุ่นใหม่ได้ทันที", "โอนย้ายข้อมูลให้"],
     },
   ];
 
   const handleConfirm = () => {
     if (selectedService) {
-      alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
+      // ในอนาคตอาจต้องเพิ่ม logic ตรวจสอบว่าฟอร์ม pawn กรอกครบหรือยัง
+      alert(
+        `ขอบคุณสำหรับการเลือกบริการ ${selectedService}! เราจะติดต่อกลับภายใน 24 ชั่วโมง`,
+      );
     }
   };
 
+  // ==========================================================================
+  // โครงสร้างหลัก: ไม่มีการสลับหน้าแล้ว ทุกอย่างแสดงผลในหน้าเดียว
+  // ==========================================================================
   return (
-    <div className="card-assessment flex w-full flex-col gap-8">
+    <div className="flex w-full flex-col gap-8">
       <div className="text-center">
         <h2 className="text-foreground mb-2 text-2xl font-bold">
           สรุปผลการประเมิน
@@ -160,55 +118,39 @@ const AssessStep3 = ({
       </div>
 
       <div className="flex flex-col md:flex-row md:gap-8">
-        {/* Left Column: Summary */}
+        {/* --- Left Column: Summary --- */}
         <div className="flex flex-1 flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
           <div className="border-border w-full rounded-2xl border p-2">
             <div className="relative flex flex-col items-center gap-6 sm:flex-row">
               <div className="bg-accent/20 flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-lg">
                 <AnimatePresence mode="wait">
                   {isImageLoading ? (
-                    <motion.div
-                      key="loader"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-                    </motion.div>
+                    <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
                   ) : mobileData?.image_url ? (
-                    <motion.div
-                      key="image"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      <Image
-                        src={mobileData.image_url}
-                        alt={`${deviceInfo.brand} ${deviceInfo.model}`}
-                        width={100}
-                        height={100}
-                        className="object-contain"
-                      />
-                    </motion.div>
+                    <Image
+                      src={mobileData.image_url}
+                      alt={`${deviceInfo.brand} ${deviceInfo.model}`}
+                      width={100}
+                      height={100}
+                      className="object-contain"
+                    />
                   ) : (
-                    <motion.div
-                      key="no-image"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <ImageOff className="text-muted-foreground h-8 w-8" />
-                    </motion.div>
+                    <ImageOff className="text-muted-foreground h-8 w-8" />
                   )}
                 </AnimatePresence>
               </div>
-              <div className="text-center sm:text-left">
-                <h3 className="text-foreground text-xl font-bold">
+              <div className="flex items-center gap-2 text-center sm:text-left md:flex-col md:items-start">
+                <h3 className="text-foreground text-lg font-bold md:text-xl">
                   {deviceInfo.model}
                 </h3>
-                <p className="text-muted-foreground">{deviceInfo.brand}</p>
-                <p className="text-muted-foreground text-sm">
-                  {deviceInfo.storage}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-medium">
+                    {deviceInfo.brand}
+                  </p>
+                  <p className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs">
+                    {deviceInfo.storage}
+                  </p>
+                </div>
               </div>
               <div className="absolute right-4 flex items-baseline justify-center">
                 <span
@@ -219,7 +161,6 @@ const AssessStep3 = ({
               </div>
             </div>
           </div>
-
           <div className="from-primary/10 to-secondary/10 border-primary/20 rounded-2xl border bg-gradient-to-r p-6 text-center">
             <p className="text-muted-foreground mt-2 mb-2 text-sm font-medium">
               ราคาประเมินเบื้องต้น
@@ -227,28 +168,29 @@ const AssessStep3 = ({
             <p className="from-primary to-secondary bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
               ฿{finalPrice.toLocaleString()}
             </p>
-            <p className="text-muted-foreground mt-2 text-sm">
-              *ราคาสุดท้ายขึ้นอยู่กับการตรวจสอบเครื่องจริง
-            </p>
           </div>
-
+          {/* // ==========================================================================
+          // โครงสร้างหลัก: ไม่มีการสลับหน้าแล้ว ทุกอย่างแสดงผลในหน้าเดียว
+          // ========================================================================== */}
           <div className="border-border w-full rounded-2xl">
             <AssessmentLedger adjustments={adjustments} />
           </div>
         </div>
 
-        {/* Right Column: Service Selection */}
+        {/* --- Right Column: Service Selection (ส่ง Props ที่จำเป็นลงไป) --- */}
         <Services
           services={services}
           selectedService={selectedService}
           setSelectedService={setSelectedService}
+          deviceInfo={deviceInfo}
+          pawnPrice={pawnPrice}
         />
       </div>
 
       <div className="border-border flex justify-between border-t pt-6">
         <FramerButton
           variant="ghost"
-          onClick={onBack}
+          onClick={handleGlobalBack}
           className="border-border text-foreground hover:bg-accent flex h-12 items-center rounded-xl border px-6"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -258,7 +200,7 @@ const AssessStep3 = ({
           onClick={handleConfirm}
           disabled={!selectedService}
           size="lg"
-          className="text-primary-foreground h-12 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          className="text-primary-foreground h-12 transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 text-base font-semibold shadow-lg transition-all duration-300 hover:-translate-y-1 disabled:opacity-50"
         >
           ยืนยันการเลือก
         </FramerButton>

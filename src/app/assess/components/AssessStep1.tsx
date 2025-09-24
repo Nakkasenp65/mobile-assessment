@@ -1,3 +1,5 @@
+// src/app/assess/components/AssessStep1.tsx
+
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,7 +87,7 @@ const AssessStep1 = ({
 
   const [userDeviceSelection, setUserDeviceSelection] = useState<
     "this_device" | "other_device" | null
-  >(null);
+  >("this_device");
 
   // === จำค่าเดิมเพื่อจับการเปลี่ยนจริง ๆ
   const prevBrandRef = useRef(localInfo.brand);

@@ -44,19 +44,19 @@ export const PHYSICAL_QUESTIONS: Array<{
         question: "สภาพกระจกหน้าจอ?",
         options: [
           {
-            value: "perfect",
+            value: "passed",
             label: "ไม่มีรอยขีดข่วน",
             icon: ShieldCheck,
             severity: "positive",
           },
           {
-            value: "minor",
+            value: "failed",
             label: "มีรอยเล็กน้อย",
             icon: FrameCorners,
             severity: "warning",
           },
           {
-            value: "cracked",
+            value: "defect",
             label: "กระจกแตก",
             icon: ImageBroken,
             severity: "negative",
@@ -68,19 +68,19 @@ export const PHYSICAL_QUESTIONS: Array<{
         question: "คุณภาพการแสดงผล?",
         options: [
           {
-            value: "perfect",
+            value: "passed",
             label: "แสดงผลปกติ",
             icon: MonitorPlay,
             severity: "positive",
           },
           {
-            value: "spots",
+            value: "failed",
             label: "มีจุดดำ/เส้น",
             icon: DotsNine,
             severity: "warning",
           },
           {
-            value: "not_working",
+            value: "defect",
             label: "ไม่แสดงผล",
             icon: EyeSlash,
             severity: "negative",
@@ -92,13 +92,13 @@ export const PHYSICAL_QUESTIONS: Array<{
         question: "การทำงานของหน้าจอสัมผัส",
         options: [
           {
-            value: "perfect",
+            value: "passed",
             label: "สัมผัสได้ทั้งหมด",
             icon: MonitorPlay,
             severity: "positive",
           },
           {
-            value: "spots",
+            value: "failed",
             label: "บางจุดสัมผัสไม่ได้",
             icon: DotsNine,
             severity: "warning",
@@ -115,13 +115,13 @@ export const PHYSICAL_QUESTIONS: Array<{
         question: "การเปิดเครื่อง?",
         options: [
           {
-            value: "yes",
+            value: "passed",
             label: "เปิด-ปิดปกติ",
             icon: Power,
             severity: "positive",
           },
           {
-            value: "sometimes",
+            value: "failed",
             label: "เปิดติดบ้าง",
             icon: ClockClockwise,
             severity: "warning",
@@ -133,20 +133,14 @@ export const PHYSICAL_QUESTIONS: Array<{
         question: "การทำงานของกล้อง?",
         options: [
           {
-            value: "all_work",
+            value: "passed", // เปลี่ยนจาก "all_work"
             label: "ทำงานปกติ",
             icon: Camera,
             severity: "positive",
           },
           {
-            value: "some_work",
-            label: "มีปัญหาบางส่วน",
-            icon: Warning,
-            severity: "warning",
-          },
-          {
-            value: "not_work",
-            label: "ไม่ทำงาน",
+            value: "failed", // เปลี่ยนจาก "some_work" และ "not_work"
+            label: "มีปัญหา",
             icon: CameraSlash,
             severity: "negative",
           },
@@ -168,13 +162,13 @@ export const IOS_MANUAL_QUESTIONS: Array<{
         question: "การเชื่อมต่อ Wi-Fi?",
         options: [
           {
-            value: "good",
+            value: "passed",
             label: "ทำงานปกติ",
             icon: WifiHigh,
             severity: "positive",
           },
           {
-            value: "poor",
+            value: "failed",
             label: "มีปัญหา",
             icon: WifiSlash,
             severity: "negative",
@@ -186,7 +180,7 @@ export const IOS_MANUAL_QUESTIONS: Array<{
         question: "การชาร์จไฟ?",
         options: [
           {
-            value: "success",
+            value: "passed",
             label: "ชาร์จเข้าปกติ",
             icon: BatteryChargingVertical,
             severity: "positive",

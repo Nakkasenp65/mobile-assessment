@@ -28,7 +28,7 @@ const features = [
 
 const HeroFeatures = () => {
   return (
-    <div className="left-0 z-10 mt-16 flex w-full justify-end md:mt-8">
+    <div className="left-0 z-10 mt-16 flex w-full justify-end md:mt-0">
       {/* responsive content */}
       <div className="container mx-auto flex flex-col gap-8 px-4">
         {/* Header */}

@@ -62,11 +62,11 @@ const HowItWorksSection = () => (
         {/* Illustration (The Woman) */}
         <div className="order-1 md:order-2">
           <Image
-            width={600}
-            height={600}
-            src="/assets/customer.webp"
+            width={1000}
+            height={1000}
+            src="https://lh3.googleusercontent.com/d/1TuqxKpYBdgpK-rtul5auS0b0B84JyBoG?format=webp"
             alt="ลูกค้าถือไอโฟน"
-            className="max-w-[16rem] drop-shadow-lg drop-shadow-black/25 md:max-w-xs"
+            className="max-w-[16rem] scale-130 md:max-w-xs"
             loading="lazy"
             decoding="async"
           />

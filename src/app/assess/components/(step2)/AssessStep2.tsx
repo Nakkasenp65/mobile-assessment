@@ -180,7 +180,7 @@ const AssessStep2 = ({
   const showFullReport = isDesktop || !isOwnDevice;
 
   return (
-    <div className="card-assessment mx-auto flex max-w-2xl flex-col">
+    <div className="md:card-assessment md:border-border mx-auto flex max-w-2xl flex-col rounded-xl from-white to-[#fff9f2] md:bg-gradient-to-br md:p-2">
       {/* Modal แจ้งเตือนก่อนเข้าสู่ Automated */}
       <PermissionPrompt
         open={showPermissionPrompt}

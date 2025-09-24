@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/MobileQuestionAccordion.tsx
+
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";

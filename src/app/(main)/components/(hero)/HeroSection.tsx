@@ -10,17 +10,19 @@ const HeroSection = () => {
     <section className="relative h-max w-full overflow-hidden">
       {/* BACKGROUND */}
       <div className="absolute h-full w-full">
+        <div className="hero-background-image z-0" />
         <Image
-          src="https://lh3.googleusercontent.com/d/1g6fKYNI_nIqDBcm3rtxZ-qYqjjXLYm_A"
+          src="https://lh3.googleusercontent.com/d/1OfKa-MfaLCH1bv9j_Z8O7TlBEmqj8eh4?format=webp&width=1415&height=893"
           alt="Abstract pink and orange texture background"
-          fill
+          width={3000}
+          height={3000}
           priority
-          className="z-0 object-cover"
+          className="h-full object-cover"
           aria-hidden="true"
         />
         {/* Background overlay pink */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-br from-orange-100/70 via-pink-100/70 to-pink-200/80" />
-        <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-black/10 to-black/90 drop-shadow-2xl" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-br from-orange-400/40 via-pink-100/25 to-pink-500/75" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-black/25 to-black drop-shadow-2xl" />
       </div>
 
       {/* CONTAINER: จัดวาง Slider และ Form ให้อยู่ตรงกลาง */}

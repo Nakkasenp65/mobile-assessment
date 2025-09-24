@@ -1,3 +1,5 @@
+// src/app/assess/page.tsx
+
 "use client";
 import { useEffect, useState } from "react";
 import AssessStep1 from "./components/AssessStep1";
@@ -65,11 +67,6 @@ export default function AssessPage() {
   const handleUserDeviceUpdate = (value: boolean) => {
     setIsUserDevice(value);
   };
-
-  useEffect(() => {
-    console.log("Condition: ", conditionInfo);
-    console.log("Device: ", deviceInfo);
-  }, [conditionInfo, deviceInfo]);
 
   useEffect(() => {
     console.log("เป็นเครื่องที่ถืออยู่: ", isUserDevice);

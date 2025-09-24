@@ -24,12 +24,12 @@ const STORAGE_ADJUSTMENTS: Record<string, number> = {
 };
 
 const CONDITION_ADJUSTMENTS: Record<string, Record<string, number>> = {
-  screenGlass: { perfect: 0, minor: -1500, cracked: -5000 },
-  screenDisplay: { perfect: 0, spots: -3000, not_working: -8000 },
-  powerOn: { yes: 0, sometimes: -4000 },
-  cameras: { passed: 0, failed: -2500 },
-  charger: { success: 0, failed: -1000, ignore: 0, unsupported: 0 },
-  wifi: { good: 0, excellent: 0, poor: -1200, ignore: 0, unsupported: 0 },
+  screenGlass: { passed: 0, failed: -1500, defect: -5000 },
+  screenDisplay: { passed: 0, failed: -3000, defect: -8000 },
+  powerOn: { passed: 0, failed: -4000 },
+  camera: { passed: 0, failed: -2500 },
+  charger: { passed: 0, failed: -1000 },
+  wifi: { passed: 0, failed: -500 },
   touchScreen: { passed: 0, failed: -3500 },
   mic: { passed: 0, failed: -1800 },
   speaker: { passed: 0, failed: -1500 },
@@ -45,6 +45,8 @@ const CONDITION_ADJUSTMENTS: Record<string, Record<string, number>> = {
 
 const TRANSLATION_MAP: Record<string, string> = {
   perfect: "สมบูรณ์แบบ",
+  failed: "มีปัญหาเล็กน้อย",
+  defect: "มีตำหนิ/เสีย",
   minor: "มีรอยเล็กน้อย",
   cracked: "กระจกแตก",
   spots: "มีจุด/เส้น",
@@ -52,7 +54,6 @@ const TRANSLATION_MAP: Record<string, string> = {
   yes: "เปิดติดปกติ",
   sometimes: "เปิดติดบ้าง",
   passed: "ทำงานปกติ",
-  failed: "มีปัญหา",
   success: "ชาร์จปกติ",
   good: "เชื่อมต่อได้",
   excellent: "เชื่อมต่อได้ดี",

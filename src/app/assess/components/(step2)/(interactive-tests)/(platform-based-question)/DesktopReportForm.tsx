@@ -1,3 +1,5 @@
+//src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/DesktopReportForm.tsx
+
 "use client";
 import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -77,7 +79,7 @@ const DesktopReportForm = ({
             <h3 className="text-foreground border-border border-b pb-2 text-lg font-semibold">
               {section.section}
             </h3>
-            <div className="space-y-4">
+            <div className="flex scale-95 flex-col space-y-4 md:scale-100">
               {section.questions.map((question) => (
                 <div
                   key={question.id}

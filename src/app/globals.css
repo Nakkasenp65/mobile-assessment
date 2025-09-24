@@ -272,6 +272,10 @@
     border-color: var(--color-destructive);
     box-shadow: 0 0 0 2px var(--color-destructive);
   }
+  .hero-background-image {
+    background-image: url("https://lh3.googleusercontent.com/d/1OfKa-MfaLCH1bv9j_Z8O7TlBEmqj8eh4?format=webp");
+    object-fit: contain;
+  }
 }
 
 @theme inline {
