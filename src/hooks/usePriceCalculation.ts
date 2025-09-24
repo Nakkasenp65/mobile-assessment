@@ -86,6 +86,13 @@ const GRADE_TEXT_STYLES = {
   D: "from-red-500 to-rose-500",
 };
 
+const GRADE_NEON_COLORS = {
+  A: "#f59e0b", // สีเดียวกับเกรด A (amber-500)
+  B: "#10b981", // สีเดียวกับเกรด B (emerald-500)
+  C: "#06b6d4", // สีเดียวกับเกรด C (cyan-500)
+  D: "#f43f5e", // สีเดียวกับเกรด D (rose-500)
+};
+
 // =================================================================
 // [Hook Logic]
 // =================================================================
@@ -103,6 +110,7 @@ export interface PriceCalculationResult {
   finalPrice: number;
   grade: "A" | "B" | "C" | "D";
   gradeTextStyle: string;
+  gradeNeonColor: string;
 }
 
 export const usePriceCalculation = (
@@ -153,6 +161,7 @@ export const usePriceCalculation = (
     else if (issueCount <= GRADE_THRESHOLDS.C) grade = "C";
 
     const gradeTextStyle = GRADE_TEXT_STYLES[grade];
+    const gradeNeonColor = GRADE_NEON_COLORS[grade];
 
     const finalPrice = calculatedBasePrice + totalAdjustment;
 
@@ -162,6 +171,7 @@ export const usePriceCalculation = (
       finalPrice: Math.max(0, finalPrice),
       grade,
       gradeTextStyle,
+      gradeNeonColor,
     };
   }, [deviceInfo, conditionInfo]);
 };

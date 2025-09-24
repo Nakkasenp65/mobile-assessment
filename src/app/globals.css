@@ -249,7 +249,6 @@
     border: 1px solid var(--color-border);
     border-radius: 1rem;
     padding: 1.5rem;
-    box-shadow: var(--shadow-card);
   }
   .card-section {
     background: var(--gradient-card);

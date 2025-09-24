@@ -86,13 +86,10 @@ export default function Services({
   pawnPrice,
 }: ServicesProps) {
   return (
-    <div className="flex w-full flex-1 flex-col">
-      <h3 className="text-foreground mt-6 block text-lg font-semibold md:hidden">
+    <div className="flex w-full flex-1 flex-col gap-6">
+      <h2 className="text-foreground text-2xl font-bold">
         เลือกบริการที่ต้องการ
-      </h3>
-      <h3 className="text-foreground mb-4 hidden text-xl font-bold md:block">
-        เลือกบริการที่ต้องการ
-      </h3>
+      </h2>
 
       <Accordion
         type="single"

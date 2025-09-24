@@ -57,7 +57,7 @@ const AssessStep3 = ({
 }: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
-  const { finalPrice, adjustments, grade, gradeTextStyle } =
+  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } =
     usePriceCalculation(deviceInfo, conditionInfo);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(
@@ -110,18 +110,15 @@ const AssessStep3 = ({
   // โครงสร้างหลัก: ไม่มีการสลับหน้าแล้ว ทุกอย่างแสดงผลในหน้าเดียว
   // ==========================================================================
   return (
-    <div className="flex w-full flex-col gap-8">
-      <div className="text-center">
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
-          สรุปผลการประเมิน
-        </h2>
-      </div>
-
-      <div className="flex flex-col md:flex-row md:gap-8">
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
         {/* --- Left Column: Summary --- */}
-        <div className="flex flex-1 flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-border w-full rounded-2xl border p-2">
-            <div className="relative flex flex-col items-center gap-6 sm:flex-row">
+        <div className="flex flex-1 flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+          <h2 className="text-foreground mt-4 text-2xl font-bold">
+            สรุปผลการประเมิน
+          </h2>
+          <div className="border-border sticky w-full rounded-2xl md:border md:p-2">
+            <div className="relative flex flex-col items-center sm:flex-row">
               <div className="bg-accent/20 flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-lg">
                 <AnimatePresence mode="wait">
                   {isImageLoading ? (
@@ -139,11 +136,11 @@ const AssessStep3 = ({
                   )}
                 </AnimatePresence>
               </div>
-              <div className="flex items-center gap-2 text-center sm:text-left md:flex-col md:items-start">
+              <div className="flex w-full flex-col items-start text-start sm:text-left md:items-start">
                 <h3 className="text-foreground text-lg font-bold md:text-xl">
                   {deviceInfo.model}
                 </h3>
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                   <p className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-medium">
                     {deviceInfo.brand}
                   </p>
@@ -154,30 +151,37 @@ const AssessStep3 = ({
               </div>
               <div className="absolute right-4 flex items-baseline justify-center">
                 <span
-                  className={`bg-gradient-to-br bg-clip-text text-[72px] font-bold text-transparent ${gradeTextStyle} `}
+                  className={`bg-gradient-to-br bg-clip-text text-[72px] font-bold text-transparent ${gradeTextStyle} [filter:drop-shadow(0_0_4px_var(--neon-color))_drop-shadow(0_0_4px_#fff)]`}
+                  style={
+                    { "--neon-color": gradeNeonColor } as React.CSSProperties
+                  }
                 >
                   {grade}
                 </span>
               </div>
             </div>
+            <div className="from-primary/10 to-secondary/10 border-primary/20 mt-2 flex gap-2 rounded-sm border bg-gradient-to-r p-2 text-center">
+              <p className="text-2xl font-medium text-black">ราคาประเมิน:</p>
+              <p className="from-primary to-secondary bg-gradient-to-br bg-clip-text text-2xl font-bold text-transparent">
+                {finalPrice.toLocaleString()}
+              </p>
+              <p className="text-2xl font-medium text-black">บาท</p>
+            </div>
           </div>
-          <div className="from-primary/10 to-secondary/10 border-primary/20 rounded-2xl border bg-gradient-to-r p-6 text-center">
-            <p className="text-muted-foreground mt-2 mb-2 text-sm font-medium">
-              ราคาประเมินเบื้องต้น
-            </p>
-            <p className="from-primary to-secondary bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
-              ฿{finalPrice.toLocaleString()}
-            </p>
-          </div>
+
           {/* // ==========================================================================
           // โครงสร้างหลัก: ไม่มีการสลับหน้าแล้ว ทุกอย่างแสดงผลในหน้าเดียว
           // ========================================================================== */}
-          <div className="border-border w-full rounded-2xl">
-            <AssessmentLedger adjustments={adjustments} />
+          <div className="w-full rounded-2xl">
+            <AssessmentLedger
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+            />
           </div>
         </div>
 
         {/* --- Right Column: Service Selection (ส่ง Props ที่จำเป็นลงไป) --- */}
+
         <Services
           services={services}
           selectedService={selectedService}

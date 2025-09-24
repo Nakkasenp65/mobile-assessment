@@ -74,10 +74,10 @@ export default function AssessPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 pb-24">
+      <div className="container mx-auto px-4 pt-0 pb-24 md:pt-8">
         <ProgressBar currentStep={currentStep} totalSteps={3} />
 
-        <div className="mt-8">
+        <div className="md:mt-8">
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
