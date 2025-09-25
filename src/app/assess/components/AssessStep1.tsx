@@ -3,12 +3,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 
 import { useMobile } from "@/hooks/useMobile";
 import { DeviceInfo } from "../page";
 
-// shadcn/ui select
+import { PHONE_DATA } from "../../../util/phone";
+
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import { Box, Smartphone } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
 import FramerButton from "../../../components/ui/framer/FramerButton";
+import Image from "next/image";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
@@ -29,36 +30,6 @@ interface AssessStep1Props {
   onNext: () => void;
   onUserDeviceUpdate: (value: boolean) => void;
 }
-
-const MOCK_DATA = {
-  brands: ["Apple", "Samsung", "Google"],
-  models: {
-    Apple: [
-      "iPhone 15 Pro Max",
-      "iPhone 15 Pro",
-      "iPhone 15",
-      "iPhone 14 Pro Max",
-      "iPhone 14 Pro",
-    ],
-    Samsung: [
-      "Samsung S24 Ultra",
-      "Samsung S24 Plus",
-      "Samsung S24",
-      "Samsung S23 Ultra",
-    ],
-    Google: ["Pixel 8 Pro", "Pixel 8", "Pixel 7 Pro", "Pixel 7"],
-  } as Record<string, string[]>,
-  storage: {
-    "iPhone 15 Pro Max": ["128 GB", "256 GB", "512 GB", "1 TB"],
-    "iPhone 15 Pro": ["128 GB", "256 GB", "512 GB", "1 TB"],
-    "iPhone 15": ["128 GB", "256 GB", "512 GB"],
-    "Samsung S24 Ultra": ["256 GB", "512 GB", "1 TB"],
-    "Samsung S24 Plus": ["256 GB", "512 GB"],
-    "Samsung S24": ["128 GB", "256 GB", "512 GB"],
-    "Pixel 8 Pro": ["128 GB", "256 GB", "512 GB"],
-    "Pixel 8": ["128 GB", "256 GB"],
-  } as Record<string, string[]>,
-};
 
 const BATTERY_HEALTH_OPTIONS = [
   "100%",
@@ -76,28 +47,40 @@ const AssessStep1 = ({
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [availableStorage, setAvailableStorage] = useState<string[]>([]);
   const { isDesktop } = useDeviceDetection();
+
+  const [availableModels, setAvailableModels] = useState<string[]>(() => {
+    if (deviceInfo.brand) {
+      return PHONE_DATA.models[deviceInfo.brand] ?? [];
+    }
+    return [];
+  });
+
+  const [availableStorage, setAvailableStorage] = useState<string[]>(() => {
+    if (deviceInfo.model) {
+      return PHONE_DATA.storage[deviceInfo.model] ?? [];
+    }
+    return [];
+  });
 
   const { data: productData, isLoading: isImageLoading } = useMobile(
     localInfo.brand,
     localInfo.model,
   );
 
+  console.log(localInfo);
+
   const [userDeviceSelection, setUserDeviceSelection] = useState<
     "this_device" | "other_device" | null
-  >("this_device");
+  >(isDesktop ? "other_device" : null);
 
-  // === จำค่าเดิมเพื่อจับการเปลี่ยนจริง ๆ
   const prevBrandRef = useRef(localInfo.brand);
   const prevModelRef = useRef(localInfo.model);
 
   useEffect(() => {
-    if (localInfo.brand !== prevBrandRef.current) {
-      const nextModels = MOCK_DATA.models[localInfo.brand] ?? [];
+    if (localInfo.brand && localInfo.brand !== prevBrandRef.current) {
+      const nextModels = PHONE_DATA.models[localInfo.brand] ?? [];
       setAvailableModels(nextModels);
-
       setLocalInfo((prev) => ({
         ...prev,
         model: "",
@@ -105,31 +88,20 @@ const AssessStep1 = ({
         batteryHealth:
           localInfo.brand === "Apple" ? prev.batteryHealth : undefined,
       }));
-
-      if (nextModels.length === 1) {
+      if (nextModels.length === 1)
         setLocalInfo((prev) => ({ ...prev, model: nextModels[0] }));
-      }
-
       prevBrandRef.current = localInfo.brand;
-    } else {
-      setAvailableModels(MOCK_DATA.models[localInfo.brand] ?? []);
     }
   }, [localInfo.brand]);
 
   useEffect(() => {
-    if (localInfo.model !== prevModelRef.current) {
-      const nextStorage = MOCK_DATA.storage[localInfo.model] ?? [];
+    if (localInfo.model && localInfo.model !== prevModelRef.current) {
+      const nextStorage = PHONE_DATA.storage[localInfo.model] ?? [];
       setAvailableStorage(nextStorage);
-
       setLocalInfo((prev) => ({ ...prev, storage: "" }));
-
-      if (nextStorage.length === 1) {
+      if (nextStorage.length === 1)
         setLocalInfo((prev) => ({ ...prev, storage: nextStorage[0] }));
-      }
-
       prevModelRef.current = localInfo.model;
-    } else {
-      setAvailableStorage(MOCK_DATA.storage[localInfo.model] ?? []);
     }
   }, [localInfo.model]);
 
@@ -140,7 +112,6 @@ const AssessStep1 = ({
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
   };
-
   const handleUserDeviceSelect = (
     selection: "this_device" | "other_device",
   ) => {
@@ -149,16 +120,14 @@ const AssessStep1 = ({
   };
 
   const isAppleDevice = localInfo.brand === "Apple";
-
-  // === ตรวจความสอดคล้องกับลิสต์จริง
-  const isValidBrand = MOCK_DATA.brands.includes(localInfo.brand);
+  const allBrands = PHONE_DATA.brands.map((b) => b.id);
+  const isValidBrand = allBrands.includes(localInfo.brand);
   const isValidModel =
     isValidBrand && availableModels.includes(localInfo.model);
   const isValidStorage =
     isValidModel && availableStorage.includes(localInfo.storage);
   const isValidBattery = !isAppleDevice || !!localInfo.batteryHealth;
   const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
-
   const isComplete =
     isValidBrand &&
     isValidModel &&
@@ -168,7 +137,7 @@ const AssessStep1 = ({
 
   return (
     <motion.div
-      className="card-assessment mx-auto flex h-full max-w-2xl flex-col rounded-2xl p-6"
+      className="mx-auto flex h-full max-w-2xl flex-col rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -193,7 +162,7 @@ const AssessStep1 = ({
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "this_device"
-                  ? "border-primary bg-primary/10 ring-primary animate-pulse ring-2"
+                  ? "border-primary bg-primary/10 ring-primary ring-2"
                   : "border-border bg-accent/50 hover:border-primary/50",
               )}
               role="button"
@@ -205,13 +174,12 @@ const AssessStep1 = ({
                 ประเมินเครื่องนี้
               </span>
             </motion.button>
-
             <motion.button
               onClick={() => handleUserDeviceSelect("other_device")}
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "other_device"
-                  ? "border-secondary bg-secondary/10 ring-secondary animate-pulse ring-2"
+                  ? "border-secondary bg-secondary/10 ring-secondary ring-2"
                   : "border-border bg-accent/50 hover:border-secondary/50",
               )}
               role="button"
@@ -228,130 +196,159 @@ const AssessStep1 = ({
       )}
 
       <div className="flex-grow space-y-6">
-        {/* Brand Selection */}
         <div>
-          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
-            ยี่ห้อ *
+          <label className="text-foreground mb-3 ml-1 block text-sm font-medium">
+            เลือกแบรนด์ที่ต้องการ *
           </label>
-          <Select
-            onValueChange={(value) => handleSelectChange("brand", value)}
-            value={localInfo.brand}
-          >
-            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
-              <SelectValue placeholder="เลือกยี่ห้อ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>ยี่ห้อ</SelectLabel>
-                {MOCK_DATA.brands.map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {PHONE_DATA.brands.map((brand) => {
+              const isSelected = localInfo.brand === brand.id;
+              return (
+                <button
+                  key={brand.id}
+                  onClick={() => handleSelectChange("brand", brand.id)}
+                  className={cn(
+                    "bg-card flex h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all duration-200",
+                    isSelected
+                      ? "border-secondary bg-secondary/10 ring-secondary ring-2"
+                      : "hover:border-primary/50",
+                  )}
+                >
+                  <div className="flex h-8 w-8 items-center justify-center">
+                    <img
+                      src={brand.logo}
+                      alt={`${brand.name} logo`}
+                      width="32"
+                      height="32"
+                      className={cn(
+                        "h-auto max-h-8 w-auto max-w-8 object-contain",
+                        !isSelected && "grayscale",
+                      )}
+                    />
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      isSelected ? "text-secondary" : "text-muted-foreground",
+                    )}
+                  >
+                    {brand.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Model Selection */}
-        <div>
-          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
-            รุ่น *
-          </label>
-          <Select
-            onValueChange={(value) => handleSelectChange("model", value)}
-            value={localInfo.model}
-            disabled={!localInfo.brand}
-          >
-            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
-              <SelectValue placeholder="เลือกรุ่น" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>รุ่น</SelectLabel>
-                {availableModels.map((model) => (
-                  <SelectItem key={model} value={model}>
-                    {model}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Storage Selection */}
-        <div>
-          <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
-            ความจุ *
-          </label>
-          <Select
-            onValueChange={(value) => handleSelectChange("storage", value)}
-            value={localInfo.storage}
-            disabled={!localInfo.model}
-          >
-            <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
-              <SelectValue placeholder="เลือกความจุ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>ความจุ</SelectLabel>
-                {availableStorage.map((storage) => (
-                  <SelectItem key={storage} value={storage}>
-                    {storage}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Battery Health (เฉพาะ Apple) */}
         <AnimatePresence>
-          {isAppleDevice && (
+          {localInfo.brand && (
             <motion.div
-              key="battery-health-field"
-              className="overflow-hidden"
               initial={{ opacity: 0, height: 0, marginTop: 0 }}
               animate={{ opacity: 1, height: "auto", marginTop: "1.5rem" }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="space-y-6 overflow-hidden"
             >
               <div>
                 <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
-                  สุขภาพแบตเตอรี่ *
+                  รุ่น *
                 </label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("batteryHealth", value)
-                  }
-                  value={localInfo.batteryHealth || ""}
-                  disabled={!isAppleDevice}
+                  onValueChange={(value) => handleSelectChange("model", value)}
+                  value={localInfo.model}
                 >
                   <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
-                    <SelectValue placeholder="เลือกเปอร์เซ็นต์แบตเตอรี่" />
+                    <SelectValue placeholder="เลือกรุ่น" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>สุขภาพแบตเตอรี่</SelectLabel>
-                      {BATTERY_HEALTH_OPTIONS.map((health) => (
-                        <SelectItem key={health} value={health}>
-                          {health}
+                      <SelectLabel>รุ่น</SelectLabel>
+                      {availableModels.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
                         </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+                  ความจุ *
+                </label>
+                <Select
+                  onValueChange={(value) =>
+                    handleSelectChange("storage", value)
+                  }
+                  value={localInfo.storage}
+                  disabled={!localInfo.model}
+                >
+                  <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
+                    <SelectValue placeholder="เลือกความจุ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>ความจุ</SelectLabel>
+                      {availableStorage.map((storage) => (
+                        <SelectItem key={storage} value={storage}>
+                          {storage}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              {isAppleDevice && (
+                <div>
+                  <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
+                    สุขภาพแบตเตอรี่ *
+                  </label>
+                  <Select
+                    onValueChange={(value) =>
+                      handleSelectChange("batteryHealth", value)
+                    }
+                    value={localInfo.batteryHealth || ""}
+                  >
+                    <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
+                      <SelectValue placeholder="เลือกเปอร์เซ็นต์แบตเตอรี่" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>สุขภาพแบตเตอรี่</SelectLabel>
+                        {BATTERY_HEALTH_OPTIONS.map((health) => (
+                          <SelectItem key={health} value={health}>
+                            {health}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* รูปตัวอย่างรุ่น (กัน layout jump ด้วย min-height) */}
+        {/* --- [ADD START] --- */}
+        {/* ส่วนแสดงรูปภาพตัวอย่างรุ่น */}
         <div
           className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
-          style={{ height: productData?.image_url ? "12rem" : "3rem" }}
+          style={{
+            height: isImageLoading || productData?.image_url ? "12rem" : "3rem",
+          }}
         >
           <AnimatePresence mode="wait">
+            {isImageLoading && (
+              <motion.div
+                key="loader"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="border-t-primary h-8 w-8 animate-spin rounded-full border-4 border-slate-200" />
+              </motion.div>
+            )}
+
             {!isImageLoading && productData?.image_url && (
               <motion.div
                 key="image"
@@ -360,18 +357,19 @@ const AssessStep1 = ({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
+                {/* ใช้ <img> ธรรมดาเพื่อความเข้ากันได้กับ Supabase Storage URL */}
                 <Image
-                  width={160}
-                  height={160}
+                  width="160"
+                  height="160"
                   src={productData.image_url}
                   alt={`${localInfo.brand} ${localInfo.model}`}
-                  className="object-contain"
-                  priority
+                  className="h-auto max-h-40 w-auto object-contain"
                 />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+        {/* --- [ADD END] --- */}
       </div>
 
       <div className="mt-8 flex justify-end">

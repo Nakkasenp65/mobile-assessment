@@ -9,17 +9,23 @@ export const useMobile = (product: string, model: string) => {
 
     // 2. Query Function: คือฟังก์ชันที่จะทำงานเพื่อดึงข้อมูล
     queryFn: async () => {
-      const getProduct = (product) => {
-        if (product === "Apple") return "iPhone";
-        else return product;
-      };
-      const queryProduct = getProduct(product);
+      let queryModel = "";
+      let queryProduct = "";
+
+      if (product === "Apple") {
+        queryProduct = "iPhone";
+        queryModel = model;
+      } else if (product === "Samsung")
+        queryModel = model.replace("Galaxy", "Samsung");
+      else {
+        queryModel = model;
+      }
 
       const { data, error } = await supabase
         .from("Mobile")
         .select("image_url")
-        .eq("product", queryProduct) // ใช้ 'product' ตามโครงสร้างฐานข้อมูล
-        .eq("model", model)
+        .eq("product", queryProduct)
+        .eq("model", queryModel)
         .limit(1)
         .single();
 

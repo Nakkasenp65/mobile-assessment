@@ -11,15 +11,7 @@ import AutomatedDiagnostics from "./AutomatedDiagnostics";
 import InteractiveTests, { TestName, TestStatus } from "./InteractiveTests";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
-function PermissionPrompt({
-  open,
-  onAllow,
-  onCancel,
-}: {
-  open: boolean;
-  onAllow: () => void;
-  onCancel: () => void;
-}) {
+function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
   if (!open) return null;
   return (
     <AnimatePresence>
@@ -39,14 +31,10 @@ function PermissionPrompt({
         transition={{ duration: 0.22, ease: "easeOut" }}
       >
         <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/90 p-6 shadow-xl backdrop-blur-md dark:bg-zinc-900/90">
-          <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
-            อนุญาตกล้องและไมโครโฟน
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">อนุญาตกล้องและไมโครโฟน</h3>
           <p className="text-sm text-slate-600 dark:text-zinc-300">
             เพื่อทำการประเมินอัตโนมัติอย่างถูกต้อง กรุณา{" "}
-            <span className="font-semibold">
-              อนุญาตการเข้าถึงกล้องและไมโครโฟน
-            </span>{" "}
+            <span className="font-semibold">อนุญาตการเข้าถึงกล้องและไมโครโฟน</span>{" "}
             เมื่อเบราว์เซอร์มีหน้าต่างขอสิทธิ์ขึ้นมา
           </p>
 
@@ -73,9 +61,7 @@ function PermissionPrompt({
 // [FIX] Updated Props Interface to accept isOwnDevice
 interface AssessStep2Props {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (
-    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
-  ) => void;
+  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
   onBack: () => void;
   isOwnDevice: boolean; // New prop
@@ -128,10 +114,7 @@ const AssessStep2 = ({
   }, []);
 
   // [FIX] Re-created for simplicity
-  const handleAutomatedComplete = useCallback(
-    () => setCurrentSubStep("interactive"),
-    [],
-  );
+  const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
 
   const handleDiagnosticsCompletion = useCallback(
     (result: DiagnosticsResult) => {
@@ -180,7 +163,7 @@ const AssessStep2 = ({
   const showFullReport = isDesktop || !isOwnDevice;
 
   return (
-    <div className="md:card-assessment md:border-border mx-auto flex max-w-2xl flex-col rounded-xl from-white to-[#fff9f2] md:bg-gradient-to-br md:p-2">
+    <div className="md:border-border mx-auto flex max-w-2xl flex-col rounded-xl md:p-2">
       {/* Modal แจ้งเตือนก่อนเข้าสู่ Automated */}
       <PermissionPrompt
         open={showPermissionPrompt}

@@ -1,5 +1,3 @@
-// src/app/assess/components/(step3)/AssessmentLedger.tsx
-
 "use client";
 import { ComponentType } from "react";
 import { DeviceInfo, ConditionInfo } from "../../page";
@@ -16,8 +14,7 @@ import {
   Volume2,
   Wifi,
   AlertTriangle,
-  PowerOff,
-  Flag,
+  CheckCircle, // 1. Import ไอคอน CheckCircle เพิ่ม
 } from "lucide-react";
 import {
   Accordion,
@@ -27,7 +24,7 @@ import {
 } from "@/components/ui/accordion";
 
 // ----------------------------------------------------------------------------------------------------
-// Data Maps: แหล่งข้อมูลหลักสำหรับ Label และ Icon
+// Data Maps: คงเดิม
 // ----------------------------------------------------------------------------------------------------
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
@@ -62,23 +59,43 @@ const LABEL_MAP: Record<string, string> = {
 };
 
 // ----------------------------------------------------------------------------------------------------
-// Component: FailedTestItem
-// แสดงผลรายการที่ "ไม่ผ่าน" โดยดึงข้อมูลจาก MAPs
+// Component: TestItem (ปรับปรุงใหม่)
 // ----------------------------------------------------------------------------------------------------
-const FailedTestItem = ({ itemKey }: { itemKey: string }) => {
+const TestItem = ({
+  itemKey,
+  itemValue,
+}: {
+  itemKey: string;
+  itemValue: string;
+}) => {
   const label = LABEL_MAP[itemKey] || itemKey;
   const Icon = ICON_MAP[itemKey];
 
-  if (!Icon) return null; // ไม่แสดงผลถ้าไม่มีไอคอนที่กำหนด
+  // 2. ตรวจสอบสถานะว่า "ผ่าน" หรือไม่
+  const isPassed =
+    ["passed", "success", "good", "excellent"].includes(itemValue) ||
+    (itemKey === "touchScreen" && parseInt(itemValue) >= 90);
+
+  // ไม่แสดงผลถ้ารายการนั้นไม่มีข้อมูล หรือไม่มีไอคอน
+  if (!itemValue || !Icon) return null;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-slate-100 p-2 md:p-3 dark:bg-zinc-800">
+    <div
+      className={`flex items-center gap-3 rounded-lg bg-slate-100 p-2 md:p-3 dark:bg-zinc-800 ${isPassed ? null : "ring-primary/25 to-primary/20 from-accent via-accent bg-gradient-to-br ring-2"}`}
+    >
       <div className="relative flex-shrink-0">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-zinc-700">
           <Icon className="h-5 w-5 text-zinc-600 md:h-6 md:w-6 dark:text-zinc-300" />
         </div>
-        <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-100 bg-orange-500 dark:border-zinc-800">
-          <AlertTriangle className="h-2.5 w-2.5 text-white" />
+        {/* 3. แสดงไอคอนตามสถานะ (ผ่าน/ไม่ผ่าน) */}
+        <div
+          className={`absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white dark:border-zinc-800 ${isPassed ? "bg-green-500" : "bg-orange-500"}`}
+        >
+          {isPassed ? (
+            <CheckCircle className="h-2.5 w-2.5 text-white" />
+          ) : (
+            <AlertTriangle className="h-2.5 w-2.5 text-white" />
+          )}
         </div>
       </div>
       <span className="text-sm font-semibold break-words text-slate-700 dark:text-zinc-200">
@@ -90,7 +107,6 @@ const FailedTestItem = ({ itemKey }: { itemKey: string }) => {
 
 // ----------------------------------------------------------------------------------------------------
 // Component: AssessmentLedger (Main)
-// **ปรับปรุงใหม่:** ใช้ข้อมูลจาก deviceInfo และ conditionInfo โดยตรงเพื่อกรองรายการที่เสียหาย
 // ----------------------------------------------------------------------------------------------------
 const AssessmentLedger = ({
   deviceInfo,
@@ -99,16 +115,12 @@ const AssessmentLedger = ({
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
 }) => {
-  // **ตรรกะใหม่:** รวมข้อมูลทั้งหมดและกรองเฉพาะรายการที่มีปัญหา
+  // 4. รวมข้อมูลทั้งหมดและกรองรายการที่ไม่มีค่า (null, undefined, "") ออก
   const allInfo = { ...deviceInfo, ...conditionInfo };
-  const failedKeys = Object.entries(allInfo)
-    .filter(([key, value]) => value === "failed" || value === "defect")
-    .map(([key]) => key);
+  const allItems = Object.entries(allInfo).filter(([_, value]) => value);
 
-  const hasFailed = failedKeys.length > 0;
-
-  // ถ้าไม่มีรายการที่เสียเลย จะไม่แสดงผลคอมโพเนนต์นี้
-  if (!hasFailed) {
+  // ไม่แสดงผลเลยถ้าไม่มีข้อมูลอะไรเลย
+  if (allItems.length === 0) {
     return null;
   }
 
@@ -124,23 +136,22 @@ const AssessmentLedger = ({
           value="details"
           className="rounded-2xl border-none bg-white dark:bg-zinc-800"
         >
-          <AccordionTrigger className="flex w-full items-center text-left hover:no-underline">
+          <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
             <div className="flex w-full flex-col items-start">
               <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
-                อาการที่พบ
-                <Flag size={18} className="mb-1" />
+                รายละเอียดการตรวจสอบ
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                Click to see the details of the issues found.
+                คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
               </p>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="pt-0">
+          <AccordionContent className="p-4 pt-0">
             <div className="border-t pt-4 dark:border-zinc-700">
               <div className="grid grid-cols-2 gap-3">
-                {/* 3. แสดง Grid ของรายการที่เสียหายเท่านั้น */}
-                {failedKeys.map((key) => (
-                  <FailedTestItem key={key} itemKey={key} />
+                {/* 5. แสดงผลทุกรายการที่มีข้อมูล */}
+                {allItems.map(([key, value]) => (
+                  <TestItem key={key} itemKey={key} itemValue={value} />
                 ))}
               </div>
             </div>

@@ -10,10 +10,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 // ----------------------------------------------------------------------------------------------------
 // Interface: ServicesProps
-// โครงสร้าง Props ยังคงเหมือนเดิม ไม่มีการเปลี่ยนแปลง
 // ----------------------------------------------------------------------------------------------------
 interface ServicesProps {
   services: ServiceOption[];
@@ -23,39 +23,55 @@ interface ServicesProps {
   pawnPrice: number;
 }
 
-/** พาเลตสีสำหรับแต่ละบริการ (คงเดิม) */
+/** พาเลตสีสำหรับแต่ละบริการ - ปรับปรุงสำหรับดีไซน์ใหม่ */
 const PALETTE = {
   sell: {
-    bar: "from-pink-500 to-fuchsia-500",
-    ring: "ring-pink-500/60",
-    borderColor: "border-pink-500", // เพิ่ม borderColor
-    icon: "bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white",
-    text: "text-pink-600 dark:text-pink-400",
-    soft: "bg-pink-50 dark:bg-pink-500/10",
+    text: "text-pink-500",
+    borderColor: "border-pink-500",
+    soft: "bg-pink-50/20 dark:bg-pink-900/20",
+    ring: "ring-pink-500/20",
   },
   pawn: {
-    bar: "from-orange-500 to-amber-500",
-    ring: "ring-orange-500/60",
-    borderColor: "border-orange-500", // เพิ่ม borderColor
-    icon: "bg-gradient-to-r from-orange-500 to-amber-500 text-white",
-    text: "text-orange-600 dark:text-orange-400",
-    soft: "bg-orange-50 dark:bg-orange-500/10",
+    text: "text-orange-500",
+    borderColor: "border-orange-500",
+    soft: "bg-orange-50/20 dark:bg-orange-900/20",
+    ring: "ring-orange-500/20",
   },
   tradein: {
-    bar: "from-violet-500 to-indigo-500",
-    ring: "ring-violet-500/60",
-    borderColor: "border-violet-500", // เพิ่ม borderColor
-    icon: "bg-gradient-to-r from-violet-500 to-indigo-500 text-white",
-    text: "text-violet-600 dark:text-violet-400",
-    soft: "bg-violet-50 dark:bg-violet-500/10",
+    text: "text-violet-500",
+    borderColor: "border-violet-500",
+    soft: "bg-violet-50/20 dark:bg-violet-900/20",
+    ring: "ring-violet-500/20",
+  },
+  consignment: {
+    text: "text-cyan-500",
+    borderColor: "border-cyan-500",
+    soft: "bg-cyan-50/20 dark:bg-cyan-900/20",
+    ring: "ring-cyan-500/20",
+  },
+  refurbish: {
+    text: "text-red-500",
+    borderColor: "border-red-500",
+    soft: "bg-red-50/20 dark:bg-red-900/20",
+    ring: "ring-red-500/20",
+  },
+  installment: {
+    text: "text-rose-500",
+    borderColor: "border-rose-500",
+    soft: "bg-rose-50/20 dark:bg-rose-900/20",
+    ring: "ring-rose-500/20",
+  },
+  delivery: {
+    text: "text-amber-500",
+    borderColor: "border-amber-500",
+    soft: "bg-amber-50 dark:bg-amber-900/20",
+    ring: "ring-amber-500/20",
   },
   fallback: {
-    bar: "from-slate-500 to-gray-600",
-    ring: "ring-slate-500/60",
-    borderColor: "border-slate-500", // เพิ่ม borderColor
-    icon: "bg-gradient-to-r from-slate-500 to-gray-600 text-white",
-    text: "text-slate-600 dark:text-slate-400",
-    soft: "bg-slate-50 dark:bg-slate-500/10",
+    text: "text-slate-500",
+    borderColor: "border-slate-500",
+    soft: "bg-slate-50 dark:bg-slate-900/20",
+    ring: "ring-slate-500/20",
   },
 } as const;
 
@@ -63,6 +79,7 @@ function getTheme(id: string) {
   const themeKey = id as keyof typeof PALETTE;
   return PALETTE[themeKey] ?? PALETTE.fallback;
 }
+
 const THB = (n: number) =>
   n
     .toLocaleString("th-TH", {
@@ -70,13 +87,10 @@ const THB = (n: number) =>
       currency: "THB",
       minimumFractionDigits: 0,
     })
-    .replace("฿", "฿");
+    .replace("฿", "฿ ");
 
 // ----------------------------------------------------------------------------------------------------
 // Component: Services
-// **ปรับปรุง UI ทั้งหมด** ให้เป็น Card-based ตามดีไซน์ใหม่
-// - ไอคอนมีสีพื้นหลังถาวร
-// - สถานะ "เลือกแล้ว" จะแสดงเป็นเส้นขอบสี (Border) แทนการเปลี่ยนสีพื้นหลัง
 // ----------------------------------------------------------------------------------------------------
 export default function Services({
   services,
@@ -86,15 +100,11 @@ export default function Services({
   pawnPrice,
 }: ServicesProps) {
   return (
-    <div className="flex w-full flex-1 flex-col gap-6">
-      <h2 className="text-foreground text-2xl font-bold">
-        เลือกบริการที่ต้องการ
-      </h2>
-
+    <div className="flex w-full flex-1 flex-col">
       <Accordion
         type="single"
         collapsible
-        className="w-full space-y-3" // ใช้ space-y เพื่อเว้นระยะห่างระหว่าง Card
+        className="flex w-full flex-col gap-3" // ลด gap ลงเล็กน้อยเพื่อความกระชับ
         value={selectedService}
         onValueChange={setSelectedService}
       >
@@ -108,55 +118,68 @@ export default function Services({
               key={service.id}
               value={service.id}
               className={cn(
-                "rounded-xl border-2 bg-white transition-all duration-300 dark:bg-zinc-800",
-                isSelected ? theme.borderColor : "border-transparent", // แสดง border สีเมื่อถูกเลือก
-                "shadow-sm hover:shadow-md", // เพิ่มเงาเล็กน้อย
+                "rounded-2xl border shadow-sm transition-all duration-300 ease-in-out",
+                isSelected
+                  ? `${theme.borderColor} ${theme.soft} ${theme.ring} ring-2` // Style เมื่อถูกเลือก
+                  : "border-border bg-card", // Style ปกติ (พื้นหลังขาว)
               )}
             >
               <AccordionTrigger className="w-full cursor-pointer p-4 text-left hover:no-underline">
                 <div className="flex w-full items-center gap-4">
-                  {/* ส่วนของไอคอน (มีสีพื้นหลังถาวร) */}
+                  {/* ไอคอนในวงกลมสีขาว */}
                   <div
                     className={cn(
-                      "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg",
-                      theme.soft, // ใช้สี soft จาก Palette
+                      "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
                     )}
                   >
-                    <Icon className={cn("h-7 w-7", theme.text)} />
+                    <Icon className={cn("h-6 w-6", theme.text)} />
                   </div>
 
-                  {/* ส่วนของข้อความ (หัวข้อและคำอธิบาย) */}
+                  {/* หัวข้อและคำอธิบาย */}
                   <div className="flex-1 text-left">
-                    <h4 className="font-bold text-zinc-800 dark:text-zinc-100">
+                    <h4 className="text-foreground font-semibold">
                       {service.title}
                     </h4>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="text-muted-foreground text-sm">
                       {service.description}
                     </p>
                   </div>
 
-                  {/* ส่วนของราคา */}
+                  {/* ราคา */}
                   <div className="ml-2 text-right">
-                    <p className="text-lg font-bold text-zinc-800 dark:text-zinc-100">
+                    <p className="text-foreground text-lg font-bold">
                       {THB(service.price)}
                     </p>
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
-                {/* เนื้อหาภายใน Accordion (PawnService หรือ Feature List) */}
-                {service.id === "pawn" && (
-                  <PawnService deviceInfo={deviceInfo} pawnPrice={pawnPrice} />
-                )}
-                {service.id !== "pawn" && service.features.length > 0 && (
-                  <div className="mt-4 border-t pt-4 dark:border-zinc-700">
-                    <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
-                      {service.features.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
+                  {service.id === "pawn" && (
+                    <PawnService
+                      deviceInfo={deviceInfo}
+                      pawnPrice={pawnPrice}
+                    />
+                  )}
+                  {service.id !== "pawn" && service.features.length > 0 && (
+                    <>
+                      <h5 className="text-foreground mb-2 font-semibold">
+                        สิทธิประโยชน์ที่คุณจะได้รับ:
+                      </h5>
+                      <ul className="text-muted-foreground space-y-2">
+                        {service.features.map((feature) => (
+                          <li
+                            key={feature}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           );

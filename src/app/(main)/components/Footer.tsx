@@ -9,6 +9,7 @@ import {
   TwitterLogo,
   YoutubeLogo,
 } from "@phosphor-icons/react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // 1. Import Accordion
 
 const Footer: React.FC = () => {
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -19,27 +20,22 @@ const Footer: React.FC = () => {
       alert("กรุณากรอกอีเมลให้ถูกต้อง");
       return;
     }
-    // TODO: เรียก API สมัครรับข่าวสารของคุณ
     alert("ขอบคุณที่ติดตามเรา! เราจะส่งข่าวสารให้คุณเป็นระยะ");
     e.currentTarget.reset();
   };
 
   return (
-    <footer className="relative isolate mt-20">
-      {/* แถบไฮไลต์ soft gradient ด้านบน */}
+    <footer className="relative isolate">
+      {/* Backgrounds (เหมือนเดิม) */}
       <div className="pointer-events-none absolute inset-x-0 -top-6 mx-auto h-12 max-w-6xl rounded-full bg-gradient-to-r from-orange-400/25 via-pink-400/25 to-fuchsia-400/25 blur-2xl" />
-      {/* พื้นหลังนุ่ม โทนเทา + ไล่สีบาง ๆ */}
       <div className="absolute inset-0 -z-10 bg-gray-100" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-pink-50/40 via-white to-orange-50/40" />
 
-      <div className="container mx-auto px-4 py-12 md:py-16">
-        {/* กริด 1→2→4 คอลัมน์ */}
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[5fr_3fr_2fr_2fr]">
-          {/* Column 1: About */}
-          <section
-            aria-labelledby="footer-about"
-            className="md:col-span-2 lg:col-span-1"
-          >
+      {/* 2. ปรับ Padding และ Gap สำหรับจอมือถือให้กระชับขึ้น */}
+      <div className="container mx-auto px-4 py-10 md:py-16">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[5fr_3fr_2fr_2fr]">
+          {/* Column 1: About (เหมือนเดิม) */}
+          <section aria-labelledby="footer-about" className="md:col-span-2 lg:col-span-1">
             <h2 id="footer-about" className="sr-only">
               เกี่ยวกับ OK Mobile
             </h2>
@@ -58,18 +54,14 @@ const Footer: React.FC = () => {
               ให้ราคาดีที่คุณต้องถูกใจ
             </h3>
             <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น รู้ราคาภายใน 1 นาที
-              พร้อมประเมินราคายุติธรรมกว่าท้องตลาด รับซื้อ iPhone, Samsung, OPPO
-              และอีกมากมาย
+              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น รู้ราคาภายใน 1 นาที พร้อมประเมินราคายุติธรรมกว่าท้องตลาด
+              รับซื้อ iPhone, Samsung, OPPO และอีกมากมาย
             </p>
           </section>
 
-          {/* Column 2: Subscribe & Contact */}
+          {/* Column 2: Subscribe & Contact (เหมือนเดิม) */}
           <section aria-labelledby="footer-subscribe">
-            <h3
-              id="footer-subscribe"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+            <h3 id="footer-subscribe" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               Subscribe
             </h3>
             <form
@@ -101,96 +93,125 @@ const Footer: React.FC = () => {
               </li>
               <li className="text-muted-foreground flex items-center gap-3">
                 <Envelope size={18} aria-hidden />
-                <a
-                  href="mailto:OKMobile@gmail.com"
-                  className="hover:text-gray-900"
-                >
+                <a href="mailto:OKMobile@gmail.com" className="hover:text-gray-900">
                   OKMobile@gmail.com
                 </a>
               </li>
             </ul>
           </section>
 
-          {/* Column 3: Customer Links */}
-          <nav aria-labelledby="footer-customer" className="">
-            <h3
-              id="footer-customer"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+          {/* --- START: การเปลี่ยนแปลง --- */}
+          {/* 3. สร้าง Accordion สำหรับแสดงผลบนจอมือถือเท่านั้น */}
+          <div className="block md:hidden">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="customer-service">
+                <AccordionTrigger className="text-sm font-bold tracking-wider text-gray-900 uppercase">
+                  ศูนย์ดูแลลูกค้า
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 pt-2">
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        คำถามบ่อยๆ
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        วิธีการขายสินค้า
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        วิธีการรับเงิน
+                      </a>
+                    </li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="company">
+                <AccordionTrigger className="text-sm font-bold tracking-wider text-gray-900 uppercase">
+                  OK Mobile
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 pt-2">
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        เกี่ยวกับ OK Mobile
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        ข้อกำหนดและเงื่อนไข
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-muted-foreground text-sm">
+                        นโยบายความเป็นส่วนตัว
+                      </a>
+                    </li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* 4. คง Layout เดิมไว้สำหรับจอ Desktop (ซ่อนบนจอมือถือ) */}
+          <nav aria-labelledby="footer-customer" className="hidden md:block">
+            <h3 id="footer-customer" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               ศูนย์ดูแลลูกค้า
             </h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   คำถามบ่อยๆ
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   วิธีการขายสินค้า
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   วิธีการรับเงิน
                 </a>
               </li>
             </ul>
           </nav>
 
-          {/* Column 4: Company & Social */}
-          <nav aria-labelledby="footer-company">
-            <h3
-              id="footer-company"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+          <nav aria-labelledby="footer-company" className="hidden md:block">
+            <h3 id="footer-company" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               OK Mobile
             </h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   เกี่ยวกับ OK Mobile
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   ข้อกำหนดและเงื่อนไข
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   นโยบายความเป็นส่วนตัว
                 </a>
               </li>
             </ul>
+          </nav>
+          {/* --- END: การเปลี่ยนแปลง --- */}
 
-            <h3 className="mt-8 mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">
-              Follow Us
-            </h3>
+          {/* Social Icons (ย้ายออกมาเพื่อให้แสดงผลเสมอ) */}
+          <div className="lg:col-start-4">
+            <h3 className="mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">Follow Us</h3>
             <ul className="flex gap-2" aria-label="โซเชียลมีเดีย">
               <li>
                 <a
                   href="#"
                   aria-label="Facebook"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877f2] text-white shadow-sm transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-pink-500/40 focus-visible:outline-none"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877f2] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
                   <FacebookLogo size={20} weight="fill" />
                 </a>
@@ -199,7 +220,7 @@ const Footer: React.FC = () => {
                 <a
                   href="#"
                   aria-label="LINE"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-pink-500/40 focus-visible:outline-none"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
                   <ChatTeardropText size={20} weight="fill" />
                 </a>
@@ -208,7 +229,7 @@ const Footer: React.FC = () => {
                 <a
                   href="#"
                   aria-label="Twitter/X"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1da1f2] text-white shadow-sm transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-pink-500/40 focus-visible:outline-none"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1da1f2] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
                   <TwitterLogo size={20} weight="fill" />
                 </a>
@@ -217,17 +238,17 @@ const Footer: React.FC = () => {
                 <a
                   href="#"
                   aria-label="YouTube"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff0000] text-white shadow-sm transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-pink-500/40 focus-visible:outline-none"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff0000] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
                   <YoutubeLogo size={20} weight="fill" />
                 </a>
               </li>
             </ul>
-          </nav>
+          </div>
         </div>
       </div>
 
-      {/* Subfooter */}
+      {/* Subfooter (เหมือนเดิม) */}
       <div className="border-t border-white/60 bg-gray-200/90 py-4">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground text-xs md:text-sm">

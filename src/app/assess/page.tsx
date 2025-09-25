@@ -16,15 +16,23 @@ export interface DeviceInfo {
 }
 
 export interface ConditionInfo {
+  // ข้อมูลทั่วไป
+  modelType: string;
+  warranty: string;
+  accessories: string;
+  // สภาพภายนอก
+  bodyCondition: string;
   screenGlass: string;
+  // การทำงานหน้าจอและประสิทธิภาพ
   screenDisplay: string;
-  powerOn: string;
+  batteryHealth: string; // คำตอบจากคำถามเรื่องสุขภาพแบต
+  // ฟังก์ชันพื้นฐาน
   camera: string;
-  charger: string;
   wifi: string;
-  touchScreen: string;
-  mic: string;
+  faceId: string;
   speaker: string;
+  mic: string;
+  touchScreen: string;
 }
 
 export default function AssessPage() {
@@ -37,15 +45,19 @@ export default function AssessPage() {
     batteryHealth: "",
   });
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
+    modelType: "",
+    warranty: "",
+    accessories: "",
+    bodyCondition: "",
     screenGlass: "",
     screenDisplay: "",
-    powerOn: "",
+    batteryHealth: "",
     camera: "",
-    charger: "",
     wifi: "",
-    touchScreen: "",
-    mic: "",
+    faceId: "",
     speaker: "",
+    mic: "",
+    touchScreen: "",
   });
 
   const handleNext = () => {
@@ -98,11 +110,7 @@ export default function AssessPage() {
           )}
 
           {currentStep === 3 && (
-            <AssessStep3
-              deviceInfo={deviceInfo}
-              conditionInfo={conditionInfo}
-              onBack={handleBack}
-            />
+            <AssessStep3 deviceInfo={deviceInfo} conditionInfo={conditionInfo} onBack={handleBack} />
           )}
         </div>
       </div>

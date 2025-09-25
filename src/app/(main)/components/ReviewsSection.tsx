@@ -1,98 +1,166 @@
-// src/app/(main)/components/ReviewsSection.tsx
 "use client";
 
-import React from "react";
-import Autoplay from "embla-carousel-autoplay"; // 1. Import ปลั๊กอินเข้ามา
+import React, { useState, useEffect, useCallback } from "react";
+import Autoplay from "embla-carousel-autoplay";
+import { Quote } from "lucide-react";
+import type { EmblaCarouselType } from "embla-carousel";
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
+// [MOD] ปรับปรุงข้อมูลรีวิวให้เข้ากับดีไซน์ใหม่
 const reviews = [
   {
     img: "https://i.pravatar.cc/150?img=1",
-    name: "By 096467xxxx",
-    text: "กดประเมินจากเว็บมา ขายจริงหน้าร้านสาขาเซ็นทรัลเวิลด์ ได้ราคาดีจริงๆค่ะ ให้บริการดีเลยค่ะ",
+    name: "คุณสมหญิง",
+    handle: "@somying_k",
+    text: "ประทับใจความเป็นมืออาชีพและความใส่ใจในรายละเอียดมากๆ เลยค่ะ",
   },
   {
     img: "https://i.pravatar.cc/150?img=2",
-    name: "By 096467xxxx",
-    text: "พี่ๆหน้าร้าน สาขาเซ็นทรัลเวิลด์ บริการดีมากเลยค่ะ ง่าย ไว ชัวร์ ตามที่บอกเลยค่ะ ประทับใจมาก",
+    name: "คุณกรกนก",
+    handle: "@kornkanok_p",
+    text: "ประสบการณ์ราบรื่นไร้ที่ติเลยค่ะ ตั้งแต่ต้นจนจบ แนะนำเลย!",
   },
   {
     img: "https://i.pravatar.cc/150?img=3",
-    name: "By 096467xxxx",
-    text: "เห็นมาจาก FB Page เห็นมีหน้าร้าน เชื่อถือได้ เลยมาขายที่หน้าร้าน บริการเร็ว ได้เงินทันที",
+    name: "คุณเจนวิทย์",
+    handle: "@jane_witt",
+    text: "เชื่อถือได้และไว้วางใจได้จริงๆ ทำให้ชีวิตผมง่ายขึ้นเยอะเลยครับ",
   },
   {
     img: "https://i.pravatar.cc/150?img=4",
-    name: "By 096467xxxx",
-    text: "ชอบตั้งแต่ได้คุยกับแอดมินในเพจ ให้คำแนะนำดี ไม่ต้องรอนาน ชัดเจนรู้เรื่องที่จะคุยกับไรบวก",
+    name: "คุณธนพล",
+    handle: "@thanapon.p",
+    text: "ให้ราคายุติธรรม บริการรวดเร็วมาก ไม่ต้องรอนาน ได้เงินสดทันที ชอบมากครับ",
+  },
+  {
+    img: "https://i.pravatar.cc/150?img=5",
+    name: "คุณอารยา",
+    handle: "@araya.s",
+    text: "ขั้นตอนไม่ยุ่งยากเลยค่ะ แค่ประเมินราคาออนไลน์แล้วไปที่สาขา สะดวกมากๆ",
   },
 ];
 
+// [ADD] Component สำหรับปุ่ม Dot ด้านล่าง
+const DotButton = ({
+  selected,
+  onClick,
+}: {
+  selected: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    className={cn(
+      "h-2 rounded-full transition-all duration-300",
+      selected ? "bg-foreground w-6" : "w-2 bg-slate-300 dark:bg-zinc-600",
+    )}
+    type="button"
+    onClick={onClick}
+  />
+);
+
 const ReviewsSection = () => {
-  // 2. สร้าง Reference สำหรับปลั๊กอิน Autoplay
   const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true }),
+    Autoplay({ delay: 4000, stopOnInteraction: true }),
   );
 
-  return (
-    <section className="container mx-auto bg-white">
-      <div className="mx-auto flex flex-col p-16 text-center">
-        <h2 className="mb-4 text-3xl font-bold">ลูกค้าพูดถึงเรา</h2>
-        <p className="text-muted-foreground mb-12 text-sm md:text-lg">
-          ความคิดเห็นจากลูกค้าที่ใช้บริการของเรา
-        </p>
-        <Carousel
-          // 3. ส่งปลั๊กอินเข้าไปใน Carousel Component
+  // [ADD] State สำหรับจัดการ Carousel API และ Dot Indicators
+  const [api, setApi] = useState<EmblaCarouselType | undefined>();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
+  const scrollTo = useCallback(
+    (index: number) => api && api.scrollTo(index),
+    [api],
+  );
+
+  const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, []);
+
+  useEffect(() => {
+    if (!api) return;
+    setScrollSnaps(api.scrollSnapList());
+    api.on("select", onSelect);
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api, onSelect]);
+
+  return (
+    <section className="">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase">
+            Testimonial
+          </p>
+          <h2 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            ลูกค้าพูดถึงเรา
+          </h2>
+        </div>
+
+        {/* Carousel */}
+        <Carousel
+          setApi={setApi}
           plugins={[plugin.current]}
-          opts={{ loop: true }}
-          className="w-full"
-          // 4. (แนะนำ) เพิ่มให้หยุดเลื่อนเมื่อเอาเมาส์ไปวาง
+          opts={{ loop: true, align: "start" }}
+          className="mt-16 w-full"
           onMouseEnter={plugin.current.stop}
           onMouseLeave={plugin.current.reset}
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="my-4 -ml-6">
             {reviews.map((review, index) => (
               <CarouselItem
                 key={index}
-                className="pl-4 md:basis-1/2 lg:basis-1/3"
+                className="pl-6 md:basis-1/2 lg:basis-1/3"
               >
-                <Card className="card-section h-full rounded-2xl shadow-lg">
-                  <CardContent className="flex flex-col p-2 md:p-6">
-                    <div className="mb-2 flex items-center gap-4 md:mb-4">
+                {/* [MOD] การ์ดรีวิวดีไซน์ใหม่ทั้งหมด */}
+                <Card className="from-secondary/5 via-card to-card flex h-full flex-col rounded-3xl rounded-bl-[75px] border-none bg-gradient-to-br p-8 shadow-sm">
+                  <CardContent className="flex h-full flex-col p-0">
+                    <Quote className="h-10 w-10 text-slate-200 dark:text-zinc-700" />
+                    <p className="text-foreground mt-6 flex-grow text-lg font-medium">
+                      {review.text}
+                    </p>
+                    <div className="mt-8 flex items-center gap-4">
                       <img
                         src={review.img}
-                        alt="Customer"
-                        className="h-16 w-16 rounded-full border-2 border-pink-200"
+                        alt={review.name}
+                        className="h-12 w-12 rounded-full object-cover"
                       />
-                      <div className="flex flex-col items-start justify-start">
-                        <div className="text-xl text-yellow-500 drop-shadow-md drop-shadow-amber-200 md:text-2xl">
-                          ★★★★★
-                        </div>
-                        <h5 className="text-secondary text-sm font-bold md:text-base">
+                      <div>
+                        <h4 className="text-foreground font-bold">
                           {review.name}
-                        </h5>
+                        </h4>
+                        <p className="text-muted-foreground text-sm">
+                          {review.handle}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-muted-foreground text-xs md:text-base">
-                      “{review.text}”
-                    </p>
                   </CardContent>
                 </Card>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
+          {/* [DEL] ลบลูกศรซ้าย-ขวาออก */}
         </Carousel>
+
+        {/* [ADD] Dot Indicators */}
+        <div className="mt-10 flex justify-center gap-2">
+          {scrollSnaps.map((_, index) => (
+            <DotButton
+              key={index}
+              selected={index === selectedIndex}
+              onClick={() => scrollTo(index)}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

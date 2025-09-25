@@ -4,19 +4,14 @@
 import { useMemo } from "react";
 import { ConditionInfo } from "../../page";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
-import {
-  PHYSICAL_QUESTIONS,
-  IOS_MANUAL_QUESTIONS,
-  DESKTOP_QUESTIONS,
-} from "../../../../util/info";
+// --- [FIX] อัปเดตการ import ให้ใช้ชุดคำถามใหม่ ---
+import { DESKTOP_QUESTIONS, MOBILE_IOS_QUESTIONS, MOBILE_ANDROID_QUESTIONS } from "../../../../util/info";
 import DesktopReportForm from "./(interactive-tests)/(platform-based-question)/DesktopReportForm";
 import MobileQuestionAccordion from "./(interactive-tests)/(platform-based-question)/MobileQuestionAccordion";
 
 interface QuestionReportProps {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (
-    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
-  ) => void;
+  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onComplete: () => void;
   onBack: () => void;
   showFullReport: boolean;
@@ -31,14 +26,14 @@ const QuestionReport = ({
 }: QuestionReportProps) => {
   const { isDesktop, isIOS } = useDeviceDetection();
 
-  // Silas's logic: Use useMemo to efficiently determine the correct set of questions for mobile devices.
+  // --- [FIX] ปรับปรุง Logic ให้เลือกชุดคำถามสำหรับมือถือได้ถูกต้อง ---
   const mobileQuestions = useMemo(() => {
     if (isIOS) {
-      // For iOS, combine physical checks with manual connectivity checks.
-      return [...PHYSICAL_QUESTIONS, ...IOS_MANUAL_QUESTIONS];
+      // สำหรับ iOS ใช้ชุดคำถามเต็มรูปแบบ
+      return MOBILE_IOS_QUESTIONS;
     }
-    // For Android, only physical checks are needed as automated tests will follow.
-    return PHYSICAL_QUESTIONS;
+    // สำหรับ Android ใช้ชุดคำถามที่สั้นกว่า (เพราะมี automated test)
+    return MOBILE_ANDROID_QUESTIONS;
   }, [isIOS]);
 
   return (
@@ -50,7 +45,7 @@ const QuestionReport = ({
           onConditionUpdate={onConditionUpdate}
           onComplete={onComplete}
           onBack={onBack}
-          questions={DESKTOP_QUESTIONS}
+          questions={DESKTOP_QUESTIONS} // ส่งชุดคำถามสำหรับ Desktop
         />
       ) : (
         // Render the mobile-specific accordion form
@@ -59,7 +54,7 @@ const QuestionReport = ({
           onConditionUpdate={onConditionUpdate}
           onComplete={onComplete}
           onBack={onBack}
-          questions={mobileQuestions}
+          questions={mobileQuestions} // ส่งชุดคำถามสำหรับ Mobile
         />
       )}
     </>

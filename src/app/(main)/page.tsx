@@ -10,19 +10,15 @@ import HowItWorksSection from "./components/HowItWorksSection";
 import ReviewsSection from "./components/ReviewsSection";
 import WhyUsSection from "./components/WhyUsSection";
 import AnimatedButton from "./components/AnimatedButton";
-import Image from "next/image";
 // import { BackgroundBeams } from "../../components/ui/shadcn-io/background-beams";
 
 const MainPage = () => {
   return (
     <Layout>
       <AnimatedButton />
-      {/* รูปพืนหลังสำหรับทับกัน HeroSection */}
-
-      <main className="mx-auto flex flex-col gap-16">
+      <main className="mx-auto flex flex-col bg-white">
         <HeroSection />
         <HowItWorksSection />
-        <WhyUsSection />
         <AboutSection />
         <ReviewsSection />
         <FaqSection />

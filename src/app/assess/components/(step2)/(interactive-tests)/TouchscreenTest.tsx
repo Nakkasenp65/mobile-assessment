@@ -8,8 +8,8 @@ interface TouchscreenTestProps {
   onConclude: (percentage: number) => void;
 }
 
-const GRID_SIZE = 12;
-const TIMER_DURATION = 90000;
+const GRID_SIZE = 11;
+const TIMER_DURATION = 60;
 
 export const TouchscreenTest = ({
   isOpen,
@@ -64,7 +64,7 @@ export const TouchscreenTest = ({
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       ctx.lineCap = "round";
-      ctx.lineWidth = 50;
+      ctx.lineWidth = 55;
 
       const styles = getComputedStyle(canvas);
       const primaryColor = `${styles.getPropertyValue("--primary").trim()}`;

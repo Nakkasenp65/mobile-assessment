@@ -1,9 +1,14 @@
+// FaqSection.tsx
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { InteractiveGridPattern } from "@/components/ui/shadcn-io/interactive-grid-pattern";
+// [ADD] Import ไอคอน Plus และ Minus
+import { Plus, Minus } from "lucide-react";
 
 const faqs = [
   {
@@ -21,32 +26,46 @@ const faqs = [
 ];
 
 const FaqSection = () => (
-  <section className="container mx-auto">
-    <div className="mx-auto flex flex-col p-4 text-center md:p-16">
-      <h2 className="mb-4 text-3xl font-bold">คำถามที่พบบ่อย</h2>
-      <p className="text-muted-foreground mb-12 text-sm md:text-lg">
-        คำตอบสำหรับคำถามที่ลูกค้าสงสัยมากที่สุด
-      </p>
-      <Accordion
-        type="single"
-        collapsible
-        className="mx-auto w-full max-w-3xl text-left"
-      >
-        {faqs.map((faq, index) => (
-          <AccordionItem
-            key={index}
-            value={`item-${index + 1}`}
-            className="bg-card border-border mb-4 rounded-xl shadow-lg"
-          >
-            <AccordionTrigger className="p-4 text-sm font-bold hover:no-underline md:p-6 md:text-lg">
-              {faq.q}
-            </AccordionTrigger>
-            <AccordionContent className="text-muted-foreground p-6 pt-0 text-base">
-              {faq.a}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+  <section className="relative py-24 sm:py-32">
+    <InteractiveGridPattern className="absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(white,transparent_85%)] fill-white" />
+
+    <div className="container mx-auto px-4">
+      <div className="mx-auto max-w-2xl text-center">
+        <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+          คำถามที่พบบ่อย
+        </h2>
+        <p className="text-muted-foreground mt-6 text-lg leading-8">
+          เราได้รวบรวมคำตอบสำหรับคำถามที่ลูกค้าสงสัยมากที่สุดไว้ที่นี่
+        </p>
+      </div>
+
+      {/* [MOD] ลบ Background Panel ที่ไม่จำเป็นออก เพื่อให้ดีไซน์คลีนขึ้น */}
+      <div className="mx-auto mt-16 w-full max-w-4xl">
+        <Accordion type="single" collapsible className="w-full space-y-3">
+          {faqs.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              value={`item-${index + 1}`}
+              // [MOD] ปรับสไตล์ Accordion Item ให้มีเงา, ขอบมน, และพื้นหลังสี card
+              className="bg-card rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-md"
+            >
+              {/* [MOD] ปรับโครงสร้าง Trigger ทั้งหมด */}
+              <AccordionTrigger className="group text-foreground flex w-full items-center justify-between p-4 text-left font-semibold hover:no-underline sm:p-6 sm:text-lg">
+                <span className="flex-1 pr-4">{faq.q}</span>
+                {/* [ADD] สร้างปุ่มวงกลมพร้อมไอคอนที่เปลี่ยนตามสถานะ */}
+                <div className="bg-primary relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                  <Minus className="text-primary-foreground absolute h-5 w-5 opacity-0 transition-all duration-300 group-data-[state=open]:rotate-0 group-data-[state=open]:opacity-100" />
+                  <Plus className="text-primary-foreground absolute h-5 w-5 transition-all duration-300 group-data-[state=open]:-rotate-90 group-data-[state=open]:opacity-0" />
+                </div>
+              </AccordionTrigger>
+              {/* [MOD] ปรับ Padding ของ Content */}
+              <AccordionContent className="text-muted-foreground px-6 pt-0 pb-6 text-base">
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
     </div>
   </section>
 );

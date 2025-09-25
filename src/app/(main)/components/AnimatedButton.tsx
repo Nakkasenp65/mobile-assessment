@@ -8,7 +8,7 @@ const AnimatedButton = () => {
 
   return (
     <button
-      className="fixed right-0 z-50 mt-24 hidden h-16 w-56 translate-x-[104px] items-center justify-start gap-4 rounded-l-full bg-white px-4 pr-8 text-xl shadow-lg shadow-black/15 duration-500 ease-in-out hover:w-80 md:flex"
+      className="fixed right-0 z-50 hidden h-16 w-56 translate-x-[104px] items-center justify-start gap-4 rounded-l-full bg-white px-4 pr-8 text-xl shadow-lg shadow-black/15 duration-500 ease-in-out hover:w-80 lg:mt-4 lg:flex xl:mt-24"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
