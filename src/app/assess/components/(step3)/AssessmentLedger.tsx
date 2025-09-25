@@ -14,7 +14,7 @@ import {
   Volume2,
   Wifi,
   AlertTriangle,
-  CheckCircle, // 1. Import ไอคอน CheckCircle เพิ่ม
+  CheckCircle,
 } from "lucide-react";
 import {
   Accordion,
@@ -71,23 +71,31 @@ const TestItem = ({
   const label = LABEL_MAP[itemKey] || itemKey;
   const Icon = ICON_MAP[itemKey];
 
-  // 2. ตรวจสอบสถานะว่า "ผ่าน" หรือไม่
+  // --- [FIX START] ---
+  // 1. สร้างฟังก์ชันสำหรับตรวจสอบสถานะแบตเตอรี่โดยเฉพาะ
+  const isBatteryPassed = (value: string): boolean => {
+    return ["100%", "95% - 99%"].includes(value);
+  };
+
+  // 2. ปรับปรุง Logic การตรวจสอบสถานะ 'isPassed'
   const isPassed =
-    ["passed", "success", "good", "excellent"].includes(itemValue) ||
-    (itemKey === "touchScreen" && parseInt(itemValue) >= 90);
+    // ถ้าเป็น batteryHealth ให้ใช้ฟังก์ชัน isBatteryPassed
+    (itemKey === "batteryHealth" && isBatteryPassed(itemValue)) ||
+    // เงื่อนไขเดิมสำหรับรายการอื่นๆ
+    ["passed"].includes(itemValue) ||
+    (itemKey === "touchScreen" && parseInt(itemValue) >= 95);
 
   // ไม่แสดงผลถ้ารายการนั้นไม่มีข้อมูล หรือไม่มีไอคอน
   if (!itemValue || !Icon) return null;
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg bg-slate-100 p-2 md:p-3 dark:bg-zinc-800 ${isPassed ? null : "ring-primary/25 to-primary/20 from-accent via-accent bg-gradient-to-br ring-2"}`}
+      className={`flex items-center gap-3 rounded-lg bg-slate-100 p-2 md:p-3 dark:bg-zinc-800 ${isPassed ? "" : "ring-primary/25 to-primary/20 from-accent via-accent bg-gradient-to-br ring-2"}`}
     >
       <div className="relative flex-shrink-0">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-zinc-700">
           <Icon className="h-5 w-5 text-zinc-600 md:h-6 md:w-6 dark:text-zinc-300" />
         </div>
-        {/* 3. แสดงไอคอนตามสถานะ (ผ่าน/ไม่ผ่าน) */}
         <div
           className={`absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white dark:border-zinc-800 ${isPassed ? "bg-green-500" : "bg-orange-500"}`}
         >
@@ -115,9 +123,18 @@ const AssessmentLedger = ({
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
 }) => {
-  // 4. รวมข้อมูลทั้งหมดและกรองรายการที่ไม่มีค่า (null, undefined, "") ออก
+  // --- [FIX START] ---
+  // 1. รวมข้อมูลทั้งหมด
   const allInfo = { ...deviceInfo, ...conditionInfo };
-  const allItems = Object.entries(allInfo).filter(([_, value]) => value);
+
+  // 2. สร้างรายการ Key ที่ไม่ต้องการแสดงผล
+  const EXCLUDED_KEYS = ["brand", "model", "storage"];
+
+  // 3. กรองข้อมูล: เอาเฉพาะรายการที่มีค่า และไม่อยู่ใน EXCLUDED_KEYS
+  const allItems = Object.entries(allInfo).filter(
+    ([key, value]) => value && !EXCLUDED_KEYS.includes(key),
+  );
+  // --- [FIX END] ---
 
   // ไม่แสดงผลเลยถ้าไม่มีข้อมูลอะไรเลย
   if (allItems.length === 0) {
@@ -149,7 +166,6 @@ const AssessmentLedger = ({
           <AccordionContent className="p-4 pt-0">
             <div className="border-t pt-4 dark:border-zinc-700">
               <div className="grid grid-cols-2 gap-3">
-                {/* 5. แสดงผลทุกรายการที่มีข้อมูล */}
                 {allItems.map(([key, value]) => (
                   <TestItem key={key} itemKey={key} itemValue={value} />
                 ))}

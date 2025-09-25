@@ -2,7 +2,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Banknote, Shield, Wrench, CreditCard, Truck, ShoppingBag, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  Shield,
+  Wrench,
+  CreditCard,
+  Truck,
+  ShoppingBag,
+  RefreshCw,
+} from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
@@ -27,12 +36,20 @@ export interface ServiceOption {
   features: string[];
 }
 
-const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
+const AssessStep3 = ({
+  deviceInfo,
+  conditionInfo,
+  onBack,
+}: AssessStep3Props) => {
   const [selectedService, setSelectedService] = useState<string>("");
 
-  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } = usePriceCalculation(deviceInfo, conditionInfo);
+  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } =
+    usePriceCalculation(deviceInfo, conditionInfo);
 
-  const { data: mobileData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
+  const { data: mobileData, isLoading: isImageLoading } = useMobile(
+    deviceInfo.brand,
+    deviceInfo.model,
+  );
 
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
@@ -53,7 +70,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "รับเงินสดเต็มจำนวนทันที",
       icon: Banknote,
       price: finalPrice,
-      features: ["รับเงินสดทันที", "โอนเงินภายใน 30 นาที", "ไม่มีค่าธรรมเนียม", "รับประกันราคา 7 วัน"],
+      features: [
+        "รับเงินสดทันที",
+        "โอนเงินภายใน 30 นาที",
+        "ไม่มีค่าธรรมเนียม",
+        "รับประกันราคา 7 วัน",
+      ],
     },
     {
       id: "pawn",
@@ -61,7 +83,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
       icon: Shield,
       price: calculatedPawnPrice,
-      features: ["รับเงินสดทันที", "ไถ่คืนได้ภายใน 6 เดือน", "อัตราดอกเบี้ย 2% ต่อเดือน", "เก็บเครื่องในสภาพดี"],
+      features: [
+        "รับเงินสดทันที",
+        "ไถ่คืนได้ภายใน 6 เดือน",
+        "อัตราดอกเบี้ย 2% ต่อเดือน",
+        "เก็บเครื่องในสภาพดี",
+      ],
     },
     {
       id: "tradein",
@@ -69,7 +96,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่ที่ร้าน",
       icon: RefreshCw,
       price: Math.round(finalPrice * 1.05),
-      features: ["บวกส่วนลดเพิ่ม", "เลือกรุ่นใหม่ได้ทันที", "โอนย้ายข้อมูลให้", "ประกันความพึงพอใจ 7 วัน"],
+      features: [
+        "บวกส่วนลดเพิ่ม",
+        "เลือกรุ่นใหม่ได้ทันที",
+        "โอนย้ายข้อมูลให้",
+        "ประกันความพึงพอใจ 7 วัน",
+      ],
     },
     {
       id: "consignment",
@@ -77,7 +109,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
       price: Math.round(finalPrice * 1.15),
-      features: ["ทีมการตลาดลงประกาศ", "ถ่ายรูปสินค้าโปร", "อัปเดตสถานะเป็นระยะ", "คิดค่าบริการเมื่อขายได้"],
+      features: [
+        "ทีมการตลาดลงประกาศ",
+        "ถ่ายรูปสินค้าโปร",
+        "อัปเดตสถานะเป็นระยะ",
+        "คิดค่าบริการเมื่อขายได้",
+      ],
     },
     {
       id: "installment",
@@ -85,7 +122,12 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       description: "แบ่งจ่ายสบายใจ ไม่ต้องจ่ายเต็ม",
       icon: CreditCard,
       price: Math.round(finalPrice / 6),
-      features: ["ยืนยันตัวตนออนไลน์", "อนุมัติไว", "ดอกเบี้ยโปรโมชัน", "ผ่อนยาวได้ตามโปร"],
+      features: [
+        "ยืนยันตัวตนออนไลน์",
+        "อนุมัติไว",
+        "ดอกเบี้ยโปรโมชัน",
+        "ผ่อนยาวได้ตามโปร",
+      ],
     },
   ];
 
@@ -103,7 +145,9 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
     // ใช้ card-assessment จาก globals.css เพื่อให้มีพื้นหลังและกรอบที่สอดคล้องกัน
     <div className="flex w-full flex-col gap-8 md:p-8">
       <div className="text-center">
-        <h2 className="text-foreground text-3xl font-bold">ผลประเมินสภาพโทรศัพท์</h2>
+        <h2 className="text-foreground mt-8 text-3xl font-bold">
+          ผลประเมินสภาพโทรศัพท์
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-8">

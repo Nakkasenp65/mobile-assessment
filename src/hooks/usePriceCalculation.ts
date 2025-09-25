@@ -75,7 +75,7 @@ const LABEL_MAP: Record<string, string> = {
   charger: "การชาร์จ",
   speaker: "ลำโพง",
   mic: "ไมโครโฟน",
-  cameras: "กล้อง",
+  camera: "กล้อง",
 };
 
 const GRADE_THRESHOLDS = { A: 0, B: 2, C: 4 };

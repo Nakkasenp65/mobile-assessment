@@ -20,7 +20,7 @@ interface AutomatedDiagnosticsProps {
 
 // Define the possible concluded statuses for each test
 type WifiStatus = NetworkQuality | "ignore";
-type BatteryStatus = "success" | "unsupported" | "ignore" | "failed";
+type BatteryStatus = "passed" | "ignore" | "unsupported" | "failed";
 
 /** แบนเนอร์แจ้งเตือนด้านบน */
 function PermissionBanner({

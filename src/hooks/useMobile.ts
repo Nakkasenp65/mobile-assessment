@@ -15,9 +15,10 @@ export const useMobile = (product: string, model: string) => {
       if (product === "Apple") {
         queryProduct = "iPhone";
         queryModel = model;
-      } else if (product === "Samsung")
+      } else if (product === "Samsung") {
         queryModel = model.replace("Galaxy", "Samsung");
-      else {
+        queryProduct = "Samsung";
+      } else {
         queryModel = model;
       }
 

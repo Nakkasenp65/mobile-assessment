@@ -11,7 +11,15 @@ import AutomatedDiagnostics from "./AutomatedDiagnostics";
 import InteractiveTests, { TestName, TestStatus } from "./InteractiveTests";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
-function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
+function PermissionPrompt({
+  open,
+  onAllow,
+  onCancel,
+}: {
+  open: boolean;
+  onAllow: () => void;
+  onCancel: () => void;
+}) {
   if (!open) return null;
   return (
     <AnimatePresence>
@@ -31,10 +39,14 @@ function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow:
         transition={{ duration: 0.22, ease: "easeOut" }}
       >
         <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/90 p-6 shadow-xl backdrop-blur-md dark:bg-zinc-900/90">
-          <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">อนุญาตกล้องและไมโครโฟน</h3>
+          <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+            อนุญาตกล้องและไมโครโฟน
+          </h3>
           <p className="text-sm text-slate-600 dark:text-zinc-300">
             เพื่อทำการประเมินอัตโนมัติอย่างถูกต้อง กรุณา{" "}
-            <span className="font-semibold">อนุญาตการเข้าถึงกล้องและไมโครโฟน</span>{" "}
+            <span className="font-semibold">
+              อนุญาตการเข้าถึงกล้องและไมโครโฟน
+            </span>{" "}
             เมื่อเบราว์เซอร์มีหน้าต่างขอสิทธิ์ขึ้นมา
           </p>
 
@@ -61,7 +73,9 @@ function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow:
 // [FIX] Updated Props Interface to accept isOwnDevice
 interface AssessStep2Props {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
+  onConditionUpdate: (
+    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
+  ) => void;
   onNext: () => void;
   onBack: () => void;
   isOwnDevice: boolean; // New prop
@@ -114,7 +128,10 @@ const AssessStep2 = ({
   }, []);
 
   // [FIX] Re-created for simplicity
-  const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
+  const handleAutomatedComplete = useCallback(
+    () => setCurrentSubStep("interactive"),
+    [],
+  );
 
   const handleDiagnosticsCompletion = useCallback(
     (result: DiagnosticsResult) => {
@@ -131,7 +148,7 @@ const AssessStep2 = ({
     (results: Record<TestName, TestStatus>) => {
       onConditionUpdate((prev) => ({
         ...prev,
-        cameras: results.camera,
+        camera: results.camera,
         speaker: results.speaker,
         mic: results.mic,
         touchScreen: results.touchScreen,

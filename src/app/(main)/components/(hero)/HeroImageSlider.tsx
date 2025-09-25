@@ -23,8 +23,8 @@ const HeroImageSlider = () => {
     // --- การเปลี่ยนแปลง ---
     // Mobile: w-full (เต็มความกว้าง)
     // Tablet (sm): w-1/2 (ครึ่งหนึ่งของ container)
-    // Desktop (lg): w-3/5 (สามในห้าส่วน เพื่อให้ใหญ่กว่าฟอร์มเล็กน้อย)
-    <div className="relative w-full sm:w-1/2 lg:w-2/6">
+    // Desktop (lg): w-3/5 (สามในห้าส่วน) -> แก้จาก lg:w-2/6 เป็น lg:w-3/5 เพื่อให้ใหญ่ขึ้น
+    <div className="relative w-full sm:w-1/2 lg:w-3/5">
       <img
         key={currentSlide}
         src={slides[currentSlide]}

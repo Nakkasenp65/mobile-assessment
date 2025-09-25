@@ -198,7 +198,7 @@ const AssessStep1 = ({
       <div className="flex-grow space-y-6">
         <div>
           <label className="text-foreground mb-3 ml-1 block text-sm font-medium">
-            เลือกแบรนด์ที่ต้องการ *
+            เลือกแบรนด์ที่ต้องการ
           </label>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {PHONE_DATA.brands.map((brand) => {

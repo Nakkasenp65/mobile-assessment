@@ -240,7 +240,7 @@ const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
                     <div className="space-y-2">
                       <Label htmlFor="store-branch">สาขา</Label>
                       <Select defaultValue={storeLocations[0]}>
-                        <SelectTrigger id="store-branch">
+                        <SelectTrigger id="store-branch" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -297,15 +297,6 @@ const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
                     inputMode="numeric"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-phone">ยืนยันเบอร์โทรอีกครั้ง</Label>
-                  <Input
-                    id="confirm-phone"
-                    type="tel"
-                    placeholder="ใส่เบอร์โทรอีกครั้ง"
-                    inputMode="numeric"
-                  />
-                </div>
               </div>
             </div>
 
@@ -324,7 +315,7 @@ const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
               </div>
               <Button
                 size="lg"
-                className="w-full bg-yellow-500 text-black hover:bg-yellow-600"
+                className="w-full bg-gradient-to-br from-orange-300 to-orange-500 text-base font-bold text-white hover:bg-yellow-600"
               >
                 ยืนยัน
               </Button>

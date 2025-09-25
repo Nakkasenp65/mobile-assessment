@@ -8,9 +8,7 @@ import Footer from "./components/Footer";
 import HeroSection from "./components/(hero)/HeroSection";
 import HowItWorksSection from "./components/HowItWorksSection";
 import ReviewsSection from "./components/ReviewsSection";
-import WhyUsSection from "./components/WhyUsSection";
 import AnimatedButton from "./components/AnimatedButton";
-// import { BackgroundBeams } from "../../components/ui/shadcn-io/background-beams";
 
 const MainPage = () => {
   return (

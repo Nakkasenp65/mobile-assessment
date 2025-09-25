@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useBattery } from "../../../../../hooks/useBattery";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
-type ConcludedStatus = "success" | "unsupported" | "ignore" | "failed";
+type ConcludedStatus = "passed" | "ignore" | "unsupported" | "failed";
 
 interface BatteryDetectionProps {
   onStatusConcluded: (status: ConcludedStatus) => void;
@@ -44,7 +44,7 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
         const newProgress = prev + 1;
         if (newProgress >= 3) {
           clearInterval(intervalId);
-          setFinalStatus("success");
+          setFinalStatus("passed");
           setPhase("concluded");
         }
         return newProgress;
@@ -73,7 +73,7 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
     if (finalStatus === "unsupported") return "ไม่สามารถตรวจสอบแบตเตอรี่ได้";
     if (finalStatus === "ignore") return "ข้ามการตรวจสอบการชาร์จ";
     if (finalStatus === "failed") return "ผลลัพธ์: การชาร์จมีปัญหา";
-    if (finalStatus === "success") return "ผลลัพธ์: การชาร์จทำงานปกติ";
+    if (finalStatus === "passed") return "ผลลัพธ์: การชาร์จทำงานปกติ";
     if (phase === "prompt_connect")
       return "กรุณาเสียบสายชาร์จเพื่อเริ่มการทดสอบ";
     if (phase === "charging_progress") return "กำลังยืนยันการชาร์จ...";
@@ -82,7 +82,7 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
 
   const FinalStatusIndicator = () => {
     if (phase !== "concluded") return null;
-    if (finalStatus === "success")
+    if (finalStatus === "passed")
       return <CheckCircle className="text-success h-5 w-5" />;
     if (finalStatus === "failed")
       return <XCircle className="text-destructive h-5 w-5" />;
