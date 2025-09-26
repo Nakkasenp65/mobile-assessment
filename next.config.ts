@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       "store.storeimages.cdn-apple.com",
       "profile.line-scdn.net",
       "cdn.simpleicons.org",
+      "applehouseth.com",
     ],
     remotePatterns: [
       {

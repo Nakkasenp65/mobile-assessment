@@ -1,36 +1,82 @@
-// src/app/(main)/components/(hero)/HeroImageSlider.tsx
+// HeroImageSlider.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
+import Image from "next/image";
+
+import "swiper/css";
+import "swiper/css/effect-fade";
 
 const slides = [
-  "https://applehouseth.com/_next/static/media/Banner-B1.ea56d8c2.webp",
-  "https://applehouseth.com/_next/static/media/Banner-B3.0ae6f993.webp",
-  "https://applehouseth.com/_next/static/media/Banner-B2.b18630aa.webp",
+  {
+    src: "https://lh3.googleusercontent.com/d/1OgYezgJZ6xGv4lNVJ3mWs8oVkScE_a-H",
+    alt: "รับซื้อ iPhone, iPad, Mac และสินค้า Apple อื่นๆ",
+  },
+  {
+    src: "https://lh3.googleusercontent.com/d/1D-ofpwDdMMYachLUGua3vtD4HcJMXJvB",
+    alt: "รับซื้อ iPhone, iPad, Mac และสินค้า Apple อื่นๆ",
+  },
+  {
+    src: "https://lh3.googleusercontent.com/d/1ksOUeSz85POHgAOM4yz_7gGfkTOwbzWl",
+    alt: "รับซื้อ iPhone, iPad, Mac และสินค้า Apple อื่นๆ",
+  },
+  {
+    src: "https://lh3.googleusercontent.com/d/1oJRHiDMVMuoMwtXcS5ycPMtjmS-rHvlx",
+    alt: "รับซื้อ iPhone, iPad, Mac และสินค้า Apple อื่นๆ",
+  },
 ];
 
 const HeroImageSlider = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 20000);
-    return () => clearInterval(timer);
-  }, []);
+  const swiperRef = useRef(null);
 
   return (
-    // --- การเปลี่ยนแปลง ---
-    // Mobile: w-full (เต็มความกว้าง)
-    // Tablet (sm): w-1/2 (ครึ่งหนึ่งของ container)
-    // Desktop (lg): w-3/5 (สามในห้าส่วน) -> แก้จาก lg:w-2/6 เป็น lg:w-3/5 เพื่อให้ใหญ่ขึ้น
-    <div className="relative w-full sm:w-1/2 lg:w-3/5">
-      <img
-        key={currentSlide}
-        src={slides[currentSlide]}
-        alt={`Banner ${currentSlide + 1}`}
-        className="h-auto w-full object-contain"
-      />
+    // Responsive sizing: Mobile full width, md: slightly larger than 1/2, lg: balanced with form
+    <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[46%]">
+      {/* Background Blob - adjusted for better proportion */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="from-primary to-secondary -z-10 aspect-square w-[90%] rounded-full bg-gradient-to-br blur-xl" />
+      </div>
+
+      {/* Swiper Component with consistent aspect ratio */}
+      <div className="aspect-square w-full">
+        <Swiper
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          modules={[Autoplay, EffectFade]}
+          effect="fade"
+          fadeEffect={{
+            crossFade: true,
+          }}
+          slidesPerView={1}
+          loop={slides.length > 1}
+          autoplay={{
+            delay: 5000,
+            disableOnInteraction: false,
+          }}
+          className="h-full w-full"
+        >
+          {slides.map((slide, index) => (
+            <SwiperSlide
+              key={index}
+              className="flex items-center justify-center"
+            >
+              <div className="flex h-full w-full items-center justify-center">
+                <Image
+                  src={slide.src}
+                  alt={slide.alt}
+                  width={3000}
+                  height={3000}
+                  priority={index === 0}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 };

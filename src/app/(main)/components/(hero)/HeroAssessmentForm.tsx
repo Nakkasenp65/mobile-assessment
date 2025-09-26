@@ -1,7 +1,5 @@
-// src/app/(main)/components/HeroAssessmentForm.tsx
 "use client";
-
-import { useState, Fragment } from "react"; // (เพิ่ม) Import Fragment
+import { useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -11,54 +9,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-// --- (เพิ่ม) นำเข้าไอคอนลูกศร ---
 import {
   Square,
   CheckSquare,
   Search,
   FileCheck2,
+  ClipboardList,
   Wallet,
-  ChevronRight,
-  MoveRight, // ไอคอนลูกศร
+  MoveRight,
+  LockKeyhole,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 const MOCK_DATA = {
   brands: ["Apple", "Samsung", "Google"],
   models: {
-    Apple: ["iPhone 15 Pro Max", "iPhone 15 Pro", "iPhone 14 Pro Max"],
-    Samsung: ["Galaxy S24 Ultra", "Galaxy S23 Ultra"],
-    Google: ["Pixel 8 Pro", "Pixel 8"],
+    Apple: ["iPhone 15 Pro Max"],
+    Samsung: [],
+    Google: [],
   },
-  storage: {
-    "iPhone 15 Pro Max": ["256GB", "512GB", "1TB"],
-    "iPhone 15 Pro": ["128GB", "256GB", "512GB"],
-    "iPhone 14 Pro Max": ["128GB", "256GB", "512GB"],
-    "Galaxy S24 Ultra": ["256GB", "512GB", "1TB"],
-    "Galaxy S23 Ultra": ["256GB", "512GB"],
-    "Pixel 8 Pro": ["128GB", "256GB"],
-    "Pixel 8": ["128GB", "256GB"],
-  },
+  storage: { "iPhone 15 Pro Max": ["256GB", "512GB"] },
 };
 
 const processSteps = [
-  { icon: Search, text: "ค้นหายี่ห้อ" },
-  { icon: FileCheck2, text: "ตรวจสอบราคา" },
-  { icon: Wallet, text: "รับเงินทันที" },
+  {
+    icon: Search,
+    text: "ประเมิน",
+  },
+  {
+    icon: FileCheck2,
+    text: "ตรวจสอบราคา",
+  },
+  {
+    icon: ClipboardList,
+    text: "เลือกบริการ",
+  },
+  {
+    icon: Wallet,
+    text: "รับเงินทันที",
+  },
 ];
 
 const HeroAssessmentForm = () => {
   const router = useRouter();
-  const [selectedBrand, setSelectedBrand] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>("");
-  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
-  const [isIcloudUnlocked, setIsIcloudUnlocked] = useState<boolean>(false);
+  const [selectedBrand, setSelectedBrand] =
+    useState<string>("");
+  const [selectedModel, setSelectedModel] =
+    useState<string>("");
+  const [termsAccepted, setTermsAccepted] =
+    useState<boolean>(false);
+  const [canUnlockIcloud, setCanUnlockIcloud] =
+    useState<boolean>(false);
 
   const handleBrandChange = (brand: string) => {
     setSelectedBrand(brand);
     setSelectedModel("");
   };
 
-  const isAppleSelected = selectedBrand === "Apple";
   const availableModels = selectedBrand
     ? MOCK_DATA.models[selectedBrand] || []
     : [];
@@ -67,20 +75,23 @@ const HeroAssessmentForm = () => {
     : [];
 
   return (
-    <div className="w-full max-w-md sm:w-1/2 lg:w-2/5">
+    <div className="flex h-max w-full flex-col md:w-[42%] lg:w-[45%] xl:w-[35%]">
       {/* Form Wrapper */}
-      <div className="rounded-2xl bg-white p-6 shadow-lg">
+      <div className="rounded-2xl bg-white p-4 shadow-lg md:p-5 lg:p-6">
+        {/* ... โค้ดส่วนฟอร์มเหมือนเดิม ... */}
         <form
-          className="flex w-full flex-col gap-4"
+          className="flex w-full flex-col gap-2.5 md:gap-3 lg:gap-4"
           onSubmit={(e) => e.preventDefault()}
         >
-          {/* ... ส่วนของ Form ยังเหมือนเดิมทั้งหมด ... */}
-          <h3 className="text-secondary text-center text-lg font-bold sm:text-xl">
+          <h3 className="text-secondary text-center text-base font-bold md:text-lg lg:text-xl">
             ประเมินราคาโทรศัพท์ที่ต้องการขาย
           </h3>
 
-          <Select onValueChange={handleBrandChange} value={selectedBrand}>
-            <SelectTrigger className="h-12 w-full text-sm md:h-14 md:text-base">
+          <Select
+            onValueChange={handleBrandChange}
+            value={selectedBrand}
+          >
+            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
               <SelectValue placeholder="เลือกยี่ห้อโทรศัพท์" />
             </SelectTrigger>
             <SelectContent>
@@ -97,7 +108,7 @@ const HeroAssessmentForm = () => {
             value={selectedModel}
             disabled={!selectedBrand}
           >
-            <SelectTrigger className="h-12 w-full text-sm md:h-14 md:text-base">
+            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
               <SelectValue placeholder="เลือกรุ่น" />
             </SelectTrigger>
             <SelectContent>
@@ -110,7 +121,7 @@ const HeroAssessmentForm = () => {
           </Select>
 
           <Select disabled={!selectedModel}>
-            <SelectTrigger className="h-12 w-full text-sm md:h-14 md:text-base">
+            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
               <SelectValue placeholder="เลือกความจุ" />
             </SelectTrigger>
             <SelectContent>
@@ -122,51 +133,94 @@ const HeroAssessmentForm = () => {
             </SelectContent>
           </Select>
 
-          {isAppleSelected && (
-            <div
-              className="flex cursor-pointer items-center space-x-2 pt-2"
-              onClick={() => setIsIcloudUnlocked(!isIcloudUnlocked)}
-            >
-              {isIcloudUnlocked ? (
-                <CheckSquare className="h-5 w-5 text-pink-600" />
-              ) : (
-                <Square className="h-5 w-5 text-gray-400" />
-              )}
-              <label className="cursor-pointer text-sm leading-none font-medium select-none sm:text-base">
-                สามารถปลดล็อค iCloud ได้
-              </label>
-            </div>
-          )}
+          <AnimatePresence>
+            {selectedBrand === "Apple" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{
+                  opacity: 1,
+                  height: "auto",
+                  y: 0,
+                }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                transition={{
+                  duration: 0.3,
+                  ease: "easeInOut",
+                }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                  <label
+                    htmlFor="icloud-toggle"
+                    className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 select-none lg:text-base"
+                  >
+                    <LockKeyhole className="h-5 w-5 text-gray-500" />
+                    สามารถปลดล็อก iCloud ได้
+                  </label>
+                  <button
+                    type="button"
+                    id="icloud-toggle"
+                    role="switch"
+                    aria-checked={canUnlockIcloud}
+                    onClick={() =>
+                      setCanUnlockIcloud(!canUnlockIcloud)
+                    }
+                    className={clsx(
+                      "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:outline-none",
+                      {
+                        "bg-pink-500": canUnlockIcloud,
+                        "bg-gray-200": !canUnlockIcloud,
+                      },
+                    )}
+                  >
+                    <motion.span
+                      aria-hidden="true"
+                      layout
+                      transition={{
+                        type: "spring",
+                        stiffness: 700,
+                        damping: 30,
+                      }}
+                      className={clsx(
+                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                        {
+                          "translate-x-5": canUnlockIcloud,
+                          "translate-x-0": !canUnlockIcloud,
+                        },
+                      )}
+                    />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Button
             size="lg"
-            onClick={() => {
-              setTermsAccepted(true);
-              router.replace("/assess");
-            }}
+            onClick={() => router.replace("/assess")}
             disabled={!selectedModel}
-            className="text-primary-foreground mt-2 h-12 w-full transform-gpu rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-base font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none md:h-14 md:text-lg"
+            className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg transition-transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:h-12 lg:text-lg"
           >
             ประเมินราคา
           </Button>
 
           <div
-            className="flex cursor-pointer items-start space-x-2.5 pt-2"
+            className="flex cursor-pointer items-start space-x-2 pt-1"
             onClick={() => setTermsAccepted(!termsAccepted)}
           >
             {termsAccepted ? (
-              <CheckSquare className="mt-0.5 h-5 w-5 flex-shrink-0 text-pink-600" />
+              <CheckSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-600 md:h-4 md:w-4 lg:h-5 lg:w-5" />
             ) : (
-              <Square className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400" />
+              <Square className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400 md:h-4 md:w-4 lg:h-5 lg:w-5" />
             )}
-            <label className="cursor-pointer text-sm leading-normal font-medium text-gray-700 select-none">
+            <label className="cursor-pointer text-xs leading-normal font-medium text-gray-700 select-none md:text-xs lg:text-sm">
               ฉันได้อ่านและยอมรับ{" "}
               <a
                 href="/terms-and-conditions"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="text-pink-600 underline transition-colors hover:text-pink-800"
+                className="text-pink-600 underline"
               >
                 ข้อตกลงและเงื่อนไข
               </a>{" "}
@@ -176,33 +230,41 @@ const HeroAssessmentForm = () => {
         </form>
       </div>
 
-      {/* --- (ปรับปรุง) Section ขั้นตอนการใช้งาน --- */}
-      {/* 
-        - justify-center เพื่อจัดให้อยู่ตรงกลาง
-        - items-center เพื่อให้ลูกศรอยู่กึ่งกลางแนวตั้ง
-        - gap-2 เพื่อสร้างระยะห่างระหว่าง Step กับลูกศร
-      */}
-      <div className="mt-8 flex items-center justify-center gap-2 text-center sm:gap-4">
-        {processSteps.map((step, index) => (
-          // ใช้ Fragment เพื่อ group step และลูกศรเข้าด้วยกัน
-          <Fragment key={index}>
-            {/* Step Item (เหมือนเดิม) */}
-            <div className="flex flex-col items-center gap-2.5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg">
-                <step.icon className="h-7 w-7 text-pink-600" />
-              </div>
-              <p className="text-sm font-semibold text-white">{step.text}</p>
-            </div>
+      {/* Process Steps Section */}
+      <div className="mt-5 rounded-2xl bg-white p-4 shadow-lg md:mt-6 md:hidden lg:mt-8 lg:block">
+        <div className="mb-4 text-center">
+          <h4 className="text-sm font-bold text-gray-800 lg:text-base">
+            ขั้นตอนการใช้บริการ
+          </h4>
+          <div className="mx-auto mt-1.5 h-0.5 w-16 rounded-full bg-gradient-to-r from-orange-400 to-pink-500" />
+        </div>
 
-            {/* (เพิ่ม) แสดงลูกศร ถ้าไม่ใช่ step สุดท้าย */}
-            {index < processSteps.length - 1 && (
-              <MoveRight
-                className="mb-6 h-8 w-8 flex-shrink-0 text-white"
-                strokeWidth={2}
-              />
-            )}
-          </Fragment>
-        ))}
+        {/* Steps Grid */}
+        <div className="flex items-center justify-between md:scale-85 lg:scale-100">
+          {processSteps.map((step, index) => (
+            <Fragment key={index}>
+              <div className="group flex flex-col items-center text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 transition-all duration-300 group-hover:bg-gray-200 md:h-14 md:w-14">
+                  <step.icon className="h-6 w-6 text-pink-600 md:h-7 md:w-7" />
+                </div>
+
+                {/* --- ✨ FIX IS HERE! ✨ --- */}
+                <p className="w-20 text-center text-xs font-semibold text-gray-700">
+                  {step.text}
+                </p>
+              </div>
+
+              {index < processSteps.length - 1 && (
+                <div className="flex-shrink-0 self-start pt-4">
+                  <MoveRight
+                    className="h-4 w-4 text-gray-300 md:h-5 md:w-5"
+                    strokeWidth={2.5}
+                  />
+                </div>
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
     </div>
   );
