@@ -54,7 +54,8 @@ const WhyUsSection = () => {
           ดียังไง?
         </motion.h2>
         <p className="text-muted-foreground mx-auto mb-10 max-w-2xl text-sm md:text-base">
-          ประสบการณ์ที่ไว้ใจได้ ขั้นตอนเรียบง่าย ได้ราคายุติธรรม และบริการถึงที่
+          ประสบการณ์ที่ไว้ใจได้ ขั้นตอนเรียบง่าย
+          ได้ราคายุติธรรม และบริการถึงที่
         </p>
 
         {/* 4 Cards  */}
@@ -65,7 +66,11 @@ const WhyUsSection = () => {
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.45, delay: i * 0.05, ease: "easeOut" }}
+              transition={{
+                duration: 0.45,
+                delay: i * 0.05,
+                ease: "easeOut",
+              }}
               className={[
                 "group relative overflow-hidden rounded-2xl border bg-white/80 p-4 text-left shadow-sm backdrop-blur-md transition-all",
                 "border-slate-200/70 hover:border-pink-200/80 dark:border-white/10 dark:bg-white/5",

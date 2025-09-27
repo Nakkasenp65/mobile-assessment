@@ -75,7 +75,7 @@ const HeroAssessmentForm = () => {
     : [];
 
   return (
-    <div className="flex h-max w-full flex-col md:w-[42%] lg:w-[45%] xl:w-[35%]">
+    <div className="flex h-max w-full flex-col md:w-[42%] lg:w-[50%] xl:w-[48%]">
       {/* Form Wrapper */}
       <div className="rounded-2xl bg-white p-4 shadow-lg md:p-5 lg:p-6">
         {/* ... โค้ดส่วนฟอร์มเหมือนเดิม ... */}

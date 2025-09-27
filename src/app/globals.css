@@ -51,6 +51,19 @@
   }
 }
 
+@keyframes aurora {
+  from {
+    background-position:
+      50% 50%,
+      50% 50%;
+  }
+  to {
+    background-position:
+      350% 50%,
+      350% 50%;
+  }
+}
+
 .hero-swiper {
   display: none;
 }
@@ -131,6 +144,8 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-float: floater 5s infinite;
+
+  --animate-aurora: aurora 60s linear infinite;
 }
 
 @layer base {
@@ -159,7 +174,7 @@
     --primary: #f97316;
     --primary-foreground: #ffffff;
     --primary-hover: #ea580c;
-    --secondary: #ec4899;
+    --secondary: #fe4da6;
     --secondary-foreground: #ffffff;
     --secondary-hover: #db2777;
     --muted: #f5efe6;
@@ -353,4 +368,23 @@
 
 @theme inline {
   --animate-spin: spin 2s linear infinite;
+  --animate-aurora: aurora 60s linear infinite;
+  @keyframes aurora {
+    from {
+      backgroundposition:
+        50% 50%,
+        50% 50%;
+    }
+    to {
+      backgroundposition:
+        350% 50%,
+        350% 50%;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }

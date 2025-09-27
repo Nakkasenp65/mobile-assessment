@@ -1,7 +1,7 @@
 import { InteractiveGridPattern } from "@/components/ui/shadcn-io/interactive-grid-pattern";
 import { Rocket, ShieldCheck, Store } from "lucide-react";
 
-// 1. แตกข้อมูลจากย่อหน้ายาวๆ ออกมาเป็น Feature หลัก 3 ข้อ
+// ข้อมูล Features (ไม่มีการเปลี่ยนแปลง)
 const features = [
   {
     name: "ง่าย ไว ชัวร์",
@@ -24,36 +24,41 @@ const features = [
 ];
 
 const AboutSection = () => (
-  // 2. เพิ่ม Padding ให้ Section ดูมีพื้นที่หายใจ และใส่ relative เพื่อรองรับ background
   <section className="relative py-24 sm:py-32">
-    {/* 3. เพิ่ม Background Pattern เพื่อลดความว่างเปล่า */}
-    <InteractiveGridPattern className="absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(white,transparent_85%)] fill-white" />
-
     <div className="container mx-auto px-4">
-      {/* 4. สร้างส่วน Header ที่มีหัวข้อหลักและคำโปรย */}
+      {/* Header (ไม่มีการเปลี่ยนแปลง) */}
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
           ทำไมต้องขาย iPhone กับ OK Mobile?
         </h2>
         <p className="text-muted-foreground mt-6 text-lg leading-8">
-          เราออกแบบบริการรับซื้อให้ง่าย รวดเร็ว และให้ราคาดีที่สุด
+          เราออกแบบบริการรับซื้อให้ง่าย รวดเร็ว
+          และให้ราคาดีที่สุด
           เพื่อให้คุณได้รับประสบการณ์ที่ยอดเยี่ยมและสบายใจที่สุด
         </p>
       </div>
 
-      {/* 5. สร้าง Feature Grid เพื่อแสดงจุดเด่นพร้อมไอคอน */}
+      {/* Feature Grid */}
       <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-        <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+        <dl className="grid max-w-xl grid-cols-2 gap-x-8 gap-y-16 md:max-w-none md:grid-cols-2 lg:max-w-none lg:grid-cols-3">
           {features.map((feature) => (
-            <div key={feature.name} className="flex flex-col">
-              <dt className="text-foreground flex items-center gap-x-3 text-base leading-7 font-semibold">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-pink-500">
-                  <feature.icon className="h-6 w-6 text-white" aria-hidden="true" />
+            <div
+              key={feature.name}
+              className="flex flex-col last:col-span-2 lg:last:col-span-1"
+            >
+              <dt className="text-foreground flex items-center gap-x-1 text-xs leading-7 font-semibold sm:gap-x-2 sm:text-base">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-pink-500 sm:h-12 sm:w-12">
+                  <feature.icon
+                    className="h-4 w-4 text-white sm:h-6 sm:w-6"
+                    aria-hidden="true"
+                  />
                 </div>
                 {feature.name}
               </dt>
               <dd className="text-muted-foreground mt-4 flex flex-auto flex-col text-base leading-7">
-                <p className="flex-auto">{feature.description}</p>
+                <p className="flex-auto">
+                  {feature.description}
+                </p>
               </dd>
             </div>
           ))}

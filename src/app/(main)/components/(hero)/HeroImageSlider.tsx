@@ -41,7 +41,7 @@ const HeroImageSlider = () => {
           alt="decoration element"
           width={2000}
           height={2000}
-          className="scale-90 blur-sm"
+          className="scale-90"
         />
       </div>
 

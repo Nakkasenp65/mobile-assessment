@@ -1,5 +1,8 @@
 // HeroSection.tsx
 "use client";
+import { AuroraBackground } from "@/components/ui/shadcn-io/aurora-background";
+import { HeroGeometric } from "../../../../components/ui/shadcn-io/shape-landing-hero";
+import { Particles } from "../../../../components/ui/shadcn-io/particles";
 
 import HeroImageSlider from "./HeroImageSlider";
 import HeroAssessmentForm from "./HeroAssessmentForm";
@@ -43,9 +46,10 @@ const HeroSection = () => {
   return (
     <section className="relative h-max w-full overflow-hidden">
       {/* BACKGROUND */}
+
       <div className="absolute inset-0 h-full w-full">
         <div className="hero-background-image z-0" />
-        <Image
+        {/* <Image
           src="/assets/bg.webp"
           alt="Abstract pink and orange texture background"
           width={3000}
@@ -53,7 +57,7 @@ const HeroSection = () => {
           priority
           className="border-secondary-500/25 h-full w-full border-8 object-cover blur-lg"
           aria-hidden="true"
-        />
+        /> */}
       </div>
 
       {/* CONTAINER */}
@@ -66,9 +70,10 @@ const HeroSection = () => {
         >
           <div
             className={clsx(
-              "container flex w-full flex-col items-center justify-center gap-4 pt-8 md:pt-16",
-              "md:flex-row md:items-start md:justify-between md:gap-4",
+              "container flex w-full flex-col items-center justify-center gap-4 pt-8",
+              "md:flex-row md:items-start md:justify-between md:gap-4 md:pt-16",
               "lg:gap-12",
+              "xl:pt-8",
             )}
           >
             <HeroImageSlider />
@@ -100,7 +105,7 @@ const HeroSection = () => {
                     className="group rounded-2xl bg-gradient-to-br from-orange-50 to-pink-50 p-3 px-2 text-center shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl"
                   >
                     {/* Icon Container */}
-                    <div className="mx-auto mb-2 flex h-14 w-14 transform items-center justify-center rounded-full border-2 border-orange-200 bg-white shadow-md transition group-hover:scale-105">
+                    <div className="mx-auto mb-2 flex h-14 w-14 transform items-center justify-center rounded-full bg-white shadow-md transition group-hover:scale-105">
                       <feature.icon className="h-8 w-8 text-orange-500 group-hover:text-pink-500" />
                     </div>
 

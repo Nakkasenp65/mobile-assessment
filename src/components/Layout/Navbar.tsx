@@ -9,9 +9,18 @@ import {
   Menu,
   X,
   Facebook,
-  MessageCircle, // Representing LINE
+  MessageCircle,
   Twitter,
   Youtube,
+  Home,
+  Search,
+  Calculator,
+  HelpCircle,
+  Truck,
+  DollarSign,
+  Info,
+  FileText,
+  Shield,
 } from "lucide-react";
 
 // --- Mobile Menu Component ---
@@ -31,6 +40,75 @@ const MobileMenu = ({
       closeMenu();
     }
   }, [pathname]);
+
+  const menuItems = [
+    { href: "/", label: "หน้าแรก", icon: Home },
+    {
+      href: "/my-assessments",
+      label: "ค้นหาการประเมิน",
+      icon: Search,
+    },
+    {
+      href: "/assess",
+      label: "ประเมินราคา",
+      icon: Calculator,
+    },
+  ];
+
+  const customerServiceItems = [
+    { href: "#", label: "คำถามบ่อยๆ", icon: HelpCircle },
+    {
+      href: "#",
+      label: "วิธีการขายสินค้า",
+      icon: Truck,
+    },
+    {
+      href: "#",
+      label: "วิธีการรับเงิน",
+      icon: DollarSign,
+    },
+  ];
+
+  const companyItems = [
+    { href: "#", label: "เกี่ยวกับ OK Mobile", icon: Info },
+    {
+      href: "#",
+      label: "ข้อกำหนดและเงื่อนไข",
+      icon: FileText,
+    },
+    {
+      href: "#",
+      label: "นโยบายความเป็นส่วนตัว",
+      icon: Shield,
+    },
+  ];
+
+  const socialItems = [
+    {
+      href: "#",
+      icon: Facebook,
+      color: "bg-[#1877f2]",
+      label: "Facebook",
+    },
+    {
+      href: "#",
+      icon: MessageCircle,
+      color: "bg-[#06c755]",
+      label: "LINE",
+    },
+    {
+      href: "#",
+      icon: Twitter,
+      color: "bg-[#1da1f2]",
+      label: "Twitter",
+    },
+    {
+      href: "#",
+      icon: Youtube,
+      color: "bg-[#ff0000]",
+      label: "YouTube",
+    },
+  ];
 
   return (
     <AnimatePresence>
@@ -57,171 +135,139 @@ const MobileMenu = ({
               stiffness: 300,
               damping: 30,
             }}
-            className="fixed top-0 bottom-0 left-0 z-50 flex w-4/5 max-w-sm flex-col overflow-y-auto bg-white shadow-2xl"
+            // [แก้ไข] เพิ่ม bg-white เพื่อให้มีพื้นหลังสีขาว
+            className="border-border fixed top-0 bottom-0 left-0 z-50 flex w-4/5 max-w-sm flex-col overflow-y-auto border-r bg-white shadow-2xl"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b p-4">
-              <Link
-                href="/"
-                onClick={closeMenu}
-                className="flex items-center space-x-2"
-              >
-                <div className="gradient-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                  <Smartphone className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-foreground text-lg font-semibold">
-                  OK Mobile
-                </span>
-              </Link>
-              <button
-                onClick={closeMenu}
-                className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-                aria-label="Close menu"
-              >
-                <X className="h-6 w-6" />
-              </button>
+            {/* Header with gradient */}
+            <div className="gradient-primary relative p-4">
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/"
+                  onClick={closeMenu}
+                  className="flex items-center space-x-3"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                    <Smartphone className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-xl font-bold text-white">
+                      OK Mobile
+                    </span>
+                    <p className="text-xs text-white/80">
+                      ซื้อ-ขายมือถือออนไลน์
+                    </p>
+                  </div>
+                </Link>
+                <button
+                  onClick={closeMenu}
+                  className="rounded-xl p-2 text-white/90 transition-all hover:scale-110 hover:bg-white/20"
+                  aria-label="Close menu"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
             </div>
 
             {/* Navigation */}
             <nav className="flex-1 p-4">
               {/* Main Links */}
-              <ul className="space-y-1">
-                <li>
-                  <Link
-                    href="/"
-                    className="block rounded-lg px-4 py-3 text-base font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    หน้าแรก
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/my-assessments"
-                    className="block rounded-lg px-4 py-3 text-base font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    ค้นหาการประเมิน
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/assess"
-                    className="block rounded-lg px-4 py-3 text-base font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    ประเมินราคา
-                  </Link>
-                </li>
+              <ul className="space-y-2">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-base font-medium transition-all ${
+                          isActive
+                            ? "gradient-primary scale-105 transform text-white shadow-lg"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
 
-              <div className="my-4 h-px bg-slate-200" />
+              <div className="via-border my-6 h-px bg-gradient-to-r from-transparent to-transparent" />
 
-              {/* Footer Links: Customer Service */}
-              <h3 className="px-4 text-sm font-semibold tracking-wider text-slate-400 uppercase">
-                ศูนย์ดูแลลูกค้า
-              </h3>
-              <ul className="mt-2 space-y-1">
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    คำถามบ่อยๆ
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    วิธีการขายสินค้า
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    วิธีการรับเงิน
-                  </a>
-                </li>
-              </ul>
+              {/* Customer Service */}
+              <div className="mb-6">
+                <h3 className="text-muted-foreground mb-3 px-4 text-sm font-semibold tracking-wider uppercase">
+                  ศูนย์ดูแลลูกค้า
+                </h3>
+                <ul className="space-y-2">
+                  {customerServiceItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.label}>
+                        <a
+                          href={item.href}
+                          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-xl px-4 py-3 text-base transition-all"
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
 
-              <div className="my-4 h-px bg-slate-200" />
+              <div className="via-border my-6 h-px bg-gradient-to-r from-transparent to-transparent" />
 
-              {/* Footer Links: Company */}
-              <h3 className="px-4 text-sm font-semibold tracking-wider text-slate-400 uppercase">
-                OK Mobile
-              </h3>
-              <ul className="mt-2 space-y-1">
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    เกี่ยวกับ OK Mobile
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    ข้อกำหนดและเงื่อนไข
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block rounded-lg px-4 py-3 text-base text-slate-700 hover:bg-slate-100"
-                  >
-                    นโยบายความเป็นส่วนตัว
-                  </a>
-                </li>
-              </ul>
+              {/* Company */}
+              <div className="mb-6">
+                <h3 className="text-muted-foreground mb-3 px-4 text-sm font-semibold tracking-wider uppercase">
+                  OK Mobile
+                </h3>
+                <ul className="space-y-2">
+                  {companyItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.label}>
+                        <a
+                          href={item.href}
+                          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-xl px-4 py-3 text-base transition-all"
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </nav>
 
             {/* Social Links */}
-            <div className="mt-auto border-t p-4">
-              <h3 className="px-4 text-sm font-semibold tracking-wider text-slate-400 uppercase">
-                Follow Us
+            <div className="border-border from-accent/50 border-t bg-gradient-to-t to-transparent p-6">
+              <h3 className="text-muted-foreground mb-4 text-center text-sm font-semibold tracking-wider uppercase">
+                ติดตามเรา
               </h3>
-              <ul className="mt-3 flex justify-center gap-3">
-                <li>
-                  <a
-                    href="#"
-                    aria-label="Facebook"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877f2] text-white shadow-sm transition-transform hover:-translate-y-1"
-                  >
-                    <Facebook size={20} />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    aria-label="LINE"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1"
-                  >
-                    <MessageCircle size={20} />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    aria-label="Twitter/X"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1da1f2] text-white shadow-sm transition-transform hover:-translate-y-1"
-                  >
-                    <Twitter size={20} />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    aria-label="YouTube"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff0000] text-white shadow-sm transition-transform hover:-translate-y-1"
-                  >
-                    <Youtube size={20} />
-                  </a>
-                </li>
+              <ul className="flex justify-center gap-3">
+                {socialItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.label}>
+                      <a
+                        href={item.href}
+                        aria-label={item.label}
+                        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl ${item.color}`}
+                      >
+                        <Icon size={20} />
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
+              <p className="text-muted-foreground mt-4 text-center text-xs">
+                © 2024 OK Mobile. All rights reserved.
+              </p>
             </div>
           </motion.div>
         </>
@@ -234,6 +280,7 @@ const MobileMenu = ({
 const Navbar = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const isActive = (path: string) => pathname === path;
 
@@ -244,73 +291,96 @@ const Navbar = () => {
     } else {
       document.body.style.overflow = "";
     }
-    // Cleanup function
+
     return () => {
       document.body.style.overflow = "";
     };
   }, [isMenuOpen]);
 
+  // Effect to handle scroll for navbar background
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () =>
+      window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navItems = [
+    { href: "/", label: "หน้าแรก" },
+    { href: "/my-assessments", label: "ค้นหาการประเมิน" },
+    { href: "/assess", label: "ประเมินราคา" },
+  ];
+
   return (
     <>
-      <nav className="border-border/50 bg-card/95 sticky top-0 z-30 w-full border-b backdrop-blur-sm">
+      <nav
+        className={`sticky top-0 z-30 w-full transition-all duration-300 ${
+          isScrolled
+            ? "bg-white/95 shadow-xl shadow-black/5 backdrop-blur-md" // [แก้ไข] เพิ่มพื้นหลังสีขาวและเส้นขอบ
+            : "bg-white" // [แก้ไข] ท
+        }`}
+      >
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
-              className="transition-smooth flex items-center space-x-2 hover:scale-105"
+              className="transition-smooth group flex items-center space-x-3 hover:scale-105"
             >
-              <div className="gradient-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                <Smartphone className="h-5 w-5 text-white" />
+              <div className="gradient-primary flex h-10 w-10 items-center justify-center rounded-xl shadow-lg transition-shadow group-hover:shadow-xl">
+                <Smartphone className="h-6 w-6 text-white" />
               </div>
-              <span className="text-foreground text-lg font-semibold sm:block">
-                OK Mobile
-              </span>
+              <div className="flex flex-col">
+                <span className="text-foreground text-lg font-bold">
+                  OK Mobile
+                </span>
+                <span className="text-muted-foreground hidden text-xs sm:block">
+                  ซื้อ-ขายมือถือออนไลน์
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden items-center space-x-1 md:flex">
-              <Link
-                href="/"
-                className={`transition-smooth rounded-lg px-4 py-2 text-sm font-medium ${
-                  isActive("/")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`}
-              >
-                หน้าแรก
-              </Link>
-              <Link
-                href="/my-assessments"
-                className={`transition-smooth rounded-lg px-4 py-2 text-sm font-medium ${
-                  isActive("/my-assessments")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`}
-              >
-                ค้นหาการประเมิน
-              </Link>
-              <Link
-                href="/assess"
-                className={`transition-smooth rounded-lg px-4 py-2 text-sm font-medium ${
-                  isActive("/assess")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`}
-              >
-                ประเมินราคา
-              </Link>
+            <div className="hidden items-center space-x-2 md:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`transition-smooth relative rounded-xl px-6 py-2 text-sm font-medium transition-all duration-200 ${
+                    isActive(item.href)
+                      ? "gradient-primary text-primary-foreground scale-105 transform shadow-lg"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  }`}
+                >
+                  {item.label}
+                  {isActive(item.href) && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="gradient-primary absolute inset-0 -z-10 rounded-xl"
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </Link>
+              ))}
             </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setIsMenuOpen(true)}
-                className="rounded-md p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                className="text-foreground hover:bg-accent/50 rounded-xl p-2 transition-all"
                 aria-label="Open main menu"
               >
                 <Menu className="h-6 w-6" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>

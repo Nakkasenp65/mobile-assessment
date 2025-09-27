@@ -1,4 +1,5 @@
 "use client";
+import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
   Search,
   CalendarClock,
@@ -15,7 +16,7 @@ const steps = [
     description:
       "ส่งรูปและรายละเอียดมือถือของคุณผ่าน LINE หรือ Facebook เพื่อให้ทีมงานของเราประเมินราคาเบื้องต้นได้ทันที",
     colors: {
-      bg: "bg-violet-100",
+      bg: "bg-[#F8F5FD]",
       icon: "text-violet-500",
       dot: "bg-violet-500",
     },
@@ -26,7 +27,7 @@ const steps = [
     description:
       "เลือกสาขาที่สะดวกและนัดวันเวลาเพื่อนำเครื่องเข้ามาให้ทีมงานตรวจสอบสภาพจริงและยืนยันราคาสุดท้าย",
     colors: {
-      bg: "bg-cyan-100",
+      bg: "bg-[#E5F9FE]",
       icon: "text-cyan-500",
       dot: "bg-cyan-500",
     },
@@ -37,7 +38,7 @@ const steps = [
     description:
       "เมื่อตกลงราคาเรียบร้อยแล้ว คุณสามารถรับเงินสดกลับบ้านได้ทันที ง่ายๆ สะดวกและไม่ต้องรอ",
     colors: {
-      bg: "bg-pink-100",
+      bg: "bg-[#FADCDC]",
       icon: "text-pink-500",
       dot: "bg-pink-500",
     },
@@ -56,10 +57,10 @@ const HowItWorksSection = () => (
         alt="พื้นหลังร้าน OK Mobile"
         fill
         priority={false}
-        className="object-cover"
+        className="object-cover blur-[2px]"
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-white/80 backdrop-blur-md"></div>
+      <div className="absolute inset-0 bg-white/80"></div>
     </div>
 
     {/* Content Container */}
@@ -82,28 +83,15 @@ const HowItWorksSection = () => (
           </p>
         </div>
 
-        {/* --- START: โครงสร้าง Layout หลักที่แก้ไขใหม่ --- */}
-        {/* 
-          Container หลัก:
-          - Mobile (<md): flex-col (Steps อยู่บน, รูปผู้หญิงอยู่ล่าง)
-          - Desktop (md+): flex-row (Steps อยู่ซ้าย, รูปผู้หญิงอยู่ขวา)
-        */}
-        <div className="flex flex-col items-center gap-12 md:flex-row md:items-center md:justify-center md:gap-4 lg:gap-8">
+        {/* --- โครงสร้าง Layout หลัก --- */}
+        <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-center lg:gap-16">
           {/* ส่วนของขั้นตอน (Steps Section) */}
-          <div className="flex w-full max-w-5xl flex-row items-start justify-center">
+          <div className="flex w-full flex-row items-start justify-center lg:w-3/5">
             {steps.map((step, index) => (
               <React.Fragment key={step.title}>
-                {/* 
-                  แต่ละขั้นตอน (Step Item):
-                  - แสดงเป็นแนวตั้ง (flex-col) และจัดกลาง (items-center) ในทุกขนาดหน้าจอ
-                  - แต่ละ step item จะมีความกว้าง 1/3 ของพื้นที่
-                */}
+                {/* แต่ละขั้นตอน (Step Item) */}
                 <div className="flex w-1/3 flex-col items-center p-1 text-center md:p-2">
-                  {/* 
-                    กล่องไอคอน: ปรับขนาดตามหน้าจอ
-                    - Mobile: h-16, w-16
-                    - Desktop: h-20, w-20
-                  */}
+                  {/* กล่องไอคอน */}
                   <div
                     className={`flex h-16 w-16 flex-shrink-0 place-items-center items-center justify-center rounded-2xl shadow-lg transition-transform duration-300 hover:-translate-y-1 md:h-20 md:w-20 ${step.colors.bg} `}
                   >
@@ -113,33 +101,29 @@ const HowItWorksSection = () => (
                     />
                   </div>
                   <div className="mt-3 w-full md:mt-4">
-                    {/* 
-                      ข้อความ: ปรับขนาด Font ตามหน้าจอ
-                      - Title: text-sm (เล็ก) -> md:text-lg (ใหญ่)
-                      - Description: text-xs (เล็กมาก) -> md:text-sm (เล็ก)
-                    */}
+                    {/* ข้อความ */}
                     <h3 className="text-sm font-bold text-slate-900 md:text-lg">
                       {step.title}
                     </h3>
-                    <p className="mt-1 hidden px-1 text-xs text-slate-600 md:mt-2 md:px-0 md:text-sm lg:block">
+                    <p className="mt-1 hidden px-1 text-xs text-slate-600 md:mt-2 md:block md:px-0 md:text-sm">
                       {step.description}
                     </p>
                   </div>
                 </div>
 
-                {/* 
-                  เส้นเชื่อม (Connector):
-                  - แสดงเป็นแนวนอนเสมอ
-                  - ปรับ margin-top (mt) ให้สอดคล้องกับครึ่งหนึ่งของความสูง icon box ในแต่ละขนาดจอ
-                */}
+                {/* --- [ปรับปรุง] เส้นเชื่อม (Connector) --- */}
                 {index < steps.length - 1 && (
                   <div className="relative mx-2 mt-8 flex-1 self-start md:mx-4 md:mt-10">
                     <div className="w-full border-t-2 border-dashed border-gray-300" />
-                    <div
-                      className={`absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 rounded-full ${steps[index].colors.dot}`}
-                    />
-                    <div
-                      className={`absolute top-1/2 -right-1.5 h-3 w-3 -translate-y-1/2 rounded-full ${steps[index + 1].colors.dot}`}
+                    {/* 
+                      เปลี่ยนมาใช้ CaretRightIcon อันเดียวตรงกลาง
+                      - ใช้ `weight="fill"` เพื่อให้เป็นไอคอนแบบทึบ
+                      - จัดให้อยู่กึ่งกลางเส้นด้วย absolute, left-1/2, top-1/2 และ translate
+                      - ใช้สีของ icon จากขั้นตอนถัดไป (`steps[index + 1].colors.icon`)
+                    */}
+                    <CaretRightIcon
+                      weight="fill"
+                      className={`absolute top-1/2 left-1/2 mt-2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 ${steps[index + 1].colors.icon}`}
                     />
                   </div>
                 )}
@@ -148,17 +132,16 @@ const HowItWorksSection = () => (
           </div>
 
           {/* ส่วนของรูปผู้หญิง (Illustration Section) */}
-          <div className="w-full md:w-auto md:flex-shrink-0">
+          <div className="w-full max-w-xs md:max-w-sm lg:order-first lg:w-2/5 lg:max-w-none">
             <Image
               width={600}
               height={800}
               src="https://lh3.googleusercontent.com/d/1TuqxKpYBdgpK-rtul5auS0b0B84JyBoG?format=webp"
               alt="ลูกค้าผู้หญิงถือไอโฟน"
-              className="mx-auto h-auto w-full object-contain object-bottom sm:max-w-[240px] md:-mx-4 md:w-52 lg:mx-auto lg:w-64"
+              className="mx-auto h-auto w-full object-contain object-bottom"
             />
           </div>
         </div>
-        {/* --- END: โครงสร้าง Layout หลักที่แก้ไขใหม่ --- */}
       </div>
     </div>
   </section>
