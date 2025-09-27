@@ -37,28 +37,30 @@ export interface ConditionInfo {
 
 export default function AssessPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
+  const [isUserDevice, setIsUserDevice] =
+    useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
     brand: "",
     model: "",
     storage: "",
     batteryHealth: "",
   });
-  const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
-    modelType: "",
-    warranty: "",
-    accessories: "",
-    bodyCondition: "",
-    screenGlass: "",
-    screenDisplay: "",
-    batteryHealth: "",
-    camera: "",
-    wifi: "",
-    faceId: "",
-    speaker: "",
-    mic: "",
-    touchScreen: "",
-  });
+  const [conditionInfo, setConditionInfo] =
+    useState<ConditionInfo>({
+      modelType: "",
+      warranty: "",
+      accessories: "",
+      bodyCondition: "",
+      screenGlass: "",
+      screenDisplay: "",
+      batteryHealth: "",
+      camera: "",
+      wifi: "",
+      faceId: "",
+      speaker: "",
+      mic: "",
+      touchScreen: "",
+    });
 
   const handleNext = () => {
     if (currentStep < 3) {
@@ -87,7 +89,10 @@ export default function AssessPage() {
   return (
     <Layout>
       <div className="container mx-auto px-4 pt-0 pb-24 md:pt-8">
-        <ProgressBar currentStep={currentStep} totalSteps={3} />
+        <ProgressBar
+          currentStep={currentStep}
+          totalSteps={3}
+        />
 
         <div className="md:mt-8">
           {currentStep === 1 && (
@@ -110,7 +115,11 @@ export default function AssessPage() {
           )}
 
           {currentStep === 3 && (
-            <AssessStep3 deviceInfo={deviceInfo} conditionInfo={conditionInfo} onBack={handleBack} />
+            <AssessStep3
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              onBack={handleBack}
+            />
           )}
         </div>
       </div>

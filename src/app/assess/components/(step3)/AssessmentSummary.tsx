@@ -2,7 +2,12 @@
 import React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ImageOff, Star, Calendar, Shield } from "lucide-react";
+import {
+  ImageOff,
+  Star,
+  Calendar,
+  Shield,
+} from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import AssessmentLedger from "./AssessmentLedger";
 
@@ -120,14 +125,16 @@ const AssessmentSummary = ({
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-500/20">
                 <Star className="h-4 w-4 text-rose-500 dark:text-rose-400" />
               </div>
-              <p className="text-foreground font-semibold">ราคาประเมิน</p>
+              <p className="text-foreground font-semibold">
+                ราคาประเมิน
+              </p>
             </div>
             <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-zinc-700 dark:text-zinc-300">
               <Calendar className="h-3.5 w-3.5" />
               <span>วันนี้</span>
             </div>
           </div>
-          <p className="text-foreground text-4xl font-bold">
+          <p className="bg-gradient-to-r from-rose-500 via-pink-600 to-amber-500 bg-clip-text text-4xl font-bold text-transparent">
             {finalPrice.toLocaleString("th-TH", {
               style: "currency",
               currency: "THB",

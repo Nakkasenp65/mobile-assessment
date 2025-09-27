@@ -38,7 +38,7 @@ const HeroFeatures = () => {
   return (
     <section className="w-full pb-6 sm:pb-14">
       <div className="container mx-auto px-2">
-        <div className="rounded-3xl border border-orange-100 bg-white p-4 shadow-2xl sm:p-8">
+        <div className="rounded-3xl bg-white p-4 shadow-2xl sm:p-8">
           {/* Title */}
           <div className="mb-4 text-center sm:mb-7">
             <h2 className="text-xl font-bold text-slate-900 sm:text-3xl">

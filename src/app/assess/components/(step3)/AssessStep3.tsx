@@ -41,15 +41,18 @@ const AssessStep3 = ({
   conditionInfo,
   onBack,
 }: AssessStep3Props) => {
-  const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedService, setSelectedService] =
+    useState<string>("");
 
-  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } =
-    usePriceCalculation(deviceInfo, conditionInfo);
+  const {
+    finalPrice,
+    grade,
+    gradeTextStyle,
+    gradeNeonColor,
+  } = usePriceCalculation(deviceInfo, conditionInfo);
 
-  const { data: mobileData, isLoading: isImageLoading } = useMobile(
-    deviceInfo.brand,
-    deviceInfo.model,
-  );
+  const { data: mobileData, isLoading: isImageLoading } =
+    useMobile(deviceInfo.brand, deviceInfo.model);
 
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
@@ -93,7 +96,8 @@ const AssessStep3 = ({
     {
       id: "tradein",
       title: "แลกซื้อเครื่องใหม่",
-      description: "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่ที่ร้าน",
+      description:
+        "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่ที่ร้าน",
       icon: RefreshCw,
       price: Math.round(finalPrice * 1.05),
       features: [
@@ -106,7 +110,8 @@ const AssessStep3 = ({
     {
       id: "consignment",
       title: "ฝากขาย",
-      description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
+      description:
+        "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
       price: Math.round(finalPrice * 1.15),
       features: [
@@ -133,7 +138,9 @@ const AssessStep3 = ({
 
   const handleConfirm = () => {
     if (selectedService) {
-      alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
+      alert(
+        "ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง",
+      );
     }
   };
 
@@ -185,7 +192,9 @@ const AssessStep3 = ({
           className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-xl border bg-white px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="ml-2 hidden font-semibold sm:inline">ย้อนกลับ</span>
+          <span className="ml-2 hidden font-semibold sm:inline">
+            ย้อนกลับ
+          </span>
         </FramerButton>
 
         {/* ปุ่มยืนยัน (Primary Action) */}

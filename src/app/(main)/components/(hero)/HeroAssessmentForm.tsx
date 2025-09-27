@@ -248,7 +248,6 @@ const HeroAssessmentForm = () => {
                   <step.icon className="h-6 w-6 text-pink-600 md:h-7 md:w-7" />
                 </div>
 
-                {/* --- ✨ FIX IS HERE! ✨ --- */}
                 <p className="w-20 text-center text-xs font-semibold text-gray-700">
                   {step.text}
                 </p>

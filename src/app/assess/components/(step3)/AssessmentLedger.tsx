@@ -15,6 +15,10 @@ import {
   Wifi,
   AlertTriangle,
   CheckCircle,
+  ShieldCheck, // Added
+  Archive, // Added
+  Frame, // Added
+  ScanFace, // Added
 } from "lucide-react";
 import {
   Accordion,
@@ -23,15 +27,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// ----------------------------------------------------------------------------------------------------
-// Data Maps: คงเดิม
-// ----------------------------------------------------------------------------------------------------
+// --- FIX 1: เพิ่มข้อมูลที่ขาดหายไปใน MAPs ---
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
   model: Cpu,
   storage: HardDrive,
   batteryHealth: BatteryCharging,
-  screenGlass: Smartphone,
+  screenGlass: Frame, // Changed for better context
   screenDisplay: Monitor,
   powerOn: Power,
   camera: Camera,
@@ -40,6 +42,11 @@ const ICON_MAP: Record<string, ComponentType<any>> = {
   touchScreen: Hand,
   mic: Mic,
   speaker: Volume2,
+  modelType: Smartphone, // Added
+  warranty: ShieldCheck, // Added
+  accessories: Archive, // Added
+  bodyCondition: Smartphone, // Added
+  faceId: ScanFace, // Added
 };
 
 const LABEL_MAP: Record<string, string> = {
@@ -56,11 +63,35 @@ const LABEL_MAP: Record<string, string> = {
   speaker: "ลำโพง",
   mic: "ไมโครโฟน",
   camera: "กล้อง",
+  modelType: "รุ่นโมเดล", // Added
+  warranty: "ประกันศูนย์", // Added
+  accessories: "อุปกรณ์", // Added
+  bodyCondition: "สภาพตัวเครื่อง", // Added
+  faceId: "Face ID / Touch ID", // Added
 };
 
-// ----------------------------------------------------------------------------------------------------
-// Component: TestItem (ปรับปรุงใหม่)
-// ----------------------------------------------------------------------------------------------------
+// --- FIX 2: สร้างฟังก์ชันที่รวบรวมทุกค่าที่ถือว่า "ผ่าน" ---
+const isConsideredPassed = (
+  key: string,
+  value: string,
+): boolean => {
+  const positiveValues = [
+    "passed",
+    "perfect",
+    "mint",
+    "high",
+    "excellent",
+    "good",
+    "th",
+    "full",
+    "active_long",
+  ];
+  if (positiveValues.includes(value)) return true;
+  if (key === "touchScreen" && parseInt(value) >= 95)
+    return true;
+  return false;
+};
+
 const TestItem = ({
   itemKey,
   itemValue,
@@ -71,21 +102,9 @@ const TestItem = ({
   const label = LABEL_MAP[itemKey] || itemKey;
   const Icon = ICON_MAP[itemKey];
 
-  // --- [FIX START] ---
-  // 1. สร้างฟังก์ชันสำหรับตรวจสอบสถานะแบตเตอรี่โดยเฉพาะ
-  const isBatteryPassed = (value: string): boolean => {
-    return ["100%", "95% - 99%"].includes(value);
-  };
+  // --- FIX 3: ใช้ฟังก์ชัน isConsideredPassed ในการตัดสินใจ ---
+  const isPassed = isConsideredPassed(itemKey, itemValue);
 
-  // 2. ปรับปรุง Logic การตรวจสอบสถานะ 'isPassed'
-  const isPassed =
-    // ถ้าเป็น batteryHealth ให้ใช้ฟังก์ชัน isBatteryPassed
-    (itemKey === "batteryHealth" && isBatteryPassed(itemValue)) ||
-    // เงื่อนไขเดิมสำหรับรายการอื่นๆ
-    ["passed"].includes(itemValue) ||
-    (itemKey === "touchScreen" && parseInt(itemValue) >= 95);
-
-  // ไม่แสดงผลถ้ารายการนั้นไม่มีข้อมูล หรือไม่มีไอคอน
   if (!itemValue || !Icon) return null;
 
   return (
@@ -113,9 +132,6 @@ const TestItem = ({
   );
 };
 
-// ----------------------------------------------------------------------------------------------------
-// Component: AssessmentLedger (Main)
-// ----------------------------------------------------------------------------------------------------
 const AssessmentLedger = ({
   deviceInfo,
   conditionInfo,
@@ -123,20 +139,13 @@ const AssessmentLedger = ({
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
 }) => {
-  // --- [FIX START] ---
-  // 1. รวมข้อมูลทั้งหมด
   const allInfo = { ...deviceInfo, ...conditionInfo };
-
-  // 2. สร้างรายการ Key ที่ไม่ต้องการแสดงผล
   const EXCLUDED_KEYS = ["brand", "model", "storage"];
 
-  // 3. กรองข้อมูล: เอาเฉพาะรายการที่มีค่า และไม่อยู่ใน EXCLUDED_KEYS
   const allItems = Object.entries(allInfo).filter(
     ([key, value]) => value && !EXCLUDED_KEYS.includes(key),
   );
-  // --- [FIX END] ---
 
-  // ไม่แสดงผลเลยถ้าไม่มีข้อมูลอะไรเลย
   if (allItems.length === 0) {
     return null;
   }
@@ -167,7 +176,11 @@ const AssessmentLedger = ({
             <div className="border-t pt-4 dark:border-zinc-700">
               <div className="grid grid-cols-2 gap-3">
                 {allItems.map(([key, value]) => (
-                  <TestItem key={key} itemKey={key} itemValue={value} />
+                  <TestItem
+                    key={key}
+                    itemKey={key}
+                    itemValue={value}
+                  />
                 ))}
               </div>
             </div>

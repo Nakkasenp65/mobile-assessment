@@ -31,6 +31,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.16",
+    "gsap": "^3.13.0",
     "konva": "^10.0.2",
     "lucide-react": "^0.544.0",
     "network-information-types": "^0.1.1",

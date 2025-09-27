@@ -36,7 +36,13 @@ const HeroImageSlider = () => {
     <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[46%]">
       {/* Background Blob - adjusted for better proportion */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="from-primary to-secondary -z-10 aspect-square w-[90%] rounded-full bg-gradient-to-br blur-xl" />
+        <Image
+          src={"/assets/element.webp"}
+          alt="decoration element"
+          width={2000}
+          height={2000}
+          className="scale-90 blur-sm"
+        />
       </div>
 
       {/* Swiper Component with consistent aspect ratio */}
