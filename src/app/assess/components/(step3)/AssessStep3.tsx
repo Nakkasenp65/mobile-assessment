@@ -11,6 +11,9 @@ import {
   Truck,
   ShoppingBag,
   RefreshCw,
+  Lock,
+  RefreshCwIcon,
+  Cloud,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
@@ -42,7 +45,7 @@ const AssessStep3 = ({
   onBack,
 }: AssessStep3Props) => {
   const [selectedService, setSelectedService] =
-    useState<string>("");
+    useState<string>("sell");
 
   const {
     finalPrice,
@@ -65,6 +68,12 @@ const AssessStep3 = ({
     }) + " น.";
 
   const calculatedPawnPrice = Math.round(finalPrice * 0.7);
+  const calculatedIcloudPawnPrice = Math.round(
+    finalPrice * 0.5,
+  );
+  const calculatedTradeInPrice = Math.round(
+    finalPrice * 0.7,
+  );
 
   const services: ServiceOption[] = [
     {
@@ -94,20 +103,6 @@ const AssessStep3 = ({
       ],
     },
     {
-      id: "tradein",
-      title: "แลกซื้อเครื่องใหม่",
-      description:
-        "เพิ่มส่วนลดเมื่ออัปเกรดเครื่องใหม่ที่ร้าน",
-      icon: RefreshCw,
-      price: Math.round(finalPrice * 1.05),
-      features: [
-        "บวกส่วนลดเพิ่ม",
-        "เลือกรุ่นใหม่ได้ทันที",
-        "โอนย้ายข้อมูลให้",
-        "ประกันความพึงพอใจ 7 วัน",
-      ],
-    },
-    {
       id: "consignment",
       title: "ฝากขาย",
       description:
@@ -122,16 +117,30 @@ const AssessStep3 = ({
       ],
     },
     {
-      id: "installment",
-      title: "ผ่อนชำระ",
-      description: "แบ่งจ่ายสบายใจ ไม่ต้องจ่ายเต็ม",
-      icon: CreditCard,
-      price: Math.round(finalPrice / 6),
+      id: "icloud",
+      title: "บริการจำนำ iCloud",
+      description: "รับเงินด่วน โดยไม่ต้องใช้เครื่อง",
+      icon: Cloud,
+      price: calculatedIcloudPawnPrice,
       features: [
-        "ยืนยันตัวตนออนไลน์",
-        "อนุมัติไว",
-        "ดอกเบี้ยโปรโมชัน",
-        "ผ่อนยาวได้ตามโปร",
+        "ไม่ต้องส่งมอบเครื่อง",
+        "อนุมัติไวภายใน 15 นาที",
+        "ต่ออายุได้ทุก 10 วัน",
+        "ปลอดภัยด้วยทีมงานมืออาชีพ",
+      ],
+    },
+    {
+      id: "tradein",
+      title: "แลกซื้อเครื่องใหม่ (Trade-in)",
+      description:
+        "ใช้เครื่องเก่าเป็นส่วนลดแลกซื้อเครื่องใหม่",
+      icon: RefreshCwIcon,
+      price: calculatedTradeInPrice,
+      features: [
+        "รับส่วนลดทันที ณ วันซื้อเครื่องใหม่",
+        "มีทีมงานช่วยโอนย้ายข้อมูล",
+        "เลือกเครื่องใหม่ได้ทุกรุ่นในร้าน",
+        "ขั้นตอนง่าย ไม่ซับซ้อน",
       ],
     },
   ];

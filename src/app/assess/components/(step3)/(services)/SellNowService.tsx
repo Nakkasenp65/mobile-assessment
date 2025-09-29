@@ -1,4 +1,4 @@
-// src/app/assess/step3/(services)/PawnService.tsx
+// src/app/assess/components/(step3)/(services)/SellNowService.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -14,9 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../page";
-import { cn } from "@/lib/utils";
 import {
   Store,
   User,
@@ -24,9 +23,16 @@ import {
   Sparkles,
   Home,
   Train,
+  MapPin,
   Check,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";
+
+interface SellNowServiceProps {
+  deviceInfo: DeviceInfo;
+  sellPrice: number;
+}
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": [
@@ -57,15 +63,10 @@ const storeLocations = [
   "สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)",
 ];
 
-interface PawnServiceProps {
-  deviceInfo: DeviceInfo;
-  pawnPrice: number;
-}
-
-const PawnService = ({
+const SellNowService = ({
   deviceInfo,
-  pawnPrice,
-}: PawnServiceProps) => {
+  sellPrice,
+}: SellNowServiceProps) => {
   const [locationType, setLocationType] = useState<
     "home" | "bts" | "store"
   >("home");
@@ -126,18 +127,18 @@ const PawnService = ({
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="relative overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-white p-6 text-center shadow-lg"
+        className="relative overflow-hidden rounded-2xl border border-pink-200 bg-gradient-to-br from-orange-50 via-pink-50 to-white p-6 text-center shadow-lg"
       >
-        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-orange-100/50 blur-2xl" />
-        <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-amber-100/50 blur-2xl" />
+        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-pink-100/50 blur-2xl" />
+        <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-orange-100/50 blur-2xl" />
         <div className="relative z-10">
-          <h3 className="text-lg font-semibold text-orange-900">
-            ยอดเงินที่คุณจะได้รับ (จำนำ)
+          <h3 className="text-lg font-semibold text-pink-900">
+            ยอดเงินที่คุณจะได้รับ
           </h3>
-          <p className="mt-2 bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
-            {THB(pawnPrice)}
+          <p className="mt-2 bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
+            {THB(sellPrice)}
           </p>
-          <p className="mt-2 text-sm text-orange-800/80">
+          <p className="mt-2 text-sm text-pink-800/80">
             รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น
           </p>
         </div>
@@ -148,27 +149,27 @@ const PawnService = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="rounded-xl border border-orange-100 bg-orange-50/50 p-4"
+        className="rounded-xl border border-pink-100 bg-pink-50/50 p-4"
       >
-        <h4 className="mb-3 text-sm font-semibold text-orange-900">
+        <h4 className="mb-3 text-sm font-semibold text-pink-900">
           สิทธิประโยชน์ที่คุณได้รับ
         </h4>
-        <ul className="space-y-2 text-sm text-orange-800">
+        <ul className="space-y-2 text-sm text-pink-800">
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-600" />
             <span>รับเงินสดทันที 30 นาที</span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-600" />
             <span>ไม่มีค่าธรรมเนียมใดๆ ทั้งสิ้น</span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
-            <span>ไม่ต้องตัดจีพีเอสและไอคราวด์</span>
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-600" />
+            <span>ตัดจีพีเอสและไอคราวด์ให้ฟรี</span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
-            <span>ไถ่คืนได้ตลอดเวลา ไม่มีดอกเบี้ย</span>
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-600" />
+            <span>ซื้อคืนภายใน 7 วัน</span>
           </li>
         </ul>
       </motion.div>
@@ -185,7 +186,7 @@ const PawnService = ({
         {/* Step 1: Location Selection */}
         <motion.div variants={formVariants}>
           <Label className="mb-3 block text-lg font-semibold">
-            1. เลือกสถานที่จำนำ
+            1. เลือกสถานที่รับซื้อ
           </Label>
           <div className="grid grid-cols-3 gap-3">
             <Button
@@ -199,7 +200,9 @@ const PawnService = ({
               className="flex h-auto flex-col items-center gap-2 py-4"
             >
               <Home className="h-6 w-6" />
-              <span className="text-xs">จำนำถึงบ้าน</span>
+              <span className="text-xs">
+                รับซื้อถึงบ้าน
+              </span>
             </Button>
             <Button
               type="button"
@@ -225,7 +228,9 @@ const PawnService = ({
               className="flex h-auto flex-col items-center gap-2 py-4"
             >
               <Store className="h-6 w-6" />
-              <span className="text-xs">จำนำที่ร้าน</span>
+              <span className="text-xs">
+                รับซื้อที่ร้าน
+              </span>
             </Button>
           </div>
         </motion.div>
@@ -240,13 +245,13 @@ const PawnService = ({
           </Label>
 
           <div className="space-y-2">
-            <Label htmlFor="customerName-pawn">
+            <Label htmlFor="customerName-sell">
               ชื่อ-นามสกุล
             </Label>
             <div className="relative">
               <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
-                id="customerName-pawn"
+                id="customerName-sell"
                 placeholder="กรอกชื่อ-นามสกุล"
                 value={formState.customerName}
                 onChange={(e) =>
@@ -261,13 +266,13 @@ const PawnService = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone-pawn">
+            <Label htmlFor="phone-sell">
               เบอร์โทรศัพท์ติดต่อ
             </Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
-                id="phone-pawn"
+                id="phone-sell"
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
@@ -301,15 +306,13 @@ const PawnService = ({
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="address-pawn">
-                    ที่อยู่
-                  </Label>
+                  <Label htmlFor="address">ที่อยู่</Label>
                   <p className="text-sm font-bold text-red-600">
-                    *หากต้องการจำนำด่วนภายในวันนี้
+                    *หากต้องการขายด่วนภายในวันนี้
                     กรุณาติดต่อ 098-950-9222
                   </p>
                   <Textarea
-                    id="address-pawn"
+                    id="address"
                     placeholder="กรอกที่อยู่โดยละเอียด"
                     value={formState.address}
                     onChange={(e) =>
@@ -323,7 +326,7 @@ const PawnService = ({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="province-pawn">
+                    <Label htmlFor="province">
                       จังหวัด
                     </Label>
                     <Select
@@ -333,7 +336,7 @@ const PawnService = ({
                       }
                     >
                       <SelectTrigger
-                        id="province-pawn"
+                        id="province"
                         className="w-full"
                       >
                         <SelectValue />
@@ -346,9 +349,7 @@ const PawnService = ({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="district-pawn">
-                      เขต
-                    </Label>
+                    <Label htmlFor="district">เขต</Label>
                     <Select
                       value={formState.district}
                       onValueChange={(value) =>
@@ -356,7 +357,7 @@ const PawnService = ({
                       }
                     >
                       <SelectTrigger
-                        id="district-pawn"
+                        id="district"
                         className="w-full"
                       >
                         <SelectValue />
@@ -380,14 +381,14 @@ const PawnService = ({
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="bts-line-pawn">
+                    <Label htmlFor="bts-line">
                       สายรถไฟ BTS/MRT
                     </Label>
                     <Select
                       onValueChange={setSelectedBtsLine}
                     >
                       <SelectTrigger
-                        id="bts-line-pawn"
+                        id="bts-line"
                         className="w-full"
                       >
                         <SelectValue placeholder="เลือกสายรถไฟ" />
@@ -407,7 +408,7 @@ const PawnService = ({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="bts-station-pawn">
+                    <Label htmlFor="bts-station">
                       ระบุสถานี
                     </Label>
                     <Select
@@ -420,7 +421,7 @@ const PawnService = ({
                       }
                     >
                       <SelectTrigger
-                        id="bts-station-pawn"
+                        id="bts-station"
                         className="w-full"
                       >
                         <SelectValue placeholder="เลือกสถานี" />
@@ -452,9 +453,7 @@ const PawnService = ({
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="store-branch-pawn">
-                    สาขา
-                  </Label>
+                  <Label htmlFor="store-branch">สาขา</Label>
                   <Select
                     value={formState.storeLocation}
                     onValueChange={(value) =>
@@ -465,7 +464,7 @@ const PawnService = ({
                     }
                   >
                     <SelectTrigger
-                      id="store-branch-pawn"
+                      id="store-branch"
                       className="w-full"
                     >
                       <SelectValue />
@@ -494,16 +493,13 @@ const PawnService = ({
           </Label>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="date-pawn">วัน</Label>
+              <Label htmlFor="date">วัน</Label>
               <Select
                 onValueChange={(value) =>
                   handleInputChange("date", value)
                 }
               >
-                <SelectTrigger
-                  id="date-pawn"
-                  className="w-full"
-                >
+                <SelectTrigger id="date" className="w-full">
                   <SelectValue placeholder="เลือกวัน" />
                 </SelectTrigger>
                 <SelectContent>
@@ -517,16 +513,13 @@ const PawnService = ({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="time-pawn">เวลา</Label>
+              <Label htmlFor="time">เวลา</Label>
               <Select
                 onValueChange={(value) =>
                   handleInputChange("time", value)
                 }
               >
-                <SelectTrigger
-                  id="time-pawn"
-                  className="w-full"
-                >
+                <SelectTrigger id="time" className="w-full">
                   <SelectValue placeholder="เลือกเวลา" />
                 </SelectTrigger>
                 <SelectContent>
@@ -555,7 +548,7 @@ const PawnService = ({
       >
         <div className="flex items-start space-x-3">
           <Checkbox
-            id="terms-pawn"
+            id="terms-sell"
             checked={formState.termsAccepted}
             onCheckedChange={(checked) =>
               handleInputChange(
@@ -566,12 +559,12 @@ const PawnService = ({
             className="mt-1"
           />
           <label
-            htmlFor="terms-pawn"
+            htmlFor="terms-sell"
             className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            ฉันยอมรับข้อตกลงและเงื่อนไข{" "}
+            ฉันยืนยันว่าข้อมูลข้างต้นเป็นความจริง และยอมรับ{" "}
             <a href="#" className="text-blue-600 underline">
-              การจำนำสินค้าของทางร้าน
+              ข้อตกลงและเงื่อนไขการขายสินค้า
             </a>
           </label>
         </div>
@@ -581,11 +574,11 @@ const PawnService = ({
           className="h-14 w-full"
         >
           <Sparkles className="mr-2 h-5 w-5" />
-          ยืนยันการจำนำและรับเงินทันที
+          ยืนยันการขายและรับเงินทันที
         </FramerButton>
       </motion.div>
     </main>
   );
 };
 
-export default PawnService;
+export default SellNowService;

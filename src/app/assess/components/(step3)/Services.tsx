@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import IcloudService from "./(services)/IcloudService";
+import SellNowService from "./(services)/SellNowService";
+import ConsignmentService from "./(services)/ConsignmentService";
 
 // ----------------------------------------------------------------------------------------------------
 // Interface: ServicesProps
@@ -18,7 +21,9 @@ import { Check } from "lucide-react";
 interface ServicesProps {
   services: ServiceOption[];
   selectedService: string;
-  setSelectedService: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedService: React.Dispatch<
+    React.SetStateAction<string>
+  >;
   deviceInfo: DeviceInfo;
   pawnPrice: number;
 }
@@ -132,7 +137,9 @@ export default function Services({
                       "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
                     )}
                   >
-                    <Icon className={cn("h-6 w-6", theme.text)} />
+                    <Icon
+                      className={cn("h-6 w-6", theme.text)}
+                    />
                   </div>
 
                   {/* หัวข้อและคำอธิบาย */}
@@ -161,23 +168,50 @@ export default function Services({
                       pawnPrice={pawnPrice}
                     />
                   )}
-                  {service.id !== "pawn" && service.features.length > 0 && (
-                    <>
-                      <h5 className="text-foreground mb-2 font-semibold">
-                        สิทธิประโยชน์ที่คุณจะได้รับ:
-                      </h5>
-                      <ul className="text-muted-foreground space-y-2">
-                        {service.features.map((feature) => (
-                          <li
-                            key={feature}
-                            className="flex items-start gap-2 text-sm"
-                          >
-                            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
+                  {service.id !== "pawn" &&
+                    service.features.length > 0 && (
+                      <>
+                        <h5 className="text-foreground mb-2 font-semibold">
+                          สิทธิประโยชน์ที่คุณจะได้รับ:
+                        </h5>
+                        <ul className="text-muted-foreground space-y-2">
+                          {service.features.map(
+                            (feature) => (
+                              <li
+                                key={feature}
+                                className="flex items-start gap-2 text-sm"
+                              >
+                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                                <span>{feature}</span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </>
+                    )}
+                  {service.id === "sell" && (
+                    <SellNowService
+                      deviceInfo={deviceInfo}
+                      sellPrice={service.price}
+                    />
+                  )}
+                  {service.id === "icloud" && (
+                    <IcloudService
+                      deviceInfo={deviceInfo}
+                      icloudPawnPrice={pawnPrice} // หรือจะใช้ calculatedIcloudPawnPrice ที่ส่งมาใหม่
+                    />
+                  )}
+                  {service.id === "tradein" && (
+                    <IcloudService
+                      deviceInfo={deviceInfo}
+                      icloudPawnPrice={pawnPrice} // หรือจะใช้ calculatedIcloudPawnPrice ที่ส่งมาใหม่
+                    />
+                  )}
+                  {service.id === "consignment" && (
+                    <ConsignmentService
+                      deviceInfo={deviceInfo}
+                      consignmentPrice={pawnPrice}
+                    />
                   )}
                 </div>
               </AccordionContent>
