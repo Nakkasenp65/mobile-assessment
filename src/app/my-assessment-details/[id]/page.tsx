@@ -1,57 +1,31 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  type ComponentType,
-} from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { type ComponentType } from "react";
+import { motion } from "framer-motion";
 import {
-  Search,
   Phone,
   Calendar,
   ClipboardList,
-  Package,
   Wrench,
   HardDrive,
   Cpu,
   ShieldCheck,
   CheckCircle,
-  AlertCircle,
-  Smartphone,
-  RectangleHorizontal,
-  MonitorPlay,
-  BatteryFull,
-  Camera,
-  Wifi,
-  ScanFace,
-  Speaker,
   Clock,
-  AlertTriangle,
   Home,
   MapPin,
   Store,
   User,
-  Timer,
-  Check,
-  HelpCircle,
+  Hash,
 } from "lucide-react";
-import { Microphone } from "@phosphor-icons/react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import clsx from "clsx";
 import Layout from "../../../components/Layout/Layout";
 import Image from "next/image";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 
-// --- Interfaces (คงเดิม) ---
+import SupportSection from "../components/SupportSection";
+import ConditionGrid from "./ConditionGrid";
+import PriceLockCountdown from "./PirceLockCountdown";
+
+// --- Interfaces ---
 interface ConditionInfo {
   modelType: string;
   warranty: string;
@@ -66,6 +40,7 @@ interface ConditionInfo {
   speaker: string;
   mic: string;
   touchScreen: string;
+  charger: string;
 }
 
 interface PawnServiceInfo {
@@ -83,6 +58,7 @@ interface PawnServiceInfo {
 }
 
 interface AssessmentRecord {
+  id: string; // ✨ 2. เพิ่ม ID เข้าไปใน Interface
   phoneNumber: string;
   assessmentDate: string;
   device: {
@@ -104,7 +80,6 @@ interface AssessmentRecord {
   nextSteps: string[];
 }
 
-// --- Mock Data (คงเดิม) ---
 const getExpiryDate = (days: number): string => {
   const date = new Date();
   date.setDate(date.getDate() + days);
@@ -114,6 +89,7 @@ const getExpiryDate = (days: number): string => {
 
 const mockRecords: AssessmentRecord[] = [
   {
+    id: "ASS-2568-0001", // ✨ 3. เพิ่มข้อมูล ID สำหรับแต่ละ Record
     phoneNumber: "0812345678",
     assessmentDate: "25 กันยายน 2568",
     device: {
@@ -137,6 +113,7 @@ const mockRecords: AssessmentRecord[] = [
       speaker: "passed",
       mic: "passed",
       touchScreen: "passed",
+      charger: "failed",
     },
     pawnServiceInfo: {
       customerName: "นางสาวสายฟ้า สมสุข",
@@ -162,6 +139,7 @@ const mockRecords: AssessmentRecord[] = [
     ],
   },
   {
+    id: "ASS-2568-0002",
     phoneNumber: "0987654321",
     assessmentDate: "24 กันยายน 2568",
     device: {
@@ -185,6 +163,7 @@ const mockRecords: AssessmentRecord[] = [
       speaker: "passed",
       mic: "passed",
       touchScreen: "passed",
+      charger: "failed",
     },
     pawnServiceInfo: {
       customerName: "นายสมชาย ใจดี",
@@ -209,6 +188,7 @@ const mockRecords: AssessmentRecord[] = [
     ],
   },
   {
+    id: "ASS-2568-0003",
     phoneNumber: "0611223344",
     assessmentDate: "20 กันยายน 2568",
     device: {
@@ -232,6 +212,7 @@ const mockRecords: AssessmentRecord[] = [
       speaker: "failed",
       mic: "failed",
       touchScreen: "failed",
+      charger: "failed",
     },
     pawnServiceInfo: {
       customerName: "คุณส้มใส น่ารัก",
@@ -261,276 +242,6 @@ const mockRecords: AssessmentRecord[] = [
 ];
 
 type IconComponent = ComponentType<{ className?: string }>;
-
-const CONDITION_CONFIG: {
-  [K in keyof ConditionInfo]: {
-    label: string;
-    icon: IconComponent;
-    options: {
-      [val: string]: {
-        label: string;
-        icon?: IconComponent;
-        severity: "positive" | "warning" | "negative";
-      };
-    };
-  };
-} = {
-  modelType: {
-    label: "รุ่นโมเดล",
-    icon: Smartphone,
-    options: {
-      th: {
-        label: "เครื่องไทย (TH)",
-        severity: "positive",
-      },
-      other: { label: "เครื่องนอก", severity: "positive" },
-    },
-  },
-  warranty: {
-    label: "ประกันศูนย์",
-    icon: ShieldCheck,
-    options: {
-      active_long: {
-        label: "เหลือ > 4 เดือน",
-        severity: "positive",
-      },
-      active_short: {
-        label: "เหลือ < 4 เดือน",
-        severity: "warning",
-      },
-      inactive: {
-        label: "หมดประกัน",
-        severity: "negative",
-      },
-    },
-  },
-  accessories: {
-    label: "อุปกรณ์",
-    icon: Package,
-    options: {
-      full: { label: "ครบกล่อง", severity: "positive" },
-      box_only: {
-        label: "มีเฉพาะกล่อง",
-        severity: "warning",
-      },
-      no_box: { label: "ไม่มีกล่อง", severity: "negative" },
-    },
-  },
-  bodyCondition: {
-    label: "สภาพเครื่อง",
-    icon: Smartphone,
-    options: {
-      mint: { label: "เหมือนใหม่", severity: "positive" },
-      minor_scratch: {
-        label: "รอยขนแมว",
-        severity: "warning",
-      },
-      major_scratch: {
-        label: "มีรอยตก/บุบ",
-        severity: "negative",
-      },
-      cracked_back: {
-        label: "ฝาหลังแตก",
-        severity: "negative",
-      },
-    },
-  },
-  screenGlass: {
-    label: "สภาพหน้าจอ",
-    icon: RectangleHorizontal,
-    options: {
-      passed: { label: "ไม่มีรอย", severity: "positive" },
-      failed: {
-        label: "มีรอยขีดข่วน",
-        severity: "warning",
-      },
-      defect: {
-        label: "กระจกแตก/บิ่น",
-        severity: "negative",
-      },
-    },
-  },
-  screenDisplay: {
-    label: "การแสดงผล",
-    icon: MonitorPlay,
-    options: {
-      passed: { label: "แสดงผลปกติ", severity: "positive" },
-      failed: { label: "มีจุด/เส้น", severity: "warning" },
-      defect: {
-        label: "จอเบิร์น/สีเพี้ยน",
-        severity: "negative",
-      },
-    },
-  },
-  batteryHealth: {
-    label: "สุขภาพแบตเตอรี่",
-    icon: BatteryFull,
-    options: {
-      high: { label: "มากกว่า 85%", severity: "positive" },
-      low: { label: "ต่ำกว่า 85%", severity: "negative" },
-    },
-  },
-  camera: {
-    label: "กล้อง",
-    icon: Camera,
-    options: {
-      passed: { label: "ทำงานปกติ", severity: "positive" },
-      failed: { label: "มีปัญหา", severity: "negative" },
-    },
-  },
-  wifi: {
-    label: "Wi-Fi",
-    icon: Wifi,
-    options: {
-      passed: {
-        label: "เชื่อมต่อได้",
-        severity: "positive",
-      },
-      failed: { label: "มีปัญหา", severity: "negative" },
-    },
-  },
-  faceId: {
-    label: "Face/Touch ID",
-    icon: ScanFace,
-    options: {
-      passed: { label: "สแกนได้", severity: "positive" },
-      failed: { label: "สแกนไม่ได้", severity: "negative" },
-    },
-  },
-  speaker: {
-    label: "ลำโพง",
-    icon: Speaker,
-    options: {
-      passed: { label: "เสียงปกติ", severity: "positive" },
-      failed: {
-        label: "ลำโพงแตก/ไม่ดัง",
-        severity: "negative",
-      },
-    },
-  },
-  mic: {
-    label: "ไมโครโฟน",
-    icon: Microphone,
-    options: {
-      passed: { label: "ใช้งานปกติ", severity: "positive" },
-      failed: { label: "มีปัญหา", severity: "negative" },
-    },
-  },
-  touchScreen: {
-    label: "จอสัมผัส",
-    icon: MonitorPlay,
-    options: {
-      passed: { label: "ใช้งานปกติ", severity: "positive" },
-      failed: { label: "มีปัญหา", severity: "negative" },
-    },
-  },
-};
-
-const ALL_CONDITION_KEYS = Object.keys(
-  CONDITION_CONFIG,
-) as Array<keyof ConditionInfo>;
-
-const PriceLockCountdown = ({
-  expiryDate,
-}: {
-  expiryDate: string;
-}) => {
-  const calculateTimeLeft = useCallback(() => {
-    const difference = +new Date(expiryDate) - +new Date();
-    let timeLeft: { [key: string]: number } = {};
-
-    if (difference > 0) {
-      timeLeft = {
-        days: Math.floor(
-          difference / (1000 * 60 * 60 * 24),
-        ),
-        hours: Math.floor(
-          (difference / (1000 * 60 * 60)) % 24,
-        ),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    }
-    return timeLeft;
-  }, [expiryDate]);
-
-  const [timeLeft, setTimeLeft] = useState(
-    calculateTimeLeft(),
-  );
-  const [isExpired, setIsExpired] = useState(
-    Object.keys(calculateTimeLeft()).length === 0,
-  );
-
-  useEffect(() => {
-    if (isExpired) return;
-
-    const timer = setTimeout(() => {
-      const newTimeLeft = calculateTimeLeft();
-      setTimeLeft(newTimeLeft);
-      if (Object.keys(newTimeLeft).length === 0) {
-        setIsExpired(true);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  });
-
-  if (isExpired) {
-    return (
-      <div className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-center text-red-600">
-        <AlertCircle className="h-5 w-5" />
-        <span className="font-semibold">
-          ราคานี้หมดอายุแล้ว กรุณาประเมินใหม่อีกครั้ง
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex items-center justify-center gap-2 text-amber-700">
-        <Timer className="h-5 w-5" />
-        <span className="font-semibold">
-          ราคานี้มีผลอีก:
-        </span>
-      </div>
-      <div className="mt-2 flex justify-center gap-2 font-sans sm:gap-3 md:gap-4">
-        <div className="flex min-w-[50px] flex-col items-center rounded-md bg-white/60 p-1 shadow-sm sm:p-2">
-          <span className="text-xl font-bold text-amber-800 sm:text-2xl md:text-3xl">
-            {String(timeLeft.days || 0).padStart(2, "0")}
-          </span>
-          <span className="text-[10px] text-amber-700 sm:text-xs">
-            วัน
-          </span>
-        </div>
-        <div className="flex min-w-[50px] flex-col items-center rounded-md bg-white/60 p-1 shadow-sm sm:p-2">
-          <span className="text-xl font-bold text-amber-800 sm:text-2xl md:text-3xl">
-            {String(timeLeft.hours || 0).padStart(2, "0")}
-          </span>
-          <span className="text-[10px] text-amber-700 sm:text-xs">
-            ชั่วโมง
-          </span>
-        </div>
-        <div className="flex min-w-[50px] flex-col items-center rounded-md bg-white/60 p-1 shadow-sm sm:p-2">
-          <span className="text-xl font-bold text-amber-800 sm:text-2xl md:text-3xl">
-            {String(timeLeft.minutes || 0).padStart(2, "0")}
-          </span>
-          <span className="text-[10px] text-amber-700 sm:text-xs">
-            นาที
-          </span>
-        </div>
-        <div className="flex min-w-[50px] flex-col items-center rounded-md bg-white/60 p-1 shadow-sm sm:p-2">
-          <span className="text-xl font-bold text-amber-800 sm:text-2xl md:text-3xl">
-            {String(timeLeft.seconds || 0).padStart(2, "0")}
-          </span>
-          <span className="text-[10px] text-amber-700 sm:text-xs">
-            วินาที
-          </span>
-        </div>
-      </div>
-    </>
-  );
-};
 
 const SectionDivider = ({
   color = "from-slate-300 to-slate-200",
@@ -590,125 +301,6 @@ const StatusBadge = ({ status }: { status: string }) => {
       <Icon className="mr-1 h-4 w-4" />
       {config.label}
     </span>
-  );
-};
-
-const ConditionGridItem = ({
-  conditionKey,
-  value,
-}: {
-  conditionKey: keyof ConditionInfo;
-  value: string;
-}) => {
-  const config = CONDITION_CONFIG[conditionKey];
-  if (!config) return null;
-  const option = config.options[value];
-  if (!option) return null;
-
-  const MainIcon = config.icon;
-  const isPositive = option.severity === "positive";
-
-  return (
-    <div
-      className={clsx(
-        "flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 lg:gap-3 lg:p-3",
-        isPositive
-          ? "border-slate-200/80 bg-gradient-to-br from-white to-slate-50"
-          : "border-orange-200/80 bg-gradient-to-br from-white to-orange-50",
-      )}
-    >
-      <div className="relative flex-shrink-0">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm md:h-11 md:w-11">
-          <MainIcon
-            className={clsx(
-              "h-5 w-5 md:h-6 md:w-6",
-              isPositive
-                ? "text-slate-600"
-                : "text-orange-500",
-            )}
-          />
-        </div>
-        <div
-          className={clsx(
-            "absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white md:h-5 md:w-5",
-            isPositive ? "bg-green-500" : "bg-orange-500",
-          )}
-        >
-          {isPositive ? (
-            <Check
-              className="h-2.5 w-2.5 text-white md:h-3 md:w-3"
-              strokeWidth={3}
-            />
-          ) : (
-            <AlertTriangle
-              className="h-2.5 w-2.5 fill-white text-orange-500 md:h-3 md:w-3"
-              strokeWidth={0}
-            />
-          )}
-        </div>
-      </div>
-      <div className="flex flex-col">
-        <span
-          className={clsx(
-            "text-sm font-semibold lg:text-base",
-            isPositive
-              ? "text-slate-700"
-              : "text-orange-800",
-          )}
-        >
-          {config.label}
-        </span>
-        <span
-          className={clsx(
-            "text-xs",
-            isPositive
-              ? "text-slate-500"
-              : "text-orange-600",
-          )}
-        >
-          {option.label}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const ConditionGrid = ({
-  conditionInfo,
-}: {
-  conditionInfo: ConditionInfo;
-}) => {
-  return (
-    <Accordion
-      type="single"
-      collapsible
-      className="w-full"
-      defaultValue="item-1"
-    >
-      <AccordionItem value="item-1" className="border-b-0">
-        <AccordionTrigger className="rounded-lg hover:bg-slate-50 hover:no-underline lg:px-4">
-          <div className="flex flex-col items-start">
-            <span className="text-xl font-bold text-slate-800">
-              รายละเอียดการตรวจสอบ
-            </span>
-            <span className="text-sm text-slate-500">
-              คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
-            </span>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid grid-cols-2 gap-3 pt-4">
-            {ALL_CONDITION_KEYS.map((key) => (
-              <ConditionGridItem
-                key={key}
-                conditionKey={key}
-                value={conditionInfo[key]}
-              />
-            ))}
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
   );
 };
 
@@ -791,35 +383,6 @@ const PawnServiceDetails = ({
   );
 };
 
-const SupportSection = () => {
-  return (
-    <div className="md:rounded-xl md:border md:border-[#e3dace] md:p-5">
-      <SectionHeader
-        icon={HelpCircle}
-        label="ต้องการความช่วยเหลือ?"
-        colorClass="from-sky-500 to-blue-500"
-      />
-      <div className="mt-4 flex flex-col gap-3">
-        <Button className="w-full">
-          ติดต่อเจ้าหน้าที่
-        </Button>
-        <Button variant="outline" className="w-full">
-          คำถามที่พบบ่อย (FAQ)
-        </Button>
-        <Button variant="outline" className="w-full">
-          ยกเลิก/แก้ไขนัดหมาย
-        </Button>
-        <Button
-          variant="link"
-          className="w-full text-slate-500"
-        >
-          ดูข้อกำหนดและเงื่อนไข
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 const AssessmentDetails = ({
   record,
 }: {
@@ -836,6 +399,11 @@ const AssessmentDetails = ({
         <h2 className="text-3xl font-bold text-[#110e0c]">
           ผลการประเมินอุปกรณ์
         </h2>
+        {/* ✨ 4. นำ ID มาแสดงผลตรงนี้ */}
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600">
+          <Hash className="h-4 w-4" />
+          <span>รหัสการประเมิน: {record.id}</span>
+        </div>
         <p className="mt-2 text-[#78716c]">
           อัพเดทล่าสุด: {record.assessmentDate}
         </p>
@@ -915,11 +483,16 @@ const AssessmentDetails = ({
             />
 
             <div className="md:rounded-xl md:border md:border-[#e3dace] md:p-5">
-              <SectionHeader
-                icon={CheckCircle}
-                label="ขั้นตอนต่อไป"
-                colorClass="from-amber-400 to-orange-500"
-              />
+              <div className="mb-3 flex items-center gap-3">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500`}
+                >
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-base font-bold text-slate-800 md:text-lg">
+                  ขั้นตอนต่อไป
+                </span>
+              </div>
               <div className="mb-4 flex flex-col gap-3">
                 {record.nextSteps.map((step, index) => (
                   <div
@@ -959,14 +532,6 @@ const AssessmentDetails = ({
 };
 
 export default function AssessmentRecordPage() {
-  // --- ✨ FIX: ลบ state ที่เกี่ยวกับการค้นหาทั้งหมด ---
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [foundRecord, setFoundRecord] =
-  //   useState<AssessmentRecord | null>(null);
-  // const [error, setError] = useState<string | null>(null);
-
-  // --- ✨ FIX: ใช้ข้อมูล mock record แรกโดยตรง ---
   const recordToShow = mockRecords[0];
 
   return (
@@ -979,7 +544,6 @@ export default function AssessmentRecordPage() {
         </div>
 
         <div className="relative z-10 flex w-full max-w-6xl flex-col items-center">
-          {/* --- ✨ FIX: ลบส่วน header และ form ของการค้นหา --- */}
           {recordToShow && (
             <AssessmentDetails record={recordToShow} />
           )}
