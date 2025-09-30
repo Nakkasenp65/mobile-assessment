@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Info } from "lucide-react";
 import { NetworkQuality } from "../../../../hooks/useNetwork";
 import WifiDetection from "./(automated-components)/WifiDetection";
-import BatteryDetection from "./(automated-components)/BatteryDetection";
+import BatteryDetection from "./(automated-components)/ChargingDetection";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 
 export interface DiagnosticsResult {
@@ -15,12 +15,18 @@ export interface DiagnosticsResult {
 interface AutomatedDiagnosticsProps {
   onComplete: () => void;
   onBack: () => void;
-  onDiagnosticsComplete: (result: DiagnosticsResult) => void;
+  onDiagnosticsComplete: (
+    result: DiagnosticsResult,
+  ) => void;
 }
 
 // Define the possible concluded statuses for each test
 type WifiStatus = NetworkQuality | "ignore";
-type BatteryStatus = "passed" | "ignore" | "unsupported" | "failed";
+type BatteryStatus =
+  | "passed"
+  | "ignore"
+  | "unsupported"
+  | "failed";
 
 /** แบนเนอร์แจ้งเตือนด้านบน */
 function PermissionBanner({
@@ -44,8 +50,12 @@ function PermissionBanner({
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
             <p className="text-sm">
-              กรุณาอนุญาตการเข้าถึง <span className="font-semibold">กล้อง</span>{" "}
-              และ <span className="font-semibold">ไมโครโฟน</span>{" "}
+              กรุณาอนุญาตการเข้าถึง{" "}
+              <span className="font-semibold">กล้อง</span>{" "}
+              และ{" "}
+              <span className="font-semibold">
+                ไมโครโฟน
+              </span>{" "}
               เมื่อเบราว์เซอร์มีคำขอสิทธิ์
               เพื่อให้การประเมินอัตโนมัติทำงานได้อย่างถูกต้อง
             </p>
@@ -67,32 +77,38 @@ const AutomatedDiagnostics = ({
   onBack,
   onDiagnosticsComplete,
 }: AutomatedDiagnosticsProps) => {
-  const [wifiFinalStatus, setWifiFinalStatus] = useState<WifiStatus | null>(
-    null,
-  );
-  const [batteryFinalStatus, setBatteryFinalStatus] =
+  const [wifiFinalStatus, setWifiFinalStatus] =
+    useState<WifiStatus | null>(null);
+  const [chargingFinalStatus, setChargingFinalStatus] =
     useState<BatteryStatus | null>(null);
 
   // แสดงแบนเนอร์คำเตือนเมื่อเข้าหน้านี้
   const [showBanner, setShowBanner] = useState(true);
 
-  const handleWifiConcluded = useCallback((status: WifiStatus) => {
-    setWifiFinalStatus(status);
-  }, []);
+  const handleWifiConcluded = useCallback(
+    (status: WifiStatus) => {
+      setWifiFinalStatus(status);
+    },
+    [],
+  );
 
-  const handleBatteryConcluded = useCallback((status: BatteryStatus) => {
-    setBatteryFinalStatus(status);
-  }, []);
+  const handleChargingConcluded = useCallback(
+    (status: BatteryStatus) => {
+      setChargingFinalStatus(status);
+    },
+    [],
+  );
 
   // The completion logic now depends on the final statuses of both checks.
   useEffect(() => {
     const allTestsConcluded =
-      wifiFinalStatus !== null && batteryFinalStatus !== null;
+      wifiFinalStatus !== null &&
+      chargingFinalStatus !== null;
 
     if (allTestsConcluded) {
       onDiagnosticsComplete({
         wifi: wifiFinalStatus,
-        charger: batteryFinalStatus,
+        charger: chargingFinalStatus,
       });
 
       const completionTimer = setTimeout(() => {
@@ -101,10 +117,16 @@ const AutomatedDiagnostics = ({
 
       return () => clearTimeout(completionTimer);
     }
-  }, [wifiFinalStatus, batteryFinalStatus, onComplete, onDiagnosticsComplete]);
+  }, [
+    wifiFinalStatus,
+    chargingFinalStatus,
+    onComplete,
+    onDiagnosticsComplete,
+  ]);
 
   const allTestsConcluded =
-    wifiFinalStatus !== null && batteryFinalStatus !== null;
+    wifiFinalStatus !== null &&
+    chargingFinalStatus !== null;
 
   return (
     <div className="flex flex-col">
@@ -123,8 +145,12 @@ const AutomatedDiagnostics = ({
       />
 
       <div className="my-8 flex min-h-[250px] flex-col justify-center space-y-4">
-        <WifiDetection onStatusConcluded={handleWifiConcluded} />
-        <BatteryDetection onStatusConcluded={handleBatteryConcluded} />
+        <WifiDetection
+          onStatusConcluded={handleWifiConcluded}
+        />
+        <BatteryDetection
+          onStatusConcluded={handleChargingConcluded}
+        />
       </div>
 
       <div className="mt-8 flex items-center justify-between">

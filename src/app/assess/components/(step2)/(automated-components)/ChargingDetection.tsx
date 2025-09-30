@@ -6,20 +6,32 @@ import { cn } from "@/lib/utils";
 import { useBattery } from "../../../../../hooks/useBattery";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
-type ConcludedStatus = "passed" | "ignore" | "unsupported" | "failed";
+type ConcludedStatus =
+  | "passed"
+  | "ignore"
+  | "unsupported"
+  | "failed";
 
-interface BatteryDetectionProps {
+interface ChargingDetectionProps {
   onStatusConcluded: (status: ConcludedStatus) => void;
 }
 
 // Internal state for the component's flow
-type DetectionPhase = "prompt_connect" | "charging_progress" | "concluded";
+type DetectionPhase =
+  | "prompt_connect"
+  | "charging_progress"
+  | "concluded";
 
-const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
+const ChargingDetection = ({
+  onStatusConcluded,
+}: ChargingDetectionProps) => {
   const batteryStatus = useBattery();
-  const [phase, setPhase] = useState<DetectionPhase>("prompt_connect");
+  const [phase, setPhase] = useState<DetectionPhase>(
+    "prompt_connect",
+  );
   const [progress, setProgress] = useState(0); // 0 to 3
-  const [finalStatus, setFinalStatus] = useState<ConcludedStatus | null>(null);
+  const [finalStatus, setFinalStatus] =
+    useState<ConcludedStatus | null>(null);
 
   useEffect(() => {
     if (phase === "concluded") return;
@@ -28,10 +40,16 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
       setPhase("concluded");
       return;
     }
-    if (batteryStatus.charging && phase === "prompt_connect") {
+    if (
+      batteryStatus.charging &&
+      phase === "prompt_connect"
+    ) {
       setPhase("charging_progress");
     }
-    if (!batteryStatus.charging && phase === "charging_progress") {
+    if (
+      !batteryStatus.charging &&
+      phase === "charging_progress"
+    ) {
       setPhase("prompt_connect");
       setProgress(0);
     }
@@ -70,22 +88,31 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
   };
 
   const getDisplayMessage = () => {
-    if (finalStatus === "unsupported") return "ไม่สามารถตรวจสอบแบตเตอรี่ได้";
-    if (finalStatus === "ignore") return "ข้ามการตรวจสอบการชาร์จ";
-    if (finalStatus === "failed") return "ผลลัพธ์: การชาร์จมีปัญหา";
-    if (finalStatus === "passed") return "ผลลัพธ์: การชาร์จทำงานปกติ";
+    if (finalStatus === "unsupported")
+      return "ไม่สามารถตรวจสอบแบตเตอรี่ได้";
+    if (finalStatus === "ignore")
+      return "ข้ามการตรวจสอบการชาร์จ";
+    if (finalStatus === "failed")
+      return "ผลลัพธ์: การชาร์จมีปัญหา";
+    if (finalStatus === "passed")
+      return "ผลลัพธ์: การชาร์จทำงานปกติ";
     if (phase === "prompt_connect")
       return "กรุณาเสียบสายชาร์จเพื่อเริ่มการทดสอบ";
-    if (phase === "charging_progress") return "กำลังยืนยันการชาร์จ...";
+    if (phase === "charging_progress")
+      return "กำลังยืนยันการชาร์จ...";
     return "กำลังเตรียมการ...";
   };
 
   const FinalStatusIndicator = () => {
     if (phase !== "concluded") return null;
     if (finalStatus === "passed")
-      return <CheckCircle className="text-success h-5 w-5" />;
+      return (
+        <CheckCircle className="text-success h-5 w-5" />
+      );
     if (finalStatus === "failed")
-      return <XCircle className="text-destructive h-5 w-5" />;
+      return (
+        <XCircle className="text-destructive h-5 w-5" />
+      );
     return <div className="h-5 w-5" />; // Placeholder for ignore/unsupported
   };
 
@@ -102,7 +129,9 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
             )}
           />
           <div className="flex flex-col">
-            <span className="text-foreground font-medium">การชาร์จไฟ</span>
+            <span className="text-foreground font-medium">
+              การชาร์จไฟ
+            </span>
             <span className="text-muted-foreground min-h-[20px] text-sm">
               {getDisplayMessage()}
             </span>
@@ -121,8 +150,13 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
               <motion.div
                 className="bg-success h-full"
                 initial={{ width: "0%" }}
-                animate={{ width: progress >= i ? "100%" : "0%" }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+                animate={{
+                  width: progress >= i ? "100%" : "0%",
+                }}
+                transition={{
+                  duration: 0.5,
+                  ease: "easeInOut",
+                }}
               />
             </div>
           ))}
@@ -144,7 +178,11 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
             >
               ข้าม
             </FramerButton>
-            <FramerButton variant="outline" size="sm" onClick={handleFailure}>
+            <FramerButton
+              variant="outline"
+              size="sm"
+              onClick={handleFailure}
+            >
               การชาร์จมีปัญหา
             </FramerButton>
           </motion.div>
@@ -154,4 +192,4 @@ const BatteryDetection = ({ onStatusConcluded }: BatteryDetectionProps) => {
   );
 };
 
-export default BatteryDetection;
+export default ChargingDetection;

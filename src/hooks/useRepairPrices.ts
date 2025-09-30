@@ -74,7 +74,6 @@ export const useRepairPrices = (model: string) => {
     staleTime: 1000 * 60 * 60,
 
     // Cache ข้อมูลไว้ตลอดไปจนกว่าจะมีการ refresh หน้าเว็บ
-    // เหมาะสำหรับข้อมูลที่ไม่เปลี่ยนแปลงบ่อย مثل ราคาซ่อม
     gcTime: Infinity,
   });
 };

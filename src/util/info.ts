@@ -26,6 +26,7 @@ import {
   ShieldAlert,
   AlertTriangle,
   RectangleHorizontal, // ไอคอนใหม่สำหรับหน้าจอ
+  PowerOff, // ไอคอนสำหรับ charger:failed
 } from "lucide-react";
 import { ComponentType } from "react";
 
@@ -53,7 +54,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "modelType",
         question: "1. รุ่นโมเดลเครื่อง",
-        icon: Smartphone, // กำหนดไอคอน
+        icon: Smartphone,
         options: [
           {
             value: "th",
@@ -72,7 +73,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "warranty",
         question: "2. ประกันศูนย์ Apple",
-        icon: ShieldCheck, // กำหนดไอคอน
+        icon: ShieldCheck,
         options: [
           {
             value: "active_long",
@@ -97,7 +98,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "accessories",
         question: "3. อุปกรณ์ในกล่อง",
-        icon: Package, // กำหนดไอคอน
+        icon: Package,
         options: [
           {
             value: "full",
@@ -127,28 +128,22 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "bodyCondition",
         question: "4. สภาพตัวเครื่องโดยรวม",
-        icon: Smartphone, // กำหนดไอคอน
+        icon: Smartphone,
         options: [
           {
-            value: "mint",
+            value: "passed",
             label: "เหมือนใหม่ ไม่มีรอย",
             icon: ShieldCheck,
             severity: "positive",
           },
           {
-            value: "minor_scratch",
-            label: "มีรอยขนแมวเล็กน้อย",
-            icon: Frame,
-            severity: "warning",
-          },
-          {
-            value: "major_scratch",
+            value: "failed",
             label: "มีรอยตก บุบ หรือสีลอก",
             icon: AlertTriangle,
             severity: "negative",
           },
           {
-            value: "cracked_back",
+            value: "defect",
             label: "ฝาหลังแตก",
             icon: ImageOff,
             severity: "negative",
@@ -158,7 +153,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "screenGlass",
         question: "5. สภาพกระจกหน้าจอ",
-        icon: RectangleHorizontal, // กำหนดไอคอน
+        icon: RectangleHorizontal,
         options: [
           {
             value: "passed",
@@ -188,7 +183,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "screenDisplay",
         question: "6. คุณภาพการแสดงผล",
-        icon: MonitorPlay, // กำหนดไอคอน
+        icon: MonitorPlay,
         options: [
           {
             value: "passed",
@@ -213,7 +208,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "batteryHealth",
         question: "7. สุขภาพแบตเตอรี่",
-        icon: BatteryFull, // กำหนดไอคอน
+        icon: BatteryFull,
         options: [
           {
             value: "high",
@@ -237,7 +232,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "camera",
         question: "8. กล้องหน้าและกล้องหลัง",
-        icon: Camera, // กำหนดไอคอน
+        icon: Camera,
         options: [
           {
             value: "passed",
@@ -256,7 +251,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "wifi",
         question: "9. การเชื่อมต่อ Wi-Fi / Bluetooth",
-        icon: Wifi, // กำหนดไอคอน
+        icon: Wifi,
         options: [
           {
             value: "passed",
@@ -275,7 +270,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "faceId",
         question: "10. Face ID / Touch ID",
-        icon: ScanFace, // กำหนดไอคอน
+        icon: ScanFace,
         options: [
           {
             value: "passed",
@@ -294,7 +289,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       {
         id: "speaker",
         question: "11. ลำโพงและการสั่น",
-        icon: Speaker, // กำหนดไอคอน
+        icon: Speaker,
         options: [
           {
             value: "passed",
@@ -310,6 +305,25 @@ export const ASSESSMENT_QUESTIONS: Array<{
           },
         ],
       },
+      {
+        id: "charger",
+        question: "12. การชาร์จไฟ",
+        icon: BatteryCharging,
+        options: [
+          {
+            value: "passed",
+            label: "ชาร์จไฟเข้าปกติ",
+            icon: BatteryCharging,
+            severity: "positive",
+          },
+          {
+            value: "failed",
+            label: "ชาร์จไม่เข้า/มีปัญหา",
+            icon: PowerOff,
+            severity: "negative",
+          },
+        ],
+      },
     ],
   },
 ];
@@ -317,26 +331,38 @@ export const ASSESSMENT_QUESTIONS: Array<{
 export const DESKTOP_QUESTIONS = ASSESSMENT_QUESTIONS;
 // -- สร้างชุดคำถามสำหรับ iOS --
 // 1. กำหนด ID ของคำถามที่ต้องการกรองออก (เพราะมีใน Interactive Test)
-const iosQuestionsToRemove = ["camera", "speaker", "batteryHealth"];
+const iosQuestionsToRemove = [
+  "camera",
+  "speaker",
+  "batteryHealth",
+  "wifi",
+  "mic",
+  "touchScreen",
+];
 
 // 2. สร้างชุดคำถามสำหรับ iOS โดยการกรองคำถามที่ไม่ต้องการออกไป
-export const MOBILE_IOS_QUESTIONS = ASSESSMENT_QUESTIONS.map((section) => ({
-  ...section,
-  questions: section.questions.filter(
-    (question) => !iosQuestionsToRemove.includes(question.id),
-  ),
-  // กรอง section ที่อาจจะว่างเปล่าหลังจากการ filter ออก (ถ้ามี)
-})).filter((section) => section.questions.length > 0);
+export const MOBILE_IOS_QUESTIONS =
+  ASSESSMENT_QUESTIONS.map((section) => ({
+    ...section,
+    questions: section.questions.filter(
+      (question) =>
+        !iosQuestionsToRemove.includes(question.id),
+    ),
+    // กรอง section ที่อาจจะว่างเปล่าหลังจากการ filter ออก (ถ้ามี)
+  })).filter((section) => section.questions.length > 0);
 
 const androidBaseSections = ASSESSMENT_QUESTIONS.filter(
-  (s) => s.section === "สภาพภายนอก" || s.section === "ข้อมูลทั่วไปของเครื่อง",
+  (s) =>
+    s.section === "สภาพภายนอก" ||
+    s.section === "ข้อมูลทั่วไปของเครื่อง",
 );
 const basicFunctionsSection = ASSESSMENT_QUESTIONS.find(
   (s) => s.section === "ฟังก์ชันการทำงานพื้นฐาน",
 );
-const faceIdQuestion = basicFunctionsSection?.questions.find(
-  (q) => q.id === "faceId",
-);
+const faceIdQuestion =
+  basicFunctionsSection?.questions.find(
+    (q) => q.id === "faceId",
+  );
 const androidExtraSection = faceIdQuestion
   ? [
       {

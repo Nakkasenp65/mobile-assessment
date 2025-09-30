@@ -32,6 +32,7 @@ export interface ConditionInfo {
   speaker: string;
   mic: string;
   touchScreen: string;
+  charger: string;
 }
 
 export default function AssessPage() {
@@ -58,6 +59,7 @@ export default function AssessPage() {
       speaker: "",
       mic: "",
       touchScreen: "",
+      charger: "",
     });
 
   const handleNext = () => {

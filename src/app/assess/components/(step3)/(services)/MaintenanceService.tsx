@@ -17,6 +17,7 @@ import {
   Mic,
   LucideIcon,
   Loader2,
+  BatteryCharging,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
@@ -53,7 +54,7 @@ const PART_METADATA: Record<
     name: "หน้าจอสัมผัส",
     icon: MonitorSmartphone,
   },
-  chargingPort: { name: "พอร์ตชาร์จ", icon: Smartphone },
+  charger: { name: "พอร์ตชาร์จ", icon: BatteryCharging },
 };
 
 const MaintenanceService: React.FC<

@@ -15,10 +15,11 @@ import {
   Wifi,
   AlertTriangle,
   CheckCircle,
-  ShieldCheck, // Added
-  Archive, // Added
-  Frame, // Added
-  ScanFace, // Added
+  ShieldCheck,
+  Archive,
+  Frame,
+  ScanFace,
+  Info, // 👈 เพิ่มไอคอนสำหรับกล่องข้อมูล
 } from "lucide-react";
 import {
   Accordion,
@@ -26,14 +27,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils"; // 👈 import cn utility
 
-// --- FIX 1: เพิ่มข้อมูลที่ขาดหายไปใน MAPs ---
+// --- ICON and LABEL MAPs (เหมือนเดิม) ---
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
   model: Cpu,
   storage: HardDrive,
   batteryHealth: BatteryCharging,
-  screenGlass: Frame, // Changed for better context
+  screenGlass: Frame,
   screenDisplay: Monitor,
   powerOn: Power,
   camera: Camera,
@@ -42,11 +44,11 @@ const ICON_MAP: Record<string, ComponentType<any>> = {
   touchScreen: Hand,
   mic: Mic,
   speaker: Volume2,
-  modelType: Smartphone, // Added
-  warranty: ShieldCheck, // Added
-  accessories: Archive, // Added
-  bodyCondition: Smartphone, // Added
-  faceId: ScanFace, // Added
+  modelType: Smartphone,
+  warranty: ShieldCheck,
+  accessories: Archive,
+  bodyCondition: Smartphone,
+  faceId: ScanFace,
 };
 
 const LABEL_MAP: Record<string, string> = {
@@ -63,14 +65,26 @@ const LABEL_MAP: Record<string, string> = {
   speaker: "ลำโพง",
   mic: "ไมโครโฟน",
   camera: "กล้อง",
-  modelType: "รุ่นโมเดล", // Added
-  warranty: "ประกันศูนย์", // Added
-  accessories: "อุปกรณ์", // Added
-  bodyCondition: "สภาพตัวเครื่อง", // Added
-  faceId: "Face ID / Touch ID", // Added
+  modelType: "รุ่นโมเดล",
+  warranty: "ประกันศูนย์",
+  accessories: "อุปกรณ์",
+  bodyCondition: "สภาพตัวเครื่อง",
+  faceId: "Face ID / Touch ID",
 };
 
-// --- FIX 2: สร้างฟังก์ชันที่รวบรวมทุกค่าที่ถือว่า "ผ่าน" ---
+// --- ✨ [เพิ่ม] TRANSLATION_MAP สำหรับแปลค่า value ---
+const TRANSLATION_MAP: Record<string, string> = {
+  th: "เครื่องไทย (TH)",
+  other: "เครื่องนอก (ZP, LL, etc.)",
+  active_long: "เหลือมากกว่า 4 เดือน",
+  active_short: "เหลือน้อยกว่า 4 เดือน",
+  inactive: "หมดประกันแล้ว",
+  full: "ครบกล่อง",
+  box_only: "มีเฉพาะกล่อง",
+  no_box: "ไม่มีกล่อง",
+};
+
+// --- ฟังก์ชัน isConsideredPassed (เหมือนเดิม) ---
 const isConsideredPassed = (
   key: string,
   value: string,
@@ -92,6 +106,7 @@ const isConsideredPassed = (
   return false;
 };
 
+// --- Component TestItem (เหมือนเดิม) ---
 const TestItem = ({
   itemKey,
   itemValue,
@@ -101,33 +116,95 @@ const TestItem = ({
 }) => {
   const label = LABEL_MAP[itemKey] || itemKey;
   const Icon = ICON_MAP[itemKey];
-
-  // --- FIX 3: ใช้ฟังก์ชัน isConsideredPassed ในการตัดสินใจ ---
   const isPassed = isConsideredPassed(itemKey, itemValue);
 
   if (!itemValue || !Icon) return null;
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg bg-slate-100 p-2 md:p-3 dark:bg-zinc-800 ${isPassed ? "" : "ring-primary/25 to-primary/20 from-accent via-accent bg-gradient-to-br ring-2"}`}
+      className={cn(
+        "flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 lg:gap-3 lg:p-3",
+        isPassed
+          ? "border-slate-200/80 bg-gradient-to-br from-white to-slate-50"
+          : "border-orange-200/80 bg-gradient-to-br from-white to-orange-50",
+      )}
     >
       <div className="relative flex-shrink-0">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-zinc-700">
-          <Icon className="h-5 w-5 text-zinc-600 md:h-6 md:w-6 dark:text-zinc-300" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm md:h-11 md:w-11">
+          <Icon
+            className={cn(
+              "h-5 w-5 md:h-6 md:w-6",
+              isPassed
+                ? "text-slate-600"
+                : "text-orange-500",
+            )}
+          />
         </div>
         <div
-          className={`absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white dark:border-zinc-800 ${isPassed ? "bg-green-500" : "bg-orange-500"}`}
+          className={cn(
+            "absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white md:h-5 md:w-5",
+            isPassed ? "bg-green-500" : "bg-orange-500",
+          )}
         >
           {isPassed ? (
-            <CheckCircle className="h-2.5 w-2.5 text-white" />
+            <CheckCircle
+              className="h-2.5 w-2.5 text-white md:h-3 md:w-3"
+              strokeWidth={3}
+            />
           ) : (
-            <AlertTriangle className="h-2.5 w-2.5 text-white" />
+            <AlertTriangle
+              className="h-2.5 w-2.5 fill-white text-orange-500 md:h-3 md:w-3"
+              strokeWidth={0}
+            />
           )}
         </div>
       </div>
-      <span className="text-sm font-semibold break-words text-slate-700 dark:text-zinc-200">
-        {label}
-      </span>
+      <div className="flex flex-col">
+        <span
+          className={cn(
+            "text-sm font-semibold lg:text-base",
+            isPassed ? "text-slate-700" : "text-orange-800",
+          )}
+        >
+          {LABEL_MAP[itemKey] || itemKey}
+        </span>
+        <span
+          className={cn(
+            "text-xs",
+            isPassed ? "text-slate-500" : "text-orange-600",
+          )}
+        >
+          {itemValue}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// --- ✨ [สร้าง] Component ใหม่สำหรับแสดงข้อมูลทั่วไป ---
+const GeneralInfoItem = ({
+  itemKey,
+  itemValue,
+}: {
+  itemKey: string;
+  itemValue: string;
+}) => {
+  const Icon = ICON_MAP[itemKey];
+  const label = LABEL_MAP[itemKey];
+  const translatedValue =
+    TRANSLATION_MAP[itemValue] || itemValue;
+
+  if (!itemValue || !Icon) return null;
+
+  return (
+    <div className="flex items-center gap-3">
+      <Icon className="h-5 w-5 flex-shrink-0 text-slate-500" />
+      <div className="flex w-full justify-between text-sm">
+        <span className="text-slate-600">{label}:</span>
+        <span className="font-semibold text-slate-800">
+          {translatedValue}
+        </span>
+      </div>
     </div>
   );
 };
@@ -140,18 +217,29 @@ const AssessmentLedger = ({
   conditionInfo: ConditionInfo;
 }) => {
   const allInfo = { ...deviceInfo, ...conditionInfo };
-  const EXCLUDED_KEYS = ["brand", "model", "storage"];
 
-  const allItems = Object.entries(allInfo).filter(
-    ([key, value]) => value && !EXCLUDED_KEYS.includes(key),
+  // --- ✨ [แก้ไข] แยก Key ของข้อมูลทั่วไป และข้อมูลสภาพเครื่องออกจากกัน ---
+  const generalInfoKeys = [
+    "modelType",
+    "warranty",
+    "accessories",
+  ];
+  const conditionKeys = Object.keys(allInfo).filter(
+    (key) =>
+      allInfo[key as keyof typeof allInfo] &&
+      ![
+        "brand",
+        "model",
+        "storage",
+        ...generalInfoKeys,
+      ].includes(key),
   );
-
-  if (allItems.length === 0) {
-    return null;
-  }
 
   return (
     <div className="flex flex-col gap-4">
+      {/* --- ✨ [สร้าง] กล่องแสดงข้อมูลทั่วไป (General Info Box) --- */}
+
+      {/* --- Accordion สำหรับแสดงสภาพเครื่อง (เหมือนเดิม แต่ใช้ข้อมูลที่กรองแล้ว) --- */}
       <Accordion
         type="single"
         collapsible
@@ -165,21 +253,43 @@ const AssessmentLedger = ({
           <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
             <div className="flex w-full flex-col items-start">
               <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
-                รายละเอียดการตรวจสอบ
+                รายละเอียดสภาพเครื่อง
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                 คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
               </p>
             </div>
           </AccordionTrigger>
+
           <AccordionContent className="p-4 pt-0">
+            <div className="rounded-2xl bg-white p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Info className="h-5 w-5 text-slate-500" />
+                <h3 className="font-bold text-slate-800">
+                  ข้อมูลทั่วไปของเครื่อง
+                </h3>
+              </div>
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                {generalInfoKeys.map((key) => (
+                  <GeneralInfoItem
+                    key={key}
+                    itemKey={key}
+                    itemValue={
+                      allInfo[key as keyof typeof allInfo]
+                    }
+                  />
+                ))}
+              </div>
+            </div>
             <div className="border-t pt-4 dark:border-zinc-700">
               <div className="grid grid-cols-2 gap-3">
-                {allItems.map(([key, value]) => (
+                {conditionKeys.map((key) => (
                   <TestItem
                     key={key}
                     itemKey={key}
-                    itemValue={value}
+                    itemValue={
+                      allInfo[key as keyof typeof allInfo]
+                    }
                   />
                 ))}
               </div>
