@@ -1,7 +1,7 @@
 // src/app/assess/components/(step3)/Services.tsx
 import React, { useEffect, useRef } from "react";
 import { ServiceOption } from "./AssessStep3";
-import { DeviceInfo } from "../../page";
+import { DeviceInfo, ConditionInfo } from "../../page";
 import PawnService from "./(services)/PawnService";
 import {
   Accordion,
@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import IcloudService from "./(services)/IcloudService";
 import SellNowService from "./(services)/SellNowService";
+import MaintenanceService from "./(services)/MaintenanceService";
 import ConsignmentService from "./(services)/ConsignmentService";
 import TradeInService from "./(services)/TradeInService";
 
@@ -22,6 +23,7 @@ interface ServicesProps {
     React.SetStateAction<string>
   >;
   deviceInfo: DeviceInfo;
+  conditionInfo: ConditionInfo;
   pawnPrice: number;
 }
 
@@ -83,6 +85,7 @@ export default function Services({
   selectedService,
   setSelectedService,
   deviceInfo,
+  conditionInfo,
   pawnPrice,
 }: ServicesProps) {
   // ✨ สร้าง refs สำหรับ Accordion แต่ละอัน
@@ -188,6 +191,12 @@ export default function Services({
                     <SellNowService
                       deviceInfo={deviceInfo}
                       sellPrice={service.price}
+                    />
+                  )}
+                  {service.id === "maintenance" && (
+                    <MaintenanceService
+                      deviceInfo={deviceInfo}
+                      conditionInfo={conditionInfo}
                     />
                   )}
                   {service.id === "icloud" && (

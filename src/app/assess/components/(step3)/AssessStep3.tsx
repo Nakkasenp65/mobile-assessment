@@ -83,6 +83,13 @@ const AssessStep3 = ({
       price: finalPrice,
     },
     {
+      id: "maintenance",
+      title: "บริการซ่อม",
+      description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
+      icon: Wrench,
+      price: 0, // Price will be calculated in the MaintenanceService component
+    },
+    {
       id: "pawn",
       title: "บริการจำนำ",
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
@@ -156,6 +163,7 @@ const AssessStep3 = ({
             selectedService={selectedService}
             setSelectedService={setSelectedService}
             deviceInfo={deviceInfo}
+            conditionInfo={conditionInfo}
             pawnPrice={calculatedPawnPrice}
           />
         </div>
