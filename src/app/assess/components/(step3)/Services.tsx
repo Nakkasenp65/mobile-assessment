@@ -1,7 +1,7 @@
 // src/app/assess/step3/Services.tsx
 import React from "react";
 import { ServiceOption } from "./AssessStep3";
-import { DeviceInfo } from "../../page";
+import { DeviceInfo, ConditionInfo } from "../../page";
 import PawnService from "./(services)/PawnService";
 import {
   Accordion,
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import IcloudService from "./(services)/IcloudService";
 import SellNowService from "./(services)/SellNowService";
+import MaintenanceService from "./(services)/MaintenanceService";
 import ConsignmentService from "./(services)/ConsignmentService";
 
 // ----------------------------------------------------------------------------------------------------
@@ -25,6 +26,7 @@ interface ServicesProps {
     React.SetStateAction<string>
   >;
   deviceInfo: DeviceInfo;
+  conditionInfo: ConditionInfo;
   pawnPrice: number;
 }
 
@@ -72,6 +74,12 @@ const PALETTE = {
     soft: "bg-amber-50 dark:bg-amber-900/20",
     ring: "ring-amber-500/20",
   },
+  maintenance: {
+    text: "text-emerald-500",
+    borderColor: "border-emerald-500",
+    soft: "bg-emerald-50/20 dark:bg-emerald-900/20",
+    ring: "ring-emerald-500/20",
+  },
   fallback: {
     text: "text-slate-500",
     borderColor: "border-slate-500",
@@ -102,6 +110,7 @@ export default function Services({
   selectedService,
   setSelectedService,
   deviceInfo,
+  conditionInfo,
   pawnPrice,
 }: ServicesProps) {
   return (
@@ -168,31 +177,17 @@ export default function Services({
                       pawnPrice={pawnPrice}
                     />
                   )}
-                  {service.id !== "pawn" &&
-                    service.features.length > 0 && (
-                      <>
-                        <h5 className="text-foreground mb-2 font-semibold">
-                          สิทธิประโยชน์ที่คุณจะได้รับ:
-                        </h5>
-                        <ul className="text-muted-foreground space-y-2">
-                          {service.features.map(
-                            (feature) => (
-                              <li
-                                key={feature}
-                                className="flex items-start gap-2 text-sm"
-                              >
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
-                                <span>{feature}</span>
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </>
-                    )}
+
                   {service.id === "sell" && (
                     <SellNowService
                       deviceInfo={deviceInfo}
                       sellPrice={service.price}
+                    />
+                  )}
+                  {service.id === "maintenance" && (
+                    <MaintenanceService
+                      deviceInfo={deviceInfo}
+                      conditionInfo={conditionInfo}
                     />
                   )}
                   {service.id === "icloud" && (
