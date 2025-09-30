@@ -41,9 +41,9 @@ const featuresData = [
 
 const HeroSection = () => {
   return (
-    <section className="relative h-max w-full overflow-hidden">
+    <section className="gradient-bg-luxury relative h-max w-full overflow-hidden">
       {/* ULTIMATE LUXURY BACKGROUND */}
-      <div className="absolute inset-0 h-full w-full">
+      <div className="absolute inset-0 h-full w-full opacity-50">
         {/* Rich vibrant gradient base */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-100 to-fuchsia-200" />
 

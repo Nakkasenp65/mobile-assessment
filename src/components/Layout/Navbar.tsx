@@ -85,28 +85,16 @@ const MobileMenu = ({
 
   const socialItems = [
     {
-      href: "#",
+      href: "https://www.facebook.com/okmobilebkk",
       icon: Facebook,
       color: "bg-[#1877f2]",
       label: "Facebook",
     },
     {
-      href: "#",
+      href: "https://lin.ee/0ab3Rcl",
       icon: MessageCircle,
       color: "bg-[#06c755]",
       label: "LINE",
-    },
-    {
-      href: "#",
-      icon: Twitter,
-      color: "bg-[#1da1f2]",
-      label: "Twitter",
-    },
-    {
-      href: "#",
-      icon: Youtube,
-      color: "bg-[#ff0000]",
-      label: "YouTube",
     },
   ];
 
@@ -255,6 +243,7 @@ const MobileMenu = ({
                   return (
                     <li key={item.label}>
                       <a
+                        target="_blank"
                         href={item.href}
                         aria-label={item.label}
                         className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl ${item.color}`}

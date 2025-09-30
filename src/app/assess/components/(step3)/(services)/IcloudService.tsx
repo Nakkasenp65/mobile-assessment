@@ -1,4 +1,4 @@
-// src/app/assess/components/(step3)/(services)/icloudService.tsx
+// src/app/assess/components/(step3)/(services)/IcloudService.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -76,7 +76,7 @@ const IcloudService = ({
 
   return (
     <main className="w-full space-y-6 pt-4">
-      {/* Warning Box */}
+      {/* Warning Box - ใช้สี Amber เหมือนเดิม (เหมาะกับ warning) */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -84,14 +84,14 @@ const IcloudService = ({
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="flex items-start gap-4 rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50 p-4 shadow-sm"
+        className="flex items-start gap-4 rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50 p-4 shadow-sm dark:border-amber-400/30 dark:from-amber-400/10 dark:to-yellow-400/10"
       >
         <AlertTriangle className="h-8 w-8 flex-shrink-0 text-amber-500" />
         <div>
-          <h3 className="font-bold text-amber-900">
+          <h3 className="font-bold text-amber-900 dark:text-amber-100">
             ข้อควรระวัง!
           </h3>
-          <p className="text-sm text-amber-800">
+          <p className="text-sm text-amber-800 dark:text-amber-200">
             บริการนี้จำเป็นต้องใช้ Apple ID
             และรหัสผ่านของท่าน
             โปรดตรวจสอบให้แน่ใจว่าท่านได้สำรองข้อมูลและยอมรับความเสี่ยงทั้งหมดที่อาจเกิดขึ้น
@@ -99,7 +99,7 @@ const IcloudService = ({
         </div>
       </motion.div>
 
-      {/* Price Display with Calculation */}
+      {/* Price Display - เปลี่ยนเป็นสี Indigo (เข้ากับ iCloud/Apple) */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -108,85 +108,85 @@ const IcloudService = ({
           ease: [0.22, 1, 0.36, 1],
           delay: 0.1,
         }}
-        className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-purple-50 to-white p-6 shadow-lg"
+        className="relative overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-blue-50 to-white p-6 shadow-lg dark:border-indigo-400/30 dark:from-indigo-400/10 dark:via-blue-400/10 dark:to-zinc-900"
       >
-        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-100/50 blur-2xl" />
-        <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-purple-100/50 blur-2xl" />
+        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-indigo-100/50 blur-2xl dark:bg-indigo-400/20" />
+        <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-blue-100/50 blur-2xl dark:bg-blue-400/20" />
         <div className="relative z-10 space-y-4">
-          <h3 className="text-center text-lg font-semibold text-violet-900">
+          <h3 className="text-center text-lg font-semibold text-indigo-900 dark:text-indigo-100">
             สรุปยอดสินเชื่อ iCloud
           </h3>
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-violet-800">
+              <span className="text-indigo-800 dark:text-indigo-200">
                 ยอดประเมินสูงสุด
               </span>
-              <span className="font-semibold text-violet-900">
+              <span className="font-semibold text-indigo-900 dark:text-indigo-100">
                 {THB(icloudPawnPrice)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-violet-800">
+              <span className="text-indigo-800 dark:text-indigo-200">
                 หัก ดอกเบี้ย (15% ต่อ 10 วัน)
               </span>
-              <span className="font-semibold text-red-600">
+              <span className="font-semibold text-red-600 dark:text-red-400">
                 - {THB(calculatedValues.interestAmount)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-violet-800">
+              <span className="text-indigo-800 dark:text-indigo-200">
                 หัก ค่าบริการ
               </span>
-              <span className="font-semibold text-red-600">
+              <span className="font-semibold text-red-600 dark:text-red-400">
                 - {THB(SERVICE_FEE)}
               </span>
             </div>
           </div>
 
-          <div className="my-3 border-t border-violet-200/50" />
+          <div className="my-3 border-t border-indigo-200/50 dark:border-indigo-400/30" />
 
           <div className="text-center">
-            <p className="text-sm text-violet-800">
+            <p className="text-sm text-indigo-800 dark:text-indigo-200">
               ยอดเงินที่คุณจะได้รับ
             </p>
-            <p className="mt-2 bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
+            <p className="mt-2 bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-blue-400">
               {THB(calculatedValues.netAmount)}
             </p>
-            <p className="mt-2 text-sm text-violet-800/80">
+            <p className="mt-2 text-sm text-indigo-800/80 dark:text-indigo-200/80">
               รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น
             </p>
           </div>
         </div>
       </motion.div>
 
-      {/* Benefits Section */}
+      {/* Benefits Section - ใช้สี Indigo */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="rounded-xl border border-violet-100 bg-violet-50/50 p-4"
+        className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-400/30 dark:bg-indigo-400/10"
       >
-        <h4 className="mb-3 text-sm font-semibold text-violet-900">
+        <h4 className="mb-3 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
           ข้อดีของบริการนี้
         </h4>
-        <ul className="space-y-2 text-sm text-violet-800">
+        <ul className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>
               ไม่ต้องส่งตัวเครื่อง ใช้เพียง Apple ID
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>รับเงินทันที 15 นาที</span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>สะดวก รวดเร็ว ไม่ต้องเดินทาง</span>
           </li>
           <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-600" />
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>ไถ่คืนได้ตลอด 10 วัน</span>
           </li>
         </ul>
@@ -304,7 +304,10 @@ const IcloudService = ({
             className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             ฉันเข้าใจและยอมรับ{" "}
-            <a href="#" className="text-blue-600 underline">
+            <a
+              href="#"
+              className="text-blue-600 underline dark:text-blue-400"
+            >
               ข้อตกลงและเงื่อนไขการใช้บริการจำนำ iCloud
             </a>{" "}
             รวมถึงความเสี่ยงที่เกี่ยวข้องทั้งหมด

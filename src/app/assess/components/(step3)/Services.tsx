@@ -1,5 +1,5 @@
-// src/app/assess/step3/Services.tsx
-import React from "react";
+// src/app/assess/components/(step3)/Services.tsx
+import React, { useEffect, useRef } from "react";
 import { ServiceOption } from "./AssessStep3";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import PawnService from "./(services)/PawnService";
@@ -10,15 +10,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
 import IcloudService from "./(services)/IcloudService";
 import SellNowService from "./(services)/SellNowService";
 import MaintenanceService from "./(services)/MaintenanceService";
 import ConsignmentService from "./(services)/ConsignmentService";
+import TradeInService from "./(services)/TradeInService";
 
-// ----------------------------------------------------------------------------------------------------
-// Interface: ServicesProps
-// ----------------------------------------------------------------------------------------------------
 interface ServicesProps {
   services: ServiceOption[];
   selectedService: string;
@@ -30,7 +27,6 @@ interface ServicesProps {
   pawnPrice: number;
 }
 
-/** พาเลตสีสำหรับแต่ละบริการ - ปรับปรุงสำหรับดีไซน์ใหม่ */
 const PALETTE = {
   sell: {
     text: "text-pink-500",
@@ -45,46 +41,28 @@ const PALETTE = {
     ring: "ring-orange-500/20",
   },
   tradein: {
-    text: "text-violet-500",
-    borderColor: "border-violet-500",
-    soft: "bg-violet-50/20 dark:bg-violet-900/20",
-    ring: "ring-violet-500/20",
-  },
-  consignment: {
     text: "text-cyan-500",
     borderColor: "border-cyan-500",
     soft: "bg-cyan-50/20 dark:bg-cyan-900/20",
     ring: "ring-cyan-500/20",
   },
-  refurbish: {
-    text: "text-red-500",
-    borderColor: "border-red-500",
-    soft: "bg-red-50/20 dark:bg-red-900/20",
-    ring: "ring-red-500/20",
+  consignment: {
+    text: "text-sky-500",
+    borderColor: "border-sky-500",
+    soft: "bg-sky-50/20 dark:bg-sky-900/20",
+    ring: "ring-sky-500/20",
   },
-  installment: {
-    text: "text-rose-500",
-    borderColor: "border-rose-500",
-    soft: "bg-rose-50/20 dark:bg-rose-900/20",
-    ring: "ring-rose-500/20",
-  },
-  delivery: {
-    text: "text-amber-500",
-    borderColor: "border-amber-500",
-    soft: "bg-amber-50 dark:bg-amber-900/20",
-    ring: "ring-amber-500/20",
-  },
-  maintenance: {
-    text: "text-emerald-500",
-    borderColor: "border-emerald-500",
-    soft: "bg-emerald-50/20 dark:bg-emerald-900/20",
-    ring: "ring-emerald-500/20",
+  icloud: {
+    text: "text-indigo-500",
+    borderColor: "border-indigo-500",
+    soft: "bg-indigo-50/20 dark:bg-indigo-900/20",
+    ring: "ring-indigo-500/20",
   },
   fallback: {
-    text: "text-slate-500",
-    borderColor: "border-slate-500",
-    soft: "bg-slate-50 dark:bg-slate-900/20",
-    ring: "ring-slate-500/20",
+    text: "text-zinc-500",
+    borderColor: "border-zinc-500",
+    soft: "bg-zinc-50/20 dark:bg-zinc-900/20",
+    ring: "ring-zinc-500/20",
   },
 } as const;
 
@@ -102,9 +80,6 @@ const THB = (n: number) =>
     })
     .replace("฿", "฿ ");
 
-// ----------------------------------------------------------------------------------------------------
-// Component: Services
-// ----------------------------------------------------------------------------------------------------
 export default function Services({
   services,
   selectedService,
@@ -113,12 +88,46 @@ export default function Services({
   conditionInfo,
   pawnPrice,
 }: ServicesProps) {
+  // ✨ สร้าง refs สำหรับ Accordion แต่ละอัน
+  const accordionRefs = useRef<
+    Record<string, HTMLDivElement | null>
+  >({});
+
+  // ✨ Effect สำหรับ auto scroll เมื่อเปิด Accordion
+  useEffect(() => {
+    if (selectedService) {
+      const accordionElement =
+        accordionRefs.current[selectedService];
+      if (accordionElement) {
+        // รอให้ animation เสร็จก่อน (300ms)
+        setTimeout(() => {
+          // วิธีที่ 1: ใช้ scrollIntoView (แนะนำ)
+          // accordionElement.scrollIntoView({
+          //   behavior: "smooth",
+          //   block: "start",
+          //   inline: "nearest",
+          // });
+
+          // หรือใช้วิธีที่ 2: ควบคุม offset ได้แม่นยำกว่า
+          const elementTop =
+            accordionElement.getBoundingClientRect().top;
+          const offsetPosition =
+            elementTop + window.scrollY - 100; // -100 เผื่อพื้นที่ navbar
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+        }, 300);
+      }
+    }
+  }, [selectedService]);
+
   return (
     <div className="flex w-full flex-1 flex-col">
       <Accordion
         type="single"
         collapsible
-        className="flex w-full flex-col gap-3" // ลด gap ลงเล็กน้อยเพื่อความกระชับ
+        className="flex w-full flex-col gap-3"
         value={selectedService}
         onValueChange={setSelectedService}
       >
@@ -131,16 +140,19 @@ export default function Services({
             <AccordionItem
               key={service.id}
               value={service.id}
+              // ✨ เพิ่ม ref ให้แต่ละ Accordion
+              ref={(el) => {
+                accordionRefs.current[service.id] = el;
+              }}
               className={cn(
                 "rounded-2xl border shadow-sm transition-all duration-300 ease-in-out",
                 isSelected
-                  ? `${theme.borderColor} ${theme.soft} ${theme.ring} ring-2` // Style เมื่อถูกเลือก
-                  : "border-border bg-card", // Style ปกติ (พื้นหลังขาว)
+                  ? `${theme.borderColor} ${theme.soft} ${theme.ring} ring-2`
+                  : "border-border bg-card",
               )}
             >
               <AccordionTrigger className="w-full cursor-pointer p-4 text-left hover:no-underline">
                 <div className="flex w-full items-center gap-4">
-                  {/* ไอคอนในวงกลมสีขาว */}
                   <div
                     className={cn(
                       "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
@@ -151,7 +163,6 @@ export default function Services({
                     />
                   </div>
 
-                  {/* หัวข้อและคำอธิบาย */}
                   <div className="flex-1 text-left">
                     <h4 className="text-foreground font-semibold">
                       {service.title}
@@ -161,7 +172,6 @@ export default function Services({
                     </p>
                   </div>
 
-                  {/* ราคา */}
                   <div className="ml-2 text-right">
                     <p className="text-foreground text-lg font-bold">
                       {THB(service.price)}
@@ -177,7 +187,6 @@ export default function Services({
                       pawnPrice={pawnPrice}
                     />
                   )}
-
                   {service.id === "sell" && (
                     <SellNowService
                       deviceInfo={deviceInfo}
@@ -193,19 +202,21 @@ export default function Services({
                   {service.id === "icloud" && (
                     <IcloudService
                       deviceInfo={deviceInfo}
-                      icloudPawnPrice={pawnPrice} // หรือจะใช้ calculatedIcloudPawnPrice ที่ส่งมาใหม่
+                      icloudPawnPrice={Math.round(
+                        service.price * 0.5,
+                      )}
                     />
                   )}
                   {service.id === "tradein" && (
-                    <IcloudService
+                    <TradeInService
                       deviceInfo={deviceInfo}
-                      icloudPawnPrice={pawnPrice} // หรือจะใช้ calculatedIcloudPawnPrice ที่ส่งมาใหม่
+                      tradeInPrice={service.price}
                     />
                   )}
                   {service.id === "consignment" && (
                     <ConsignmentService
                       deviceInfo={deviceInfo}
-                      consignmentPrice={pawnPrice}
+                      consignmentPrice={service.price}
                     />
                   )}
                 </div>

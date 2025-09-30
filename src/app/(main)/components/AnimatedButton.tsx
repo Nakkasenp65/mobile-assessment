@@ -21,15 +21,15 @@ const AnimatedButton = () => {
           className="absolute top-[40px] -right-8 z-50 drop-shadow-xl"
         />
         <button className="absolute right-0 z-40 hidden h-16 w-[300px] translate-x-[235px] items-center justify-start gap-4 rounded-l-full bg-white px-4 pr-8 pl-16 text-xl shadow-lg shadow-black/15 lg:mt-4 lg:flex xl:mt-24">
-          <div className="relative z-10 flex flex-col items-center text-sm">
-            <span className="flex items-center gap-1">
-              <span className="rounded-full bg-black p-1 text-white">
-                <ImPhone color="white" size={12} />
-              </span>
+          <div className="relative z-10 flex flex-col items-start text-sm">
+            <span className="flex items-start gap-1">
               ถึงใน 1 ชั่วโมง
             </span>
-            <span className="text-xl font-bold">
-              0947878783{/* - 0801345674 */}
+            <span className="flex items-center gap-1 text-xl font-bold">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black p-1 text-white">
+                <ImPhone color="white" size={12} />
+              </span>
+              <span>0947878783{/* - 0801345674 */}</span>
             </span>
           </div>
         </button>

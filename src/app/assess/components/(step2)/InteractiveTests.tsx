@@ -1,8 +1,19 @@
 // src/app/assess/components/(step2)/InteractiveTests.tsx
 
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowLeft, Mic, Volume2, Camera, PenTool } from "lucide-react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  ArrowLeft,
+  Mic,
+  Volume2,
+  Camera,
+  PenTool,
+} from "lucide-react";
 import SpeakerDetection from "./(interactive-tests)/SpeakerDetection";
 import MicrophoneDetection from "./(interactive-tests)/MicrophoneDetection";
 import CameraDetection from "./(interactive-tests)/CameraDetection";
@@ -11,7 +22,11 @@ import TestButton from "./(interactive-tests)/TestButton";
 import { ConditionInfo } from "../../page";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 
-export type TestName = "speaker" | "mic" | "camera" | "touchScreen";
+export type TestName =
+  | "speaker"
+  | "mic"
+  | "camera"
+  | "touchScreen";
 export type TestStatus = "pending" | "passed" | "failed";
 
 interface InteractiveTestsProps {
@@ -19,7 +34,10 @@ interface InteractiveTestsProps {
   onBack: () => void;
   onTestsConcluded: (
     results: Partial<
-      Pick<ConditionInfo, "speaker" | "mic" | "camera" | "touchScreen">
+      Pick<
+        ConditionInfo,
+        "speaker" | "mic" | "camera" | "touchScreen"
+      >
     >,
   ) => void;
 }
@@ -34,17 +52,20 @@ const InteractiveTests = ({
     () => ["speaker", "mic", "camera", "touchScreen"],
     [],
   );
-  const [currentTestIndex, setCurrentTestIndex] = useState(0);
-  const [activeTest, setActiveTest] = useState<TestName | null>(null);
-  const [testResults, setTestResults] = useState<Record<TestName, TestStatus>>({
+  const [currentTestIndex, setCurrentTestIndex] =
+    useState(0);
+  const [activeTest, setActiveTest] =
+    useState<TestName | null>(null);
+  const [testResults, setTestResults] = useState<
+    Record<TestName, TestStatus>
+  >({
     speaker: "pending",
     mic: "pending",
     camera: "pending",
     touchScreen: "pending",
   });
-  const [touchscreenPercentage, setTouchscreenPercentage] = useState<
-    number | null
-  >(null);
+  const [touchscreenPercentage, setTouchscreenPercentage] =
+    useState<number | null>(null);
 
   // [FIX] Unified handler for all test conclusions
   const handleTestConcluded = useCallback(
@@ -52,9 +73,13 @@ const InteractiveTests = ({
       setActiveTest(null);
 
       // ใช้ Functional Update สำหรับ State ทุกตัวที่เกี่ยวข้อง
-      if (testName === "touchScreen" && typeof result === "number") {
+      if (
+        testName === "touchScreen" &&
+        typeof result === "number"
+      ) {
         setTouchscreenPercentage(result); // This can stay as it is, as it's just one piece of data
-        const resultStatus = result >= 90 ? "passed" : "failed";
+        const resultStatus =
+          result >= 90 ? "passed" : "failed";
         setTestResults((prevResults) => ({
           ...prevResults,
           touchScreen: resultStatus,
@@ -67,15 +92,17 @@ const InteractiveTests = ({
       }
 
       setCurrentTestIndex((prevIndex) =>
-        prevIndex < testSequence.length - 1 ? prevIndex + 1 : prevIndex,
+        prevIndex < testSequence.length - 1
+          ? prevIndex + 1
+          : prevIndex,
       );
     },
     [testSequence.length],
   );
 
-  const allTestsConcluded = Object.values(testResults).every(
-    (status) => status !== "pending",
-  );
+  const allTestsConcluded = Object.values(
+    testResults,
+  ).every((status) => status !== "pending");
 
   useEffect(() => {
     if (allTestsConcluded) {
@@ -86,7 +113,12 @@ const InteractiveTests = ({
         touchScreen: `${touchscreenPercentage}%`,
       });
     }
-  }, [allTestsConcluded, testResults, touchscreenPercentage, onTestsConcluded]);
+  }, [
+    allTestsConcluded,
+    testResults,
+    touchscreenPercentage,
+    onTestsConcluded,
+  ]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -105,9 +137,13 @@ const InteractiveTests = ({
           icon={Volume2}
           label="ลำโพง"
           status={testResults.speaker}
-          isNextTest={testSequence[currentTestIndex] === "speaker"}
+          isNextTest={
+            testSequence[currentTestIndex] === "speaker"
+          }
           onClick={() => {
-            if (testSequence[currentTestIndex] === "speaker")
+            if (
+              testSequence[currentTestIndex] === "speaker"
+            )
               setActiveTest("speaker");
           }}
         />
@@ -115,16 +151,21 @@ const InteractiveTests = ({
           icon={Mic}
           label="ไมโครโฟน"
           status={testResults.mic}
-          isNextTest={testSequence[currentTestIndex] === "mic"}
+          isNextTest={
+            testSequence[currentTestIndex] === "mic"
+          }
           onClick={() => {
-            if (testSequence[currentTestIndex] === "mic") setActiveTest("mic");
+            if (testSequence[currentTestIndex] === "mic")
+              setActiveTest("mic");
           }}
         />
         <TestButton
           icon={Camera}
           label="กล้อง"
           status={testResults.camera}
-          isNextTest={testSequence[currentTestIndex] === "camera"}
+          isNextTest={
+            testSequence[currentTestIndex] === "camera"
+          }
           onClick={() => {
             if (testSequence[currentTestIndex] === "camera")
               setActiveTest("camera");
@@ -134,9 +175,14 @@ const InteractiveTests = ({
           icon={PenTool}
           label="ระบบสัมผัส"
           status={testResults.touchScreen}
-          isNextTest={testSequence[currentTestIndex] === "touchScreen"}
+          isNextTest={
+            testSequence[currentTestIndex] === "touchScreen"
+          }
           onClick={() => {
-            if (testSequence[currentTestIndex] === "touchScreen")
+            if (
+              testSequence[currentTestIndex] ===
+              "touchScreen"
+            )
               setActiveTest("touchScreen");
           }}
         />
@@ -164,19 +210,27 @@ const InteractiveTests = ({
       {/* [FIX] All child components now correctly call the unified handler */}
       <SpeakerDetection
         isOpen={activeTest === "speaker"}
-        onConclude={(result) => handleTestConcluded("speaker", result)}
+        onConclude={(result) =>
+          handleTestConcluded("speaker", result)
+        }
       />
       <MicrophoneDetection
         isOpen={activeTest === "mic"}
-        onConclude={(result) => handleTestConcluded("mic", result)}
+        onConclude={(result) =>
+          handleTestConcluded("mic", result)
+        }
       />
       <CameraDetection
         isOpen={activeTest === "camera"}
-        onConclude={(result) => handleTestConcluded("camera", result)}
+        onConclude={(result) =>
+          handleTestConcluded("camera", result)
+        }
       />
       <TouchscreenTest
         isOpen={activeTest === "touchScreen"}
-        onConclude={(result) => handleTestConcluded("touchScreen", result)}
+        onConclude={(result) =>
+          handleTestConcluded("touchScreen", result)
+        }
       />
     </div>
   );
