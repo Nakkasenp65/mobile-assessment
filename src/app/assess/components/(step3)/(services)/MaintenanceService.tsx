@@ -1,118 +1,23 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Wrench,
-  Sparkles,
-  AlertTriangle,
-  Settings,
-  Shield,
-  Smartphone,
-  MonitorSmartphone,
-  Battery,
-  Camera,
-  Wifi,
-  ScanFace,
-  Volume2,
-  Mic,
-  LucideIcon,
-  Loader2,
-  BatteryCharging,
-} from "lucide-react";
-import { DeviceInfo, ConditionInfo } from "../../../page";
+import { Wrench, Loader2 } from "lucide-react";
+import { DeviceInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useRepairPrices } from "@/hooks/useRepairPrices"; // 👈 1. Import Hook ใหม่
+import { RepairItem } from "@/hooks/useRepairPrices"; // 👈 1. Import Type ใหม่
 
 interface MaintenanceServiceProps {
   deviceInfo: DeviceInfo;
-  conditionInfo: ConditionInfo;
+  repairs: RepairItem[]; // 👈 2. รับ props 'repairs'
+  totalCost: number; // 👈 3. รับ props 'totalCost'
+  isLoading: boolean; // 👈 4. รับ props 'isLoading'
 }
-
-// --- Configuration Maps (สำหรับแสดงผล) ---
-const PART_METADATA: Record<
-  string,
-  { name: string; icon: LucideIcon }
-> = {
-  bodyCondition: { name: "ตัวเครื่อง", icon: Smartphone },
-  screenGlass: {
-    name: "กระจกหน้าจอ",
-    icon: MonitorSmartphone,
-  },
-  screenDisplay: {
-    name: "จอแสดงผล",
-    icon: MonitorSmartphone,
-  },
-  batteryHealth: { name: "แบตเตอรี่", icon: Battery },
-  camera: { name: "กล้อง", icon: Camera },
-  wifi: { name: "Wi-Fi", icon: Wifi },
-  faceId: { name: "Face ID", icon: ScanFace },
-  speaker: { name: "ลำโพง", icon: Volume2 },
-  mic: { name: "ไมโครโฟน", icon: Mic },
-  touchScreen: {
-    name: "หน้าจอสัมผัส",
-    icon: MonitorSmartphone,
-  },
-  charger: { name: "พอร์ตชาร์จ", icon: BatteryCharging },
-};
 
 const MaintenanceService: React.FC<
   MaintenanceServiceProps
-> = ({ deviceInfo, conditionInfo }) => {
-  // 👈 2. เรียกใช้ Hook เพื่อดึงข้อมูลราคาจาก Supabase
-  const { data: modelCosts, isLoading: isLoadingPrices } =
-    useRepairPrices(deviceInfo.model);
-
-  const { repairs, totalCost: repairCost } = useMemo(() => {
-    // ถ้ายังโหลดราคาไม่เสร็จ หรือไม่มีข้อมูล ให้ return ค่าว่าง
-    if (!modelCosts) {
-      return { repairs: [], totalCost: 0 };
-    }
-
-    const calculatedRepairs: {
-      part: string;
-      condition: string;
-      cost: number;
-      icon: LucideIcon;
-    }[] = [];
-    let totalCost = 0;
-
-    Object.entries(conditionInfo).forEach(
-      ([part, condition]) => {
-        const isRepairable =
-          condition === "failed" ||
-          condition === "defect" ||
-          (part === "batteryHealth" && condition === "low");
-
-        const costConfig = modelCosts[part];
-
-        if (isRepairable && costConfig) {
-          const costKey =
-            condition === "low"
-              ? "failed"
-              : (condition as "failed" | "defect");
-          const cost = costConfig[costKey];
-          const metadata = PART_METADATA[part];
-
-          if (metadata && cost !== undefined) {
-            calculatedRepairs.push({
-              part: metadata.name,
-              condition:
-                condition === "defect"
-                  ? "เปลี่ยนใหม่"
-                  : "ซ่อมแซม",
-              cost,
-              icon: metadata.icon,
-            });
-            totalCost += cost;
-          }
-        }
-      },
-    );
-
-    return { repairs: calculatedRepairs, totalCost };
-  }, [conditionInfo, modelCosts]); // 👈 3. ใช้ modelCosts เป็น dependency
+> = ({ deviceInfo, repairs, totalCost, isLoading }) => {
+  // 5. ลบ useRepairPrices และ useMemo ออกไป เพราะคำนวณมาจากข้างนอกแล้ว
 
   const estimatedTime =
     repairs.length > 2 ? "3-5 วันทำการ" : "2-3 วันทำการ";
@@ -132,7 +37,8 @@ const MaintenanceService: React.FC<
         <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-emerald-100/50 blur-2xl" />
         <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-teal-100/50 blur-2xl" />
         <AnimatePresence mode="wait">
-          {isLoadingPrices ? (
+          {/* 6. ใช้ `isLoading` จาก props */}
+          {isLoading ? (
             <motion.div
               key="loader"
               initial={{ opacity: 0 }}
@@ -156,9 +62,10 @@ const MaintenanceService: React.FC<
               <h3 className="mb-2 text-lg font-semibold text-emerald-900">
                 ค่าบริการซ่อมโดยประมาณ
               </h3>
+              {/* 7. ใช้ `totalCost` จาก props */}
               <p className="text-4xl font-bold text-emerald-600">
                 ฿{" "}
-                {repairCost.toLocaleString("th-TH", {
+                {totalCost.toLocaleString("th-TH", {
                   minimumFractionDigits: 0,
                 })}
               </p>
@@ -183,7 +90,8 @@ const MaintenanceService: React.FC<
         <h4 className="text-lg font-semibold text-slate-800">
           รายการซ่อม
         </h4>
-        {repairs.length > 0 && !isLoadingPrices ? (
+        {/* 8. ใช้ `repairs` และ `isLoading` จาก props */}
+        {repairs.length > 0 && !isLoading ? (
           <div className="divide-y divide-emerald-100 rounded-xl border border-emerald-100 bg-white">
             {repairs.map((repair, index) => {
               const Icon = repair.icon;
@@ -220,7 +128,7 @@ const MaintenanceService: React.FC<
             })}
           </div>
         ) : (
-          !isLoadingPrices && (
+          !isLoading && (
             <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-center">
               <p className="text-sm text-emerald-600">
                 เยี่ยมเลย! ไม่พบรายการที่ต้องซ่อม
@@ -230,7 +138,6 @@ const MaintenanceService: React.FC<
         )}
       </motion.div>
 
-      {/* ... (Features, Warning Box, และ Button คงเดิม) ... */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
@@ -243,7 +150,7 @@ const MaintenanceService: React.FC<
         <FramerButton
           className="bg-emerald-600 hover:bg-emerald-700"
           size="lg"
-          disabled={isLoadingPrices} // Disable a while loading
+          disabled={isLoading}
         >
           <Wrench className="mr-2 h-4 w-4" />
           ยืนยันการซ่อมและชำระเงิน

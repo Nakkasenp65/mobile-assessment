@@ -3,6 +3,20 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
+import { useMemo } from "react";
+import { ConditionInfo } from "../app/assess/page";
+import {
+  Smartphone,
+  MonitorSmartphone,
+  Battery,
+  Camera,
+  Wifi,
+  ScanFace,
+  Volume2,
+  Mic,
+  BatteryCharging,
+  LucideIcon,
+} from "lucide-react";
 
 /**
  * Interface สำหรับโครงสร้างข้อมูลราคาซ่อมที่ได้จาก Hook
@@ -19,61 +33,138 @@ export interface RepairPriceData {
 }
 
 /**
- * Custom Hook สำหรับดึงข้อมูลราคาซ่อมของอุปกรณ์รุ่นที่ระบุจาก Supabase
- * @param model - ชื่อรุ่นของอุปกรณ์ที่ต้องการดึงราคาซ่อม
+ * Interface สำหรับข้อมูลการซ่อมแต่ละรายการ
  */
-export const useRepairPrices = (model: string) => {
-  return useQuery({
-    // Query Key ที่ผูกกับชื่อรุ่น เพื่อให้ React Query ทำการ cache ข้อมูลแยกตามรุ่น
-    queryKey: ["repairPrices", model],
+export interface RepairItem {
+  part: string;
+  condition: string;
+  cost: number;
+  icon: LucideIcon;
+}
 
-    // ฟังก์ชันสำหรับดึงและแปลงข้อมูล
+/**
+ * Interface สำหรับผลลัพธ์ที่ได้จาก Hook
+ */
+export interface RepairCalculationResult {
+  repairs: RepairItem[];
+  totalRepairCost: number;
+  isLoading: boolean;
+}
+
+// Configuration Maps สำหรับการแสดงผล (ย้ายมาจาก MaintenanceService)
+const PART_METADATA: Record<
+  string,
+  { name: string; icon: LucideIcon }
+> = {
+  bodyCondition: { name: "ตัวเครื่อง", icon: Smartphone },
+  screenGlass: {
+    name: "กระจกหน้าจอ",
+    icon: MonitorSmartphone,
+  },
+  screenDisplay: {
+    name: "จอแสดงผล",
+    icon: MonitorSmartphone,
+  },
+  batteryHealth: { name: "แบตเตอรี่", icon: Battery },
+  camera: { name: "กล้อง", icon: Camera },
+  wifi: { name: "Wi-Fi", icon: Wifi },
+  faceId: { name: "Face ID", icon: ScanFace },
+  speaker: { name: "ลำโพง", icon: Volume2 },
+  mic: { name: "ไมโครโฟน", icon: Mic },
+  touchScreen: {
+    name: "หน้าจอสัมผัส",
+    icon: MonitorSmartphone,
+  },
+  charger: { name: "พอร์ตชาร์จ", icon: BatteryCharging },
+};
+
+/**
+ * Custom Hook สำหรับดึงข้อมูลราคาซ่อมและคำนวณค่าใช้จ่ายทั้งหมด
+ * @param model - ชื่อรุ่นของอุปกรณ์
+ * @param conditionInfo - ข้อมูลสภาพเครื่องทั้งหมด
+ */
+export const useRepairPrices = (
+  model: string,
+  conditionInfo: ConditionInfo,
+): RepairCalculationResult => {
+  const { data: priceMap, isLoading } = useQuery({
+    queryKey: ["repairPrices", model],
     queryFn: async (): Promise<RepairPriceData> => {
-      // 1. Query ข้อมูลจากตาราง repair_prices โดยกรองตาม model_name
       const { data, error } = await supabase
         .from("repair_prices")
         .select("part_key, condition_key, price")
         .eq("model_name", model);
 
       if (error) {
-        // หากเกิด error ให้โยน error ออกไปเพื่อให้ React Query จัดการ
         console.error(
           "Error fetching repair prices:",
           error,
         );
         throw new Error(error.message);
       }
+      if (!data) return {};
 
-      if (!data) {
-        return {}; // คืนค่าว่างหากไม่พบข้อมูล
-      }
-
-      // 2. แปลงข้อมูลจาก Array ที่ได้จาก Supabase ให้เป็น Object ที่ใช้งานง่าย
-      const priceMap: RepairPriceData = {};
+      const mappedPrices: RepairPriceData = {};
       for (const item of data) {
-        const { part_key, condition_key, price } = item;
-
-        // ถ้ายังไม่มี part_key นี้ใน priceMap ให้สร้างขึ้นมาก่อน
-        if (!priceMap[part_key]) {
-          priceMap[part_key] = {};
+        if (!mappedPrices[item.part_key]) {
+          mappedPrices[item.part_key] = {};
         }
-
-        // เพิ่มราคาตาม condition_key
-        priceMap[part_key][condition_key] = price;
+        mappedPrices[item.part_key][item.condition_key] =
+          item.price;
       }
-
-      return priceMap;
+      return mappedPrices;
     },
-
-    // --- การตั้งค่าเพิ่มเติมสำหรับ React Query ---
-    // ให้ Hook นี้ทำงานก็ต่อเมื่อมีค่า `model` เท่านั้น (ป้องกันการ query โดยไม่มีเงื่อนไข)
     enabled: !!model,
-
-    // กำหนดให้ข้อมูลที่ดึงมา "สด" อยู่เป็นเวลา 1 ชั่วโมง (3,600,000 มิลลิวินาที)
-    // ในช่วงเวลานี้ React Query จะไม่ทำการ fetch ข้อมูลใหม่ถ้ามีการเรียกใช้ Hook ซ้ำ
     staleTime: 1000 * 60 * 60,
-
-    // Cache ข้อมูลไว้ตลอดไปจนกว่าจะมีการ refresh หน้าเว็บ
     gcTime: Infinity,
   });
+
+  // ใช้ useMemo ในการคำนวณราคารวมและรายการซ่อมเมื่อ priceMap หรือ conditionInfo เปลี่ยน
+  const { repairs, totalRepairCost } = useMemo(() => {
+    if (!priceMap) {
+      return { repairs: [], totalRepairCost: 0 };
+    }
+
+    const calculatedRepairs: RepairItem[] = [];
+    let totalCost = 0;
+
+    Object.entries(conditionInfo).forEach(
+      ([part, condition]) => {
+        const isRepairable =
+          condition === "failed" ||
+          condition === "defect" ||
+          (part === "batteryHealth" && condition === "low");
+
+        const costConfig = priceMap[part];
+
+        if (isRepairable && costConfig) {
+          const costKey = (
+            condition === "low" ? "failed" : condition
+          ) as "failed" | "defect";
+          const cost = costConfig[costKey];
+          const metadata = PART_METADATA[part];
+
+          if (metadata && cost !== undefined) {
+            calculatedRepairs.push({
+              part: metadata.name,
+              condition:
+                condition === "defect"
+                  ? "เปลี่ยนใหม่"
+                  : "ซ่อมแซม",
+              cost,
+              icon: metadata.icon,
+            });
+            totalCost += cost;
+          }
+        }
+      },
+    );
+
+    return {
+      repairs: calculatedRepairs,
+      totalRepairCost: totalCost,
+    };
+  }, [conditionInfo, priceMap]);
+
+  return { repairs, totalRepairCost, isLoading };
 };

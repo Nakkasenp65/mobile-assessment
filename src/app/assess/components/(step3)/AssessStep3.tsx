@@ -1,4 +1,5 @@
-// src/app/assess/step3/AssessStep3.tsx
+// src/app/assess/components/(step3)/AssessStep3.tsx
+
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -14,6 +15,7 @@ import {
   Lock,
   RefreshCwIcon,
   Cloud,
+  Handshake,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
@@ -23,6 +25,7 @@ import AssessmentLedger from "./AssessmentLedger";
 import Services from "./Services";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
+import { useRepairPrices } from "@/hooks/useRepairPrices";
 
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
@@ -43,6 +46,11 @@ const AssessStep3 = ({
   conditionInfo,
   onBack,
 }: AssessStep3Props) => {
+  const {
+    totalRepairCost,
+    repairs,
+    isLoading: isLoadingRepairPrices,
+  } = useRepairPrices(deviceInfo.model, conditionInfo);
   const [selectedService, setSelectedService] =
     useState<string>("sell");
 
@@ -73,6 +81,12 @@ const AssessStep3 = ({
   const calculatedTradeInPrice = Math.round(
     finalPrice * 0.7,
   );
+  const calculatedRefinancePrice = Math.round(
+    finalPrice * 0.5,
+  );
+  const calculatedExchangePrice = Math.round(
+    finalPrice * 0.7,
+  );
 
   const services: ServiceOption[] = [
     {
@@ -87,14 +101,7 @@ const AssessStep3 = ({
       title: "บริการซ่อม",
       description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
       icon: Wrench,
-      price: 0, // Price will be calculated in the MaintenanceService component
-    },
-    {
-      id: "pawn",
-      title: "บริการจำนำ",
-      description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
-      icon: Shield,
-      price: calculatedPawnPrice,
+      price: totalRepairCost,
     },
     {
       id: "consignment",
@@ -102,24 +109,29 @@ const AssessStep3 = ({
       description:
         "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
-      price: Math.round(finalPrice * 1.15),
-    },
-    {
-      id: "icloud",
-      title: "บริการจำนำ iCloud",
-      description: "รับเงินด่วน โดยไม่ต้องใช้เครื่อง",
-      icon: Cloud,
-      price: calculatedIcloudPawnPrice,
-    },
-    {
-      id: "tradein",
-      title: "แลกซื้อเครื่องใหม่ (Trade-in)",
-      description:
-        "ใช้เครื่องเก่าเป็นส่วนลดแลกซื้อเครื่องใหม่",
-      icon: RefreshCwIcon,
-      price: calculatedTradeInPrice,
+      price: finalPrice,
     },
   ];
+
+  // Conditionally add the refinance service if the brand is Apple
+  if (deviceInfo.brand === "Apple") {
+    // บริการ Refinance
+    services.push({
+      id: "refinance",
+      title: "บริการรีไฟแนนซ์",
+      description: "รับเงินก้อน ผ่อนชำระคืน 6 เดือน",
+      icon: CreditCard,
+      price: calculatedRefinancePrice,
+    });
+    // บริการไอโฟนแลกเงิน
+    services.push({
+      id: "iphone-exchange",
+      title: "ไอโฟนแลกเงิน",
+      description: "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
+      icon: Handshake, // หรือไอคอนอื่นที่ต้องการ
+      price: calculatedExchangePrice,
+    });
+  }
 
   const handleConfirm = () => {
     if (selectedService) {
@@ -165,6 +177,11 @@ const AssessStep3 = ({
             deviceInfo={deviceInfo}
             conditionInfo={conditionInfo}
             pawnPrice={calculatedPawnPrice}
+            refinancePrice={calculatedRefinancePrice}
+            exchangePrice={calculatedExchangePrice}
+            repairs={repairs}
+            totalRepairCost={totalRepairCost}
+            isLoadingRepairPrices={isLoadingRepairPrices}
           />
         </div>
       </div>

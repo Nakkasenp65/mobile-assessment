@@ -37,14 +37,14 @@ interface AssessStep1Props {
   onUserDeviceUpdate: (value: boolean) => void;
 }
 
-const BATTERY_HEALTH_OPTIONS = [
-  "100%",
-  "95% - 99%",
-  "90% - 94%",
-  "85% - 89%",
-  "ต่ำกว่า 85%",
-  "เปลี่ยนแบตเตอรี่",
-];
+// const BATTERY_HEALTH_OPTIONS = [
+//   "100%",
+//   "95% - 99%",
+//   "90% - 94%",
+//   "85% - 89%",
+//   "ต่ำกว่า 85%",
+//   "เปลี่ยนแบตเตอรี่",
+// ];
 
 const AssessStep1 = ({
   deviceInfo,
@@ -170,15 +170,15 @@ const AssessStep1 = ({
   const isValidStorage =
     isValidModel &&
     availableStorage.includes(localInfo.storage);
-  const isValidBattery =
-    !isAppleDevice || !!conditionInfo.batteryHealth;
+  // const isValidBattery =
+  // !isAppleDevice || !!conditionInfo.batteryHealth;
   const isUserDeviceOk =
     isDesktop || userDeviceSelection !== null;
   const isComplete =
     isValidBrand &&
     isValidModel &&
     isValidStorage &&
-    isValidBattery &&
+    // isValidBattery &&
     isUserDeviceOk;
 
   return (
@@ -375,7 +375,7 @@ const AssessStep1 = ({
                   </SelectContent>
                 </Select>
               </div>
-              {isAppleDevice && (
+              {/* {isAppleDevice && (
                 <div>
                   <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
                     สุขภาพแบตเตอรี่ *
@@ -410,7 +410,7 @@ const AssessStep1 = ({
                     </SelectContent>
                   </Select>
                 </div>
-              )}
+              )} */}
             </motion.div>
           )}
         </AnimatePresence>

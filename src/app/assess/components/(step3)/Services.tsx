@@ -15,6 +15,9 @@ import SellNowService from "./(services)/SellNowService";
 import MaintenanceService from "./(services)/MaintenanceService";
 import ConsignmentService from "./(services)/ConsignmentService";
 import TradeInService from "./(services)/TradeInService";
+import RefinanceService from "./(services)/RefinanceService";
+import IPhoneExchangeService from "./(services)/IPhoneExchangeService";
+import { RepairItem } from "@/hooks/useRepairPrices"; //  เพิ่มการ import RepairItem
 
 interface ServicesProps {
   services: ServiceOption[];
@@ -25,6 +28,11 @@ interface ServicesProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   pawnPrice: number;
+  refinancePrice?: number;
+  exchangePrice?: number;
+  repairs: RepairItem[]; //  เพิ่ม props
+  totalRepairCost: number; //  เพิ่ม props
+  isLoadingRepairPrices: boolean; //  เพิ่ม props
 }
 
 const PALETTE = {
@@ -34,29 +42,30 @@ const PALETTE = {
     soft: "bg-pink-50/20 dark:bg-pink-900/20",
     ring: "ring-pink-500/20",
   },
-  pawn: {
-    text: "text-orange-500",
-    borderColor: "border-orange-500",
-    soft: "bg-orange-50/20 dark:bg-orange-900/20",
-    ring: "ring-orange-500/20",
-  },
-  tradein: {
-    text: "text-cyan-500",
-    borderColor: "border-cyan-500",
-    soft: "bg-cyan-50/20 dark:bg-cyan-900/20",
-    ring: "ring-cyan-500/20",
-  },
   consignment: {
     text: "text-sky-500",
     borderColor: "border-sky-500",
     soft: "bg-sky-50/20 dark:bg-sky-900/20",
     ring: "ring-sky-500/20",
   },
-  icloud: {
-    text: "text-indigo-500",
-    borderColor: "border-indigo-500",
-    soft: "bg-indigo-50/20 dark:bg-indigo-900/20",
-    ring: "ring-indigo-500/20",
+
+  refinance: {
+    text: "text-purple-500",
+    borderColor: "border-purple-500",
+    soft: "bg-purple-50/20 dark:bg-purple-900/20",
+    ring: "ring-purple-500/20",
+  },
+  "iphone-exchange": {
+    text: "text-green-500",
+    borderColor: "border-green-500",
+    soft: "bg-green-50/20 dark:bg-green-900/20",
+    ring: "ring-green-500/20",
+  },
+  maintenance: {
+    text: "text-emerald-500",
+    borderColor: "border-emerald-500",
+    soft: "bg-emerald-50/20 dark:bg-emerald-900/20",
+    ring: "ring-emerald-500/20",
   },
   fallback: {
     text: "text-zinc-500",
@@ -87,32 +96,26 @@ export default function Services({
   deviceInfo,
   conditionInfo,
   pawnPrice,
+  refinancePrice,
+  exchangePrice,
+  repairs,
+  totalRepairCost,
+  isLoadingRepairPrices,
 }: ServicesProps) {
-  // ✨ สร้าง refs สำหรับ Accordion แต่ละอัน
   const accordionRefs = useRef<
     Record<string, HTMLDivElement | null>
   >({});
 
-  // ✨ Effect สำหรับ auto scroll เมื่อเปิด Accordion
   useEffect(() => {
     if (selectedService) {
       const accordionElement =
         accordionRefs.current[selectedService];
       if (accordionElement) {
-        // รอให้ animation เสร็จก่อน (300ms)
         setTimeout(() => {
-          // วิธีที่ 1: ใช้ scrollIntoView (แนะนำ)
-          // accordionElement.scrollIntoView({
-          //   behavior: "smooth",
-          //   block: "start",
-          //   inline: "nearest",
-          // });
-
-          // หรือใช้วิธีที่ 2: ควบคุม offset ได้แม่นยำกว่า
           const elementTop =
             accordionElement.getBoundingClientRect().top;
           const offsetPosition =
-            elementTop + window.scrollY - 100; // -100 เผื่อพื้นที่ navbar
+            elementTop + window.scrollY - 100;
           window.scrollTo({
             top: offsetPosition,
             behavior: "smooth",
@@ -140,7 +143,6 @@ export default function Services({
             <AccordionItem
               key={service.id}
               value={service.id}
-              // ✨ เพิ่ม ref ให้แต่ละ Accordion
               ref={(el) => {
                 accordionRefs.current[service.id] = el;
               }}
@@ -181,12 +183,6 @@ export default function Services({
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
                 <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
-                  {service.id === "pawn" && (
-                    <PawnService
-                      deviceInfo={deviceInfo}
-                      pawnPrice={pawnPrice}
-                    />
-                  )}
                   {service.id === "sell" && (
                     <SellNowService
                       deviceInfo={deviceInfo}
@@ -196,17 +192,12 @@ export default function Services({
                   {service.id === "maintenance" && (
                     <MaintenanceService
                       deviceInfo={deviceInfo}
-                      conditionInfo={conditionInfo}
+                      repairs={repairs}
+                      totalCost={totalRepairCost}
+                      isLoading={isLoadingRepairPrices}
                     />
                   )}
-                  {service.id === "icloud" && (
-                    <IcloudService
-                      deviceInfo={deviceInfo}
-                      icloudPawnPrice={Math.round(
-                        service.price * 0.5,
-                      )}
-                    />
-                  )}
+
                   {service.id === "tradein" && (
                     <TradeInService
                       deviceInfo={deviceInfo}
@@ -219,6 +210,20 @@ export default function Services({
                       consignmentPrice={service.price}
                     />
                   )}
+                  {service.id === "refinance" &&
+                    refinancePrice !== undefined && (
+                      <RefinanceService
+                        deviceInfo={deviceInfo}
+                        refinancePrice={refinancePrice}
+                      />
+                    )}
+                  {service.id === "iphone-exchange" &&
+                    exchangePrice !== undefined && (
+                      <IPhoneExchangeService
+                        deviceInfo={deviceInfo}
+                        exchangePrice={exchangePrice}
+                      />
+                    )}
                 </div>
               </AccordionContent>
             </AccordionItem>

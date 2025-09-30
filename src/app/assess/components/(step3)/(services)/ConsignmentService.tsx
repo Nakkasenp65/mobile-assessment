@@ -35,7 +35,7 @@ const storeLocations = [
   "สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)",
 ];
 
-const COMMISSION_RATE = 0.15; // 15% ค่าคอมมิชชั่น
+const SERVICE_FEE_RATE = 0.1; // 10% ค่าบริการ
 
 const ConsignmentService = ({
   deviceInfo,
@@ -59,12 +59,12 @@ const ConsignmentService = ({
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  // คำนวณค่าคอมมิชชั่นและยอดสุทธิ
+  // คำนวณค่าบริการและยอดสุทธิ
   const desiredPriceNum =
     parseFloat(formState.desiredPrice) || consignmentPrice;
-  const commissionAmount =
-    desiredPriceNum * COMMISSION_RATE;
-  const netAmount = desiredPriceNum - commissionAmount;
+  const serviceFeeAmount =
+    desiredPriceNum * SERVICE_FEE_RATE;
+  const netAmount = desiredPriceNum - serviceFeeAmount;
 
   const isFormComplete =
     formState.customerName &&
@@ -114,7 +114,7 @@ const ConsignmentService = ({
         </div>
       </motion.div>
 
-      {/* Commission Calculation */}
+      {/* Service Fee Calculation */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ const ConsignmentService = ({
         className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-4"
       >
         <h4 className="mb-3 text-sm font-semibold text-cyan-900">
-          สรุปค่าบริการ (เมื่อขายได้)
+          สรุปยอดเงินที่จะได้รับ (เมื่อขายได้)
         </h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
@@ -135,16 +135,16 @@ const ConsignmentService = ({
           </div>
           <div className="flex justify-between">
             <span className="text-cyan-800">
-              หัก ค่าคอมมิชชั่น (15%)
+              หัก ค่าบริการฝากขาย (10%)
             </span>
             <span className="font-semibold text-red-600">
-              - {THB(commissionAmount)}
+              - {THB(serviceFeeAmount)}
             </span>
           </div>
           <div className="my-2 border-t border-cyan-200/50" />
           <div className="flex justify-between">
             <span className="font-bold text-cyan-900">
-              ยอดสุทธิที่คุณจะได้รับ
+              ยอดเงินที่ผู้ขายจะได้รับ
             </span>
             <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent">
               {THB(netAmount)}
@@ -152,7 +152,7 @@ const ConsignmentService = ({
           </div>
         </div>
         <p className="mt-3 text-xs text-cyan-700/80">
-          *ไม่มีค่าใช้จ่ายใดๆ หากขายไม่ได้
+          *ค่าบริการ 10% ต่อรอบการฝากขาย (10 วัน)
         </p>
       </motion.div>
 
@@ -415,7 +415,8 @@ const ConsignmentService = ({
             <a href="#" className="text-blue-600 underline">
               ข้อตกลงและเงื่อนไข
             </a>{" "}
-            สำหรับบริการฝากขายสินค้า และค่าคอมมิชชั่น 15%
+            สำหรับบริการฝากขายสินค้า และค่าบริการ 10%
+            ต่อรอบการฝากขาย (10 วัน)
           </label>
         </div>
         <FramerButton

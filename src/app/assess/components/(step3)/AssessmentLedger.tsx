@@ -19,7 +19,8 @@ import {
   Archive,
   Frame,
   ScanFace,
-  Info, // 👈 เพิ่มไอคอนสำหรับกล่องข้อมูล
+  Info,
+  AlertTriangleIcon, // 👈 เพิ่มไอคอนสำหรับกล่องข้อมูล
 } from "lucide-react";
 import {
   Accordion,
@@ -152,9 +153,9 @@ const TestItem = ({
               strokeWidth={3}
             />
           ) : (
-            <AlertTriangle
-              className="h-2.5 w-2.5 fill-white text-orange-500 md:h-3 md:w-3"
-              strokeWidth={0}
+            <AlertTriangleIcon
+              className="h-2 w-2 text-white md:h-2.5 md:w-2.5"
+              strokeWidth={3}
             />
           )}
         </div>
