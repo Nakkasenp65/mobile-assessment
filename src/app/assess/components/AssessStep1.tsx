@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useMobile } from "@/hooks/useMobile";
-import { DeviceInfo } from "../page";
+import { DeviceInfo, ConditionInfo } from "../page";
 
 import { PHONE_DATA } from "../../../util/phone";
 
@@ -26,7 +26,13 @@ import Image from "next/image";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
+  conditionInfo: ConditionInfo;
   onDeviceUpdate: (info: DeviceInfo) => void;
+  onConditionUpdate: (
+    info:
+      | ConditionInfo
+      | ((prev: ConditionInfo) => ConditionInfo),
+  ) => void;
   onNext: () => void;
   onUserDeviceUpdate: (value: boolean) => void;
 }
@@ -42,65 +48,90 @@ const BATTERY_HEALTH_OPTIONS = [
 
 const AssessStep1 = ({
   deviceInfo,
+  conditionInfo,
   onDeviceUpdate,
+  onConditionUpdate,
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
-  const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
+  const [localInfo, setLocalInfo] =
+    useState<DeviceInfo>(deviceInfo);
   const { isDesktop } = useDeviceDetection();
 
-  const [availableModels, setAvailableModels] = useState<string[]>(() => {
+  const [availableModels, setAvailableModels] = useState<
+    string[]
+  >(() => {
     if (deviceInfo.brand) {
       return PHONE_DATA.models[deviceInfo.brand] ?? [];
     }
     return [];
   });
 
-  const [availableStorage, setAvailableStorage] = useState<string[]>(() => {
+  const [availableStorage, setAvailableStorage] = useState<
+    string[]
+  >(() => {
     if (deviceInfo.model) {
       return PHONE_DATA.storage[deviceInfo.model] ?? [];
     }
     return [];
   });
 
-  const { data: productData, isLoading: isImageLoading } = useMobile(
-    localInfo.brand,
-    localInfo.model,
-  );
+  const { data: productData, isLoading: isImageLoading } =
+    useMobile(localInfo.brand, localInfo.model);
 
   console.log(localInfo);
 
-  const [userDeviceSelection, setUserDeviceSelection] = useState<
-    "this_device" | "other_device" | null
-  >(isDesktop ? "other_device" : null);
+  const [userDeviceSelection, setUserDeviceSelection] =
+    useState<"this_device" | "other_device" | null>(
+      isDesktop ? "other_device" : null,
+    );
 
   const prevBrandRef = useRef(localInfo.brand);
   const prevModelRef = useRef(localInfo.model);
 
   useEffect(() => {
-    if (localInfo.brand && localInfo.brand !== prevBrandRef.current) {
-      const nextModels = PHONE_DATA.models[localInfo.brand] ?? [];
+    if (
+      localInfo.brand &&
+      localInfo.brand !== prevBrandRef.current
+    ) {
+      const nextModels =
+        PHONE_DATA.models[localInfo.brand] ?? [];
       setAvailableModels(nextModels);
       setLocalInfo((prev) => ({
         ...prev,
         model: "",
         storage: "",
-        batteryHealth:
-          localInfo.brand === "Apple" ? prev.batteryHealth : undefined,
       }));
+      // Reset battery health in conditionInfo when brand changes
+      if (localInfo.brand !== "Apple") {
+        onConditionUpdate((prev) => ({
+          ...prev,
+          batteryHealth: "",
+        }));
+      }
       if (nextModels.length === 1)
-        setLocalInfo((prev) => ({ ...prev, model: nextModels[0] }));
+        setLocalInfo((prev) => ({
+          ...prev,
+          model: nextModels[0],
+        }));
       prevBrandRef.current = localInfo.brand;
     }
-  }, [localInfo.brand]);
+  }, [localInfo.brand, onConditionUpdate]);
 
   useEffect(() => {
-    if (localInfo.model && localInfo.model !== prevModelRef.current) {
-      const nextStorage = PHONE_DATA.storage[localInfo.model] ?? [];
+    if (
+      localInfo.model &&
+      localInfo.model !== prevModelRef.current
+    ) {
+      const nextStorage =
+        PHONE_DATA.storage[localInfo.model] ?? [];
       setAvailableStorage(nextStorage);
       setLocalInfo((prev) => ({ ...prev, storage: "" }));
       if (nextStorage.length === 1)
-        setLocalInfo((prev) => ({ ...prev, storage: nextStorage[0] }));
+        setLocalInfo((prev) => ({
+          ...prev,
+          storage: nextStorage[0],
+        }));
       prevModelRef.current = localInfo.model;
     }
   }, [localInfo.model]);
@@ -109,9 +140,20 @@ const AssessStep1 = ({
     onDeviceUpdate(localInfo);
   }, [localInfo, onDeviceUpdate]);
 
-  const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
+  const handleSelectChange = (
+    field: keyof DeviceInfo,
+    value: string,
+  ) => {
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
   };
+
+  const handleBatteryHealthChange = (value: string) => {
+    onConditionUpdate((prev) => ({
+      ...prev,
+      batteryHealth: value,
+    }));
+  };
+
   const handleUserDeviceSelect = (
     selection: "this_device" | "other_device",
   ) => {
@@ -123,11 +165,15 @@ const AssessStep1 = ({
   const allBrands = PHONE_DATA.brands.map((b) => b.id);
   const isValidBrand = allBrands.includes(localInfo.brand);
   const isValidModel =
-    isValidBrand && availableModels.includes(localInfo.model);
+    isValidBrand &&
+    availableModels.includes(localInfo.model);
   const isValidStorage =
-    isValidModel && availableStorage.includes(localInfo.storage);
-  const isValidBattery = !isAppleDevice || !!localInfo.batteryHealth;
-  const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
+    isValidModel &&
+    availableStorage.includes(localInfo.storage);
+  const isValidBattery =
+    !isAppleDevice || !!conditionInfo.batteryHealth;
+  const isUserDeviceOk =
+    isDesktop || userDeviceSelection !== null;
   const isComplete =
     isValidBrand &&
     isValidModel &&
@@ -147,7 +193,8 @@ const AssessStep1 = ({
           ระบุรุ่นมือถือของคุณ
         </h2>
         <p className="text-muted-foreground text-sm md:text-base">
-          เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน
+          เลือกยี่ห้อ รุ่น
+          และความจุของเครื่องที่ต้องการประเมิน
         </p>
       </div>
 
@@ -158,7 +205,9 @@ const AssessStep1 = ({
           </label>
           <div className="grid grid-cols-2 gap-4">
             <motion.button
-              onClick={() => handleUserDeviceSelect("this_device")}
+              onClick={() =>
+                handleUserDeviceSelect("this_device")
+              }
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "this_device"
@@ -166,7 +215,9 @@ const AssessStep1 = ({
                   : "border-border bg-accent/50 hover:border-primary/50",
               )}
               role="button"
-              aria-pressed={userDeviceSelection === "this_device"}
+              aria-pressed={
+                userDeviceSelection === "this_device"
+              }
               whileTap={{ scale: 0.97 }}
             >
               <Smartphone className="text-primary h-8 w-8" />
@@ -175,7 +226,9 @@ const AssessStep1 = ({
               </span>
             </motion.button>
             <motion.button
-              onClick={() => handleUserDeviceSelect("other_device")}
+              onClick={() =>
+                handleUserDeviceSelect("other_device")
+              }
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "other_device"
@@ -183,10 +236,14 @@ const AssessStep1 = ({
                   : "border-border bg-accent/50 hover:border-secondary/50",
               )}
               role="button"
-              aria-pressed={userDeviceSelection === "other_device"}
+              aria-pressed={
+                userDeviceSelection === "other_device"
+              }
               whileTap={{ scale: 0.97 }}
             >
-              <Box className={cn("text-secondary h-8 w-8")} />
+              <Box
+                className={cn("text-secondary h-8 w-8")}
+              />
               <span className="text-foreground font-medium">
                 ประเมินเครื่องอื่น
               </span>
@@ -202,11 +259,14 @@ const AssessStep1 = ({
           </label>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {PHONE_DATA.brands.map((brand) => {
-              const isSelected = localInfo.brand === brand.id;
+              const isSelected =
+                localInfo.brand === brand.id;
               return (
                 <button
                   key={brand.id}
-                  onClick={() => handleSelectChange("brand", brand.id)}
+                  onClick={() =>
+                    handleSelectChange("brand", brand.id)
+                  }
                   className={cn(
                     "bg-card flex h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all duration-200",
                     isSelected
@@ -229,7 +289,9 @@ const AssessStep1 = ({
                   <span
                     className={cn(
                       "text-sm font-semibold",
-                      isSelected ? "text-secondary" : "text-muted-foreground",
+                      isSelected
+                        ? "text-secondary"
+                        : "text-muted-foreground",
                     )}
                   >
                     {brand.name}
@@ -243,8 +305,16 @@ const AssessStep1 = ({
         <AnimatePresence>
           {localInfo.brand && (
             <motion.div
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: "auto", marginTop: "1.5rem" }}
+              initial={{
+                opacity: 0,
+                height: 0,
+                marginTop: 0,
+              }}
+              animate={{
+                opacity: 1,
+                height: "auto",
+                marginTop: "1.5rem",
+              }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               className="space-y-6 overflow-hidden"
             >
@@ -253,7 +323,9 @@ const AssessStep1 = ({
                   รุ่น *
                 </label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("model", value)}
+                  onValueChange={(value) =>
+                    handleSelectChange("model", value)
+                  }
                   value={localInfo.model}
                 >
                   <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
@@ -263,7 +335,10 @@ const AssessStep1 = ({
                     <SelectGroup>
                       <SelectLabel>รุ่น</SelectLabel>
                       {availableModels.map((model) => (
-                        <SelectItem key={model} value={model}>
+                        <SelectItem
+                          key={model}
+                          value={model}
+                        >
                           {model}
                         </SelectItem>
                       ))}
@@ -289,7 +364,10 @@ const AssessStep1 = ({
                     <SelectGroup>
                       <SelectLabel>ความจุ</SelectLabel>
                       {availableStorage.map((storage) => (
-                        <SelectItem key={storage} value={storage}>
+                        <SelectItem
+                          key={storage}
+                          value={storage}
+                        >
                           {storage}
                         </SelectItem>
                       ))}
@@ -303,22 +381,31 @@ const AssessStep1 = ({
                     สุขภาพแบตเตอรี่ *
                   </label>
                   <Select
-                    onValueChange={(value) =>
-                      handleSelectChange("batteryHealth", value)
+                    onValueChange={
+                      handleBatteryHealthChange
                     }
-                    value={localInfo.batteryHealth || ""}
+                    value={
+                      conditionInfo.batteryHealth || ""
+                    }
                   >
                     <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
                       <SelectValue placeholder="เลือกเปอร์เซ็นต์แบตเตอรี่" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>สุขภาพแบตเตอรี่</SelectLabel>
-                        {BATTERY_HEALTH_OPTIONS.map((health) => (
-                          <SelectItem key={health} value={health}>
-                            {health}
-                          </SelectItem>
-                        ))}
+                        <SelectLabel>
+                          สุขภาพแบตเตอรี่
+                        </SelectLabel>
+                        {BATTERY_HEALTH_OPTIONS.map(
+                          (health) => (
+                            <SelectItem
+                              key={health}
+                              value={health}
+                            >
+                              {health}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -328,12 +415,13 @@ const AssessStep1 = ({
           )}
         </AnimatePresence>
 
-        {/* --- [ADD START] --- */}
-        {/* ส่วนแสดงรูปภาพตัวอย่างรุ่น */}
         <div
           className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
           style={{
-            height: isImageLoading || productData?.image_url ? "12rem" : "3rem",
+            height:
+              isImageLoading || productData?.image_url
+                ? "12rem"
+                : "3rem",
           }}
         >
           <AnimatePresence mode="wait">
@@ -357,7 +445,6 @@ const AssessStep1 = ({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* ใช้ <img> ธรรมดาเพื่อความเข้ากันได้กับ Supabase Storage URL */}
                 <Image
                   width="160"
                   height="160"
@@ -369,7 +456,6 @@ const AssessStep1 = ({
             )}
           </AnimatePresence>
         </div>
-        {/* --- [ADD END] --- */}
       </div>
 
       <div className="mt-8 flex justify-end">

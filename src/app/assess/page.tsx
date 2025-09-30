@@ -12,7 +12,6 @@ export interface DeviceInfo {
   brand: string;
   model: string;
   storage: string;
-  batteryHealth: string;
 }
 
 export interface ConditionInfo {
@@ -43,7 +42,6 @@ export default function AssessPage() {
     brand: "",
     model: "",
     storage: "",
-    batteryHealth: "",
   });
   const [conditionInfo, setConditionInfo] =
     useState<ConditionInfo>({
@@ -98,7 +96,9 @@ export default function AssessPage() {
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
               onDeviceUpdate={handleDeviceUpdate}
+              onConditionUpdate={setConditionInfo}
               onUserDeviceUpdate={handleUserDeviceUpdate}
               onNext={handleNext}
             />

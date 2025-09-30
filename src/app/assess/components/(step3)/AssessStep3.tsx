@@ -36,7 +36,6 @@ export interface ServiceOption {
   description: string;
   icon: LucideIcon;
   price: number;
-  features: string[];
 }
 
 const AssessStep3 = ({
@@ -82,12 +81,6 @@ const AssessStep3 = ({
       description: "รับเงินสดเต็มจำนวนทันที",
       icon: Banknote,
       price: finalPrice,
-      features: [
-        "รับเงินสดทันที",
-        "โอนเงินภายใน 30 นาที",
-        "ไม่มีค่าธรรมเนียม",
-        "รับประกันราคา 7 วัน",
-      ],
     },
     {
       id: "pawn",
@@ -95,12 +88,6 @@ const AssessStep3 = ({
       description: "รับเงินก้อนพร้อมสิทธิ์ไถ่คืน",
       icon: Shield,
       price: calculatedPawnPrice,
-      features: [
-        "รับเงินสดทันที",
-        "ไถ่คืนได้ภายใน 6 เดือน",
-        "อัตราดอกเบี้ย 2% ต่อเดือน",
-        "เก็บเครื่องในสภาพดี",
-      ],
     },
     {
       id: "consignment",
@@ -109,12 +96,6 @@ const AssessStep3 = ({
         "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
       price: Math.round(finalPrice * 1.15),
-      features: [
-        "ทีมการตลาดลงประกาศ",
-        "ถ่ายรูปสินค้าโปร",
-        "อัปเดตสถานะเป็นระยะ",
-        "คิดค่าบริการเมื่อขายได้",
-      ],
     },
     {
       id: "icloud",
@@ -122,12 +103,6 @@ const AssessStep3 = ({
       description: "รับเงินด่วน โดยไม่ต้องใช้เครื่อง",
       icon: Cloud,
       price: calculatedIcloudPawnPrice,
-      features: [
-        "ไม่ต้องส่งมอบเครื่อง",
-        "อนุมัติไวภายใน 15 นาที",
-        "ต่ออายุได้ทุก 10 วัน",
-        "ปลอดภัยด้วยทีมงานมืออาชีพ",
-      ],
     },
     {
       id: "tradein",
@@ -136,12 +111,6 @@ const AssessStep3 = ({
         "ใช้เครื่องเก่าเป็นส่วนลดแลกซื้อเครื่องใหม่",
       icon: RefreshCwIcon,
       price: calculatedTradeInPrice,
-      features: [
-        "รับส่วนลดทันที ณ วันซื้อเครื่องใหม่",
-        "มีทีมงานช่วยโอนย้ายข้อมูล",
-        "เลือกเครื่องใหม่ได้ทุกรุ่นในร้าน",
-        "ขั้นตอนง่าย ไม่ซับซ้อน",
-      ],
     },
   ];
 
