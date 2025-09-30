@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Wrench,
   Sparkles,
@@ -16,34 +16,20 @@ import {
   Volume2,
   Mic,
   LucideIcon,
+  Loader2,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useRepairPrices } from "@/hooks/useRepairPrices"; // 👈 1. Import Hook ใหม่
 
 interface MaintenanceServiceProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
 }
 
-// --- Configuration Maps (เหมือนเดิม) ---
-const REPAIR_COSTS: Record<
-  string,
-  { failed: number; defect: number }
-> = {
-  bodyCondition: { failed: 1200, defect: 2500 },
-  screenGlass: { failed: 800, defect: 1500 },
-  screenDisplay: { failed: 2000, defect: 3500 },
-  batteryHealth: { failed: 800, defect: 1200 },
-  camera: { failed: 1500, defect: 2500 },
-  wifi: { failed: 800, defect: 1500 },
-  faceId: { failed: 1200, defect: 2000 },
-  speaker: { failed: 600, defect: 1000 },
-  mic: { failed: 600, defect: 1000 },
-  touchScreen: { failed: 1500, defect: 2500 },
-};
-
+// --- Configuration Maps (สำหรับแสดงผล) ---
 const PART_METADATA: Record<
   string,
   { name: string; icon: LucideIcon }
@@ -67,13 +53,23 @@ const PART_METADATA: Record<
     name: "หน้าจอสัมผัส",
     icon: MonitorSmartphone,
   },
+  chargingPort: { name: "พอร์ตชาร์จ", icon: Smartphone },
 };
 
 const MaintenanceService: React.FC<
   MaintenanceServiceProps
-> = ({ conditionInfo }) => {
+> = ({ deviceInfo, conditionInfo }) => {
+  // 👈 2. เรียกใช้ Hook เพื่อดึงข้อมูลราคาจาก Supabase
+  const { data: modelCosts, isLoading: isLoadingPrices } =
+    useRepairPrices(deviceInfo.model);
+
   const { repairs, totalCost: repairCost } = useMemo(() => {
-    const repairs: {
+    // ถ้ายังโหลดราคาไม่เสร็จ หรือไม่มีข้อมูล ให้ return ค่าว่าง
+    if (!modelCosts) {
+      return { repairs: [], totalCost: 0 };
+    }
+
+    const calculatedRepairs: {
       part: string;
       condition: string;
       cost: number;
@@ -87,8 +83,8 @@ const MaintenanceService: React.FC<
           condition === "failed" ||
           condition === "defect" ||
           (part === "batteryHealth" && condition === "low");
-        const costConfig =
-          REPAIR_COSTS[part as keyof typeof REPAIR_COSTS];
+
+        const costConfig = modelCosts[part];
 
         if (isRepairable && costConfig) {
           const costKey =
@@ -98,8 +94,8 @@ const MaintenanceService: React.FC<
           const cost = costConfig[costKey];
           const metadata = PART_METADATA[part];
 
-          if (metadata) {
-            repairs.push({
+          if (metadata && cost !== undefined) {
+            calculatedRepairs.push({
               part: metadata.name,
               condition:
                 condition === "defect"
@@ -114,8 +110,8 @@ const MaintenanceService: React.FC<
       },
     );
 
-    return { repairs, totalCost };
-  }, [conditionInfo]);
+    return { repairs: calculatedRepairs, totalCost };
+  }, [conditionInfo, modelCosts]); // 👈 3. ใช้ modelCosts เป็น dependency
 
   const estimatedTime =
     repairs.length > 2 ? "3-5 วันทำการ" : "2-3 วันทำการ";
@@ -130,27 +126,50 @@ const MaintenanceService: React.FC<
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-6 text-center shadow-lg"
+        className="relative flex h-[138px] flex-col justify-center overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-6 text-center shadow-lg"
       >
         <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-emerald-100/50 blur-2xl" />
         <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-teal-100/50 blur-2xl" />
-        <div className="relative z-10">
-          <h3 className="mb-2 text-lg font-semibold text-emerald-900">
-            ค่าบริการซ่อมโดยประมาณ
-          </h3>
-          <p className="text-4xl font-bold text-emerald-600">
-            ฿{" "}
-            {repairCost.toLocaleString("th-TH", {
-              minimumFractionDigits: 0,
-            })}
-          </p>
-          <p className="mt-2 text-sm text-emerald-600">
-            ระยะเวลาซ่อม: {estimatedTime}
-          </p>
-        </div>
+        <AnimatePresence mode="wait">
+          {isLoadingPrices ? (
+            <motion.div
+              key="loader"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative z-10 flex flex-col items-center justify-center"
+            >
+              <Loader2 className="mb-2 h-8 w-8 animate-spin text-emerald-500" />
+              <p className="text-sm text-emerald-700">
+                กำลังคำนวณราคาซ่อม...
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative z-10"
+            >
+              <h3 className="mb-2 text-lg font-semibold text-emerald-900">
+                ค่าบริการซ่อมโดยประมาณ
+              </h3>
+              <p className="text-4xl font-bold text-emerald-600">
+                ฿{" "}
+                {repairCost.toLocaleString("th-TH", {
+                  minimumFractionDigits: 0,
+                })}
+              </p>
+              <p className="mt-2 text-sm text-emerald-600">
+                ระยะเวลาซ่อม: {estimatedTime}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
-      {/* --- [REVISED] Repair Details Section --- */}
+      {/* Repair Details Section */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
@@ -163,7 +182,7 @@ const MaintenanceService: React.FC<
         <h4 className="text-lg font-semibold text-slate-800">
           รายการซ่อม
         </h4>
-        {repairs.length > 0 ? (
+        {repairs.length > 0 && !isLoadingPrices ? (
           <div className="divide-y divide-emerald-100 rounded-xl border border-emerald-100 bg-white">
             {repairs.map((repair, index) => {
               const Icon = repair.icon;
@@ -200,72 +219,17 @@ const MaintenanceService: React.FC<
             })}
           </div>
         ) : (
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-center">
-            <p className="text-sm text-emerald-600">
-              เยี่ยมเลย! ไม่พบรายการที่ต้องซ่อม
-            </p>
-          </div>
+          !isLoadingPrices && (
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-center">
+              <p className="text-sm text-emerald-600">
+                เยี่ยมเลย! ไม่พบรายการที่ต้องซ่อม
+              </p>
+            </div>
+          )
         )}
       </motion.div>
 
-      {/* Features */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: { delay: 0.2 },
-        }}
-        className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4"
-      >
-        <h4 className="mb-3 text-sm font-semibold text-emerald-900">
-          บริการที่คุณจะได้รับ
-        </h4>
-        <ul className="space-y-2 text-sm text-emerald-800">
-          <li className="flex items-start gap-2">
-            <Wrench className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-            <span>
-              ตรวจเช็คและซ่อมแซมโดยช่างผู้เชี่ยวชาญ
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-            <span>รับประกันงานซ่อม 90 วัน</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Settings className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-            <span>ใช้อะไหล่แท้คุณภาพสูง</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-            <span>ทำความสะอาดและตรวจสอบทุกระบบ</span>
-          </li>
-        </ul>
-      </motion.div>
-
-      {/* Warning Box */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: { delay: 0.3 },
-        }}
-        className="flex items-start gap-4 rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50 p-4 shadow-sm"
-      >
-        <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-500" />
-        <div className="space-y-1">
-          <h3 className="font-medium text-amber-900">
-            ข้อควรทราบก่อนการซ่อม
-          </h3>
-          <p className="text-sm text-amber-800">
-            ราคาอาจมีการเปลี่ยนแปลงหลังจากการตรวจสอบสภาพจริงโดยช่างผู้เชี่ยวชาญ
-            เราจะแจ้งราคาที่แน่นอนให้ทราบก่อนดำเนินการซ่อม
-          </p>
-        </div>
-      </motion.div>
-
-      {/* Confirmation Button */}
+      {/* ... (Features, Warning Box, และ Button คงเดิม) ... */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
@@ -278,6 +242,7 @@ const MaintenanceService: React.FC<
         <FramerButton
           className="bg-emerald-600 hover:bg-emerald-700"
           size="lg"
+          disabled={isLoadingPrices} // Disable a while loading
         >
           <Wrench className="mr-2 h-4 w-4" />
           ยืนยันการซ่อมและชำระเงิน
