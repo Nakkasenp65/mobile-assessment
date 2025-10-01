@@ -61,6 +61,12 @@ const PALETTE = {
     soft: "bg-emerald-50/20 dark:bg-emerald-900/20",
     ring: "ring-emerald-500/20",
   },
+  tradein: {
+    text: "text-cyan-500",
+    borderColor: "border-cyan-500",
+    soft: "bg-cyan-50/20 dark:bg-cyan-900/20",
+    ring: "ring-cyan-500/20",
+  },
   fallback: {
     text: "text-zinc-500",
     borderColor: "border-zinc-500",
@@ -148,6 +154,18 @@ export default function Services({
             );
           }
 
+          if (service.id === "tradein") {
+            return (
+              <TradeInService
+                key={service.id}
+                deviceInfo={deviceInfo}
+                service={service}
+                theme={theme}
+                isSelected={isSelected}
+              />
+            );
+          }
+
           if (service.id === "refinance" && refinancePrice !== undefined) {
             return (
               <RefinanceService
@@ -201,15 +219,6 @@ export default function Services({
                   </div>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
-                  {/* Render services ที่ยังไม่ได้ refactor ที่นี่ */}
-                  {service.id === "tradein" && (
-                    <TradeInService deviceInfo={deviceInfo} tradeInPrice={service.price} />
-                  )}
-                  {/* เพิ่มเงื่อนไขสำหรับ services อื่นๆ ที่เหลือตามต้องการ */}
-                </div>
-              </AccordionContent>
             </AccordionItem>
           );
         })}

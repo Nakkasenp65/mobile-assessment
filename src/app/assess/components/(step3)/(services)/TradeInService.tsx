@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AccordionContent, AccordionTrigger } from "@/components/ui/accordion";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +22,8 @@ import {
   Check,
   Smartphone,
   Handshake, // Icon for Trade-in
+  LucideIcon,
+  TabletSmartphoneIcon,
 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { cn } from "@/lib/utils";
@@ -30,7 +32,20 @@ import { cn } from "@/lib/utils";
 
 interface TradeInServiceProps {
   deviceInfo: DeviceInfo;
-  tradeInPrice: number;
+  service: {
+    id: string;
+    title: string;
+    description: string;
+    icon: LucideIcon;
+    price: number;
+  };
+  theme: {
+    text: string;
+    borderColor: string;
+    soft: string;
+    ring: string;
+  };
+  isSelected: boolean;
 }
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
@@ -57,7 +72,9 @@ const THB = (n: number) =>
 
 // --- Main Component ---
 
-const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
+const TradeInService = ({ deviceInfo, service, theme, isSelected }: TradeInServiceProps) => {
+  const { id, title, description, icon: Icon, price: tradeInPrice } = service;
+
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
@@ -103,27 +120,60 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
   };
 
   return (
-    <>
+    <AccordionItem
+      value={id}
+      className={cn(
+        "rounded-2xl border shadow-sm transition-all duration-300 ease-in-out",
+        isSelected
+          ? `${theme.borderColor} ${theme.soft} ${theme.ring} ring-2`
+          : "border-border bg-card",
+      )}
+    >
       <AccordionTrigger className="w-full cursor-pointer p-4 text-left hover:no-underline">
         <div className="flex w-full items-center gap-4">
           <div
             className={cn(
-              "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
+              "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm dark:bg-zinc-800",
             )}
           >
-            <Handshake className={cn("h-6 w-6", "text-purple-500")} />
+            <TabletSmartphoneIcon className="h-6 w-6 text-white" />
           </div>
           <div className="flex-1 text-left">
-            <h4 className="text-foreground font-semibold">แลกซื้อเครื่องใหม่</h4>
-            <p className="text-muted-foreground text-sm">
-              เปลี่ยนเครื่องเก่าเป็นใหม่ พร้อมรับส่วนลด
-            </p>
+            <h4 className="text-foreground font-semibold">{title}</h4>
+            <p className="text-muted-foreground text-sm">{description}</p>
           </div>
           <div className="ml-2 text-right">
             <p className="text-foreground text-lg font-bold">{THB(tradeInPrice)}</p>
           </div>
         </div>
       </AccordionTrigger>
+      {/* Benefits Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mx-4 mb-4 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50/50 to-cyan-400/50 p-4"
+      >
+        <h4 className="mb-3 text-sm font-semibold text-cyan-900">สิทธิประโยชน์ที่คุณได้รับ</h4>
+        <ul className="space-y-2 text-sm text-cyan-800">
+          <li className="flex items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
+            <span>ลดราคาเครื่องใหม่ทันที ไม่ต้องรอ</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
+            <span>ประเมินราคายุติธรรม โปร่งใส</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
+            <span>รับประกันเครื่องใหม่ 1 ปีเต็ม</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
+            <span>ย้ายข้อมูลให้ฟรี ไม่มีค่าใช้จ่าย</span>
+          </li>
+        </ul>
+      </motion.div>
       <AccordionContent className="px-4 pb-4">
         <div className="mt-2 w-full space-y-6 border-t pt-4 dark:border-zinc-700/50">
           {/* Trade-In Value Display */}
@@ -184,34 +234,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             )}
           </AnimatePresence>
 
-          {/* Benefits Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-4"
-          >
-            <h4 className="mb-3 text-sm font-semibold text-cyan-900">สิทธิประโยชน์ที่คุณได้รับ</h4>
-            <ul className="space-y-2 text-sm text-cyan-800">
-              <li className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
-                <span>ลดราคาเครื่องใหม่ทันที ไม่ต้องรอ</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
-                <span>ประเมินราคายุติธรรม โปร่งใส</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
-                <span>รับประกันเครื่องใหม่ 1 ปีเต็ม</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
-                <span>ย้ายข้อมูลให้ฟรี ไม่มีค่าใช้จ่าย</span>
-              </li>
-            </ul>
-          </motion.div>
-
           {/* Main Form */}
           <motion.div
             initial="initial"
@@ -223,7 +245,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           >
             <motion.div variants={formVariants} className="space-y-4">
               <Label className="block text-lg font-semibold">1. เลือกเครื่องใหม่ที่ต้องการ</Label>
-
               <div className="space-y-2">
                 <Label htmlFor="newDevice-tradein">รุ่นเครื่อง</Label>
                 <Select
@@ -245,7 +266,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="storage-tradein">ความจุ</Label>
@@ -288,7 +308,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
 
             <motion.div variants={formVariants} className="space-y-4">
               <Label className="block text-lg font-semibold">2. กรอกข้อมูลส่วนตัว</Label>
-
               <div className="space-y-2">
                 <Label htmlFor="customerName-tradein">ชื่อ-นามสกุล</Label>
                 <div className="relative">
@@ -302,7 +321,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="phone-tradein">เบอร์โทรศัพท์ติดต่อ</Label>
                 <div className="relative">
@@ -323,7 +341,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
               <Label className="block text-lg font-semibold">
                 3. เลือกสาขาและเวลานัดรับเครื่อง
               </Label>
-
               <div className="space-y-2">
                 <Label htmlFor="store-branch-tradein">สาขา</Label>
                 <Select
@@ -342,7 +359,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="date-tradein">วัน</Label>
@@ -412,7 +428,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           </motion.div>
         </div>
       </AccordionContent>
-    </>
+    </AccordionItem>
   );
 };
 

@@ -3,7 +3,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Banknote, Wrench, CreditCard, ShoppingBag, Handshake } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  Wrench,
+  CreditCard,
+  ShoppingBag,
+  Handshake,
+  TabletSmartphone,
+} from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
@@ -73,6 +81,13 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       title: "ขายฝาก",
       description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
+      price: finalPrice,
+    },
+    {
+      id: "tradein",
+      title: "เทิร์นเครื่อง",
+      description: "นำเครื่องเก่ามาแลกเครื่องใหม่คุ้มๆ",
+      icon: TabletSmartphone,
       price: finalPrice,
     },
     // {

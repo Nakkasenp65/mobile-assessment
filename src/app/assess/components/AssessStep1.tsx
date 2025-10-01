@@ -136,8 +136,7 @@ const AssessStep1 = ({
 
   // [CHIRON] 2. Validation Logic: ผนวกสถานะการยินยอมเข้ากับเงื่อนไขความสมบูรณ์
   // ตรรกะนี้คือ "ผู้รักษาประตู" (Gatekeeper) ที่จะป้องกันไม่ให้ผู้ใช้ไปต่อหากไม่ยอมรับเงื่อนไข
-  const isComplete =
-    isValidBrand && isValidModel && isValidStorage && isUserDeviceOk && isTermsAccepted;
+  const isComplete = isValidBrand && isValidModel && isValidStorage && isUserDeviceOk;
 
   return (
     <motion.div
