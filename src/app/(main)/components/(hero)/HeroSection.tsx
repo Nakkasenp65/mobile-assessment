@@ -1,13 +1,7 @@
 // HeroSection.tsx
 "use client";
 import clsx from "clsx";
-import {
-  PiggyBank,
-  ShieldCheck,
-  Tag,
-  Truck,
-  Sparkles,
-} from "lucide-react";
+import { PiggyBank, ShieldCheck, Tag, Truck, Sparkles } from "lucide-react";
 
 import HeroImageSlider from "./HeroImageSlider";
 import HeroAssessmentForm from "./HeroAssessmentForm";
@@ -16,26 +10,22 @@ const featuresData = [
   {
     icon: ShieldCheck,
     title: "มีมาตรฐาน",
-    description:
-      "ให้ราคาที่เป็นธรรม โปร่งใส ไม่ต้องต่อรองให้เสียเวลา",
+    description: "ให้ราคาที่เป็นธรรม โปร่งใส ไม่ต้องต่อรองให้เสียเวลา",
   },
   {
     icon: Tag,
     title: "ขายได้ราคาดี",
-    description:
-      "ประเมินราคาสูงตามสภาพจริง เหมือนมาขายที่หน้าร้าน",
+    description: "ประเมินราคาสูงตามสภาพจริง เหมือนมาขายที่หน้าร้าน",
   },
   {
     icon: Truck,
     title: "รับเครื่องถึงบ้าน",
-    description:
-      "สะดวกสบายด้วยบริการ Delivery ไม่ต้องเดินทางเอง",
+    description: "สะดวกสบายด้วยบริการ Delivery ไม่ต้องเดินทางเอง",
   },
   {
     icon: PiggyBank,
     title: "ฟรี ไม่มีค่าใช้จ่าย",
-    description:
-      "ทุกขั้นตอนบริการฟรี ไม่มีค่าใช้จ่ายแอบแฝงแน่นอน",
+    description: "ทุกขั้นตอนบริการฟรี ไม่มีค่าใช้จ่ายแอบแฝงแน่นอน",
   },
 ];
 
@@ -47,11 +37,7 @@ const HeroSection = () => {
       {/* CONTAINER */}
       <div className="relative z-20 flex w-full flex-col">
         {/* ส่วนที่ 1: Slider และ Form */}
-        <div
-          className={clsx(
-            "flex w-full flex-col items-center justify-center",
-          )}
-        >
+        <div className={clsx("flex w-full flex-col items-center justify-center")}>
           <div
             className={clsx(
               "container flex w-full flex-col items-center justify-center gap-4 pt-8",

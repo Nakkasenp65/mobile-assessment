@@ -2,35 +2,32 @@
 import React, { useEffect, useRef } from "react";
 import { ServiceOption } from "./AssessStep3";
 import { DeviceInfo, ConditionInfo } from "../../page";
-import PawnService from "./(services)/PawnService";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
-import IcloudService from "./(services)/IcloudService";
+import { Accordion } from "@/components/ui/accordion";
+import { RepairItem } from "@/hooks/useRepairPrices";
+
+// --- Import Service Components ที่ Refactor แล้ว ---
 import SellNowService from "./(services)/SellNowService";
-import MaintenanceService from "./(services)/MaintenanceService";
 import ConsignmentService from "./(services)/ConsignmentService";
-import TradeInService from "./(services)/TradeInService";
 import RefinanceService from "./(services)/RefinanceService";
 import IPhoneExchangeService from "./(services)/IPhoneExchangeService";
-import { RepairItem } from "@/hooks/useRepairPrices"; //  เพิ่มการ import RepairItem
+
+// --- Import Service Components ที่ยังไม่ได้ Refactor ---
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import TradeInService from "./(services)/TradeInService";
+import { cn } from "@/lib/utils";
 
 interface ServicesProps {
   services: ServiceOption[];
   selectedService: string;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
   deviceInfo: DeviceInfo;
-  conditionInfo: ConditionInfo;
-  pawnPrice: number;
+  conditionInfo: ConditionInfo; // ยังคงเก็บไว้เพื่อส่งต่อให้ component ที่ยังไม่ได้แก้
+  pawnPrice: number; // ยังคงเก็บไว้เพื่อส่งต่อ
   refinancePrice?: number;
   exchangePrice?: number;
-  repairs: RepairItem[]; //  เพิ่ม props
-  totalRepairCost: number; //  เพิ่ม props
-  isLoadingRepairPrices: boolean; //  เพิ่ม props
+  repairs: RepairItem[];
+  totalRepairCost: number;
+  isLoadingRepairPrices: boolean;
 }
 
 const PALETTE = {
@@ -46,7 +43,6 @@ const PALETTE = {
     soft: "bg-sky-50/20 dark:bg-sky-900/20",
     ring: "ring-sky-500/20",
   },
-
   refinance: {
     text: "text-purple-500",
     borderColor: "border-purple-500",
@@ -92,13 +88,8 @@ export default function Services({
   selectedService,
   setSelectedService,
   deviceInfo,
-  conditionInfo,
-  pawnPrice,
   refinancePrice,
   exchangePrice,
-  repairs,
-  totalRepairCost,
-  isLoadingRepairPrices,
 }: ServicesProps) {
   const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -132,6 +123,56 @@ export default function Services({
           const theme = getTheme(service.id);
           const Icon = service.icon;
 
+          // --- Logic การ Render แบบใหม่ ---
+          if (service.id === "sell") {
+            return (
+              <SellNowService
+                key={service.id}
+                deviceInfo={deviceInfo}
+                service={service}
+                theme={theme}
+                isSelected={isSelected}
+              />
+            );
+          }
+
+          if (service.id === "consignment") {
+            return (
+              <ConsignmentService
+                key={service.id}
+                deviceInfo={deviceInfo}
+                service={service}
+                theme={theme}
+                isSelected={isSelected}
+              />
+            );
+          }
+
+          if (service.id === "refinance" && refinancePrice !== undefined) {
+            return (
+              <RefinanceService
+                key={service.id}
+                deviceInfo={deviceInfo}
+                service={service}
+                theme={theme}
+                isSelected={isSelected}
+              />
+            );
+          }
+
+          if (service.id === "iphone-exchange" && exchangePrice !== undefined) {
+            return (
+              <IPhoneExchangeService
+                key={service.id}
+                deviceInfo={deviceInfo}
+                service={service}
+                theme={theme}
+                isSelected={isSelected}
+              />
+            );
+          }
+
+          // --- Fallback สำหรับ Components ที่ยังไม่ได้ Refactor ---
           return (
             <AccordionItem
               key={service.id}
@@ -148,19 +189,13 @@ export default function Services({
             >
               <AccordionTrigger className="w-full cursor-pointer p-4 text-left hover:no-underline">
                 <div className="flex w-full items-center gap-4">
-                  <div
-                    className={cn(
-                      "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
-                    )}
-                  >
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
                     <Icon className={cn("h-6 w-6", theme.text)} />
                   </div>
-
                   <div className="flex-1 text-left">
                     <h4 className="text-foreground font-semibold">{service.title}</h4>
                     <p className="text-muted-foreground text-sm">{service.description}</p>
                   </div>
-
                   <div className="ml-2 text-right">
                     <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
                   </div>
@@ -168,29 +203,11 @@ export default function Services({
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
                 <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
-                  {service.id === "sell" && (
-                    <SellNowService deviceInfo={deviceInfo} sellPrice={service.price} />
-                  )}
-                  {/* {service.id === "maintenance" && (
-                    <MaintenanceService
-                      deviceInfo={deviceInfo}
-                      repairs={repairs}
-                      totalCost={totalRepairCost}
-                      isLoading={isLoadingRepairPrices}
-                    />
-                  )} */}
+                  {/* Render services ที่ยังไม่ได้ refactor ที่นี่ */}
                   {service.id === "tradein" && (
                     <TradeInService deviceInfo={deviceInfo} tradeInPrice={service.price} />
                   )}
-                  {service.id === "consignment" && (
-                    <ConsignmentService deviceInfo={deviceInfo} consignmentPrice={service.price} />
-                  )}
-                  {service.id === "refinance" && refinancePrice !== undefined && (
-                    <RefinanceService deviceInfo={deviceInfo} refinancePrice={refinancePrice} />
-                  )}
-                  {service.id === "iphone-exchange" && exchangePrice !== undefined && (
-                    <IPhoneExchangeService deviceInfo={deviceInfo} exchangePrice={exchangePrice} />
-                  )}
+                  {/* เพิ่มเงื่อนไขสำหรับ services อื่นๆ ที่เหลือตามต้องการ */}
                 </div>
               </AccordionContent>
             </AccordionItem>

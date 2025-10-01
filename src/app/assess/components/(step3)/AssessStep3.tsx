@@ -3,14 +3,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  Banknote,
-  Wrench,
-  CreditCard,
-  ShoppingBag,
-  Handshake,
-} from "lucide-react";
+import { ArrowLeft, Banknote, Wrench, CreditCard, ShoppingBag, Handshake } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
@@ -34,29 +27,24 @@ export interface ServiceOption {
   price: number;
 }
 
-const AssessStep3 = ({
-  deviceInfo,
-  conditionInfo,
-  onBack,
-}: AssessStep3Props) => {
+const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
   const {
     totalRepairCost,
     repairs,
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
 
-  const [selectedService, setSelectedService] =
-    useState<string>("sell");
+  const [selectedService, setSelectedService] = useState<string>("sell");
 
-  const {
-    finalPrice,
-    grade,
-    gradeTextStyle,
-    gradeNeonColor,
-  } = usePriceCalculation(deviceInfo, conditionInfo);
+  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } = usePriceCalculation(
+    deviceInfo,
+    conditionInfo,
+  );
 
-  const { data: mobileData, isLoading: isImageLoading } =
-    useMobile(deviceInfo.brand, deviceInfo.model);
+  const { data: mobileData, isLoading: isImageLoading } = useMobile(
+    deviceInfo.brand,
+    deviceInfo.model,
+  );
 
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
@@ -68,12 +56,8 @@ const AssessStep3 = ({
       hour12: false,
     }) + " น.";
 
-  const calculatedRefinancePrice = Math.round(
-    finalPrice * 0.5,
-  );
-  const calculatedExchangePrice = Math.round(
-    finalPrice * 0.7,
-  );
+  const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
+  const calculatedExchangePrice = Math.round(finalPrice * 0.7);
   const calculatedPawnPrice = Math.round(finalPrice * 0.7);
 
   const baseServices: ServiceOption[] = [
@@ -87,8 +71,7 @@ const AssessStep3 = ({
     {
       id: "consignment",
       title: "ขายฝาก",
-      description:
-        "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
+      description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
       price: finalPrice,
     },
@@ -126,8 +109,7 @@ const AssessStep3 = ({
           {
             id: "iphone-exchange",
             title: "ไอโฟนแลกเงิน",
-            description:
-              "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
+            description: "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
             icon: Handshake,
             price: calculatedExchangePrice,
           },
@@ -137,9 +119,7 @@ const AssessStep3 = ({
 
   const handleConfirm = () => {
     if (selectedService) {
-      alert(
-        "ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง",
-      );
+      alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
     }
   };
 
@@ -150,9 +130,7 @@ const AssessStep3 = ({
   return (
     <div className="flex w-full flex-col gap-8 md:p-8">
       <div className="text-center">
-        <h2 className="text-foreground mt-8 text-3xl font-bold">
-          ผลประเมินสภาพโทรศัพท์
-        </h2>
+        <h2 className="text-foreground mt-8 text-3xl font-bold">ผลประเมินสภาพโทรศัพท์</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-8">
@@ -198,9 +176,7 @@ const AssessStep3 = ({
           className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-xl border bg-white px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="ml-2 hidden font-semibold sm:inline">
-            ย้อนกลับ
-          </span>
+          <span className="ml-2 hidden font-semibold sm:inline">ย้อนกลับ</span>
         </FramerButton>
 
         <FramerButton

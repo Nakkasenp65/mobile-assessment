@@ -16,18 +16,20 @@ interface MaintenanceServiceProps {
   isLoading: boolean;
 }
 
-const MaintenanceService: React.FC<
-  MaintenanceServiceProps
-> = ({ deviceInfo, repairs, totalCost, isLoading }) => {
+const MaintenanceService: React.FC<MaintenanceServiceProps> = ({
+  deviceInfo,
+  repairs,
+  totalCost,
+  isLoading,
+}) => {
   // ตรรกะเล็กน้อยที่ยังคงอยู่ภายในเป็นเพียงการคำนวณเพื่อการแสดงผลเท่านั้น
   // ไม่เกี่ยวข้องกับ Business Logic หลัก
-  const estimatedTime =
-    repairs.length > 2 ? "3-5 วันทำการ" : "2-3 วันทำการ";
+  const estimatedTime = repairs.length > 2 ? "3-5 วันทำการ" : "2-3 วันทำการ";
 
   // CHIRON: Structural Engineer - เปลี่ยน Root Element จาก <main> เป็น <section>
   // เพื่อบ่งบอกว่านี่คือส่วนหนึ่งของเอกสารที่ใหญ่กว่า ไม่ใช่หน้าหลักอีกต่อไป
   return (
-    <section className="w-full space-y-4 rounded-2xl bg-white p-4 shadow-sm dark:bg-zinc-800">
+    <section className="flex w-full flex-col gap-4 bg-white dark:bg-zinc-800">
       {/* หัวข้อที่ชัดเจนเพื่อแบ่งส่วนข้อมูลภายใน AssessmentLedger */}
       <h2 className="text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
         สรุปค่าบริการซ่อม
@@ -55,9 +57,7 @@ const MaintenanceService: React.FC<
               className="relative z-10 flex flex-col items-center justify-center"
             >
               <Loader2 className="mb-2 h-8 w-8 animate-spin text-slate-500" />
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                กำลังคำนวณราคาซ่อม...
-              </p>
+              <p className="text-sm text-slate-600 dark:text-zinc-400">กำลังคำนวณราคาซ่อม...</p>
             </motion.div>
           ) : (
             <motion.div
@@ -94,38 +94,17 @@ const MaintenanceService: React.FC<
         }}
         className="space-y-3 pt-2"
       >
-        <h4 className="text-base font-semibold text-slate-800 dark:text-zinc-200">
-          รายการซ่อม
-        </h4>
+        <h4 className="text-base font-semibold text-slate-800 dark:text-zinc-200">รายการซ่อม</h4>
         {repairs?.length > 0 && !isLoading ? (
-          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <div className="flex flex-col gap-2 rounded-xl border bg-white p-3 dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50">
             {repairs.map((repair, index) => {
-              const Icon = repair.icon;
               return (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 p-3"
-                >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700">
-                    <Icon className="h-5 w-5 text-slate-600 dark:text-zinc-300" />
-                  </div>
+                <div key={index} className="flex">
                   <div className="flex-grow">
-                    <p className="font-medium text-slate-800 dark:text-zinc-100">
-                      {repair.part}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xs",
-                        repair.condition === "ซ่อมแซม"
-                          ? "text-amber-600"
-                          : "text-red-600",
-                      )}
-                    >
-                      {repair.condition}
-                    </p>
+                    <p className="text-slate-800 dark:text-zinc-100">{repair.part}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-slate-800 dark:text-zinc-100">
+                    <p className="text-slate-800 dark:text-zinc-100">
                       ฿{repair.cost.toLocaleString()}
                     </p>
                   </div>

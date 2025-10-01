@@ -129,21 +129,13 @@ const MobileMenu = ({
             {/* Header with gradient */}
             <div className="gradient-primary relative p-4">
               <div className="flex items-center justify-between">
-                <Link
-                  href="/"
-                  onClick={closeMenu}
-                  className="flex items-center space-x-3"
-                >
+                <Link href="/" onClick={closeMenu} className="flex items-center space-x-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
                     <Smartphone className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <span className="text-xl font-bold text-white">
-                      OK Mobile
-                    </span>
-                    <p className="text-xs text-white/80">
-                      ซื้อ-ขายมือถือออนไลน์
-                    </p>
+                    <span className="text-xl font-bold text-white">OK Mobile</span>
+                    <p className="text-xs text-white/80">ซื้อ-ขายมือถือออนไลน์</p>
                   </div>
                 </Link>
                 <button
@@ -293,8 +285,7 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () =>
-      window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navItems = [
@@ -323,9 +314,7 @@ const Navbar = () => {
                 <Smartphone className="h-6 w-6 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-foreground text-lg font-bold">
-                  OK Mobile
-                </span>
+                <span className="text-foreground text-lg font-bold">OK Mobile</span>
                 <span className="text-muted-foreground hidden text-xs sm:block">
                   ซื้อ-ขายมือถือออนไลน์
                 </span>
@@ -376,10 +365,7 @@ const Navbar = () => {
       </nav>
 
       {/* Render Mobile Menu */}
-      <MobileMenu
-        isOpen={isMenuOpen}
-        setIsOpen={setIsMenuOpen}
-      />
+      <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
     </>
   );
 };

@@ -18,33 +18,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Box, Smartphone } from "lucide-react";
+// [CHIRON] Import ไอคอนที่จำเป็นสำหรับ Checkbox
+import { Box, Smartphone, Check } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
 import FramerButton from "../../../components/ui/framer/FramerButton";
 import Image from "next/image";
+// [CHIRON] Import Checkbox จาก Radix UI โดยตรง
+import * as Checkbox from "@radix-ui/react-checkbox";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onDeviceUpdate: (info: DeviceInfo) => void;
-  onConditionUpdate: (
-    info:
-      | ConditionInfo
-      | ((prev: ConditionInfo) => ConditionInfo),
-  ) => void;
+  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
   onUserDeviceUpdate: (value: boolean) => void;
 }
-
-// const BATTERY_HEALTH_OPTIONS = [
-//   "100%",
-//   "95% - 99%",
-//   "90% - 94%",
-//   "85% - 89%",
-//   "ต่ำกว่า 85%",
-//   "เปลี่ยนแบตเตอรี่",
-// ];
 
 const AssessStep1 = ({
   deviceInfo,
@@ -54,55 +44,48 @@ const AssessStep1 = ({
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
-  const [localInfo, setLocalInfo] =
-    useState<DeviceInfo>(deviceInfo);
+  const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { isDesktop } = useDeviceDetection();
 
-  const [availableModels, setAvailableModels] = useState<
-    string[]
-  >(() => {
+  // [CHIRON] 1. State Management: เพิ่ม state สำหรับการยอมรับเงื่อนไข
+  // สถานะนี้เป็นส่วนสำคัญของความสมบูรณ์ของฟอร์ม
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+
+  const [availableModels, setAvailableModels] = useState<string[]>(() => {
     if (deviceInfo.brand) {
       return PHONE_DATA.models[deviceInfo.brand] ?? [];
     }
     return [];
   });
 
-  const [availableStorage, setAvailableStorage] = useState<
-    string[]
-  >(() => {
+  const [availableStorage, setAvailableStorage] = useState<string[]>(() => {
     if (deviceInfo.model) {
       return PHONE_DATA.storage[deviceInfo.model] ?? [];
     }
     return [];
   });
 
-  const { data: productData, isLoading: isImageLoading } =
-    useMobile(localInfo.brand, localInfo.model);
+  const { data: productData, isLoading: isImageLoading } = useMobile(
+    localInfo.brand,
+    localInfo.model,
+  );
 
-  console.log(localInfo);
-
-  const [userDeviceSelection, setUserDeviceSelection] =
-    useState<"this_device" | "other_device" | null>(
-      isDesktop ? "other_device" : null,
-    );
+  const [userDeviceSelection, setUserDeviceSelection] = useState<
+    "this_device" | "other_device" | null
+  >(isDesktop ? "other_device" : null);
 
   const prevBrandRef = useRef(localInfo.brand);
   const prevModelRef = useRef(localInfo.model);
 
   useEffect(() => {
-    if (
-      localInfo.brand &&
-      localInfo.brand !== prevBrandRef.current
-    ) {
-      const nextModels =
-        PHONE_DATA.models[localInfo.brand] ?? [];
+    if (localInfo.brand && localInfo.brand !== prevBrandRef.current) {
+      const nextModels = PHONE_DATA.models[localInfo.brand] ?? [];
       setAvailableModels(nextModels);
       setLocalInfo((prev) => ({
         ...prev,
         model: "",
         storage: "",
       }));
-      // Reset battery health in conditionInfo when brand changes
       if (localInfo.brand !== "Apple") {
         onConditionUpdate((prev) => ({
           ...prev,
@@ -119,12 +102,8 @@ const AssessStep1 = ({
   }, [localInfo.brand, onConditionUpdate]);
 
   useEffect(() => {
-    if (
-      localInfo.model &&
-      localInfo.model !== prevModelRef.current
-    ) {
-      const nextStorage =
-        PHONE_DATA.storage[localInfo.model] ?? [];
+    if (localInfo.model && localInfo.model !== prevModelRef.current) {
+      const nextStorage = PHONE_DATA.storage[localInfo.model] ?? [];
       setAvailableStorage(nextStorage);
       setLocalInfo((prev) => ({ ...prev, storage: "" }));
       if (nextStorage.length === 1)
@@ -140,61 +119,37 @@ const AssessStep1 = ({
     onDeviceUpdate(localInfo);
   }, [localInfo, onDeviceUpdate]);
 
-  const handleSelectChange = (
-    field: keyof DeviceInfo,
-    value: string,
-  ) => {
+  const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBatteryHealthChange = (value: string) => {
-    onConditionUpdate((prev) => ({
-      ...prev,
-      batteryHealth: value,
-    }));
-  };
-
-  const handleUserDeviceSelect = (
-    selection: "this_device" | "other_device",
-  ) => {
+  const handleUserDeviceSelect = (selection: "this_device" | "other_device") => {
     setUserDeviceSelection(selection);
     onUserDeviceUpdate(selection === "this_device");
   };
 
-  const isAppleDevice = localInfo.brand === "Apple";
   const allBrands = PHONE_DATA.brands.map((b) => b.id);
   const isValidBrand = allBrands.includes(localInfo.brand);
-  const isValidModel =
-    isValidBrand &&
-    availableModels.includes(localInfo.model);
-  const isValidStorage =
-    isValidModel &&
-    availableStorage.includes(localInfo.storage);
-  // const isValidBattery =
-  // !isAppleDevice || !!conditionInfo.batteryHealth;
-  const isUserDeviceOk =
-    isDesktop || userDeviceSelection !== null;
+  const isValidModel = isValidBrand && availableModels.includes(localInfo.model);
+  const isValidStorage = isValidModel && availableStorage.includes(localInfo.storage);
+  const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
+
+  // [CHIRON] 2. Validation Logic: ผนวกสถานะการยินยอมเข้ากับเงื่อนไขความสมบูรณ์
+  // ตรรกะนี้คือ "ผู้รักษาประตู" (Gatekeeper) ที่จะป้องกันไม่ให้ผู้ใช้ไปต่อหากไม่ยอมรับเงื่อนไข
   const isComplete =
-    isValidBrand &&
-    isValidModel &&
-    isValidStorage &&
-    // isValidBattery &&
-    isUserDeviceOk;
+    isValidBrand && isValidModel && isValidStorage && isUserDeviceOk && isTermsAccepted;
 
   return (
     <motion.div
-      className="mx-auto flex h-full max-w-2xl flex-col rounded-2xl p-6"
+      className="mx-auto flex h-full max-w-2xl flex-col gap-8 rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
-      <div className="mb-8 text-center">
-        <h2 className="text-foreground mb-2 text-3xl font-bold">
-          ระบุรุ่นมือถือของคุณ
-        </h2>
+      <div className="text-center">
+        <h2 className="text-foreground mb-2 text-3xl font-bold">ระบุรุ่นมือถือของคุณ</h2>
         <p className="text-muted-foreground text-sm md:text-base">
-          เลือกยี่ห้อ รุ่น
-          และความจุของเครื่องที่ต้องการประเมิน
+          เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน
         </p>
       </div>
 
@@ -205,9 +160,7 @@ const AssessStep1 = ({
           </label>
           <div className="grid grid-cols-2 gap-4">
             <motion.button
-              onClick={() =>
-                handleUserDeviceSelect("this_device")
-              }
+              onClick={() => handleUserDeviceSelect("this_device")}
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "this_device"
@@ -215,20 +168,14 @@ const AssessStep1 = ({
                   : "border-border bg-accent/50 hover:border-primary/50",
               )}
               role="button"
-              aria-pressed={
-                userDeviceSelection === "this_device"
-              }
+              aria-pressed={userDeviceSelection === "this_device"}
               whileTap={{ scale: 0.97 }}
             >
               <Smartphone className="text-primary h-8 w-8" />
-              <span className="text-foreground font-medium">
-                ประเมินเครื่องนี้
-              </span>
+              <span className="text-foreground font-medium">ประเมินเครื่องนี้</span>
             </motion.button>
             <motion.button
-              onClick={() =>
-                handleUserDeviceSelect("other_device")
-              }
+              onClick={() => handleUserDeviceSelect("other_device")}
               className={cn(
                 "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all",
                 userDeviceSelection === "other_device"
@@ -236,17 +183,11 @@ const AssessStep1 = ({
                   : "border-border bg-accent/50 hover:border-secondary/50",
               )}
               role="button"
-              aria-pressed={
-                userDeviceSelection === "other_device"
-              }
+              aria-pressed={userDeviceSelection === "other_device"}
               whileTap={{ scale: 0.97 }}
             >
-              <Box
-                className={cn("text-secondary h-8 w-8")}
-              />
-              <span className="text-foreground font-medium">
-                ประเมินเครื่องอื่น
-              </span>
+              <Box className={cn("text-secondary h-8 w-8")} />
+              <span className="text-foreground font-medium">ประเมินเครื่องอื่น</span>
             </motion.button>
           </div>
         </div>
@@ -259,14 +200,11 @@ const AssessStep1 = ({
           </label>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {PHONE_DATA.brands.map((brand) => {
-              const isSelected =
-                localInfo.brand === brand.id;
+              const isSelected = localInfo.brand === brand.id;
               return (
                 <button
                   key={brand.id}
-                  onClick={() =>
-                    handleSelectChange("brand", brand.id)
-                  }
+                  onClick={() => handleSelectChange("brand", brand.id)}
                   className={cn(
                     "bg-card flex h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all duration-200",
                     isSelected
@@ -289,9 +227,7 @@ const AssessStep1 = ({
                   <span
                     className={cn(
                       "text-sm font-semibold",
-                      isSelected
-                        ? "text-secondary"
-                        : "text-muted-foreground",
+                      isSelected ? "text-secondary" : "text-muted-foreground",
                     )}
                   >
                     {brand.name}
@@ -323,9 +259,7 @@ const AssessStep1 = ({
                   รุ่น *
                 </label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("model", value)
-                  }
+                  onValueChange={(value) => handleSelectChange("model", value)}
                   value={localInfo.model}
                 >
                   <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
@@ -335,10 +269,7 @@ const AssessStep1 = ({
                     <SelectGroup>
                       <SelectLabel>รุ่น</SelectLabel>
                       {availableModels.map((model) => (
-                        <SelectItem
-                          key={model}
-                          value={model}
-                        >
+                        <SelectItem key={model} value={model}>
                           {model}
                         </SelectItem>
                       ))}
@@ -351,9 +282,7 @@ const AssessStep1 = ({
                   ความจุ *
                 </label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("storage", value)
-                  }
+                  onValueChange={(value) => handleSelectChange("storage", value)}
                   value={localInfo.storage}
                   disabled={!localInfo.model}
                 >
@@ -364,10 +293,7 @@ const AssessStep1 = ({
                     <SelectGroup>
                       <SelectLabel>ความจุ</SelectLabel>
                       {availableStorage.map((storage) => (
-                        <SelectItem
-                          key={storage}
-                          value={storage}
-                        >
+                        <SelectItem key={storage} value={storage}>
                           {storage}
                         </SelectItem>
                       ))}
@@ -375,42 +301,6 @@ const AssessStep1 = ({
                   </SelectContent>
                 </Select>
               </div>
-              {/* {isAppleDevice && (
-                <div>
-                  <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
-                    สุขภาพแบตเตอรี่ *
-                  </label>
-                  <Select
-                    onValueChange={
-                      handleBatteryHealthChange
-                    }
-                    value={
-                      conditionInfo.batteryHealth || ""
-                    }
-                  >
-                    <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
-                      <SelectValue placeholder="เลือกเปอร์เซ็นต์แบตเตอรี่" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>
-                          สุขภาพแบตเตอรี่
-                        </SelectLabel>
-                        {BATTERY_HEALTH_OPTIONS.map(
-                          (health) => (
-                            <SelectItem
-                              key={health}
-                              value={health}
-                            >
-                              {health}
-                            </SelectItem>
-                          ),
-                        )}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )} */}
             </motion.div>
           )}
         </AnimatePresence>
@@ -418,10 +308,7 @@ const AssessStep1 = ({
         <div
           className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
           style={{
-            height:
-              isImageLoading || productData?.image_url
-                ? "12rem"
-                : "3rem",
+            height: isImageLoading || productData?.image_url ? "12rem" : "3rem",
           }}
         >
           <AnimatePresence mode="wait">
@@ -456,6 +343,24 @@ const AssessStep1 = ({
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      {/* [CHIRON] 3. UI Implementation: โครงสร้าง Checkbox ที่สมบูรณ์ */}
+      <div className="flex items-center">
+        <label
+          htmlFor="terms"
+          className="text-muted-foreground w-full text-center text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          เมื่อประเมินราคา คุณยอมรับ{" "}
+          <a href="/privacy" className="text-primary hover:text-primary/80 underline">
+            นโยบายความเป็นส่วนตัว
+          </a>{" "}
+          และ{" "}
+          <a href="/terms" className="text-primary hover:text-primary/80 underline">
+            ข้อกำหนดและเงื่อนไข
+          </a>{" "}
+          ของเรา
+        </label>
       </div>
 
       <div className="mt-8 flex justify-end">

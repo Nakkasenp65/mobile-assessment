@@ -1,10 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  FormEvent,
-  KeyboardEvent,
-} from "react";
+import React, { useState, FormEvent, KeyboardEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import Layout from "../../components/Layout/Layout";
@@ -14,10 +10,7 @@ import InputPhoneNumber from "./components/InputPhoneNumber";
 import InputOTP from "./components/InputOTP";
 import ResultsView from "./components/ResultView";
 
-type AssessmentStatus =
-  | "completed"
-  | "pending"
-  | "in-progress";
+type AssessmentStatus = "completed" | "pending" | "in-progress";
 
 interface AssessmentRecord {
   id: string;
@@ -45,8 +38,7 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Apple",
       model: "iPhone 15 Pro",
       storage: "256GB",
-      imageUrl:
-        "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
+      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "completed",
     estimatedValue: 28500,
@@ -61,8 +53,7 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Samsung",
       model: "Galaxy S23 Ultra",
       storage: "512GB",
-      imageUrl:
-        "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
+      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "completed",
     estimatedValue: 19800,
@@ -77,8 +68,7 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Apple",
       model: "iPhone 13",
       storage: "128GB",
-      imageUrl:
-        "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
+      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "in-progress",
     estimatedValue: 6000,
@@ -93,8 +83,7 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Google",
       model: "Pixel 8 Pro",
       storage: "256GB",
-      imageUrl:
-        "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
+      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "pending",
     estimatedValue: 21000,
@@ -103,44 +92,31 @@ const mockUserAssessments: AssessmentRecord[] = [
 ];
 
 export default function MyAssessmentsPage() {
-  const [step, setStep] = useState<
-    "enter-phone" | "enter-otp" | "show-results"
-  >("enter-phone");
+  const [step, setStep] = useState<"enter-phone" | "enter-otp" | "show-results">("enter-phone");
 
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState<string[]>(
-    new Array(6).fill(""),
-  );
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userAssessments, setUserAssessments] = useState<
-    AssessmentRecord[]
-  >([]);
+  const [userAssessments, setUserAssessments] = useState<AssessmentRecord[]>([]);
 
-  const handlePhoneSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handlePhoneSubmit = (e?: FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     setTimeout(() => {
       setIsLoading(false);
       setStep("enter-otp");
     }, 1500);
   };
 
-  const handleOtpSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleOtpSubmit = (e?: FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     setError(null);
     const fullOtp = otp.join("");
-    console.log(
-      "Verifying OTP:",
-      fullOtp,
-      "for number:",
-      phoneNumber,
-    );
-
+    console.log("Verifying OTP:", fullOtp, "for number:", phoneNumber);
     setTimeout(() => {
       setUserAssessments(mockUserAssessments);
       setIsLoading(false);
@@ -155,10 +131,7 @@ export default function MyAssessmentsPage() {
     setUserAssessments([]);
   };
 
-  const handleOtpChange = (
-    element: HTMLInputElement,
-    index: number,
-  ) => {
+  const handleOtpChange = (element: HTMLInputElement, index: number) => {
     const value = element.value;
     if (!/^[0-9]*$/.test(value)) return;
 
@@ -167,21 +140,16 @@ export default function MyAssessmentsPage() {
     setOtp(newOtp);
 
     if (value && index < 5) {
-      const nextInput =
-        element.nextElementSibling as HTMLInputElement;
+      const nextInput = element.nextElementSibling as HTMLInputElement;
       if (nextInput) {
         nextInput.focus();
       }
     }
   };
 
-  const handleOtpKeyDown = (
-    e: KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
+  const handleOtpKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = e.currentTarget
-        .previousElementSibling as HTMLInputElement;
+      const prevInput = e.currentTarget.previousElementSibling as HTMLInputElement;
       if (prevInput) {
         prevInput.focus();
       }
@@ -196,6 +164,7 @@ export default function MyAssessmentsPage() {
             phoneNumber={phoneNumber}
             onPhoneNumberChange={setPhoneNumber}
             onSubmit={handlePhoneSubmit}
+            isLoading={isLoading}
           />
         );
       case "enter-otp":
@@ -226,10 +195,8 @@ export default function MyAssessmentsPage() {
   return (
     <Layout>
       <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-center">
-          <AnimatePresence mode="wait">
-            {renderContent()}
-          </AnimatePresence>
+        <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-start sm:pt-32">
+          <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
           <AnimatePresence>
             {error && !isLoading && (
               <motion.div

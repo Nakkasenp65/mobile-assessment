@@ -90,10 +90,7 @@ const TRANSLATION_MAP: Record<string, string> = {
 
 // --- Helper Function ---
 // CHIRON: ฟังก์ชันเล็กๆ ที่มีหน้าที่เดียว (Single Responsibility) ช่วยลดความซับซ้อนของตรรกะใน JSX
-const isConsideredPassed = (
-  key: string,
-  value: string,
-): boolean => {
+const isConsideredPassed = (key: string, value: string): boolean => {
   const positiveValues = [
     "passed",
     "perfect",
@@ -106,21 +103,13 @@ const isConsideredPassed = (
     "active_long",
   ];
   if (positiveValues.includes(value)) return true;
-  if (key === "touchScreen" && parseInt(value) >= 95)
-    return true;
+  if (key === "touchScreen" && parseInt(value) >= 95) return true;
   return false;
 };
 
 // --- Sub-component: TestItem ---
 // CHIRON: Component ย่อยสำหรับแสดงผลการทดสอบแต่ละรายการ ทำให้โค้ดหลักอ่านง่ายขึ้น
-const TestItem = ({
-  itemKey,
-  itemValue,
-}: {
-  itemKey: string;
-  itemValue: string;
-}) => {
-  const label = LABEL_MAP[itemKey] || itemKey;
+const TestItem = ({ itemKey, itemValue }: { itemKey: string; itemValue: string }) => {
   const Icon = ICON_MAP[itemKey];
   const isPassed = isConsideredPassed(itemKey, itemValue);
 
@@ -138,12 +127,7 @@ const TestItem = ({
       <div className="relative flex-shrink-0">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm md:h-11 md:w-11">
           <Icon
-            className={cn(
-              "h-5 w-5 md:h-6 md:w-6",
-              isPassed
-                ? "text-slate-600"
-                : "text-orange-500",
-            )}
+            className={cn("h-5 w-5 md:h-6 md:w-6", isPassed ? "text-slate-600" : "text-orange-500")}
           />
         </div>
         <div
@@ -153,33 +137,22 @@ const TestItem = ({
           )}
         >
           {isPassed ? (
-            <CheckCircle
-              className="h-2.5 w-2.5 text-white md:h-3 md:w-3"
-              strokeWidth={3}
-            />
+            <CheckCircle className="h-2.5 w-2.5 text-white md:h-3 md:w-3" strokeWidth={3} />
           ) : (
-            <AlertTriangleIcon
-              className="h-2 w-2 text-white md:h-2.5 md:w-2.5"
-              strokeWidth={3}
-            />
+            <AlertTriangleIcon className="h-2 w-2 text-white md:h-2.5 md:w-2.5" strokeWidth={3} />
           )}
         </div>
       </div>
       <div className="flex flex-col">
         <span
           className={cn(
-            "text-sm font-semibold lg:text-base",
+            "text-sm font-semibold sm:w-max",
             isPassed ? "text-slate-700" : "text-orange-800",
           )}
         >
           {LABEL_MAP[itemKey] || itemKey}
         </span>
-        <span
-          className={cn(
-            "text-xs",
-            isPassed ? "text-slate-500" : "text-orange-600",
-          )}
-        >
+        <span className={cn("text-xs", isPassed ? "text-slate-500" : "text-orange-600")}>
           {itemValue}
         </span>
       </div>
@@ -189,17 +162,10 @@ const TestItem = ({
 
 // --- Sub-component: GeneralInfoItem ---
 // CHIRON: Component ย่อยสำหรับข้อมูลทั่วไป ช่วยลดการเขียนโค้ดซ้ำซ้อน
-const GeneralInfoItem = ({
-  itemKey,
-  itemValue,
-}: {
-  itemKey: string;
-  itemValue: string;
-}) => {
+const GeneralInfoItem = ({ itemKey, itemValue }: { itemKey: string; itemValue: string }) => {
   const Icon = ICON_MAP[itemKey];
   const label = LABEL_MAP[itemKey];
-  const translatedValue =
-    TRANSLATION_MAP[itemValue] || itemValue;
+  const translatedValue = TRANSLATION_MAP[itemValue] || itemValue;
 
   if (!itemValue || !Icon) return null;
 
@@ -208,9 +174,7 @@ const GeneralInfoItem = ({
       <Icon className="h-5 w-5 flex-shrink-0 text-slate-500" />
       <div className="flex w-full justify-between text-sm">
         <span className="text-slate-600">{label}:</span>
-        <span className="font-semibold text-slate-800">
-          {translatedValue}
-        </span>
+        <span className="font-semibold text-slate-800">{translatedValue}</span>
       </div>
     </div>
   );
@@ -237,33 +201,18 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
 }) => {
   const allInfo = { ...deviceInfo, ...conditionInfo };
 
-  // CHIRON: แยกแยะประเภทของข้อมูลเพื่อการแสดงผลที่แตกต่างกัน
-  const generalInfoKeys = [
-    "modelType",
-    "warranty",
-    "accessories",
-  ];
+  const generalInfoKeys = ["modelType", "warranty", "accessories"];
   const conditionKeys = Object.keys(allInfo).filter(
     (key) =>
       allInfo[key as keyof typeof allInfo] &&
-      ![
-        "brand",
-        "model",
-        "storage",
-        ...generalInfoKeys,
-      ].includes(key),
+      !["brand", "model", "storage", ...generalInfoKeys].includes(key),
   );
 
   return (
     // CHIRON: Root element ที่ครอบคลุมทั้งสองส่วนหลัก (รายละเอียดสภาพ และ ค่าซ่อม)
     <div className="w-full space-y-6">
       {/* ส่วนที่ 1: Accordion แสดงรายละเอียดสภาพเครื่อง */}
-      <Accordion
-        type="single"
-        collapsible
-        className="w-full"
-        defaultValue="details"
-      >
+      <Accordion type="single" collapsible className="w-full" defaultValue="details">
         <AccordionItem
           value="details"
           className="overflow-hidden rounded-2xl border-none bg-white shadow-sm dark:bg-zinc-800"
@@ -279,39 +228,36 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
             </div>
           </AccordionTrigger>
 
-          <AccordionContent className="p-4 pt-0">
-            <div className="rounded-2xl bg-white p-4">
+          <AccordionContent className="flex flex-col gap-6 p-4">
+            {/* ข้อมูลเครื่องโดยทั่วไป */}
+            <div className="bg-white">
               <div className="mb-3 flex items-center gap-2">
                 <Info className="h-5 w-5 text-slate-500" />
-                <h3 className="font-bold text-slate-800">
-                  ข้อมูลทั่วไปของเครื่อง
-                </h3>
+                <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
               </div>
               <div className="space-y-2 border-t border-slate-100 pt-3">
                 {generalInfoKeys.map((key) => (
                   <GeneralInfoItem
                     key={key}
                     itemKey={key}
-                    itemValue={
-                      allInfo[key as keyof typeof allInfo]
-                    }
+                    itemValue={allInfo[key as keyof typeof allInfo]}
                   />
                 ))}
               </div>
             </div>
-            <div className="border-t pt-4 dark:border-zinc-700">
+            {/* อาการที่ตรวจพบ */}
+            <div className="flex flex-col gap-4 border-t border-b pt-4 pb-6">
               <div className="grid grid-cols-2 gap-3">
                 {conditionKeys.map((key) => (
                   <TestItem
                     key={key}
                     itemKey={key}
-                    itemValue={
-                      allInfo[key as keyof typeof allInfo]
-                    }
+                    itemValue={allInfo[key as keyof typeof allInfo]}
                   />
                 ))}
               </div>
             </div>
+            {/* ค่าบริาการซ่อม */}
             <MaintenanceService
               deviceInfo={deviceInfo}
               repairs={repairs}
