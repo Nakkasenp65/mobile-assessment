@@ -416,7 +416,7 @@ const ConsignmentService = ({
               ข้อตกลงและเงื่อนไข
             </a>{" "}
             สำหรับบริการฝากขายสินค้า และค่าบริการ 10%
-            ต่อรอบการฝากขาย (10 วัน)
+            ต่อรอบการขายฝาก (10 วัน)
           </label>
         </div>
         <FramerButton
@@ -424,7 +424,6 @@ const ConsignmentService = ({
           disabled={!isFormComplete}
           className="h-14 w-full"
         >
-          <Sparkles className="mr-2 h-5 w-5" />
           ยืนยันการฝากขาย
         </FramerButton>
       </motion.div>

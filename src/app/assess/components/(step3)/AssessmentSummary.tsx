@@ -10,17 +10,22 @@ import {
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import AssessmentLedger from "./AssessmentLedger";
+import { RepairItem } from "@/hooks/useRepairPrices"; // CHIRON: 1. Import Type ที่จำเป็นสำหรับ props
 
+// CHIRON: Structural Engineer - เสริมความแข็งแกร่งของ "สัญญา" (Props Interface)
+// เพื่อให้สามารถทำหน้าที่เป็นท่อส่งข้อมูล (Data Conduit) ที่สมบูรณ์ได้
 interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   isImageLoading: boolean;
   mobileData: { image_url?: string } | null | undefined;
   grade: string;
-  gradeTextStyle: string;
-  gradeNeonColor: string;
   finalPrice: number;
   assessmentDate: string;
+  // เพิ่ม props ที่ต้องส่งผ่านไปยัง AssessmentLedger
+  repairs: RepairItem[];
+  totalCost: number;
+  isLoadingRepairPrices: boolean;
 }
 
 const AssessmentSummary = ({
@@ -31,12 +36,12 @@ const AssessmentSummary = ({
   grade,
   finalPrice,
   assessmentDate,
+  // CHIRON: 2. รับ props ใหม่เข้ามาใน Component
+  repairs,
+  totalCost,
+  isLoadingRepairPrices,
 }: AssessmentSummaryProps) => {
-  // [DEL] ลบการแยกชื่ออุปกรณ์ที่ไม่จำเป็นออก
-  // const deviceNameParts = deviceInfo.model.split(" ");
-
   return (
-    // Container หลักของคอลัมน์ซ้าย, ใช้ gap-3 เพื่อความกระชับ
     <div className="sticky flex h-fit flex-col gap-3 lg:top-24">
       {/* Card ข้อมูลและราคา (รวมกัน) */}
       <motion.div
@@ -86,7 +91,6 @@ const AssessmentSummary = ({
               </AnimatePresence>
             </div>
             <div className="flex flex-col">
-              {/* [MOD] แสดงชื่อรุ่นเต็มๆ ในบรรทัดเดียว */}
               <h3 className="text-foreground text-xl font-bold">
                 {deviceInfo.model}
               </h3>
@@ -115,7 +119,6 @@ const AssessmentSummary = ({
           </div>
         </div>
 
-        {/* เส้นคั่นระหว่างส่วน */}
         <div className="border-border my-4 border-t dark:border-zinc-700/50" />
 
         {/* ส่วนราคาประเมิน */}
@@ -138,8 +141,8 @@ const AssessmentSummary = ({
             {finalPrice.toLocaleString("th-TH", {
               style: "currency",
               currency: "THB",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 0, // ปรับเป็น 0 เพื่อความสะอาดตา
+              maximumFractionDigits: 0,
             })}
           </p>
           <p className="text-muted-foreground text-xs">
@@ -148,16 +151,20 @@ const AssessmentSummary = ({
         </div>
       </motion.div>
 
-      {/* Card รายละเอียดการตรวจสอบ (ยังคงแยกอยู่) */}
+      {/* Card รายละเอียดการตรวจสอบ */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="border-border bg-card rounded-2xl border shadow-sm dark:bg-zinc-800"
+        // CHIRON: ไม่จำเป็นต้องใส่ className ที่นี่ เพราะ AssessmentLedger มี styling ของตัวเองครบถ้วน
       >
         <AssessmentLedger
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
+          // CHIRON: 3. ส่งผ่าน props ที่ได้รับมาลงไปยัง Component ปลายทาง
+          repairs={repairs}
+          totalCost={totalCost}
+          isLoading={isLoadingRepairPrices}
         />
       </motion.div>
     </div>

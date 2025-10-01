@@ -106,12 +106,7 @@ export default function AssessmentDetails({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-      className="relative w-full max-w-6xl"
-    >
+    <div className="relative w-full max-w-6xl">
       {/* HEAD */}
       <div className="mb-8 flex-col items-center justify-center gap-8">
         <h2 className="mb-2 text-3xl font-bold text-black">
@@ -236,6 +231,6 @@ export default function AssessmentDetails({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -22,9 +22,7 @@ import { RepairItem } from "@/hooks/useRepairPrices"; //  เพิ่มกา�
 interface ServicesProps {
   services: ServiceOption[];
   selectedService: string;
-  setSelectedService: React.Dispatch<
-    React.SetStateAction<string>
-  >;
+  setSelectedService: React.Dispatch<React.SetStateAction<string>>;
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   pawnPrice: number;
@@ -102,20 +100,15 @@ export default function Services({
   totalRepairCost,
   isLoadingRepairPrices,
 }: ServicesProps) {
-  const accordionRefs = useRef<
-    Record<string, HTMLDivElement | null>
-  >({});
+  const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     if (selectedService) {
-      const accordionElement =
-        accordionRefs.current[selectedService];
+      const accordionElement = accordionRefs.current[selectedService];
       if (accordionElement) {
         setTimeout(() => {
-          const elementTop =
-            accordionElement.getBoundingClientRect().top;
-          const offsetPosition =
-            elementTop + window.scrollY - 100;
+          const elementTop = accordionElement.getBoundingClientRect().top;
+          const offsetPosition = elementTop + window.scrollY - 100;
           window.scrollTo({
             top: offsetPosition,
             behavior: "smooth",
@@ -160,70 +153,44 @@ export default function Services({
                       "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800",
                     )}
                   >
-                    <Icon
-                      className={cn("h-6 w-6", theme.text)}
-                    />
+                    <Icon className={cn("h-6 w-6", theme.text)} />
                   </div>
 
                   <div className="flex-1 text-left">
-                    <h4 className="text-foreground font-semibold">
-                      {service.title}
-                    </h4>
-                    <p className="text-muted-foreground text-sm">
-                      {service.description}
-                    </p>
+                    <h4 className="text-foreground font-semibold">{service.title}</h4>
+                    <p className="text-muted-foreground text-sm">{service.description}</p>
                   </div>
 
                   <div className="ml-2 text-right">
-                    <p className="text-foreground text-lg font-bold">
-                      {THB(service.price)}
-                    </p>
+                    <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
                 <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
                   {service.id === "sell" && (
-                    <SellNowService
-                      deviceInfo={deviceInfo}
-                      sellPrice={service.price}
-                    />
+                    <SellNowService deviceInfo={deviceInfo} sellPrice={service.price} />
                   )}
-                  {service.id === "maintenance" && (
+                  {/* {service.id === "maintenance" && (
                     <MaintenanceService
                       deviceInfo={deviceInfo}
                       repairs={repairs}
                       totalCost={totalRepairCost}
                       isLoading={isLoadingRepairPrices}
                     />
-                  )}
-
+                  )} */}
                   {service.id === "tradein" && (
-                    <TradeInService
-                      deviceInfo={deviceInfo}
-                      tradeInPrice={service.price}
-                    />
+                    <TradeInService deviceInfo={deviceInfo} tradeInPrice={service.price} />
                   )}
                   {service.id === "consignment" && (
-                    <ConsignmentService
-                      deviceInfo={deviceInfo}
-                      consignmentPrice={service.price}
-                    />
+                    <ConsignmentService deviceInfo={deviceInfo} consignmentPrice={service.price} />
                   )}
-                  {service.id === "refinance" &&
-                    refinancePrice !== undefined && (
-                      <RefinanceService
-                        deviceInfo={deviceInfo}
-                        refinancePrice={refinancePrice}
-                      />
-                    )}
-                  {service.id === "iphone-exchange" &&
-                    exchangePrice !== undefined && (
-                      <IPhoneExchangeService
-                        deviceInfo={deviceInfo}
-                        exchangePrice={exchangePrice}
-                      />
-                    )}
+                  {service.id === "refinance" && refinancePrice !== undefined && (
+                    <RefinanceService deviceInfo={deviceInfo} refinancePrice={refinancePrice} />
+                  )}
+                  {service.id === "iphone-exchange" && exchangePrice !== undefined && (
+                    <IPhoneExchangeService deviceInfo={deviceInfo} exchangePrice={exchangePrice} />
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>

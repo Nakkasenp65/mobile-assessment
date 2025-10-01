@@ -78,7 +78,6 @@ const HeroSection = () => {
                 {/* Title with sparkle */}
                 <div className="mb-4 text-center sm:mb-6">
                   <div className="mb-2 flex items-center justify-center gap-2">
-                    <Sparkles className="h-4 w-4 text-orange-400 sm:h-5 sm:w-5" />
                     <h2 className="text-lg font-bold text-black sm:text-2xl">
                       ขายกับ{" "}
                       <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text font-bold text-transparent">

@@ -1,11 +1,12 @@
 // src/app/assess/components/(step3)/(services)/RefinanceService.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react"; // [CHIRON] การวิเคราะห์สภาพแวดล้อม: นำเข้า 'useRef' ซึ่งเป็นเครื่องมือที่จำเป็นสำหรับการโต้ตอบกับ DOM
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card } from "@/components/ui/card";
 import { DeviceInfo } from "../../../page";
 import {
   User,
@@ -15,6 +16,8 @@ import {
   TrendingUp,
   CalendarDays,
   Receipt,
+  Briefcase,
+  FileUp,
 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -25,21 +28,72 @@ interface RefinanceServiceProps {
 
 const REFINANCE_MONTHS = 6;
 
+const OCCUPATION_TYPES = {
+  SALARIED: "salaried",
+  FREELANCE: "freelance",
+};
+
 const RefinanceService = ({
   deviceInfo,
   refinancePrice,
 }: RefinanceServiceProps) => {
+  // [CHIRON] การแก้ไขเชิงโครงสร้าง: ประกาศ reference ไปยัง DOM element ของ input file
+  // นี่คือ "จุดยึด" ที่ขาดหายไป ซึ่งจำเป็นสำหรับการสั่งงาน .click() จาก UI ที่เราสร้างขึ้นเอง
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
     termsAccepted: false,
+    occupation: "",
+    documentFile: null as File | null,
   });
 
   const handleInputChange = (
     field: keyof typeof formState,
-    value: any,
+    value: string | boolean, // [CHIRON] การวิเคราะห์ทางภาษาศาสตร์: จำกัดประเภทข้อมูลให้แม่นยำขึ้น แทนที่ 'any'
   ) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+    setFormState((prev) => {
+      const newState = { ...prev, [field]: value };
+
+      if (field === "occupation") {
+        newState.documentFile = null;
+      }
+
+      return newState;
+    });
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    // [CHIRON] กลไกป้องกัน: ตรวจสอบให้แน่ใจว่ามีไฟล์ถูกเลือกจริงๆ ก่อนจะอัปเดต state
+    if (e.target.files && e.target.files.length > 0) {
+      setFormState((prev) => ({
+        ...prev,
+        documentFile: e.target.files![0],
+      }));
+    }
+  };
+
+  const handleDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+  ) => {
+    e.preventDefault();
+    // [CHIRON] กลไกป้องกัน: ตรวจสอบให้แน่ใจว่ามีไฟล์ถูกลากมาวางจริงๆ
+    if (
+      e.dataTransfer.files &&
+      e.dataTransfer.files.length > 0
+    ) {
+      // สร้าง event object สังเคราะห์เพื่อให้สอดคล้องกับ handleFileChange
+      // แม้ว่าจะเป็นการสร้าง object ขึ้นมาเอง แต่ก็ช่วยให้ logic การจัดการไฟล์รวมอยู่ที่เดียว
+      const syntheticEvent = {
+        target: {
+          files: e.dataTransfer.files,
+        },
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleFileChange(syntheticEvent);
+    }
   };
 
   const monthlyPayment = useMemo(() => {
@@ -49,7 +103,31 @@ const RefinanceService = ({
   const isFormComplete =
     formState.customerName &&
     formState.phone &&
-    formState.termsAccepted;
+    formState.termsAccepted &&
+    !!formState.occupation &&
+    !!formState.documentFile;
+
+  const documentUploadDetails = useMemo(() => {
+    if (
+      formState.occupation === OCCUPATION_TYPES.SALARIED
+    ) {
+      return {
+        label: "สลิปเงินเดือน",
+        description:
+          "กรุณาแนบสลิปเงินเดือนล่าสุด (PDF, JPG, PNG)",
+      };
+    }
+    if (
+      formState.occupation === OCCUPATION_TYPES.FREELANCE
+    ) {
+      return {
+        label: "Statement",
+        description:
+          "กรุณาแนบ Statement ย้อนหลัง 3 เดือน (PDF)",
+      };
+    }
+    return null;
+  }, [formState.occupation]);
 
   const THB = (n: number) =>
     n.toLocaleString("th-TH", {
@@ -211,6 +289,133 @@ const RefinanceService = ({
               />
             </div>
           </div>
+
+          {/* เลือกอาชีพ: Layout แบบ Card */}
+          <div className="flex flex-col gap-2">
+            <Label className="mb-2">อาชีพของคุณ</Label>
+            <div className="flex flex-row gap-4">
+              {Object.values(OCCUPATION_TYPES).map(
+                (value) => (
+                  <Card
+                    key={value}
+                    tabIndex={0}
+                    className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 px-6 py-4 transition ${formState.occupation === value ? "border-violet-500 bg-violet-50/50 shadow-lg" : "border-zinc-200 bg-white/40"} focus:border-violet-400 focus:outline-none`}
+                    onClick={() =>
+                      handleInputChange("occupation", value)
+                    }
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" ||
+                        e.key === " "
+                      )
+                        handleInputChange(
+                          "occupation",
+                          value,
+                        );
+                    }}
+                    aria-checked={
+                      formState.occupation === value
+                    }
+                    role="radio"
+                  >
+                    {value === OCCUPATION_TYPES.SALARIED ? (
+                      <Briefcase className="h-7 w-7 text-violet-500" />
+                    ) : (
+                      <Sparkles className="h-7 w-7 text-violet-500" />
+                    )}
+                    <span className="mt-1 text-base font-medium text-violet-950">
+                      {value === "salaried"
+                        ? "พนักงานเงินเดือน"
+                        : "อาชีพอิสระ"}
+                    </span>
+                    {formState.occupation === value && (
+                      <Check className="absolute top-2 right-2 h-4 w-4 text-violet-600" />
+                    )}
+                  </Card>
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* ส่วนอัปโหลดเอกสารแบบมีเงื่อนไข */}
+          {documentUploadDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut",
+              }}
+              className="space-y-2 overflow-hidden"
+            >
+              <Label
+                htmlFor="document-upload"
+                className="font-semibold"
+              >
+                {documentUploadDetails.label}
+              </Label>
+
+              <div
+                className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 bg-gradient-to-br from-purple-50 to-violet-50 px-6 py-6 shadow transition ${formState.documentFile ? "border-green-400" : "border-dashed border-violet-300 hover:border-violet-500"} cursor-pointer`}
+                tabIndex={0}
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop} // [CHIRON] การปรับปรุง: ใช้ handler ที่แยกออกมาเพื่อความชัดเจน
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ")
+                    fileRef.current?.click();
+                }}
+                role="button"
+                aria-label="อัปโหลดไฟล์"
+              >
+                <FileUp className="mb-2 h-8 w-8 text-violet-600" />
+                <span className="text-center text-sm text-violet-800">
+                  ลากไฟล์มาวางที่นี่ หรือ{" "}
+                  <span className="font-semibold text-violet-600 underline">
+                    เลือกไฟล์
+                  </span>
+                </span>
+                <input
+                  ref={fileRef} // [CHIRON] การเชื่อมต่อโครงสร้าง: เชื่อม ref เข้ากับ DOM element ที่แท้จริง
+                  id="document-upload"
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+                {formState.documentFile ? (
+                  <div className="mt-2 flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                    <Check className="h-4 w-4" />
+                    <span>
+                      {formState.documentFile.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // ป้องกันไม่ให้ event click ลามไปถึง div แม่ (ซึ่งจะเปิดหน้าต่างเลือกไฟล์อีกครั้ง)
+                        setFormState((prev) => ({
+                          ...prev,
+                          documentFile: null,
+                        }));
+                        if (fileRef.current) {
+                          fileRef.current.value = ""; // [CHIRON] กลไกป้องกัน: รีเซ็ตค่าใน input file เพื่อให้สามารถเลือกไฟล์เดิมซ้ำได้
+                        }
+                      }}
+                      type="button"
+                      className="ml-2 font-bold text-red-500 hover:text-red-700"
+                      aria-label="ลบไฟล์ที่เลือก"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {documentUploadDetails.description}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </motion.div>
 
@@ -254,8 +459,8 @@ const RefinanceService = ({
           size="lg"
           disabled={!isFormComplete}
           className="h-14 w-full"
+          // onClick={() => console.log(formState)} // สำหรับ Debug
         >
-          <Sparkles className="mr-2 h-5 w-5" />
           ยืนยันการรีไฟแนนซ์
         </FramerButton>
       </motion.div>

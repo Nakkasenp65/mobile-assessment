@@ -513,7 +513,6 @@ const TradeInService = ({
           disabled={!isFormComplete}
           className="h-14 w-full"
         >
-          <Sparkles className="mr-2 h-5 w-5" />
           ยืนยันการแลกเปลี่ยนเครื่อง
         </FramerButton>
       </motion.div>

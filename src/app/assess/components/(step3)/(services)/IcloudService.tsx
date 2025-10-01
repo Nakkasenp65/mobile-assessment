@@ -318,7 +318,6 @@ const IcloudService = ({
           disabled={!isFormComplete}
           className="h-14 w-full"
         >
-          <Sparkles className="mr-2 h-5 w-5" />
           ยืนยันและรับเงินทันที
         </FramerButton>
       </motion.div>

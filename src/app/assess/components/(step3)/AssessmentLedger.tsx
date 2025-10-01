@@ -1,6 +1,8 @@
 "use client";
+
 import { ComponentType } from "react";
 import { DeviceInfo, ConditionInfo } from "../../page";
+import { RepairItem } from "@/hooks/useRepairPrices"; // CHIRON: Import Type ที่จำเป็นสำหรับส่วนบริการซ่อม
 import {
   BatteryCharging,
   Camera,
@@ -20,7 +22,7 @@ import {
   Frame,
   ScanFace,
   Info,
-  AlertTriangleIcon, // 👈 เพิ่มไอคอนสำหรับกล่องข้อมูล
+  AlertTriangleIcon,
 } from "lucide-react";
 import {
   Accordion,
@@ -28,9 +30,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { cn } from "@/lib/utils"; // 👈 import cn utility
+import { cn } from "@/lib/utils";
+import MaintenanceService from "./(services)/MaintenanceService";
 
-// --- ICON and LABEL MAPs (เหมือนเดิม) ---
+// --- ICON and LABEL MAPs ---
+// CHIRON: โครงสร้างข้อมูลเหล่านี้ทำหน้าที่เป็น "พจนานุกรม" สำหรับการแสดงผล ทำให้โค้ดส่วน JSX สะอาดและจัดการง่าย
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
   model: Cpu,
@@ -73,7 +77,6 @@ const LABEL_MAP: Record<string, string> = {
   faceId: "Face ID / Touch ID",
 };
 
-// --- ✨ [เพิ่ม] TRANSLATION_MAP สำหรับแปลค่า value ---
 const TRANSLATION_MAP: Record<string, string> = {
   th: "เครื่องไทย (TH)",
   other: "เครื่องนอก (ZP, LL, etc.)",
@@ -85,7 +88,8 @@ const TRANSLATION_MAP: Record<string, string> = {
   no_box: "ไม่มีกล่อง",
 };
 
-// --- ฟังก์ชัน isConsideredPassed (เหมือนเดิม) ---
+// --- Helper Function ---
+// CHIRON: ฟังก์ชันเล็กๆ ที่มีหน้าที่เดียว (Single Responsibility) ช่วยลดความซับซ้อนของตรรกะใน JSX
 const isConsideredPassed = (
   key: string,
   value: string,
@@ -107,7 +111,8 @@ const isConsideredPassed = (
   return false;
 };
 
-// --- Component TestItem (เหมือนเดิม) ---
+// --- Sub-component: TestItem ---
+// CHIRON: Component ย่อยสำหรับแสดงผลการทดสอบแต่ละรายการ ทำให้โค้ดหลักอ่านง่ายขึ้น
 const TestItem = ({
   itemKey,
   itemValue,
@@ -182,7 +187,8 @@ const TestItem = ({
   );
 };
 
-// --- ✨ [สร้าง] Component ใหม่สำหรับแสดงข้อมูลทั่วไป ---
+// --- Sub-component: GeneralInfoItem ---
+// CHIRON: Component ย่อยสำหรับข้อมูลทั่วไป ช่วยลดการเขียนโค้ดซ้ำซ้อน
 const GeneralInfoItem = ({
   itemKey,
   itemValue,
@@ -210,16 +216,28 @@ const GeneralInfoItem = ({
   );
 };
 
-const AssessmentLedger = ({
-  deviceInfo,
-  conditionInfo,
-}: {
+// --- Main Component Interface ---
+// CHIRON: Structural Engineer - นี่คือ "สัญญา" (Contract) ของ Component
+// การรวม props ทั้งหมดที่นี่ทำให้เห็นภาพรวมความรับผิดชอบของ AssessmentLedger ได้อย่างชัดเจน
+interface AssessmentLedgerProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
+  repairs: RepairItem[];
+  totalCost: number;
+  isLoading: boolean;
+}
+
+// --- Main Component: AssessmentLedger ---
+const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
+  deviceInfo,
+  conditionInfo,
+  repairs,
+  totalCost,
+  isLoading,
 }) => {
   const allInfo = { ...deviceInfo, ...conditionInfo };
 
-  // --- ✨ [แก้ไข] แยก Key ของข้อมูลทั่วไป และข้อมูลสภาพเครื่องออกจากกัน ---
+  // CHIRON: แยกแยะประเภทของข้อมูลเพื่อการแสดงผลที่แตกต่างกัน
   const generalInfoKeys = [
     "modelType",
     "warranty",
@@ -237,10 +255,9 @@ const AssessmentLedger = ({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* --- ✨ [สร้าง] กล่องแสดงข้อมูลทั่วไป (General Info Box) --- */}
-
-      {/* --- Accordion สำหรับแสดงสภาพเครื่อง (เหมือนเดิม แต่ใช้ข้อมูลที่กรองแล้ว) --- */}
+    // CHIRON: Root element ที่ครอบคลุมทั้งสองส่วนหลัก (รายละเอียดสภาพ และ ค่าซ่อม)
+    <div className="w-full space-y-6">
+      {/* ส่วนที่ 1: Accordion แสดงรายละเอียดสภาพเครื่อง */}
       <Accordion
         type="single"
         collapsible
@@ -249,7 +266,7 @@ const AssessmentLedger = ({
       >
         <AccordionItem
           value="details"
-          className="rounded-2xl border-none bg-white dark:bg-zinc-800"
+          className="overflow-hidden rounded-2xl border-none bg-white shadow-sm dark:bg-zinc-800"
         >
           <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
             <div className="flex w-full flex-col items-start">
@@ -295,9 +312,18 @@ const AssessmentLedger = ({
                 ))}
               </div>
             </div>
+            <MaintenanceService
+              deviceInfo={deviceInfo}
+              repairs={repairs}
+              totalCost={totalCost}
+              isLoading={isLoading}
+            />
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+
+      {/* ส่วนที่ 2: แสดงผลค่าบริการซ่อม ซึ่งตอนนี้เป็นความรับผิดชอบของ Component นี้ */}
+      {/* CHIRON: การส่งผ่าน props ทั้งหมดลงไป ทำให้ MaintenanceService เป็น "Pure Component" ที่ควบคุมจากภายนอกได้ง่าย */}
     </div>
   );
 };

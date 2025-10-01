@@ -147,7 +147,7 @@ const IPhoneExchangeService = ({
             </div>
             <div className="flex justify-between">
               <span className="text-green-800 dark:text-green-200">
-                หัก ค่าบริการรอบแรก (15%)
+                ค่าบริการรอบแรก (15%)
               </span>
               <span className="font-semibold text-red-600 dark:text-red-400">
                 - {THB(feeAmount)}
@@ -502,7 +502,6 @@ const IPhoneExchangeService = ({
           disabled={!isFormComplete}
           className="h-14 w-full"
         >
-          <Sparkles className="mr-2 h-5 w-5" />
           ยืนยันและนัดหมาย
         </FramerButton>
       </motion.div>

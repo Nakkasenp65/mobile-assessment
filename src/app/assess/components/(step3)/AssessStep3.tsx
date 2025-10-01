@@ -6,22 +6,15 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Banknote,
-  Shield,
   Wrench,
   CreditCard,
-  Truck,
   ShoppingBag,
-  RefreshCw,
-  Lock,
-  RefreshCwIcon,
-  Cloud,
   Handshake,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
-import AssessmentLedger from "./AssessmentLedger";
 import Services from "./Services";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
@@ -51,6 +44,7 @@ const AssessStep3 = ({
     repairs,
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
+
   const [selectedService, setSelectedService] =
     useState<string>("sell");
 
@@ -74,21 +68,15 @@ const AssessStep3 = ({
       hour12: false,
     }) + " น.";
 
-  const calculatedPawnPrice = Math.round(finalPrice * 0.7);
-  const calculatedIcloudPawnPrice = Math.round(
-    finalPrice * 0.5,
-  );
-  const calculatedTradeInPrice = Math.round(
-    finalPrice * 0.7,
-  );
   const calculatedRefinancePrice = Math.round(
     finalPrice * 0.5,
   );
   const calculatedExchangePrice = Math.round(
     finalPrice * 0.7,
   );
+  const calculatedPawnPrice = Math.round(finalPrice * 0.7);
 
-  const services: ServiceOption[] = [
+  const baseServices: ServiceOption[] = [
     {
       id: "sell",
       title: "ขายทันที",
@@ -97,41 +85,55 @@ const AssessStep3 = ({
       price: finalPrice,
     },
     {
-      id: "maintenance",
-      title: "บริการซ่อม",
-      description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
-      icon: Wrench,
-      price: totalRepairCost,
-    },
-    {
       id: "consignment",
-      title: "ฝากขาย",
+      title: "ขายฝาก",
       description:
         "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
       icon: ShoppingBag,
       price: finalPrice,
     },
+    // {
+    //   id: "maintenance",
+    //   title: "บริการซ่อม",
+    //   description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
+    //   icon: Wrench,
+    //   price: totalRepairCost,
+    // },
   ];
 
-  // Conditionally add the refinance service if the brand is Apple
-  if (deviceInfo.brand === "Apple") {
-    // บริการ Refinance
-    services.push({
-      id: "refinance",
-      title: "บริการรีไฟแนนซ์",
-      description: "รับเงินก้อน ผ่อนชำระคืน 6 เดือน",
-      icon: CreditCard,
-      price: calculatedRefinancePrice,
-    });
-    // บริการไอโฟนแลกเงิน
-    services.push({
-      id: "iphone-exchange",
-      title: "ไอโฟนแลกเงิน",
-      description: "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
-      icon: Handshake, // หรือไอคอนอื่นที่ต้องการ
-      price: calculatedExchangePrice,
-    });
-  }
+  const isAppleDevice = deviceInfo.brand === "Apple";
+
+  const coreServices: ServiceOption[] = [
+    baseServices[0],
+    ...(isAppleDevice
+      ? [
+          {
+            id: "refinance",
+            title: "บริการรีไฟแนนซ์",
+            description: "รับเงินก้อน ผ่อนชำระคืน 6 เดือน",
+            icon: CreditCard,
+            price: calculatedRefinancePrice,
+          },
+        ]
+      : []),
+    ...baseServices.slice(1),
+  ];
+
+  const services: ServiceOption[] = [
+    ...coreServices,
+    ...(isAppleDevice
+      ? [
+          {
+            id: "iphone-exchange",
+            title: "ไอโฟนแลกเงิน",
+            description:
+              "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
+            icon: Handshake,
+            price: calculatedExchangePrice,
+          },
+        ]
+      : []),
+  ];
 
   const handleConfirm = () => {
     if (selectedService) {
@@ -146,7 +148,6 @@ const AssessStep3 = ({
   }, []);
 
   return (
-    // ใช้ card-assessment จาก globals.css เพื่อให้มีพื้นหลังและกรอบที่สอดคล้องกัน
     <div className="flex w-full flex-col gap-8 md:p-8">
       <div className="text-center">
         <h2 className="text-foreground mt-8 text-3xl font-bold">
@@ -162,10 +163,13 @@ const AssessStep3 = ({
           isImageLoading={isImageLoading}
           mobileData={mobileData}
           grade={grade}
-          gradeTextStyle={gradeTextStyle}
-          gradeNeonColor={gradeNeonColor}
           finalPrice={finalPrice}
           assessmentDate={assessmentDate}
+          // CHIRON: Systemic Interaction - ซ่อมแซมท่อส่งข้อมูลโดยการส่ง props ที่ถูกต้อง
+          // ตามสัญญาที่ได้รับการปรับปรุงใหม่ของ AssessmentSummary
+          repairs={repairs}
+          totalCost={totalRepairCost}
+          isLoadingRepairPrices={isLoadingRepairPrices}
         />
 
         {/* Column 2: Service Selection */}
@@ -186,9 +190,8 @@ const AssessStep3 = ({
         </div>
       </div>
 
-      {/* Footer Buttons - ปรับปรุงใหม่ทั้งหมด */}
+      {/* Footer Buttons */}
       <div className="mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
-        {/* ปุ่มย้อนกลับ (Secondary Action) */}
         <FramerButton
           variant="ghost"
           onClick={onBack}
@@ -200,12 +203,10 @@ const AssessStep3 = ({
           </span>
         </FramerButton>
 
-        {/* ปุ่มยืนยัน (Primary Action) */}
         <FramerButton
           onClick={handleConfirm}
           disabled={!selectedService}
           size="lg"
-          // ใช้ gradient-primary จาก globals.css และปรับเงาให้สอดคล้องกับธีม
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-xl px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ยืนยันการเลือก

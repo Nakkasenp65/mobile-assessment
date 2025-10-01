@@ -5,26 +5,35 @@ import { Wrench, Loader2 } from "lucide-react";
 import { DeviceInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { cn } from "@/lib/utils";
-import { RepairItem } from "@/hooks/useRepairPrices"; // 👈 1. Import Type ใหม่
+import { RepairItem } from "@/hooks/useRepairPrices";
 
+// CHIRON: สัญญา (Contract) ของ Component นี้ยังคงเหมือนเดิม
+// มันระบุอย่างชัดเจนว่าต้องการข้อมูลอะไรบ้างเพื่อที่จะทำงานได้อย่างสมบูรณ์
 interface MaintenanceServiceProps {
   deviceInfo: DeviceInfo;
-  repairs: RepairItem[]; // 👈 2. รับ props 'repairs'
-  totalCost: number; // 👈 3. รับ props 'totalCost'
-  isLoading: boolean; // 👈 4. รับ props 'isLoading'
+  repairs: RepairItem[];
+  totalCost: number;
+  isLoading: boolean;
 }
 
 const MaintenanceService: React.FC<
   MaintenanceServiceProps
 > = ({ deviceInfo, repairs, totalCost, isLoading }) => {
-  // 5. ลบ useRepairPrices และ useMemo ออกไป เพราะคำนวณมาจากข้างนอกแล้ว
-
+  // ตรรกะเล็กน้อยที่ยังคงอยู่ภายในเป็นเพียงการคำนวณเพื่อการแสดงผลเท่านั้น
+  // ไม่เกี่ยวข้องกับ Business Logic หลัก
   const estimatedTime =
     repairs.length > 2 ? "3-5 วันทำการ" : "2-3 วันทำการ";
 
+  // CHIRON: Structural Engineer - เปลี่ยน Root Element จาก <main> เป็น <section>
+  // เพื่อบ่งบอกว่านี่คือส่วนหนึ่งของเอกสารที่ใหญ่กว่า ไม่ใช่หน้าหลักอีกต่อไป
   return (
-    <main className="w-full space-y-6 pt-4">
-      {/* Price Display */}
+    <section className="w-full space-y-4 rounded-2xl bg-white p-4 shadow-sm dark:bg-zinc-800">
+      {/* หัวข้อที่ชัดเจนเพื่อแบ่งส่วนข้อมูลภายใน AssessmentLedger */}
+      <h2 className="text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
+        สรุปค่าบริการซ่อม
+      </h2>
+
+      {/* ส่วนแสดงผลราคา */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -32,12 +41,11 @@ const MaintenanceService: React.FC<
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="relative flex h-[138px] flex-col justify-center overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-6 text-center shadow-lg"
+        // CHIRON: Counter-intelligence - การปรับสไตล์ให้เป็นกลาง (Neutralization)
+        // ใช้สี slate และลด effect ที่ไม่จำเป็นออกไป เพื่อให้กลมกลืนกับ Component แม่
+        className="relative flex h-[138px] flex-col justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900"
       >
-        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-emerald-100/50 blur-2xl" />
-        <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-teal-100/50 blur-2xl" />
         <AnimatePresence mode="wait">
-          {/* 6. ใช้ `isLoading` จาก props */}
           {isLoading ? (
             <motion.div
               key="loader"
@@ -46,8 +54,8 @@ const MaintenanceService: React.FC<
               exit={{ opacity: 0 }}
               className="relative z-10 flex flex-col items-center justify-center"
             >
-              <Loader2 className="mb-2 h-8 w-8 animate-spin text-emerald-500" />
-              <p className="text-sm text-emerald-700">
+              <Loader2 className="mb-2 h-8 w-8 animate-spin text-slate-500" />
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
                 กำลังคำนวณราคาซ่อม...
               </p>
             </motion.div>
@@ -59,17 +67,16 @@ const MaintenanceService: React.FC<
               exit={{ opacity: 0 }}
               className="relative z-10"
             >
-              <h3 className="mb-2 text-lg font-semibold text-emerald-900">
+              <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-zinc-200">
                 ค่าบริการซ่อมโดยประมาณ
               </h3>
-              {/* 7. ใช้ `totalCost` จาก props */}
-              <p className="text-4xl font-bold text-emerald-600">
+              <p className="text-4xl font-bold text-slate-700 dark:text-zinc-50">
                 ฿{" "}
                 {totalCost.toLocaleString("th-TH", {
                   minimumFractionDigits: 0,
                 })}
               </p>
-              <p className="mt-2 text-sm text-emerald-600">
+              <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">
                 ระยะเวลาซ่อม: {estimatedTime}
               </p>
             </motion.div>
@@ -77,7 +84,7 @@ const MaintenanceService: React.FC<
         </AnimatePresence>
       </motion.div>
 
-      {/* Repair Details Section */}
+      {/* ส่วนแสดงรายละเอียดรายการซ่อม */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
@@ -85,14 +92,13 @@ const MaintenanceService: React.FC<
           y: 0,
           transition: { delay: 0.1 },
         }}
-        className="space-y-3"
+        className="space-y-3 pt-2"
       >
-        <h4 className="text-lg font-semibold text-slate-800">
+        <h4 className="text-base font-semibold text-slate-800 dark:text-zinc-200">
           รายการซ่อม
         </h4>
-        {/* 8. ใช้ `repairs` และ `isLoading` จาก props */}
-        {repairs.length > 0 && !isLoading ? (
-          <div className="divide-y divide-emerald-100 rounded-xl border border-emerald-100 bg-white">
+        {repairs?.length > 0 && !isLoading ? (
+          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50">
             {repairs.map((repair, index) => {
               const Icon = repair.icon;
               return (
@@ -100,11 +106,11 @@ const MaintenanceService: React.FC<
                   key={index}
                   className="flex items-center gap-4 p-3"
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-                    <Icon className="h-5 w-5 text-emerald-600" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700">
+                    <Icon className="h-5 w-5 text-slate-600 dark:text-zinc-300" />
                   </div>
                   <div className="flex-grow">
-                    <p className="font-medium text-slate-800">
+                    <p className="font-medium text-slate-800 dark:text-zinc-100">
                       {repair.part}
                     </p>
                     <p
@@ -119,7 +125,7 @@ const MaintenanceService: React.FC<
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-slate-800">
+                    <p className="font-semibold text-slate-800 dark:text-zinc-100">
                       ฿{repair.cost.toLocaleString()}
                     </p>
                   </div>
@@ -129,8 +135,8 @@ const MaintenanceService: React.FC<
           </div>
         ) : (
           !isLoading && (
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-center">
-              <p className="text-sm text-emerald-600">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
                 เยี่ยมเลย! ไม่พบรายการที่ต้องซ่อม
               </p>
             </div>
@@ -138,6 +144,7 @@ const MaintenanceService: React.FC<
         )}
       </motion.div>
 
+      {/* ปุ่ม Call to Action */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
@@ -145,18 +152,14 @@ const MaintenanceService: React.FC<
           y: 0,
           transition: { delay: 0.4 },
         }}
-        className="flex justify-center"
+        className="flex justify-center pt-2"
       >
-        <FramerButton
-          className="bg-emerald-600 hover:bg-emerald-700"
-          size="lg"
-          disabled={isLoading}
-        >
+        <FramerButton size="lg" className="h-14 w-full">
           <Wrench className="mr-2 h-4 w-4" />
-          ยืนยันการซ่อมและชำระเงิน
+          ติดต่องานซ่อม
         </FramerButton>
       </motion.div>
-    </main>
+    </section>
   );
 };
 
