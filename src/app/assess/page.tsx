@@ -33,6 +33,10 @@ export interface ConditionInfo {
   mic: string;
   touchScreen: string;
   charger: string;
+  call: string;
+  homeButton: string;
+  sensor: string;
+  buttons: string;
 }
 
 export default function AssessPage() {
@@ -58,6 +62,10 @@ export default function AssessPage() {
     mic: "",
     touchScreen: "",
     charger: "",
+    call: "",
+    homeButton: "",
+    sensor: "",
+    buttons: "",
   });
 
   const handleNext = () => {
@@ -90,10 +98,10 @@ export default function AssessPage() {
         <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         <div className="md:mt-8">
+          {/* เลือกแบรนด์ โมเดล และ ความจุ */}
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
-              conditionInfo={conditionInfo}
               onDeviceUpdate={handleDeviceUpdate}
               onConditionUpdate={setConditionInfo}
               onUserDeviceUpdate={handleUserDeviceUpdate}
@@ -101,6 +109,7 @@ export default function AssessPage() {
             />
           )}
 
+          {/* ตอบคำถาม(QuestionReport) วัดสายชาร์จ(Automated) และ ระบายสี(Interactive) */}
           {currentStep === 2 && (
             <AssessStep2
               isOwnDevice={isUserDevice}
@@ -111,6 +120,7 @@ export default function AssessPage() {
             />
           )}
 
+          {/* สรุปผลใบการประเมิน(POST API Result) */}
           {currentStep === 3 && (
             <AssessStep3
               deviceInfo={deviceInfo}

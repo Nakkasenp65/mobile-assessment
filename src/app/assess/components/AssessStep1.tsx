@@ -3,10 +3,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { useMobile } from "@/hooks/useMobile";
 import { DeviceInfo, ConditionInfo } from "../page";
-
 import { PHONE_DATA } from "../../../util/phone";
 
 import {
@@ -18,18 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// [CHIRON] Import ไอคอนที่จำเป็นสำหรับ Checkbox
-import { Box, Smartphone, Check } from "lucide-react";
+import { Box, Smartphone } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
 import FramerButton from "../../../components/ui/framer/FramerButton";
 import Image from "next/image";
-// [CHIRON] Import Checkbox จาก Radix UI โดยตรง
-import * as Checkbox from "@radix-ui/react-checkbox";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
-  conditionInfo: ConditionInfo;
+
   onDeviceUpdate: (info: DeviceInfo) => void;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
@@ -38,7 +33,7 @@ interface AssessStep1Props {
 
 const AssessStep1 = ({
   deviceInfo,
-  conditionInfo,
+
   onDeviceUpdate,
   onConditionUpdate,
   onNext,
@@ -46,10 +41,6 @@ const AssessStep1 = ({
 }: AssessStep1Props) => {
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { isDesktop } = useDeviceDetection();
-
-  // [CHIRON] 1. State Management: เพิ่ม state สำหรับการยอมรับเงื่อนไข
-  // สถานะนี้เป็นส่วนสำคัญของความสมบูรณ์ของฟอร์ม
-  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
   const [availableModels, setAvailableModels] = useState<string[]>(() => {
     if (deviceInfo.brand) {
@@ -134,8 +125,6 @@ const AssessStep1 = ({
   const isValidStorage = isValidModel && availableStorage.includes(localInfo.storage);
   const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
 
-  // [CHIRON] 2. Validation Logic: ผนวกสถานะการยินยอมเข้ากับเงื่อนไขความสมบูรณ์
-  // ตรรกะนี้คือ "ผู้รักษาประตู" (Gatekeeper) ที่จะป้องกันไม่ให้ผู้ใช้ไปต่อหากไม่ยอมรับเงื่อนไข
   const isComplete = isValidBrand && isValidModel && isValidStorage && isUserDeviceOk;
 
   return (
@@ -355,7 +344,6 @@ const AssessStep1 = ({
         </FramerButton>
       </div>
 
-      {/* [CHIRON] 3. UI Implementation: โครงสร้าง Checkbox ที่สมบูรณ์ */}
       <div className="flex items-center">
         <label
           htmlFor="terms"

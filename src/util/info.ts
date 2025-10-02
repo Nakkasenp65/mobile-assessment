@@ -1,5 +1,4 @@
-// src/util/info.ts
-import { CameraSlashIcon } from "@phosphor-icons/react";
+import { ComponentType } from "react";
 import { ConditionInfo } from "../app/assess/page";
 import {
   Smartphone,
@@ -10,38 +9,46 @@ import {
   EyeOff,
   Grid3x3,
   Camera,
-  CameraOff,
   Wifi,
-  WifiOff,
-  BatteryCharging,
-  BatteryWarning,
-  ImageOff,
-  BatteryFull,
-  Fingerprint,
   ScanFace,
   Speaker,
+  BatteryCharging,
+  BatteryFull,
+  BatteryWarning,
+  ImageOff,
+  Fingerprint,
   Vibrate,
-  HelpCircle,
-  Package,
   Clock,
   ShieldAlert,
+  HelpCircle,
   AlertTriangle,
-  RectangleHorizontal, // ไอคอนใหม่สำหรับหน้าจอ
-  PowerOff, // ไอคอนสำหรับ charger:failed
+  RectangleHorizontal,
+  PowerOff,
+  WifiOff,
+  PhoneCall,
+  CircleDot,
+  RadioTower,
+  Power,
+  PhoneOff,
+  Package,
+  CameraOff,
 } from "lucide-react";
-import { ComponentType } from "react";
+
+export type Platform = "DESKTOP" | "IOS" | "ANDROID";
+export type QuestionType = "choice" | "toggle";
 
 export interface QuestionOption {
-  value: string;
+  id: string;
   label: string;
   icon: ComponentType<any>;
-  severity?: "positive" | "warning" | "negative";
 }
 
 export interface Question {
   id: keyof ConditionInfo;
   question: string;
-  icon: ComponentType<any>; // --- [FIX] เพิ่ม icon property ---
+  icon: ComponentType<any>;
+  type: QuestionType;
+  platforms: Platform[];
   options: QuestionOption[];
 }
 
@@ -56,69 +63,36 @@ export const ASSESSMENT_QUESTIONS: Array<{
         id: "modelType",
         question: "1. รุ่นโมเดลเครื่อง",
         icon: Smartphone,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "th",
-            label: "เครื่องไทย (TH)",
-            icon: Smartphone,
-            severity: "positive",
-          },
-          {
-            value: "other",
-            label: "เครื่องนอก ZP 14, 15, 16 Series",
-            icon: Smartphone,
-            severity: "positive",
-          },
+          { id: "model_th", label: "เครื่องไทย (TH)", icon: Smartphone },
+          { id: "model_inter_new", label: "เครื่องนอก (ZP 14, 15, 16 Series)", icon: Smartphone },
+          { id: "model_inter_old", label: "เครื่องนอกโมเดลอื่น", icon: Smartphone },
         ],
       },
       {
         id: "warranty",
         question: "2. ประกันศูนย์ Apple",
         icon: ShieldCheck,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "active_long",
-            label: "เหลือมากกว่า 6 เดือน",
-            icon: ShieldCheck,
-            severity: "positive",
-          },
-          {
-            value: "active_short",
-            label: "เหลือน้อยกว่า 6 เดือน",
-            icon: Clock,
-            severity: "warning",
-          },
-          {
-            value: "inactive",
-            label: "หมดประกันแล้ว",
-            icon: ShieldAlert,
-            severity: "negative",
-          },
+          { id: "warranty_active_long", label: "เหลือมากกว่า 6 เดือน", icon: ShieldCheck },
+          { id: "warranty_active_short", label: "เหลือน้อยกว่า 6 เดือน", icon: Clock },
+          { id: "warranty_inactive", label: "หมดประกันแล้ว", icon: ShieldAlert },
         ],
       },
       {
         id: "accessories",
         question: "3. อุปกรณ์ในกล่อง",
         icon: Package,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "full",
-            label: "ครบกล่อง",
-            icon: Package,
-            severity: "positive",
-          },
-          {
-            value: "box_only",
-            label: "มีเฉพาะกล่อง",
-            icon: Archive,
-            severity: "warning",
-          },
-          {
-            value: "no_box",
-            label: "ไม่มีกล่อง",
-            icon: HelpCircle,
-            severity: "negative",
-          },
+          { id: "acc_full", label: "ครบกล่อง", icon: Package },
+          { id: "acc_box_only", label: "มีเฉพาะกล่อง", icon: Archive },
+          { id: "acc_no_box", label: "ไม่มีกล่อง", icon: HelpCircle },
         ],
       },
     ],
@@ -128,52 +102,26 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "bodyCondition",
-        question: "4. สภาพตัวเครื่องโดยรวม",
+        question: "4. สภาพตัวเครื่องโดยรวม (เลือกได้หลายข้อ)",
         icon: Smartphone,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "passed",
-            label: "เหมือนใหม่ไม่มีรอย",
-            icon: ShieldCheck,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "มีรอยเคส สีลอก",
-            icon: AlertTriangle,
-            severity: "negative",
-          },
-          {
-            value: "defect",
-            label: "มีรอยตก บุบ",
-            icon: ImageOff,
-            severity: "negative",
-          },
+          { id: "body_mint", label: "เหมือนใหม่ไม่มีรอย", icon: ShieldCheck },
+          { id: "body_scratch_minor", label: "มีรอยเคส/สีลอก", icon: AlertTriangle },
+          { id: "body_dent_major", label: "มีรอยตก/บุบ", icon: ImageOff },
         ],
       },
       {
         id: "screenGlass",
         question: "5. สภาพกระจกหน้าจอ",
         icon: RectangleHorizontal,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "passed",
-            label: "ไม่มีรอย",
-            icon: ShieldCheck,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "มีรอยขนแมว",
-            icon: Frame,
-            severity: "warning",
-          },
-          {
-            value: "defect",
-            label: "กระจกแตก บิ่น ร้าว",
-            icon: ImageOff,
-            severity: "negative",
-          },
+          { id: "glass_ok", label: "ไม่มีรอย", icon: ShieldCheck },
+          { id: "glass_scratch_hairline", label: "มีรอยขนแมว", icon: Frame },
+          { id: "glass_cracked", label: "กระจกแตก บิ่น ร้าว", icon: ImageOff },
         ],
       },
     ],
@@ -185,50 +133,24 @@ export const ASSESSMENT_QUESTIONS: Array<{
         id: "screenDisplay",
         question: "6. คุณภาพการแสดงผล",
         icon: MonitorPlay,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "passed",
-            label: "แสดงผลปกติ สีสวย",
-            icon: MonitorPlay,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "มีจุด Dead/Bright, มีเส้น",
-            icon: Grid3x3,
-            severity: "warning",
-          },
-          {
-            value: "defect",
-            label: "จอเบิร์น/สีเพี้ยน/ไม่แสดงผล",
-            icon: EyeOff,
-            severity: "negative",
-          },
+          { id: "display_ok", label: "แสดงผลปกติ สีสวย", icon: MonitorPlay },
+          { id: "display_pixel_defect", label: "มีจุด Dead/Bright, มีเส้น", icon: Grid3x3 },
+          { id: "display_burn_in", label: "จอเบิร์น/สีเพี้ยน/ไม่แสดงผล", icon: EyeOff },
         ],
       },
       {
         id: "batteryHealth",
         question: "7. สุขภาพแบตเตอรี่",
         icon: BatteryFull,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "high",
-            label: "มากกว่า 90%",
-            icon: BatteryFull,
-            severity: "positive",
-          },
-          {
-            value: "medium",
-            label: "80% - 89%",
-            icon: BatteryWarning,
-            severity: "negative",
-          },
-          {
-            value: "low",
-            label: "ต่ำกว่า80% หรือขึ้น Service",
-            icon: BatteryWarning,
-            severity: "negative",
-          },
+          { id: "battery_health_high", label: "มากกว่า 90%", icon: BatteryFull },
+          { id: "battery_health_medium", label: "80% - 89%", icon: BatteryWarning },
+          { id: "battery_health_low", label: "ต่ำกว่า 80% หรือขึ้น Service", icon: BatteryWarning },
         ],
       },
     ],
@@ -240,133 +162,102 @@ export const ASSESSMENT_QUESTIONS: Array<{
         id: "camera",
         question: "8. กล้องหน้าและกล้องหลัง",
         icon: Camera,
+        type: "choice",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "passed",
-            label: "ทำงานปกติทุกฟังก์ชัน",
-            icon: Camera,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "มีปัญหา (เช่น จุดดำ, ไม่โฟกัส, มีเลเซอร์)",
-            icon: Camera,
-            severity: "negative",
-          },
-          {
-            value: "defect",
-            label: "ใช้งานไม่ได้",
-            icon: CameraSlashIcon,
-            severity: "negative",
-          },
+          { id: "camera_ok", label: "ทำงานปกติ", icon: Camera },
+          { id: "camera_issue_minor", label: "มีปัญหา (จุดดำ, ไม่โฟกัส)", icon: AlertTriangle },
+          { id: "camera_defective", label: "ใช้งานไม่ได้", icon: CameraOff },
         ],
       },
       {
         id: "wifi",
-        question: "9. การเชื่อมต่อ Wi-Fi / Bluetooth",
+        question: "Wi-Fi / Bluetooth",
         icon: Wifi,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "passed",
-            label: "เชื่อมต่อได้ปกติ",
-            icon: Wifi,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "มีปัญหาการเชื่อมต่อ",
-            icon: WifiOff,
-            severity: "negative",
-          },
+          { id: "wifi_ok", label: "เชื่อมต่อปกติ", icon: Wifi },
+          { id: "wifi_failed", label: "มีปัญหา", icon: WifiOff },
         ],
       },
       {
         id: "faceId",
-        question: "10. Face ID / Touch ID",
+        question: "Face ID / Touch ID",
         icon: ScanFace,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
-          {
-            value: "passed",
-            label: "สแกนได้ปกติ",
-            icon: ScanFace,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "สแกนไม่ได้/มีปัญหา",
-            icon: Fingerprint,
-            severity: "negative",
-          },
+          { id: "biometric_ok", label: "สแกนได้ปกติ", icon: ScanFace },
+          { id: "biometric_failed", label: "สแกนไม่ได้", icon: Fingerprint },
         ],
       },
       {
         id: "speaker",
-        question: "11. ลำโพงและการสั่น",
+        question: "ลำโพงและการสั่น",
         icon: Speaker,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "passed",
-            label: "เสียงดังปกติและสั่น",
-            icon: Speaker,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "ลำโพงแตก/ไม่สั่น/ไม่ได้ยิน",
-            icon: Vibrate,
-            severity: "negative",
-          },
+          { id: "speaker_ok", label: "ปกติ", icon: Speaker },
+          { id: "speaker_failed", label: "ลำโพงแตก/ไม่ดัง/ไม่สั่น", icon: Vibrate },
         ],
       },
       {
         id: "charger",
-        question: "12. การชาร์จไฟ",
+        question: "การชาร์จไฟ",
         icon: BatteryCharging,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS"],
         options: [
-          {
-            value: "passed",
-            label: "ชาร์จไฟเข้าปกติ",
-            icon: BatteryCharging,
-            severity: "positive",
-          },
-          {
-            value: "failed",
-            label: "ชาร์จไม่เข้า/มีปัญหา",
-            icon: PowerOff,
-            severity: "negative",
-          },
+          { id: "charger_ok", label: "ชาร์จเข้าปกติ", icon: BatteryCharging },
+          { id: "charger_failed", label: "ชาร์จไม่เข้า", icon: PowerOff },
+        ],
+      },
+      {
+        id: "call",
+        question: "การโทร",
+        icon: PhoneCall,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "call_ok", label: "โทรเข้า-ออกปกติ", icon: PhoneCall },
+          { id: "call_failed", label: "มีปัญหาการโทร", icon: PhoneOff },
+        ],
+      },
+      {
+        id: "homeButton",
+        question: "ปุ่ม Home",
+        icon: CircleDot,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "home_button_ok", label: "ใช้งานได้ปกติ", icon: CircleDot },
+          { id: "home_button_failed", label: "ใช้งานไม่ได้", icon: CircleDot },
+        ],
+      },
+      {
+        id: "sensor",
+        question: "Sensor",
+        icon: RadioTower,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "sensor_ok", label: "ทำงานปกติ", icon: RadioTower },
+          { id: "sensor_failed", label: "มีปัญหา", icon: RadioTower },
+        ],
+      },
+      {
+        id: "buttons",
+        question: "ปุ่ม Power / Volume",
+        icon: Power,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "buttons_ok", label: "กดได้ปกติ", icon: Power },
+          { id: "buttons_failed", label: "กดไม่ได้/กดยาก", icon: Power },
         ],
       },
     ],
   },
 ];
-
-export const DESKTOP_QUESTIONS = ASSESSMENT_QUESTIONS;
-// -- สร้างชุดคำถามสำหรับ iOS --
-// 1. กำหนด ID ของคำถามที่ต้องการกรองออก (เพราะมีใน Interactive Test)
-const iosQuestionsToRemove = ["camera", "speaker", "batteryHealth", "wifi", "mic", "touchScreen"];
-
-// 2. สร้างชุดคำถามสำหรับ iOS โดยการกรองคำถามที่ไม่ต้องการออกไป
-export const MOBILE_IOS_QUESTIONS = ASSESSMENT_QUESTIONS.map((section) => ({
-  ...section,
-  questions: section.questions.filter((question) => !iosQuestionsToRemove.includes(question.id)),
-  // กรอง section ที่อาจจะว่างเปล่าหลังจากการ filter ออก (ถ้ามี)
-})).filter((section) => section.questions.length > 0);
-
-const androidBaseSections = ASSESSMENT_QUESTIONS.filter(
-  (s) => s.section === "สภาพภายนอก" || s.section === "ข้อมูลทั่วไปของเครื่อง",
-);
-const basicFunctionsSection = ASSESSMENT_QUESTIONS.find(
-  (s) => s.section === "ฟังก์ชันการทำงานพื้นฐาน",
-);
-const faceIdQuestion = basicFunctionsSection?.questions.find((q) => q.id === "faceId");
-const androidExtraSection = faceIdQuestion
-  ? [
-      {
-        section: "ฟังก์ชันการทำงานพื้นฐาน",
-        questions: [faceIdQuestion],
-      },
-    ]
-  : [];
-
-export const MOBILE_ANDROID_QUESTIONS = [...androidBaseSections, ...androidExtraSection];

@@ -1,15 +1,9 @@
 // src/app/assess/components/(step2)/QuestionReport.tsx
-// คำถามเปลี่ยนไปตาม แพลตฟอร์ม
 
 "use client";
-import { useMemo } from "react";
 import { ConditionInfo } from "../../page";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
-import {
-  DESKTOP_QUESTIONS,
-  MOBILE_IOS_QUESTIONS,
-  MOBILE_ANDROID_QUESTIONS,
-} from "../../../../util/info";
+// Removed unnecessary imports for old question sets
 import DesktopReportForm from "./(interactive-tests)/(platform-based-question)/DesktopReportForm";
 import MobileQuestionAccordion from "./(interactive-tests)/(platform-based-question)/MobileQuestionAccordion";
 
@@ -28,32 +22,31 @@ const QuestionReport = ({
   onBack,
   showFullReport,
 }: QuestionReportProps) => {
-  const { isDesktop, isIOS } = useDeviceDetection();
+  const { isDesktop } = useDeviceDetection();
 
-  const mobileQuestions = useMemo(() => {
-    if (isIOS) {
-      return MOBILE_IOS_QUESTIONS;
-    }
-    return MOBILE_ANDROID_QUESTIONS;
-  }, [isIOS]);
+  // The logic to select different question sets is no longer needed here.
+  // The child components (DesktopReportForm and MobileQuestionAccordion)
+  // will now handle filtering questions based on the current platform internally.
 
   return (
     <>
       {isDesktop || showFullReport ? (
+        // Render the desktop-specific form
         <DesktopReportForm
           conditionInfo={conditionInfo}
           onConditionUpdate={onConditionUpdate}
           onComplete={onComplete}
           onBack={onBack}
-          questions={DESKTOP_QUESTIONS}
+          // The 'questions' prop is no longer needed as the component handles it
         />
       ) : (
+        // Render the mobile-specific accordion form
         <MobileQuestionAccordion
           conditionInfo={conditionInfo}
           onConditionUpdate={onConditionUpdate}
           onComplete={onComplete}
           onBack={onBack}
-          questions={mobileQuestions}
+          // The 'questions' prop is no longer needed as the component handles it
         />
       )}
     </>
