@@ -99,10 +99,15 @@ export default function Services({
 }: ServicesProps) {
   const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  useEffect(() => {
-    if (selectedService) {
+  // ✅ 1. สร้างฟังก์ชัน Handler ใหม่
+  const handleValueChange = (value: string) => {
+    // อัปเดต state ที่ถูกเลือก
+    setSelectedService(value);
+
+    // สั่งให้เลื่อนหน้าจอ (จะทำงานเฉพาะเมื่อมีการคลิกจริงๆ)
+    if (value) {
       setTimeout(() => {
-        const accordionElement = accordionRefs.current[selectedService];
+        const accordionElement = accordionRefs.current[value];
         if (accordionElement) {
           const rect = accordionElement.getBoundingClientRect();
           const offsetTop = rect.top + window.scrollY - 100;
@@ -110,7 +115,7 @@ export default function Services({
         }
       }, 300);
     }
-  }, [selectedService]);
+  };
 
   return (
     <div className="flex w-full flex-1 flex-col">
@@ -119,7 +124,8 @@ export default function Services({
         collapsible
         className="flex w-full flex-col gap-3"
         value={selectedService}
-        onValueChange={setSelectedService}
+        // ✅ 2. เปลี่ยนมาใช้ Handler ใหม่นี้แทน setSelectedService โดยตรง
+        onValueChange={handleValueChange}
       >
         {services.map((service) => {
           const isSelected = selectedService === service.id;
@@ -191,6 +197,9 @@ export default function Services({
             return (
               <IPhoneExchangeService
                 key={service.id}
+                ref={(el) => {
+                  accordionRefs.current[service.id] = el;
+                }}
                 deviceInfo={deviceInfo}
                 service={service}
                 theme={theme}
