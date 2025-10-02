@@ -2,12 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ImageOff,
-  Star,
-  Calendar,
-  Shield,
-} from "lucide-react";
+import { ImageOff, Star, Calendar, Shield } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import AssessmentLedger from "./AssessmentLedger";
 import { RepairItem } from "@/hooks/useRepairPrices"; // CHIRON: 1. Import Type ที่จำเป็นสำหรับ props
@@ -54,6 +49,7 @@ const AssessmentSummary = ({
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center gap-4">
             <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-slate-50 p-1 dark:bg-zinc-700">
+              {/* Product Image */}
               <AnimatePresence mode="wait">
                 {isImageLoading ? (
                   <motion.div
@@ -90,18 +86,20 @@ const AssessmentSummary = ({
                 )}
               </AnimatePresence>
             </div>
-            <div className="flex flex-col">
+
+            {/* Product Details */}
+            <div className="flex flex-col gap-2">
               <h3 className="text-foreground text-xl font-bold">
-                {deviceInfo.model}
+                {deviceInfo.brand} {deviceInfo.model}
               </h3>
-              <div className="mt-2">
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-zinc-700 dark:text-zinc-300">
-                  <Shield className="h-3.5 w-3.5" />
-                  {deviceInfo.storage}
-                </span>
-              </div>
+              <span className="inline-flex w-max items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-zinc-700 dark:text-zinc-300">
+                <Shield className="h-3.5 w-3.5" />
+                {deviceInfo.storage}
+              </span>
             </div>
           </div>
+
+          {/* Grade */}
           <div className="pr-2">
             <motion.span
               initial={{ scale: 0.5, opacity: 0 }}
@@ -128,9 +126,7 @@ const AssessmentSummary = ({
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-500/20">
                 <Star className="h-4 w-4 text-rose-500 dark:text-rose-400" />
               </div>
-              <p className="text-foreground font-semibold">
-                ราคาประเมิน
-              </p>
+              <p className="text-foreground font-semibold">ราคาประเมิน</p>
             </div>
             <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-zinc-700 dark:text-zinc-300">
               <Calendar className="h-3.5 w-3.5" />
@@ -145,9 +141,7 @@ const AssessmentSummary = ({
               maximumFractionDigits: 0,
             })}
           </p>
-          <p className="text-muted-foreground text-xs">
-            ประเมิน ณ {assessmentDate}
-          </p>
+          <p className="text-muted-foreground text-xs">ประเมิน ณ {assessmentDate}</p>
         </div>
       </motion.div>
 
@@ -156,7 +150,7 @@ const AssessmentSummary = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        // CHIRON: ไม่จำเป็นต้องใส่ className ที่นี่ เพราะ AssessmentLedger มี styling ของตัวเองครบถ้วน
+        className="border-border rounded-2xl border shadow-sm"
       >
         <AssessmentLedger
           deviceInfo={deviceInfo}

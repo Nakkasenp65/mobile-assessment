@@ -49,7 +49,7 @@ export default function ResultsView({ assessments, onBack }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container flex min-h-[80dvh] w-full flex-col gap-8 rounded-2xl bg-white p-4 py-8 shadow-2xl"
+      className="container flex min-h-[80dvh] w-full flex-col gap-8 rounded-lg bg-white p-4 py-8 shadow-xl"
     >
       {/* --- Custom Back Button --- */}
       <div className="mb-4 flex cursor-pointer items-center gap-1" onClick={onBack}>

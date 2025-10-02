@@ -122,18 +122,11 @@ export default function AssessmentRecordPage() {
   const recordToShow = mockRecords[0];
 
   return (
+    // bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5]
     <Layout>
-      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] px-4 py-16 text-center">
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute top-0 left-0 h-96 w-96 rounded-full bg-[#fed7aa] opacity-20 blur-3xl" />
-          <div className="absolute top-1/4 right-0 h-80 w-80 rounded-full bg-[#fbcfe8] opacity-20 blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-[#ddd6fe] opacity-20 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 flex w-full max-w-6xl flex-col items-center">
-          {recordToShow && (
-            <AssessmentDetails record={recordToShow} />
-          )}
+      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-white px-4 py-16 text-center">
+        <div className="z-10 container flex w-full flex-col items-center">
+          {recordToShow && <AssessmentDetails record={recordToShow} />}
         </div>
       </main>
     </Layout>

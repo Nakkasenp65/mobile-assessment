@@ -344,6 +344,17 @@ const AssessStep1 = ({
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <FramerButton
+          onClick={onNext}
+          disabled={!isComplete}
+          size="lg"
+          className="text-primary-foreground h-14 w-full transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+        >
+          ถัดไป
+        </FramerButton>
+      </div>
+
       {/* [CHIRON] 3. UI Implementation: โครงสร้าง Checkbox ที่สมบูรณ์ */}
       <div className="flex items-center">
         <label
@@ -360,17 +371,6 @@ const AssessStep1 = ({
           </a>{" "}
           ของเรา
         </label>
-      </div>
-
-      <div className="mt-8 flex justify-end">
-        <FramerButton
-          onClick={onNext}
-          disabled={!isComplete}
-          size="lg"
-          className="text-primary-foreground h-14 w-full transform-gpu rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-lg font-semibold shadow-lg shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/30 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-        >
-          ถัดไป
-        </FramerButton>
       </div>
     </motion.div>
   );

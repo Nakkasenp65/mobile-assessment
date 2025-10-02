@@ -1,4 +1,5 @@
 // src/util/info.ts
+import { CameraSlashIcon } from "@phosphor-icons/react";
 import { ConditionInfo } from "../app/assess/page";
 import {
   Smartphone,
@@ -77,13 +78,13 @@ export const ASSESSMENT_QUESTIONS: Array<{
         options: [
           {
             value: "active_long",
-            label: "เหลือมากกว่า 4 เดือน",
+            label: "เหลือมากกว่า 6 เดือน",
             icon: ShieldCheck,
             severity: "positive",
           },
           {
             value: "active_short",
-            label: "เหลือน้อยกว่า 4 เดือน",
+            label: "เหลือน้อยกว่า 6 เดือน",
             icon: Clock,
             severity: "warning",
           },
@@ -132,19 +133,19 @@ export const ASSESSMENT_QUESTIONS: Array<{
         options: [
           {
             value: "passed",
-            label: "เหมือนใหม่ ไม่มีรอย",
+            label: "เหมือนใหม่ไม่มีรอย",
             icon: ShieldCheck,
             severity: "positive",
           },
           {
             value: "failed",
-            label: "มีรอยตก บุบ หรือสีลอก",
+            label: "มีรอยเคส สีลอก",
             icon: AlertTriangle,
             severity: "negative",
           },
           {
             value: "defect",
-            label: "ฝาหลังแตก",
+            label: "มีรอยตก บุบ",
             icon: ImageOff,
             severity: "negative",
           },
@@ -157,19 +158,19 @@ export const ASSESSMENT_QUESTIONS: Array<{
         options: [
           {
             value: "passed",
-            label: "ไม่มีรอยขีดข่วน",
+            label: "ไม่มีรอย",
             icon: ShieldCheck,
             severity: "positive",
           },
           {
             value: "failed",
-            label: "มีรอยขนแมว/รอยขีดข่วน",
+            label: "มีรอยขนแมว",
             icon: Frame,
             severity: "warning",
           },
           {
             value: "defect",
-            label: "กระจกแตก/บิ่น",
+            label: "กระจกแตก บิ่น ร้าว",
             icon: ImageOff,
             severity: "negative",
           },
@@ -212,13 +213,19 @@ export const ASSESSMENT_QUESTIONS: Array<{
         options: [
           {
             value: "high",
-            label: "มากกว่า 85%",
+            label: "มากกว่า 90%",
             icon: BatteryFull,
             severity: "positive",
           },
           {
+            value: "medium",
+            label: "80% - 89%",
+            icon: BatteryWarning,
+            severity: "negative",
+          },
+          {
             value: "low",
-            label: "ต่ำกว่า 85% หรือขึ้น Service",
+            label: "ต่ำกว่า80% หรือขึ้น Service",
             icon: BatteryWarning,
             severity: "negative",
           },
@@ -242,8 +249,14 @@ export const ASSESSMENT_QUESTIONS: Array<{
           },
           {
             value: "failed",
-            label: "มีปัญหา (เช่น จุดดำ, ไม่โฟกัส)",
-            icon: CameraOff,
+            label: "มีปัญหา (เช่น จุดดำ, ไม่โฟกัส, มีเลเซอร์)",
+            icon: Camera,
+            severity: "negative",
+          },
+          {
+            value: "defect",
+            label: "ใช้งานไม่ได้",
+            icon: CameraSlashIcon,
             severity: "negative",
           },
         ],
@@ -331,38 +344,22 @@ export const ASSESSMENT_QUESTIONS: Array<{
 export const DESKTOP_QUESTIONS = ASSESSMENT_QUESTIONS;
 // -- สร้างชุดคำถามสำหรับ iOS --
 // 1. กำหนด ID ของคำถามที่ต้องการกรองออก (เพราะมีใน Interactive Test)
-const iosQuestionsToRemove = [
-  "camera",
-  "speaker",
-  "batteryHealth",
-  "wifi",
-  "mic",
-  "touchScreen",
-];
+const iosQuestionsToRemove = ["camera", "speaker", "batteryHealth", "wifi", "mic", "touchScreen"];
 
 // 2. สร้างชุดคำถามสำหรับ iOS โดยการกรองคำถามที่ไม่ต้องการออกไป
-export const MOBILE_IOS_QUESTIONS =
-  ASSESSMENT_QUESTIONS.map((section) => ({
-    ...section,
-    questions: section.questions.filter(
-      (question) =>
-        !iosQuestionsToRemove.includes(question.id),
-    ),
-    // กรอง section ที่อาจจะว่างเปล่าหลังจากการ filter ออก (ถ้ามี)
-  })).filter((section) => section.questions.length > 0);
+export const MOBILE_IOS_QUESTIONS = ASSESSMENT_QUESTIONS.map((section) => ({
+  ...section,
+  questions: section.questions.filter((question) => !iosQuestionsToRemove.includes(question.id)),
+  // กรอง section ที่อาจจะว่างเปล่าหลังจากการ filter ออก (ถ้ามี)
+})).filter((section) => section.questions.length > 0);
 
 const androidBaseSections = ASSESSMENT_QUESTIONS.filter(
-  (s) =>
-    s.section === "สภาพภายนอก" ||
-    s.section === "ข้อมูลทั่วไปของเครื่อง",
+  (s) => s.section === "สภาพภายนอก" || s.section === "ข้อมูลทั่วไปของเครื่อง",
 );
 const basicFunctionsSection = ASSESSMENT_QUESTIONS.find(
   (s) => s.section === "ฟังก์ชันการทำงานพื้นฐาน",
 );
-const faceIdQuestion =
-  basicFunctionsSection?.questions.find(
-    (q) => q.id === "faceId",
-  );
+const faceIdQuestion = basicFunctionsSection?.questions.find((q) => q.id === "faceId");
 const androidExtraSection = faceIdQuestion
   ? [
       {
@@ -372,7 +369,4 @@ const androidExtraSection = faceIdQuestion
     ]
   : [];
 
-export const MOBILE_ANDROID_QUESTIONS = [
-  ...androidBaseSections,
-  ...androidExtraSection,
-];
+export const MOBILE_ANDROID_QUESTIONS = [...androidBaseSections, ...androidExtraSection];

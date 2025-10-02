@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Handshake,
   TabletSmartphone,
+  Hash,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
@@ -20,6 +21,7 @@ import Services from "./Services";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
+import StatusBadge from "../../../../components/ui/StatusBadge";
 
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
@@ -34,6 +36,64 @@ export interface ServiceOption {
   icon: LucideIcon;
   price: number;
 }
+
+const getExpiryDate = (days: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setHours(23, 59, 59, 999);
+  return date.toISOString();
+};
+
+const mockRecords = {
+  id: "ASS-2568-0001",
+  phoneNumber: "0812345678",
+  assessmentDate: "25 กันยายน 2568",
+  device: {
+    brand: "Apple",
+    model: "iPhone 15 Pro",
+    storage: "256GB",
+    imageUrl:
+      "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708",
+  },
+  conditionInfo: {
+    modelType: "th",
+    warranty: "active_long",
+    accessories: "full",
+    bodyCondition: "mint",
+    screenGlass: "passed",
+    screenDisplay: "passed",
+    batteryHealth: "high",
+    camera: "passed",
+    wifi: "passed",
+    faceId: "passed",
+    speaker: "passed",
+    mic: "passed",
+    touchScreen: "passed",
+    charger: "failed",
+  },
+  pawnServiceInfo: {
+    customerName: "นางสาวสายฟ้า สมสุข",
+    locationType: "bts",
+    btsLine: "BTS - สายสุขุมวิท",
+    btsStation: "สยาม",
+    appointmentDate: "27 กันยายน 2568",
+    appointmentTime: "13:00 - 17:00",
+    phone: "0812345678",
+  },
+  selectedService: {
+    name: "บริการจำนำ (Pawn Service)",
+    price: 22600,
+    appointmentDate: "27 กันยายน 2568, 13:00 - 17:00 น.",
+  },
+  status: "completed",
+  estimatedValue: 28500,
+  priceLockExpiresAt: getExpiryDate(3),
+  nextSteps: [
+    "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
+    "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
+    "ชำระเงินและรับเอกสารการทำรายการ",
+  ],
+};
 
 const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
   const {
@@ -143,12 +203,21 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-8 md:p-8">
-      <div className="text-center">
-        <h2 className="text-foreground mt-8 text-3xl font-bold">ผลประเมินสภาพโทรศัพท์</h2>
+    <div className="flex w-full flex-col">
+      {/* HEAD */}
+      <div className="mb-8 flex w-full flex-col items-center justify-center gap-2">
+        <h2 className="mb-2 text-3xl font-bold text-black">ผลการประเมินอุปกรณ์</h2>
+        <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600">
+            <Hash className="h-4 w-4" />
+            <span>รหัสการประเมิน: {mockRecords.id}</span>
+          </div>
+          <p className="text-[#78716c]">อัพเดทล่าสุด: {mockRecords.assessmentDate}</p>
+          <StatusBadge status={mockRecords.status} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-8">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
         {/* Column 1: Assessment Summary */}
         <AssessmentSummary
           deviceInfo={deviceInfo}

@@ -177,6 +177,7 @@ export default function MyAssessmentsPage() {
             onSubmit={handleOtpSubmit}
             onBack={handleBackToPhone}
             isLoading={isLoading}
+            onResend={() => console.log("Resend code!")}
           />
         );
       case "show-results":
@@ -193,6 +194,7 @@ export default function MyAssessmentsPage() {
   };
 
   return (
+    // bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5]
     <Layout>
       <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] px-4 py-16 sm:px-6 lg:px-8">
         <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-start sm:pt-32">

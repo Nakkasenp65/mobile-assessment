@@ -37,30 +37,28 @@ export interface ConditionInfo {
 
 export default function AssessPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isUserDevice, setIsUserDevice] =
-    useState<boolean>(true);
+  const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
     brand: "",
     model: "",
     storage: "",
   });
-  const [conditionInfo, setConditionInfo] =
-    useState<ConditionInfo>({
-      modelType: "",
-      warranty: "",
-      accessories: "",
-      bodyCondition: "",
-      screenGlass: "",
-      screenDisplay: "",
-      batteryHealth: "",
-      camera: "",
-      wifi: "",
-      faceId: "",
-      speaker: "",
-      mic: "",
-      touchScreen: "",
-      charger: "",
-    });
+  const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
+    modelType: "",
+    warranty: "",
+    accessories: "",
+    bodyCondition: "",
+    screenGlass: "",
+    screenDisplay: "",
+    batteryHealth: "",
+    camera: "",
+    wifi: "",
+    faceId: "",
+    speaker: "",
+    mic: "",
+    touchScreen: "",
+    charger: "",
+  });
 
   const handleNext = () => {
     if (currentStep < 3) {
@@ -88,11 +86,8 @@ export default function AssessPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 pt-0 pb-24 md:pt-8">
-        <ProgressBar
-          currentStep={currentStep}
-          totalSteps={3}
-        />
+      <div className="container mx-auto px-4 py-16">
+        <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         <div className="md:mt-8">
           {currentStep === 1 && (

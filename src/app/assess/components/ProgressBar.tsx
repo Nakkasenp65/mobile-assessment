@@ -5,9 +5,7 @@ interface ProgressBarProps {
 
 const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   return (
-    <div
-      className={`mx-auto max-w-2xl ${currentStep === 3 ? "hidden md:block" : "mt-8 mb-8 block"}`}
-    >
+    <div className={`mx-auto max-w-2xl ${currentStep === 3 && "hidden"}`}>
       <div className={`flex items-center justify-between md:mb-4`}>
         <span className="text-muted-foreground text-sm font-medium">
           ขั้นตอนที่ {currentStep} จาก {totalSteps}
@@ -22,9 +20,7 @@ const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
           <div
             key={index}
             className={`progress-step flex-1 ${
-              index + 1 <= currentStep
-                ? "progress-step-active"
-                : "progress-step-inactive"
+              index + 1 <= currentStep ? "progress-step-active" : "progress-step-inactive"
             }`}
           />
         ))}

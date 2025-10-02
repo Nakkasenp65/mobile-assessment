@@ -63,10 +63,7 @@ const ALL_SERVICES: ServiceOption[] = [
   },
 ];
 
-type AssessmentStatus =
-  | "completed"
-  | "pending"
-  | "in-progress";
+type AssessmentStatus = "completed" | "pending" | "in-progress";
 
 interface AssessmentRecord {
   id: string;
@@ -84,11 +81,7 @@ interface AssessmentRecord {
   selectedServiceId: string;
 }
 
-const StatusBadge = ({
-  status,
-}: {
-  status: AssessmentStatus;
-}) => {
+const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   const statusConfig = {
     completed: {
       label: "ประเมินเสร็จสิ้น",
@@ -98,8 +91,7 @@ const StatusBadge = ({
     pending: {
       label: "รอการประเมิน",
       icon: Clock,
-      color:
-        "bg-yellow-100 text-yellow-800 border-yellow-200",
+      color: "bg-yellow-100 text-yellow-800 border-yellow-200",
     },
     "in-progress": {
       label: "กำลังดำเนินการ",
@@ -132,15 +124,13 @@ export default function AssessmentCard({
   assessment: AssessmentRecord;
   index: number;
 }) {
-  const service = ALL_SERVICES.find(
-    (s) => s.id === assessment.selectedServiceId,
-  );
+  const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
   const ServiceIcon = service?.icon;
   return (
     <motion.div className="w-full">
       <Link
         href={`/my-assessment-details/${assessment.id}`}
-        className="group block h-full rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-orange-300"
+        className="group block h-full rounded-lg border border-slate-200 bg-white/80 p-5 shadow-sm transition-all duration-300 hover:border-orange-300"
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
@@ -155,12 +145,9 @@ export default function AssessmentCard({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">
-                {assessment.device.brand}{" "}
-                {assessment.device.model}
+                {assessment.device.brand} {assessment.device.model}
               </h3>
-              <p className="text-sm text-slate-500">
-                {assessment.device.storage}
-              </p>
+              <p className="text-sm text-slate-500">{assessment.device.storage}</p>
             </div>
           </div>
           <ChevronRight className="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-500" />
@@ -175,10 +162,7 @@ export default function AssessmentCard({
             <span className="text-slate-500">บริการ:</span>
             {service && ServiceIcon && (
               <div
-                className={clsx(
-                  "flex items-center space-x-1.5 font-medium",
-                  service.colorClass,
-                )}
+                className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}
               >
                 <ServiceIcon className="h-4 w-4 flex-shrink-0" />
                 <span>{service.title}</span>
@@ -186,29 +170,20 @@ export default function AssessmentCard({
             )}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">
-              วันที่ประเมิน:
-            </span>
-            <span className="font-medium text-slate-700">
-              {assessment.assessmentDate}
-            </span>
+            <span className="text-slate-500">วันที่ประเมิน:</span>
+            <span className="font-medium text-slate-700">{assessment.assessmentDate}</span>
           </div>
         </div>
         <div className="my-4 h-px bg-slate-200" />
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-sm text-slate-500">
-              ราคาประเมิน
-            </p>
+            <p className="text-sm text-slate-500">ราคาประเมิน</p>
             <p className="text-xl font-bold text-orange-600">
-              {assessment.estimatedValue.toLocaleString(
-                "th-TH",
-                {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 0,
-                },
-              )}
+              {assessment.estimatedValue.toLocaleString("th-TH", {
+                style: "currency",
+                currency: "THB",
+                minimumFractionDigits: 0,
+              })}
             </p>
           </div>
           <div className="inline-flex items-center text-sm font-semibold text-orange-600 group-hover:text-orange-700">

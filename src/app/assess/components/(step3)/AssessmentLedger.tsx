@@ -210,7 +210,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
 
   return (
     // CHIRON: Root element ที่ครอบคลุมทั้งสองส่วนหลัก (รายละเอียดสภาพ และ ค่าซ่อม)
-    <div className="w-full space-y-6">
+    <div className="flex w-full flex-col gap-6">
       {/* ส่วนที่ 1: Accordion แสดงรายละเอียดสภาพเครื่อง */}
       <Accordion type="single" collapsible className="w-full" defaultValue="details">
         <AccordionItem
