@@ -65,7 +65,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
           },
           {
             value: "other",
-            label: "เครื่องนอก (ZP, LL, etc.)",
+            label: "เครื่องนอก ZP 14, 15, 16 Series",
             icon: Smartphone,
             severity: "positive",
           },

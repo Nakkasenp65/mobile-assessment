@@ -44,9 +44,7 @@ function PermissionPrompt({
           </h3>
           <p className="text-sm text-slate-600 dark:text-zinc-300">
             เพื่อทำการประเมินอัตโนมัติอย่างถูกต้อง กรุณา{" "}
-            <span className="font-semibold">
-              อนุญาตการเข้าถึงกล้องและไมโครโฟน
-            </span>{" "}
+            <span className="font-semibold">อนุญาตการเข้าถึงกล้องและไมโครโฟน</span>{" "}
             เมื่อเบราว์เซอร์มีหน้าต่างขอสิทธิ์ขึ้นมา
           </p>
 
@@ -70,15 +68,12 @@ function PermissionPrompt({
   );
 }
 
-// [FIX] Updated Props Interface to accept isOwnDevice
 interface AssessStep2Props {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (
-    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
-  ) => void;
+  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
   onBack: () => void;
-  isOwnDevice: boolean; // New prop
+  isOwnDevice: boolean;
 }
 
 type SubStep = "physical" | "automated" | "interactive";
@@ -88,34 +83,26 @@ const AssessStep2 = ({
   onConditionUpdate,
   onNext,
   onBack,
-  isOwnDevice, // Receive the new prop
+  isOwnDevice,
 }: AssessStep2Props) => {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid } = useDeviceDetection();
-
-  // 🔔 state สำหรับ modal ขออนุญาตกล้อง/ไมค์
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
 
-  /** ขั้นตอนไปต่อจาก physical */
   const determineNextStep = useCallback(() => {
-    // โหมดเดสก์ท็อป หรือไม่ใช่อุปกรณ์ตนเอง → ข้าม automated
     if (isDesktop || !isOwnDevice) {
       onNext();
       return;
     }
 
-    // โหมด Android บนอุปกรณ์ตนเอง → เข้าสู่ automated
     if (isAndroid) {
-      // ก่อนเข้าจริง แสดงคำเตือนขอสิทธิ์
       setShowPermissionPrompt(true);
       return;
     }
 
-    // iOS บนอุปกรณ์ตนเอง → ไป interactive
     setCurrentSubStep("interactive");
   }, [isOwnDevice, isDesktop, isAndroid, onNext]);
 
-  /** เมื่อกดยอมรับใน modal ให้ไป automated */
   const handleAllowPermissions = useCallback(() => {
     setShowPermissionPrompt(false);
     setCurrentSubStep("automated");
@@ -127,11 +114,7 @@ const AssessStep2 = ({
     // no-op: คงอยู่ใน physical
   }, []);
 
-  // [FIX] Re-created for simplicity
-  const handleAutomatedComplete = useCallback(
-    () => setCurrentSubStep("interactive"),
-    [],
-  );
+  const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
 
   const handleDiagnosticsCompletion = useCallback(
     (result: DiagnosticsResult) => {
@@ -181,7 +164,7 @@ const AssessStep2 = ({
 
   return (
     <div className="md:border-border mx-auto flex max-w-2xl flex-col rounded-xl md:p-2">
-      {/* Modal แจ้งเตือนก่อนเข้าสู่ Automated */}
+      {/* แจ้งเตือนอนุญาตการใช้ ไมโครโฟนและกล้อง */}
       <PermissionPrompt
         open={showPermissionPrompt}
         onAllow={handleAllowPermissions}
@@ -197,6 +180,7 @@ const AssessStep2 = ({
           exit="exit"
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
+          {/* (ถามทุกแพลตฟอร์ม) เลือกตอบ */}
           {currentSubStep === "physical" && (
             <QuestionReport
               conditionInfo={conditionInfo}
@@ -207,6 +191,7 @@ const AssessStep2 = ({
             />
           )}
 
+          {/* ตรวจสอบการชาร์จและไวไฟ */}
           {currentSubStep === "automated" && (
             <AutomatedDiagnostics
               onComplete={handleAutomatedComplete}
@@ -215,6 +200,7 @@ const AssessStep2 = ({
             />
           )}
 
+          {/* ตรวจสอบ ลำโพง ไมโครโฟน และ การระบายหน้าจอ */}
           {currentSubStep === "interactive" && (
             <InteractiveTests
               onFlowComplete={onNext}

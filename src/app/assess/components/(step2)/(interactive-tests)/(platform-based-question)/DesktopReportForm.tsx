@@ -2,13 +2,7 @@
 
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Circle,
-} from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, CheckCircle2, Circle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConditionInfo } from "../../../../page";
 import { Question } from "../../../../../../util/info";
@@ -17,9 +11,7 @@ import { cn } from "@/lib/utils";
 
 interface DesktopReportFormProps {
   conditionInfo: ConditionInfo;
-  onConditionUpdate: (
-    info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo),
-  ) => void;
+  onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onComplete: () => void;
   onBack: () => void;
   questions: Array<{ section: string; questions: Question[] }>;
@@ -37,9 +29,7 @@ const DesktopReportForm = ({
   );
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const [expandedSections, setExpandedSections] = useState<string[]>([
-    questions[0]?.section || "",
-  ]);
+  const [expandedSections, setExpandedSections] = useState<string[]>([questions[0]?.section || ""]);
 
   const [formValues, setFormValues] = useState<Partial<ConditionInfo>>(() => {
     const initialValues: Partial<ConditionInfo> = {};
@@ -50,9 +40,7 @@ const DesktopReportForm = ({
   });
 
   const handleSelection = (questionId: keyof ConditionInfo, value: string) => {
-    const currentSection = questions.find((s) =>
-      s.questions.some((q) => q.id === questionId),
-    );
+    const currentSection = questions.find((s) => s.questions.some((q) => q.id === questionId));
     if (!currentSection) return;
 
     const wasSectionComplete = currentSection.questions.every(
@@ -67,9 +55,7 @@ const DesktopReportForm = ({
     );
 
     if (!wasSectionComplete && isSectionNowComplete) {
-      const currentSectionIndex = questions.findIndex(
-        (s) => s.section === currentSection.section,
-      );
+      const currentSectionIndex = questions.findIndex((s) => s.section === currentSection.section);
       const nextSection = questions[currentSectionIndex + 1];
 
       setExpandedSections((prev) => {
@@ -101,13 +87,8 @@ const DesktopReportForm = ({
     return allQuestions.every((q) => formValues[q.id] !== undefined);
   }, [formValues, allQuestions]);
 
-  const getSectionProgress = (section: {
-    section: string;
-    questions: Question[];
-  }) => {
-    const answeredCount = section.questions.filter(
-      (q) => formValues[q.id] !== undefined,
-    ).length;
+  const getSectionProgress = (section: { section: string; questions: Question[] }) => {
+    const answeredCount = section.questions.filter((q) => formValues[q.id] !== undefined).length;
     return {
       answered: answeredCount,
       total: section.questions.length,
@@ -117,9 +98,7 @@ const DesktopReportForm = ({
 
   const toggleSection = (sectionName: string) => {
     setExpandedSections((prev) =>
-      prev.includes(sectionName)
-        ? prev.filter((name) => name !== sectionName)
-        : [sectionName],
+      prev.includes(sectionName) ? prev.filter((name) => name !== sectionName) : [sectionName],
     );
   };
 
@@ -132,9 +111,7 @@ const DesktopReportForm = ({
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
       <div className="text-center">
-        <h1 className="text-foreground mb-2 text-3xl font-bold">
-          ประเมินสภาพเครื่อง
-        </h1>
+        <h1 className="text-foreground mb-2 text-3xl font-bold">ประเมินสภาพเครื่อง</h1>
         <p className="text-muted-foreground">
           กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ
         </p>
@@ -172,9 +149,7 @@ const DesktopReportForm = ({
                     <Circle className="h-6 w-6 flex-shrink-0 text-slate-300 dark:text-zinc-600" />
                   )}
                   <div>
-                    <h2 className="text-foreground text-lg font-bold">
-                      {section.section}
-                    </h2>
+                    <h2 className="text-foreground text-lg font-bold">{section.section}</h2>
                     <p className="text-muted-foreground text-sm">
                       {progress.answered} จาก {progress.total} คำถาม
                       {progress.isComplete && " • เสร็จสมบูรณ์"}
@@ -197,29 +172,19 @@ const DesktopReportForm = ({
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
                     <div className="border-border/50 border-t p-4 md:p-6">
-                      {/* --- [MOD] เปลี่ยนจาก gap-6 เป็น divide-y เพื่อสร้างเส้นคั่น --- */}
                       <div className="divide-border/50 flex flex-col divide-y">
                         {section.questions.map((question) => (
-                          // --- [ADD] เพิ่ม Padding ด้านบน (pt-6) ให้กับทุกข้อ ยกเว้นข้อแรก เพื่อสร้างระยะห่างรอบเส้นคั่น ---
-                          <div
-                            key={question.id}
-                            className="flex flex-col gap-3 py-4 first:pt-0"
-                          >
-                            <h3 className="text-foreground font-semibold">
-                              {question.question}
-                            </h3>
+                          <div key={question.id} className="flex flex-col gap-3 py-4 first:pt-0">
+                            <h3 className="text-foreground font-semibold">{question.question}</h3>
                             <div className="grid [grid-auto-rows:1fr] grid-cols-2 gap-3 sm:grid-cols-3">
                               {question.options.map((option) => {
-                                const isSelected =
-                                  formValues[question.id] === option.value;
+                                const isSelected = formValues[question.id] === option.value;
                                 const Icon = option.icon;
 
                                 return (
                                   <button
                                     key={option.value}
-                                    onClick={() =>
-                                      handleSelection(question.id, option.value)
-                                    }
+                                    onClick={() => handleSelection(question.id, option.value)}
                                     className={cn(
                                       "flex flex-col items-center justify-center gap-2 rounded-xl border p-3 text-center transition-all duration-200",
                                       isSelected
@@ -231,9 +196,7 @@ const DesktopReportForm = ({
                                       size={28}
                                       className={cn(
                                         "mb-1 transition-colors",
-                                        isSelected
-                                          ? "text-primary"
-                                          : "text-muted-foreground",
+                                        isSelected ? "text-primary" : "text-muted-foreground",
                                       )}
                                     />
                                     <span className="text-foreground text-xs font-semibold">
