@@ -5,8 +5,6 @@ import { Question, Platform } from "@/util/info";
 import { ConditionInfo } from "@/app/assess/page";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 // --- Props Interface ---
 interface QuestionWrapperProps {
@@ -18,20 +16,26 @@ interface QuestionWrapperProps {
 const ChoiceInput = ({ question, currentValue, onSelect }) => (
   <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
     {question.options.map((option) => (
+      // ส่วนปุ่ม
       <button
         key={option.id}
         type="button"
         onClick={() => onSelect(option.id)}
         className={cn(
-          "flex h-16 items-center justify-center rounded-2xl border-1 bg-white shadow transition-all",
+          "flex h-20 items-center justify-center rounded-2xl border-1 transition-all",
           currentValue === option.id
             ? "border-primary bg-primary/10 ring-primary ring-2"
-            : "hover:border-primary/30 border-gray-100",
+            : "hover:border-primary/30 bg-orange-500/5",
         )}
       >
+        {/* ส่วน icon + label */}
         <div className="flex flex-col items-center gap-2">
-          {option.icon && <option.icon className="h-5 w-5 text-gray-500" />}
-          <span className="text-xs">{option.label}</span>
+          {option.icon && (
+            <option.icon
+              className={`h-6 w-6 ${currentValue === option.id ? "text-orange-500" : "text-gray-600"}`}
+            />
+          )}
+          <span className="text-xs sm:font-bold">{option.label}</span>
         </div>
       </button>
     ))}
@@ -82,6 +86,7 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
   };
 
   switch (question.type) {
+    // แบบ choice เลือกตอบ
     case "choice":
       return (
         <div className="py-4 first:pt-0">
@@ -93,6 +98,7 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
           />
         </div>
       );
+    // แบบปุ่มกดเปิดปิด
     case "toggle":
       return (
         <ToggleInput

@@ -124,7 +124,6 @@ const AssessStep1 = ({
   const isValidModel = isValidBrand && availableModels.includes(localInfo.model);
   const isValidStorage = isValidModel && availableStorage.includes(localInfo.storage);
   const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
-
   const isComplete = isValidBrand && isValidModel && isValidStorage && isUserDeviceOk;
 
   return (

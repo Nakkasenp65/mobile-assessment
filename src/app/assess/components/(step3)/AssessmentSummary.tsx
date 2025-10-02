@@ -155,7 +155,6 @@ const AssessmentSummary = ({
         <AssessmentLedger
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
-          // CHIRON: 3. ส่งผ่าน props ที่ได้รับมาลงไปยัง Component ปลายทาง
           repairs={repairs}
           totalCost={totalCost}
           isLoading={isLoadingRepairPrices}

@@ -1,48 +1,44 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface MicrophoneDetectionProps {
   isOpen: boolean;
-  onConclude: (result: boolean) => void;
+  onConclude: (result: "mic_ok" | "mic_failed") => void;
 }
 
 type TestPhase = "idle" | "prompt_permission" | "testing" | "error";
 
-const VOLUME_THRESHOLD = 25; // %
-const TEST_TIMEOUT = 10000; // 10 seconds
+const VOLUME_THRESHOLD = 25;
+const TEST_TIMEOUT = 10000;
 
-const MicrophoneDetection = ({
-  isOpen,
-  onConclude,
-}: MicrophoneDetectionProps) => {
+const MicrophoneDetection = ({ isOpen, onConclude }: MicrophoneDetectionProps) => {
   const [phase, setPhase] = useState<TestPhase>("idle");
   const [micVolume, setMicVolume] = useState(0);
 
-  // Silas's logic: Use refs to hold onto non-reactive values like APIs and timers.
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isConcludedRef = useRef(false);
 
-  // The single source of truth for cleanup.
+  const handleConclude = useCallback(
+    (result: "mic_ok" | "mic_failed") => {
+      if (isConcludedRef.current) return;
+      isConcludedRef.current = true;
+      onConclude(result);
+    },
+    [onConclude],
+  );
+
   const cleanup = () => {
-    if (animationFrameRef.current)
-      cancelAnimationFrame(animationFrameRef.current);
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (streamRef.current)
-      streamRef.current.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) streamRef.current.getTracks().forEach((track) => track.stop());
     if (audioContextRef.current && audioContextRef.current.state !== "closed") {
       audioContextRef.current.close();
     }
@@ -56,8 +52,7 @@ const MicrophoneDetection = ({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const context = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioContextRef.current = context;
 
       const source = context.createMediaStreamSource(stream);
@@ -70,33 +65,29 @@ const MicrophoneDetection = ({
     } catch (err) {
       console.error("Microphone access denied:", err);
       setPhase("error");
+      // ✨ [ลบ] setTimeout ออก
     }
   };
 
-  // Effect to handle the testing phase
   useEffect(() => {
     if (phase !== "testing" || !analyserRef.current) return;
 
     const analyser = analyserRef.current;
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    // Start the 10-second failure timeout
     timeoutRef.current = setTimeout(() => {
-      onConclude(false);
+      handleConclude("mic_failed");
     }, TEST_TIMEOUT);
 
     const measure = () => {
       analyser.getByteFrequencyData(dataArray);
       const sum = dataArray.reduce((a, b) => a + b, 0);
       const average = sum / dataArray.length;
-      const volumePercent = Math.min(
-        100,
-        Math.floor((average / 128) * 100 * 1.5),
-      ); // Scale it up a bit
+      const volumePercent = Math.min(100, Math.floor((average / 128) * 100 * 1.5));
       setMicVolume(volumePercent);
 
       if (volumePercent >= VOLUME_THRESHOLD) {
-        onConclude(true); // Test passed!
+        handleConclude("mic_ok");
       } else {
         animationFrameRef.current = requestAnimationFrame(measure);
       }
@@ -104,11 +95,14 @@ const MicrophoneDetection = ({
 
     animationFrameRef.current = requestAnimationFrame(measure);
 
-    return cleanup; // Cleanup when component unmounts or phase changes
-  }, [phase, onConclude]);
+    return cleanup;
+  }, [phase, handleConclude]);
 
-  // Reset state when modal is closed
   useEffect(() => {
+    if (isOpen) {
+      isConcludedRef.current = false;
+    }
+
     if (!isOpen) {
       cleanup();
       setTimeout(() => {
@@ -127,22 +121,20 @@ const MicrophoneDetection = ({
           </p>
         );
       case "error":
+        // ✨ [แก้ไข] ปรับ UI ของหน้า Error ทั้งหมด
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
             <XCircle className="text-destructive mb-4 h-12 w-12" />
-            <p className="text-destructive-foreground">
-              ไม่สามารถเข้าถึงไมโครโฟนได้
-            </p>
-            <p className="text-muted-foreground text-sm">
-              กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์
+            <p className="text-lg font-semibold text-black">ไม่สามารถเข้าถึงไมโครโฟนได้</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน
             </p>
             <FramerButton
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => onConclude(false)}
+              size="lg"
+              className="bg-primary mt-6 h-14 w-full text-white"
+              onClick={() => handleConclude("mic_failed")}
             >
-              ปิด
+              รับทราบและดำเนินการต่อ
             </FramerButton>
           </div>
         );
@@ -150,7 +142,6 @@ const MicrophoneDetection = ({
         return (
           <div className="flex flex-col items-center">
             <p className="text-muted-foreground mb-4">กรุณาลองพูดใส่ไมโครโฟน</p>
-            {/* Aria's touch: The real-time volume meter */}
             <div className="bg-muted relative flex h-48 w-full flex-col-reverse overflow-hidden rounded-lg">
               <motion.div
                 className="bg-success w-full"
@@ -167,20 +158,14 @@ const MicrophoneDetection = ({
                 </div>
               </div>
             </div>
-            <p className="text-muted-foreground mt-2 text-sm">
-              พูดให้เสียงดังถึงขีดที่กำหนด
-            </p>
+            <p className="text-muted-foreground mt-2 text-sm">พูดให้เสียงดังถึงขีดที่กำหนด</p>
           </div>
         );
       case "idle":
       default:
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
-            <FramerButton
-              size="lg"
-              className="h-14 px-8 text-lg"
-              onClick={startTest}
-            >
+            <FramerButton size="lg" className="h-14 px-8 text-lg" onClick={startTest}>
               เริ่มการทดสอบ
             </FramerButton>
           </div>
@@ -189,7 +174,7 @@ const MicrophoneDetection = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onConclude(false)}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleConclude("mic_failed")}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>ขั้นตอนที่ 2: ทดสอบไมโครโฟน</DialogTitle>

@@ -110,6 +110,10 @@ const DesktopReportForm = ({
     prevCompletionRef.current = relevantSections.map((_, index) => isSectionComplete(index));
   }, [conditionInfo, relevantSections]);
 
+  useEffect(() => {
+    scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="flex w-full max-w-4xl flex-col gap-8">
       <div className="text-center">
@@ -128,8 +132,6 @@ const DesktopReportForm = ({
         {relevantSections.map((section, sectionIndex) => {
           const isCompleted = isSectionComplete(sectionIndex);
           const inProgress = isSectionInProgress(sectionIndex);
-
-          // แยกคำถามตาม type
           const choiceQuestions = section.questions.filter((q) => q.type === "choice");
           const toggleQuestions = section.questions.filter((q) => q.type === "toggle");
 
@@ -142,7 +144,7 @@ const DesktopReportForm = ({
               }}
               className="border-border bg-card rounded-2xl border shadow-sm"
             >
-              <AccordionTrigger className="px-4 py-4 hover:no-underline md:px-6 md:py-6">
+              <AccordionTrigger className="flex items-center px-4 py-4 hover:no-underline data-[state=open]:mb-8 data-[state=open]:rounded-b-none data-[state=open]:border-b">
                 <div className="flex items-center gap-3">
                   {/* Status Icon */}
                   {isCompleted ? (
@@ -193,7 +195,7 @@ const DesktopReportForm = ({
                       </h3>
                       <span className="text-muted-foreground text-xs">(ไม่จำเป็นต้องเลือก)</span>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5">
+                    <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5">
                       {toggleQuestions.map((question) => (
                         <QuestionWrapper
                           key={question.id}

@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
-import QuestionWrapper from "../../../../../../components/ui/QuestionWrapper";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
-// Props Interface ไม่เปลี่ยนแปลง
 interface MobileQuestionAccordionProps {
   conditionInfo: ConditionInfo;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
@@ -32,7 +32,6 @@ const MobileQuestionAccordion = ({
   const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // 1. กรองคำถามที่เกี่ยวข้องกับ Platform ปัจจุบัน
   const relevantQuestions = useMemo(() => {
     const currentPlatform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
     return ASSESSMENT_QUESTIONS.map((section) => ({
@@ -41,19 +40,18 @@ const MobileQuestionAccordion = ({
     })).filter((section) => section.questions.length > 0);
   }, [isDesktop, isIOS, isAndroid]);
 
+  // ✨ [แก้ไข] กรองเฉพาะคำถามประเภท "choice" เพื่อใช้ในการตรวจสอบ isComplete
   const allVisibleQuestions = useMemo(
-    () => relevantQuestions.flatMap((s) => s.questions),
+    () => relevantQuestions.flatMap((s) => s.questions).filter((q) => q.type === "choice"),
     [relevantQuestions],
   );
 
-  // 2. หาคำถามข้อแรกที่ยังไม่ได้ตอบ เพื่อเปิด Accordion รอไว้
   const findFirstUnanswered = () => {
     return allVisibleQuestions.find((q) => !conditionInfo[q.id])?.id || "";
   };
 
   const [openAccordionValue, setOpenAccordionValue] = useState<string>(findFirstUnanswered);
 
-  // 3. Logic การ Scroll ไปยัง Accordion ที่เปิดอยู่
   useEffect(() => {
     if (openAccordionValue) {
       const element = itemRefs.current[openAccordionValue];
@@ -65,7 +63,6 @@ const MobileQuestionAccordion = ({
     }
   }, [openAccordionValue]);
 
-  // 4. ฟังก์ชันสำหรับอัปเดต State และเปลี่ยนไปเปิด Accordion ข้อถัดไป
   const handleUpdate = (questionId: keyof ConditionInfo, value: string | string[]) => {
     const updatedConditionInfo = { ...conditionInfo, [questionId]: value };
     onConditionUpdate(updatedConditionInfo);
@@ -74,7 +71,6 @@ const MobileQuestionAccordion = ({
     setOpenAccordionValue(nextUnanswered ? nextUnanswered.id : "");
   };
 
-  // 5. ตรวจสอบว่าตอบคำถามครบทุกข้อแล้วหรือยัง
   const isComplete = useMemo(() => {
     return allVisibleQuestions.every((q) => !!conditionInfo[q.id]);
   }, [conditionInfo, allVisibleQuestions]);
@@ -98,21 +94,14 @@ const MobileQuestionAccordion = ({
               onValueChange={setOpenAccordionValue}
             >
               {section.questions.map((question) => {
-                const selectedValue = conditionInfo[question.id];
+                if (question.type === "toggle") return null;
+
+                const selectedValue = conditionInfo[question.id] as string;
                 const isAnswered = !!selectedValue;
 
-                // หา Label ของคำตอบที่เลือก (สำหรับแสดงผลใน Trigger)
-                const getSelectedLabel = () => {
-                  if (!selectedValue) return null;
-                  if (question.type === "toggle") {
-                    // สำหรับ toggle, ถ้ามีปัญหา ให้แสดง label ของ "ปัญหา"
-                    return selectedValue === question.options[1].id
-                      ? question.options[1].label
-                      : null;
-                  }
-                  return question.options.find((opt) => opt.id === selectedValue)?.label;
-                };
-                const selectedLabel = getSelectedLabel();
+                const selectedLabel = isAnswered
+                  ? question.options.find((opt) => opt.id === selectedValue)?.label
+                  : null;
 
                 const Icon = question.icon;
 
@@ -126,30 +115,40 @@ const MobileQuestionAccordion = ({
                     className={cn(
                       "bg-card rounded-xl border shadow-sm transition-all duration-300",
                       openAccordionValue === question.id
-                        ? "border-primary ring-primary/20 ring-2"
+                        ? "border-primary ring-primary/20 ring-1"
                         : isAnswered
-                          ? "border-green-500/50"
+                          ? "border-green-500/30"
                           : "border-border",
                     )}
                   >
                     <AccordionTrigger className="w-full p-4 text-left hover:no-underline">
                       <div className="flex w-full items-center gap-4">
-                        {isAnswered ? (
-                          <CheckCircle2 className="h-7 w-7 flex-shrink-0 text-green-500" />
-                        ) : (
+                        <div
+                          className={cn(
+                            "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
+                            isAnswered
+                              ? "bg-green-100"
+                              : openAccordionValue === question.id
+                                ? "bg-orange-100"
+                                : "bg-slate-100",
+                          )}
+                        >
                           <Icon
                             className={cn(
-                              "h-7 w-7 flex-shrink-0 transition-colors",
-                              openAccordionValue === question.id
-                                ? "text-primary"
-                                : "text-slate-400",
+                              "h-6 w-6",
+                              isAnswered
+                                ? "text-green-600"
+                                : openAccordionValue === question.id
+                                  ? "text-primary"
+                                  : "text-slate-500",
                             )}
                           />
-                        )}
+                        </div>
+
                         <div className="flex-grow">
                           <p className="text-foreground font-semibold">{question.question}</p>
                           {selectedLabel && (
-                            <p className="text-primary mt-0.5 text-sm font-semibold">
+                            <p className="text-primary mt-0.5 text-sm font-medium">
                               {selectedLabel}
                             </p>
                           )}
@@ -157,14 +156,27 @@ const MobileQuestionAccordion = ({
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
-                      <div className="mt-2 border-t pt-4 dark:border-zinc-700/50">
-                        {/* ใช้ QuestionWrapper ในการ Render UI ของคำถาม */}
-                        <QuestionWrapper
-                          question={question}
-                          conditionInfo={conditionInfo}
-                          onConditionUpdate={handleUpdate}
-                        />
-                      </div>
+                      <RadioGroup
+                        value={selectedValue}
+                        onValueChange={(value) => handleUpdate(question.id, value)}
+                        className="flex flex-col gap-3 border-t pt-4"
+                      >
+                        {question.options.map((option) => (
+                          <Label
+                            key={option.id}
+                            htmlFor={`${question.id}-${option.id}`}
+                            className={cn(
+                              "flex cursor-pointer items-center rounded-lg border p-4 transition-all",
+                              selectedValue === option.id
+                                ? "border-primary bg-primary/5 ring-primary ring-1"
+                                : "border-border bg-card hover:bg-accent",
+                            )}
+                          >
+                            <RadioGroupItem value={option.id} id={`${question.id}-${option.id}`} />
+                            <span className="text-foreground ml-3 font-medium">{option.label}</span>
+                          </Label>
+                        ))}
+                      </RadioGroup>
                     </AccordionContent>
                   </AccordionItem>
                 );
@@ -179,15 +191,15 @@ const MobileQuestionAccordion = ({
         <FramerButton
           variant="ghost"
           onClick={onBack}
-          className="text-muted-foreground flex h-12 items-center rounded-full border bg-white px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>
         <FramerButton
           onClick={onComplete}
-          disabled={!isComplete}
           size="lg"
+          disabled={!isComplete}
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           ขั้นตอนต่อไป

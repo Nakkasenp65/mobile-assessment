@@ -68,6 +68,10 @@ export default function AssessPage() {
     buttons: "",
   });
 
+  useEffect(() => {
+    console.log(conditionInfo);
+  }, [conditionInfo]);
+
   const handleNext = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -94,10 +98,10 @@ export default function AssessPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 pb-24 sm:py-16 sm:pb-4">
         <ProgressBar currentStep={currentStep} totalSteps={3} />
 
-        <div className="md:mt-8">
+        <div className="mt-8">
           {/* เลือกแบรนด์ โมเดล และ ความจุ */}
           {currentStep === 1 && (
             <AssessStep1

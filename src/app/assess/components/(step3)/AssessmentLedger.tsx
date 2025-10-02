@@ -1,8 +1,9 @@
+// src/app/assess/components/(step3)/AssessmentLedger.tsx
 "use client";
 
-import { ComponentType } from "react";
+import { ComponentType, useMemo } from "react";
 import { DeviceInfo, ConditionInfo } from "../../page";
-import { RepairItem } from "@/hooks/useRepairPrices"; // CHIRON: Import Type ที่จำเป็นสำหรับส่วนบริการซ่อม
+import { RepairItem } from "@/hooks/useRepairPrices";
 import {
   BatteryCharging,
   Camera,
@@ -15,14 +16,16 @@ import {
   Smartphone,
   Volume2,
   Wifi,
-  AlertTriangle,
+  AlertTriangleIcon,
   CheckCircle,
   ShieldCheck,
   Archive,
   Frame,
   ScanFace,
   Info,
-  AlertTriangleIcon,
+  PhoneCall, // เพิ่มไอคอนใหม่
+  CircleDot, // เพิ่มไอคอนใหม่
+  RadioTower, // เพิ่มไอคอนใหม่
 } from "lucide-react";
 import {
   Accordion,
@@ -32,9 +35,9 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import MaintenanceService from "./(services)/MaintenanceService";
+import { ASSESSMENT_QUESTIONS } from "@/util/info"; // ✅ Import ถูกต้องแล้ว
 
-// --- ICON and LABEL MAPs ---
-// CHIRON: โครงสร้างข้อมูลเหล่านี้ทำหน้าที่เป็น "พจนานุกรม" สำหรับการแสดงผล ทำให้โค้ดส่วน JSX สะอาดและจัดการง่าย
+// --- ICON and LABEL MAPs (แก้ไขแล้ว) ---
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
   model: Cpu,
@@ -54,6 +57,11 @@ const ICON_MAP: Record<string, ComponentType<any>> = {
   accessories: Archive,
   bodyCondition: Smartphone,
   faceId: ScanFace,
+  // ✨ เพิ่มข้อมูลสำหรับ toggle ใหม่
+  call: PhoneCall,
+  homeButton: CircleDot,
+  sensor: RadioTower,
+  buttons: Power,
 };
 
 const LABEL_MAP: Record<string, string> = {
@@ -75,41 +83,55 @@ const LABEL_MAP: Record<string, string> = {
   accessories: "อุปกรณ์",
   bodyCondition: "สภาพตัวเครื่อง",
   faceId: "Face ID / Touch ID",
-};
-
-const TRANSLATION_MAP: Record<string, string> = {
-  th: "เครื่องไทย (TH)",
-  other: "เครื่องนอก (ZP, LL, etc.)",
-  active_long: "เหลือมากกว่า 4 เดือน",
-  active_short: "เหลือน้อยกว่า 4 เดือน",
-  inactive: "หมดประกันแล้ว",
-  full: "ครบกล่อง",
-  box_only: "มีเฉพาะกล่อง",
-  no_box: "ไม่มีกล่อง",
+  // ✨ เพิ่มข้อมูลสำหรับ toggle ใหม่
+  call: "การโทร",
+  homeButton: "ปุ่ม Home",
+  sensor: "Sensor",
+  buttons: "ปุ่ม Power / Volume",
 };
 
 // --- Helper Function ---
-// CHIRON: ฟังก์ชันเล็กๆ ที่มีหน้าที่เดียว (Single Responsibility) ช่วยลดความซับซ้อนของตรรกะใน JSX
 const isConsideredPassed = (key: string, value: string): boolean => {
+  // รวม id ของตัวเลือกที่เป็น positive ทั้งหมดจาก info.ts
   const positiveValues = [
-    "passed",
-    "perfect",
-    "mint",
-    "high",
-    "excellent",
-    "good",
-    "th",
-    "full",
-    "active_long",
+    "model_th",
+    "model_inter_new",
+    "model_inter_old",
+    "warranty_active_long",
+    "warranty_active_short",
+    "acc_full",
+    "acc_box_only",
+    "body_mint",
+    "glass_ok",
+    "display_ok",
+    "battery_health_high",
+    "battery_health_medium",
+    "camera_ok",
+    "wifi_ok",
+    "biometric_ok",
+    "speaker_ok",
+    "charger_ok",
+    "call_ok",
+    "home_button_ok",
+    "sensor_ok",
+    "buttons_ok",
+    "passed", // สำหรับค่าจาก automated tests
   ];
   if (positiveValues.includes(value)) return true;
   if (key === "touchScreen" && parseInt(value) >= 95) return true;
   return false;
 };
 
-// --- Sub-component: TestItem ---
-// CHIRON: Component ย่อยสำหรับแสดงผลการทดสอบแต่ละรายการ ทำให้โค้ดหลักอ่านง่ายขึ้น
-const TestItem = ({ itemKey, itemValue }: { itemKey: string; itemValue: string }) => {
+// --- Sub-components (ไม่มีการเปลี่ยนแปลง) ---
+const TestItem = ({
+  itemKey,
+  itemValue,
+  label,
+}: {
+  itemKey: string;
+  itemValue: string;
+  label: string;
+}) => {
   const Icon = ICON_MAP[itemKey];
   const isPassed = isConsideredPassed(itemKey, itemValue);
 
@@ -153,36 +175,31 @@ const TestItem = ({ itemKey, itemValue }: { itemKey: string; itemValue: string }
           {LABEL_MAP[itemKey] || itemKey}
         </span>
         <span className={cn("text-xs", isPassed ? "text-slate-500" : "text-orange-600")}>
-          {itemValue}
+          {label}
         </span>
       </div>
     </div>
   );
 };
 
-// --- Sub-component: GeneralInfoItem ---
-// CHIRON: Component ย่อยสำหรับข้อมูลทั่วไป ช่วยลดการเขียนโค้ดซ้ำซ้อน
-const GeneralInfoItem = ({ itemKey, itemValue }: { itemKey: string; itemValue: string }) => {
+const GeneralInfoItem = ({ itemKey, label }: { itemKey: string; label: string }) => {
   const Icon = ICON_MAP[itemKey];
-  const label = LABEL_MAP[itemKey];
-  const translatedValue = TRANSLATION_MAP[itemValue] || itemValue;
+  const categoryLabel = LABEL_MAP[itemKey];
 
-  if (!itemValue || !Icon) return null;
+  if (!label || !Icon) return null;
 
   return (
     <div className="flex items-center gap-3">
       <Icon className="h-5 w-5 flex-shrink-0 text-slate-500" />
       <div className="flex w-full justify-between text-sm">
-        <span className="text-slate-600">{label}:</span>
-        <span className="font-semibold text-slate-800">{translatedValue}</span>
+        <span className="text-slate-600">{categoryLabel}:</span>
+        <span className="font-semibold text-slate-800">{label}</span>
       </div>
     </div>
   );
 };
 
 // --- Main Component Interface ---
-// CHIRON: Structural Engineer - นี่คือ "สัญญา" (Contract) ของ Component
-// การรวม props ทั้งหมดที่นี่ทำให้เห็นภาพรวมความรับผิดชอบของ AssessmentLedger ได้อย่างชัดเจน
 interface AssessmentLedgerProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
@@ -191,7 +208,7 @@ interface AssessmentLedgerProps {
   isLoading: boolean;
 }
 
-// --- Main Component: AssessmentLedger ---
+// --- Main Component: AssessmentLedger (ไม่มีการเปลี่ยนแปลง Logic หลัก) ---
 const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   deviceInfo,
   conditionInfo,
@@ -199,6 +216,19 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   totalCost,
   isLoading,
 }) => {
+  const optionsLabelMap = useMemo(() => {
+    const map: Record<string, Record<string, string>> = {};
+    ASSESSMENT_QUESTIONS.forEach((section) => {
+      section.questions.forEach((question) => {
+        map[question.id] = {};
+        question.options.forEach((option) => {
+          map[question.id][option.id] = option.label;
+        });
+      });
+    });
+    return map;
+  }, []);
+
   const allInfo = { ...deviceInfo, ...conditionInfo };
 
   const generalInfoKeys = ["modelType", "warranty", "accessories"];
@@ -209,9 +239,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   );
 
   return (
-    // CHIRON: Root element ที่ครอบคลุมทั้งสองส่วนหลัก (รายละเอียดสภาพ และ ค่าซ่อม)
     <div className="flex w-full flex-col gap-6">
-      {/* ส่วนที่ 1: Accordion แสดงรายละเอียดสภาพเครื่อง */}
       <Accordion type="single" collapsible className="w-full" defaultValue="details">
         <AccordionItem
           value="details"
@@ -229,35 +257,28 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </AccordionTrigger>
 
           <AccordionContent className="flex flex-col gap-6 p-4">
-            {/* ข้อมูลเครื่องโดยทั่วไป */}
             <div className="bg-white">
               <div className="mb-3 flex items-center gap-2">
                 <Info className="h-5 w-5 text-slate-500" />
                 <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
               </div>
               <div className="space-y-2 border-t border-slate-100 pt-3">
-                {generalInfoKeys.map((key) => (
-                  <GeneralInfoItem
-                    key={key}
-                    itemKey={key}
-                    itemValue={allInfo[key as keyof typeof allInfo]}
-                  />
-                ))}
+                {generalInfoKeys.map((key) => {
+                  const value = allInfo[key as keyof typeof allInfo];
+                  const label = optionsLabelMap[key]?.[value] || value;
+                  return <GeneralInfoItem key={key} itemKey={key} label={label} />;
+                })}
               </div>
             </div>
-            {/* อาการที่ตรวจพบ */}
             <div className="flex flex-col gap-4 border-t border-b pt-4 pb-6">
               <div className="grid grid-cols-2 gap-3">
-                {conditionKeys.map((key) => (
-                  <TestItem
-                    key={key}
-                    itemKey={key}
-                    itemValue={allInfo[key as keyof typeof allInfo]}
-                  />
-                ))}
+                {conditionKeys.map((key) => {
+                  const value = allInfo[key as keyof typeof allInfo];
+                  const label = optionsLabelMap[key]?.[value] || value;
+                  return <TestItem key={key} itemKey={key} itemValue={value} label={label} />;
+                })}
               </div>
             </div>
-            {/* ค่าบริาการซ่อม */}
             <MaintenanceService
               deviceInfo={deviceInfo}
               repairs={repairs}
@@ -267,9 +288,6 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-
-      {/* ส่วนที่ 2: แสดงผลค่าบริการซ่อม ซึ่งตอนนี้เป็นความรับผิดชอบของ Component นี้ */}
-      {/* CHIRON: การส่งผ่าน props ทั้งหมดลงไป ทำให้ MaintenanceService เป็น "Pure Component" ที่ควบคุมจากภายนอกได้ง่าย */}
     </div>
   );
 };

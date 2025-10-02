@@ -32,6 +32,9 @@ import {
   PhoneOff,
   Package,
   CameraOff,
+  Hand,
+  Mic, // ✨ Import ไอคอน
+  MicOff, // ✨ Import ไอคอน
 } from "lucide-react";
 
 export type Platform = "DESKTOP" | "IOS" | "ANDROID";
@@ -102,7 +105,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "bodyCondition",
-        question: "4. สภาพตัวเครื่องโดยรวม (เลือกได้หลายข้อ)",
+        question: "4. สภาพตัวเครื่องโดยรวม",
         icon: Smartphone,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -160,10 +163,10 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "camera",
-        question: "8. กล้องหน้าและกล้องหลัง",
+        question: "9. กล้องหน้าและกล้องหลัง",
         icon: Camera,
         type: "choice",
-        platforms: ["DESKTOP", "IOS"],
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
           { id: "camera_ok", label: "ทำงานปกติ", icon: Camera },
           { id: "camera_issue_minor", label: "มีปัญหา (จุดดำ, ไม่โฟกัส)", icon: AlertTriangle },
@@ -171,11 +174,22 @@ export const ASSESSMENT_QUESTIONS: Array<{
         ],
       },
       {
+        id: "touchScreen",
+        question: "การสัมผัสหน้าจอ",
+        icon: Hand,
+        type: "toggle", // เปลี่ยนเป็น toggle เพื่อให้สอดคล้องกับ UI
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "touchscreen_ok", label: "สัมผัสปกติ", icon: Hand },
+          { id: "touchscreen_failed", label: "ทัชไม่ได้/ทัชรวน", icon: Hand },
+        ],
+      },
+      {
         id: "wifi",
         question: "Wi-Fi / Bluetooth",
         icon: Wifi,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS"],
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
           { id: "wifi_ok", label: "เชื่อมต่อปกติ", icon: Wifi },
           { id: "wifi_failed", label: "มีปัญหา", icon: WifiOff },
@@ -197,10 +211,22 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ลำโพงและการสั่น",
         icon: Speaker,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS"],
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
           { id: "speaker_ok", label: "ปกติ", icon: Speaker },
           { id: "speaker_failed", label: "ลำโพงแตก/ไม่ดัง/ไม่สั่น", icon: Vibrate },
+        ],
+      },
+      // ✨ [เพิ่ม] คำถามสำหรับ Microphone
+      {
+        id: "mic",
+        question: "ไมโครโฟน",
+        icon: Mic,
+        type: "toggle",
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        options: [
+          { id: "mic_ok", label: "ใช้งานปกติ", icon: Mic },
+          { id: "mic_failed", label: "มีปัญหา", icon: MicOff },
         ],
       },
       {
@@ -208,7 +234,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การชาร์จไฟ",
         icon: BatteryCharging,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS"],
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
           { id: "charger_ok", label: "ชาร์จเข้าปกติ", icon: BatteryCharging },
           { id: "charger_failed", label: "ชาร์จไม่เข้า", icon: PowerOff },

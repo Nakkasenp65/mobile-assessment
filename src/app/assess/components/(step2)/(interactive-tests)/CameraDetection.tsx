@@ -1,28 +1,16 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Check, XCircle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface CameraDetectionProps {
   isOpen: boolean;
-  onConclude: (result: boolean) => void;
+  onConclude: (result: "camera_ok" | "camera_defective") => void;
 }
 
-type TestPhase =
-  | "idle"
-  | "prompt_permission"
-  | "testing_front"
-  | "testing_back"
-  | "error";
+type TestPhase = "idle" | "prompt_permission" | "testing_front" | "testing_back" | "error";
 
 const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   const [phase, setPhase] = useState<TestPhase>("idle");
@@ -30,6 +18,16 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isConcludedRef = useRef(false);
+
+  const handleConclude = useCallback(
+    (result: "camera_ok" | "camera_defective") => {
+      if (isConcludedRef.current) return;
+      isConcludedRef.current = true;
+      onConclude(result);
+    },
+    [onConclude],
+  );
 
   const cleanupStream = () => {
     if (stream) {
@@ -51,10 +49,9 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
       setPhase("testing_front");
     } catch (err: any) {
       console.error("Camera access denied:", err);
-      setPermissionError(
-        "ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน",
-      );
+      setPermissionError("ไม่สามารถเข้าถึงกล้องได้");
       setPhase("error");
+      // ✨ [ลบ] setTimeout ออก ไม่ต้องปิดอัตโนมัติ
     }
   };
 
@@ -69,11 +66,8 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
       });
       setStream(newStream);
     } catch (err) {
-      console.warn(
-        "Back camera not found or failed, concluding as success.",
-        err,
-      );
-      onConclude(true);
+      console.warn("Back camera not found or failed, concluding as success.", err);
+      handleConclude("camera_ok");
     }
   };
 
@@ -95,6 +89,9 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   }, []);
 
   useEffect(() => {
+    if (isOpen) {
+      isConcludedRef.current = false;
+    }
     if (!isOpen) {
       cleanupStream();
       setTimeout(() => {
@@ -107,17 +104,20 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
 
   const renderContent = () => {
     if (phase === "error") {
+      // ✨ [แก้ไข] ปรับ UI ของหน้า Error ทั้งหมด
       return (
         <div className="flex h-64 flex-col items-center justify-center text-center">
           <XCircle className="text-destructive mb-4 h-12 w-12" />
-          <p className="text-destructive-foreground">{permissionError}</p>
+          <p className="text-lg font-semibold text-black">{permissionError}</p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน
+          </p>
           <FramerButton
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={() => onConclude(false)}
+            size="lg"
+            className="bg-primary mt-6 h-14 w-full text-white"
+            onClick={() => handleConclude("camera_defective")}
           >
-            ปิด
+            รับทราบและดำเนินการต่อ
           </FramerButton>
         </div>
       );
@@ -134,24 +134,12 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
     if (phase === "testing_front" || phase === "testing_back") {
       return (
         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="h-full w-full object-cover"
-          />
-
-          {/* [FIX] This overlay is now for the instructional text at the bottom */}
+          <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
           <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/50 to-transparent p-4">
             <p className="text-center font-semibold text-white">
-              {phase === "testing_front"
-                ? "กำลังทดสอบกล้องหน้า..."
-                : "กำลังทดสอบกล้องหลัง..."}
+              {phase === "testing_front" ? "กำลังทดสอบกล้องหน้า..." : "กำลังทดสอบกล้องหลัง..."}
             </p>
           </div>
-
-          {/* [FIX] New centered overlay for the confirmation UI */}
           <AnimatePresence>
             {showCheckmark && (
               <motion.div
@@ -167,17 +155,13 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
                   className="flex flex-col items-center gap-4 rounded-2xl bg-black/50 p-8 backdrop-blur-md"
                 >
                   <Check className="bg-success/80 text-success-foreground h-12 w-12 rounded-full p-2" />
-
                   {phase === "testing_front" ? (
-                    <FramerButton
-                      onClick={switchToBackCamera}
-                      className="gap-2"
-                    >
+                    <FramerButton onClick={switchToBackCamera} className="gap-2">
                       ทดสอบกล้องหลัง <RefreshCw className="h-4 w-4" />
                     </FramerButton>
                   ) : (
                     <FramerButton
-                      onClick={() => onConclude(true)}
+                      onClick={() => handleConclude("camera_ok")}
                       className="bg-success hover:bg-success/90"
                     >
                       เสร็จสิ้น
@@ -191,14 +175,9 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
       );
     }
 
-    // Default is 'idle'
     return (
       <div className="flex h-64 flex-col items-center justify-center text-center">
-        <FramerButton
-          size="lg"
-          className="h-14 px-8 text-lg"
-          onClick={startTest}
-        >
+        <FramerButton size="lg" className="h-14 px-8 text-lg" onClick={startTest}>
           เริ่มการทดสอบ
         </FramerButton>
       </div>
@@ -206,7 +185,7 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onConclude(false)}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleConclude("camera_defective")}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>ขั้นตอนที่ 3: ทดสอบกล้อง</DialogTitle>

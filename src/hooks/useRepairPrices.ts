@@ -16,18 +16,18 @@ import {
   Mic,
   BatteryCharging,
   LucideIcon,
+  PhoneCall,
+  CircleDot,
+  RadioTower,
+  Power,
+  Hand,
 } from "lucide-react";
 
 /**
  * Interface สำหรับโครงสร้างข้อมูลราคาซ่อมที่ได้จาก Hook
- * key: คือ part_key เช่น "screenGlass"
- * value: คือ Object ที่มีราคาตามอาการ
  */
 export interface RepairPriceData {
   [part: string]: {
-    failed?: number;
-    defect?: number;
-    low?: number;
     [condition: string]: number | undefined;
   };
 }
@@ -51,31 +51,23 @@ export interface RepairCalculationResult {
   isLoading: boolean;
 }
 
-// Configuration Maps สำหรับการแสดงผล (ย้ายมาจาก MaintenanceService)
-const PART_METADATA: Record<
-  string,
-  { name: string; icon: LucideIcon }
-> = {
+// Configuration Maps สำหรับการแสดงผล (อัปเดตให้ครบทุกอาการ)
+const PART_METADATA: Record<string, { name: string; icon: LucideIcon }> = {
   bodyCondition: { name: "ตัวเครื่อง", icon: Smartphone },
-  screenGlass: {
-    name: "กระจกหน้าจอ",
-    icon: MonitorSmartphone,
-  },
-  screenDisplay: {
-    name: "จอแสดงผล",
-    icon: MonitorSmartphone,
-  },
+  screenGlass: { name: "กระจกหน้าจอ", icon: MonitorSmartphone },
+  screenDisplay: { name: "จอแสดงผล", icon: MonitorSmartphone },
   batteryHealth: { name: "แบตเตอรี่", icon: Battery },
   camera: { name: "กล้อง", icon: Camera },
   wifi: { name: "Wi-Fi", icon: Wifi },
-  faceId: { name: "Face ID", icon: ScanFace },
+  faceId: { name: "Face ID / Touch ID", icon: ScanFace },
   speaker: { name: "ลำโพง", icon: Volume2 },
   mic: { name: "ไมโครโฟน", icon: Mic },
-  touchScreen: {
-    name: "หน้าจอสัมผัส",
-    icon: MonitorSmartphone,
-  },
+  touchScreen: { name: "หน้าจอสัมผัส", icon: Hand },
   charger: { name: "พอร์ตชาร์จ", icon: BatteryCharging },
+  call: { name: "การโทร", icon: PhoneCall },
+  homeButton: { name: "ปุ่ม Home", icon: CircleDot },
+  sensor: { name: "Sensor", icon: RadioTower },
+  buttons: { name: "ปุ่ม Power / Volume", icon: Power },
 };
 
 /**
@@ -96,10 +88,7 @@ export const useRepairPrices = (
         .eq("model_name", model);
 
       if (error) {
-        console.error(
-          "Error fetching repair prices:",
-          error,
-        );
+        console.error("Error fetching repair prices:", error);
         throw new Error(error.message);
       }
       if (!data) return {};
@@ -109,56 +98,43 @@ export const useRepairPrices = (
         if (!mappedPrices[item.part_key]) {
           mappedPrices[item.part_key] = {};
         }
-        mappedPrices[item.part_key][item.condition_key] =
-          item.price;
+        mappedPrices[item.part_key][item.condition_key] = item.price;
       }
       return mappedPrices;
     },
     enabled: !!model,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: Infinity,
   });
 
-  // ใช้ useMemo ในการคำนวณราคารวมและรายการซ่อมเมื่อ priceMap หรือ conditionInfo เปลี่ยน
+  // ✨ [แก้ไข] ปรับปรุง Logic การคำนวณให้ตรงกับข้อมูลใหม่
   const { repairs, totalRepairCost } = useMemo(() => {
-    if (!priceMap) {
+    if (!priceMap || !conditionInfo) {
       return { repairs: [], totalRepairCost: 0 };
     }
 
     const calculatedRepairs: RepairItem[] = [];
     let totalCost = 0;
 
-    Object.entries(conditionInfo).forEach(
-      ([part, condition]) => {
-        const isRepairable =
-          condition === "failed" ||
-          condition === "defect" ||
-          (part === "batteryHealth" && condition === "low");
+    // วนลูปตามข้อมูลสภาพเครื่องที่ผู้ใช้เลือก
+    Object.entries(conditionInfo).forEach(([partKey, conditionKey]) => {
+      if (!conditionKey) return; // ข้ามถ้าไม่มีข้อมูล
 
-        const costConfig = priceMap[part];
+      // ดึงราคาโดยตรงจาก map โดยใช้ partKey และ conditionKey
+      const cost = priceMap[partKey]?.[conditionKey];
+      const metadata = PART_METADATA[partKey];
 
-        if (isRepairable && costConfig) {
-          const costKey = (
-            condition === "low" ? "failed" : condition
-          ) as "failed" | "defect";
-          const cost = costConfig[costKey];
-          const metadata = PART_METADATA[part];
-
-          if (metadata && cost !== undefined) {
-            calculatedRepairs.push({
-              part: metadata.name,
-              condition:
-                condition === "defect"
-                  ? "เปลี่ยนใหม่"
-                  : "ซ่อมแซม",
-              cost,
-              icon: metadata.icon,
-            });
-            totalCost += cost;
-          }
-        }
-      },
-    );
+      // ถ้ามีราคาสำหรับอาการนี้ ให้ถือว่าเป็นรายการซ่อม
+      if (metadata && typeof cost === "number") {
+        calculatedRepairs.push({
+          part: metadata.name,
+          condition: "ต้องซ่อมแซม/เปลี่ยน", // Label กลางๆ สำหรับแสดงผล
+          cost,
+          icon: metadata.icon,
+        });
+        totalCost += cost;
+      }
+    });
 
     return {
       repairs: calculatedRepairs,

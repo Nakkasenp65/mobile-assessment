@@ -62,10 +62,10 @@ const PALETTE = {
     ring: "ring-emerald-500/20",
   },
   tradein: {
-    text: "text-cyan-500",
-    borderColor: "border-cyan-500",
-    soft: "bg-cyan-50/20 dark:bg-cyan-900/20",
-    ring: "ring-cyan-500/20",
+    text: "text-amber-500",
+    borderColor: "border-amber-500",
+    soft: "bg-amber-50/20 dark:bg-amber-900/20",
+    ring: "ring-amber-500/20",
   },
   fallback: {
     text: "text-zinc-500",
@@ -101,17 +101,14 @@ export default function Services({
 
   useEffect(() => {
     if (selectedService) {
-      const accordionElement = accordionRefs.current[selectedService];
-      if (accordionElement) {
-        setTimeout(() => {
-          const elementTop = accordionElement.getBoundingClientRect().top;
-          const offsetPosition = elementTop + window.scrollY - 100;
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth",
-          });
-        }, 300);
-      }
+      setTimeout(() => {
+        const accordionElement = accordionRefs.current[selectedService];
+        if (accordionElement) {
+          const rect = accordionElement.getBoundingClientRect();
+          const offsetTop = rect.top + window.scrollY - 100;
+          window.scrollTo({ top: offsetTop, behavior: "smooth" });
+        }
+      }, 300);
     }
   }, [selectedService]);
 
@@ -134,6 +131,9 @@ export default function Services({
             return (
               <SellNowService
                 key={service.id}
+                ref={(el) => {
+                  accordionRefs.current[service.id] = el;
+                }}
                 deviceInfo={deviceInfo}
                 service={service}
                 theme={theme}
@@ -146,6 +146,9 @@ export default function Services({
             return (
               <ConsignmentService
                 key={service.id}
+                ref={(el) => {
+                  accordionRefs.current[service.id] = el;
+                }}
                 deviceInfo={deviceInfo}
                 service={service}
                 theme={theme}
@@ -158,6 +161,9 @@ export default function Services({
             return (
               <TradeInService
                 key={service.id}
+                ref={(el) => {
+                  accordionRefs.current[service.id] = el;
+                }}
                 deviceInfo={deviceInfo}
                 service={service}
                 theme={theme}
@@ -170,6 +176,9 @@ export default function Services({
             return (
               <RefinanceService
                 key={service.id}
+                ref={(el) => {
+                  accordionRefs.current[service.id] = el;
+                }}
                 deviceInfo={deviceInfo}
                 service={service}
                 theme={theme}

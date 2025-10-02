@@ -11,10 +11,7 @@ interface TouchscreenTestProps {
 const GRID_SIZE = 11;
 const TIMER_DURATION = 60;
 
-export const TouchscreenTest = ({
-  isOpen,
-  onConclude,
-}: TouchscreenTestProps) => {
+export const TouchscreenTest = ({ isOpen, onConclude }: TouchscreenTestProps) => {
   const [timer, setTimer] = useState(TIMER_DURATION);
   const [fillPercentage, setFillPercentage] = useState(0);
 
@@ -30,9 +27,7 @@ export const TouchscreenTest = ({
     if (isConcludedRef.current) return;
     isConcludedRef.current = true;
 
-    const finalPercentage = Math.floor(
-      (touchedCellsRef.current.size / totalCells) * 100,
-    );
+    const finalPercentage = Math.floor((touchedCellsRef.current.size / totalCells) * 100);
     onConclude(finalPercentage);
   }, [onConclude, totalCells]);
 
@@ -69,12 +64,7 @@ export const TouchscreenTest = ({
       const styles = getComputedStyle(canvas);
       const primaryColor = `${styles.getPropertyValue("--primary").trim()}`;
       const secondaryColor = `${styles.getPropertyValue("--secondary").trim()}`;
-      const gradient = ctx.createLinearGradient(
-        0,
-        0,
-        canvas.width,
-        canvas.height,
-      );
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
       gradient.addColorStop(0, primaryColor);
       gradient.addColorStop(1, secondaryColor);
       ctx.strokeStyle = gradient;
@@ -86,8 +76,7 @@ export const TouchscreenTest = ({
 
     const getCoords = (e: MouseEvent | TouchEvent): [number, number] | null => {
       if (e instanceof MouseEvent) return [e.clientX, e.clientY];
-      if (e.touches && e.touches.length > 0)
-        return [e.touches[0].clientX, e.touches[0].clientY];
+      if (e.touches && e.touches.length > 0) return [e.touches[0].clientX, e.touches[0].clientY];
       return null;
     };
 
@@ -122,9 +111,7 @@ export const TouchscreenTest = ({
 
       if (!touchedCellsRef.current.has(cellKey)) {
         touchedCellsRef.current.add(cellKey);
-        const newPercentage = Math.floor(
-          (touchedCellsRef.current.size / totalCells) * 100,
-        );
+        const newPercentage = Math.floor((touchedCellsRef.current.size / totalCells) * 100);
         setFillPercentage(newPercentage);
 
         if (newPercentage >= 100) {
@@ -170,9 +157,9 @@ export const TouchscreenTest = ({
             {/* Painting */}
             <div className="text-center">
               <p className="text-md flex flex-col items-center justify-center gap-2">
-                <div className="rounded-full border-2 p-3">
+                <span className="rounded-full border-2 p-3">
                   <Pointer strokeWidth={1} size={32} />
-                </div>
+                </span>
                 กรุณาระบายสีให้ทั่วทั้งหน้าจอ
               </p>
             </div>
