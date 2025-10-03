@@ -139,7 +139,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                 placeholder="กรอกชื่อ-นามสกุล"
                 value={formState.customerName}
                 onChange={(e) => handleInputChange("customerName", e.target.value)}
-                className="pl-10"
+                className="h-12 pl-10"
               />
             </div>
           </div>
@@ -154,7 +154,9 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
-                className="pl-10"
+                inputMode="numeric"
+                maxLength={10}
+                className="h-12 pl-10"
               />
             </div>
           </div>
@@ -365,26 +367,20 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         }}
         className="space-y-6 pt-4"
       >
-        <div className="flex items-start space-x-3">
-          <Checkbox
-            id={`terms-sell`}
-            checked={formState.termsAccepted}
-            onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
-            className="mt-1"
-          />
+        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+          ยืนยันการขายและรับเงินทันที
+        </FramerButton>
+        <div className="flex w-full items-center justify-center space-x-3">
           <label
             htmlFor={`terms-sell`}
-            className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            ฉันยืนยันว่าข้อมูลข้างต้นเป็นความจริง และยอมรับ{" "}
+            เมื่อกดยืนยัน ถือว่าข้อมูลข้างต้นของท่านเป็นความจริง และยอมรับ{" "}
             <a href="#" className="text-blue-600 underline dark:text-blue-400">
               ข้อตกลงและเงื่อนไขการขายสินค้า
             </a>
           </label>
         </div>
-        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
-          ยืนยันการขายและรับเงินทันที
-        </FramerButton>
       </motion.div>
     </main>
   );

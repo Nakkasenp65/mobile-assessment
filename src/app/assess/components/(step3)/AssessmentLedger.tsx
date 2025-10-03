@@ -23,9 +23,9 @@ import {
   Frame,
   ScanFace,
   Info,
-  PhoneCall, // เพิ่มไอคอนใหม่
-  CircleDot, // เพิ่มไอคอนใหม่
-  RadioTower, // เพิ่มไอคอนใหม่
+  PhoneCall,
+  CircleDot,
+  RadioTower,
 } from "lucide-react";
 import {
   Accordion,
@@ -35,9 +35,9 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import MaintenanceService from "./(services)/MaintenanceService";
-import { ASSESSMENT_QUESTIONS } from "@/util/info"; // ✅ Import ถูกต้องแล้ว
+import { ASSESSMENT_QUESTIONS } from "@/util/info";
 
-// --- ICON and LABEL MAPs (แก้ไขแล้ว) ---
+// --- ICON and LABEL MAPs ---
 const ICON_MAP: Record<string, ComponentType<any>> = {
   brand: Smartphone,
   model: Cpu,
@@ -57,7 +57,6 @@ const ICON_MAP: Record<string, ComponentType<any>> = {
   accessories: Archive,
   bodyCondition: Smartphone,
   faceId: ScanFace,
-  // ✨ เพิ่มข้อมูลสำหรับ toggle ใหม่
   call: PhoneCall,
   homeButton: CircleDot,
   sensor: RadioTower,
@@ -83,7 +82,6 @@ const LABEL_MAP: Record<string, string> = {
   accessories: "อุปกรณ์",
   bodyCondition: "สภาพตัวเครื่อง",
   faceId: "Face ID / Touch ID",
-  // ✨ เพิ่มข้อมูลสำหรับ toggle ใหม่
   call: "การโทร",
   homeButton: "ปุ่ม Home",
   sensor: "Sensor",
@@ -92,7 +90,6 @@ const LABEL_MAP: Record<string, string> = {
 
 // --- Helper Function ---
 const isConsideredPassed = (key: string, value: string): boolean => {
-  // รวม id ของตัวเลือกที่เป็น positive ทั้งหมดจาก info.ts
   const positiveValues = [
     "model_th",
     "model_inter_new",
@@ -115,14 +112,14 @@ const isConsideredPassed = (key: string, value: string): boolean => {
     "home_button_ok",
     "sensor_ok",
     "buttons_ok",
-    "passed", // สำหรับค่าจาก automated tests
+    "passed",
   ];
   if (positiveValues.includes(value)) return true;
   if (key === "touchScreen" && parseInt(value) >= 95) return true;
   return false;
 };
 
-// --- Sub-components (ไม่มีการเปลี่ยนแปลง) ---
+// --- Sub-components ---
 const TestItem = ({
   itemKey,
   itemValue,
@@ -208,7 +205,7 @@ interface AssessmentLedgerProps {
   isLoading: boolean;
 }
 
-// --- Main Component: AssessmentLedger (ไม่มีการเปลี่ยนแปลง Logic หลัก) ---
+// --- Main Component: AssessmentLedger ---
 const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   deviceInfo,
   conditionInfo,
@@ -239,56 +236,61 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   );
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <Accordion type="single" collapsible className="w-full" defaultValue="details">
-        <AccordionItem
-          value="details"
-          className="overflow-hidden rounded-2xl border-none bg-white shadow-sm dark:bg-zinc-800"
-        >
-          <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
-            <div className="flex w-full flex-col items-start">
-              <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
-                รายละเอียดสภาพเครื่อง
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
-              </p>
-            </div>
-          </AccordionTrigger>
+    <Accordion
+      type="single"
+      collapsible
+      className="w-full overflow-hidden rounded-2xl shadow-sm"
+      defaultValue="details"
+    >
+      <AccordionItem value="details">
+        <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
+          <div className="flex w-full flex-col items-start">
+            <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
+              รายละเอียดสภาพเครื่อง
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
+              คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
+            </p>
+          </div>
+        </AccordionTrigger>
 
-          <AccordionContent className="flex flex-col gap-6 p-4">
-            <div className="bg-white">
-              <div className="mb-3 flex items-center gap-2">
-                <Info className="h-5 w-5 text-slate-500" />
-                <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
-              </div>
-              <div className="space-y-2 border-t border-slate-100 pt-3">
-                {generalInfoKeys.map((key) => {
-                  const value = allInfo[key as keyof typeof allInfo];
-                  const label = optionsLabelMap[key]?.[value] || value;
-                  return <GeneralInfoItem key={key} itemKey={key} label={label} />;
-                })}
-              </div>
+        <AccordionContent className="flex flex-col gap-6 p-4">
+          <div className="bg-white">
+            <div className="mb-3 flex items-center gap-2">
+              <Info className="h-5 w-5 text-slate-500" />
+              <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
             </div>
-            <div className="flex flex-col gap-4 border-t border-b pt-4 pb-6">
-              <div className="grid grid-cols-2 gap-3">
-                {conditionKeys.map((key) => {
-                  const value = allInfo[key as keyof typeof allInfo];
-                  const label = optionsLabelMap[key]?.[value] || value;
-                  return <TestItem key={key} itemKey={key} itemValue={value} label={label} />;
-                })}
-              </div>
+            <div className="space-y-2 border-t border-slate-100 pt-3">
+              {generalInfoKeys.map((key) => {
+                const value = allInfo[key as keyof typeof allInfo];
+                const label = optionsLabelMap[key]?.[value] || value;
+                return <GeneralInfoItem key={key} itemKey={key} label={label} />;
+              })}
             </div>
+          </div>
+          <div
+            className={`flex flex-col gap-4 border-t pt-4 ${repairs && repairs.length > 0 && "border-b pb-6"}`}
+          >
+            <div className="grid grid-cols-2 gap-3">
+              {conditionKeys.map((key) => {
+                const value = allInfo[key as keyof typeof allInfo];
+                const label = optionsLabelMap[key]?.[value] || value;
+                return <TestItem key={key} itemKey={key} itemValue={value} label={label} />;
+              })}
+            </div>
+          </div>
+
+          {repairs && repairs.length > 0 && (
             <MaintenanceService
               deviceInfo={deviceInfo}
               repairs={repairs}
               totalCost={totalCost}
               isLoading={isLoading}
             />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </div>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 };
 

@@ -1,15 +1,9 @@
 // src/app/assess/components/(step3)/Services.tsx
-import React, { useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ServiceOption } from "./AssessStep3";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { Check, LucideIcon } from "lucide-react";
+import { Check, ChevronDown, CircleDot, LucideIcon } from "lucide-react";
 
 interface ServicesProps {
   services: ServiceOption[];
@@ -17,7 +11,7 @@ interface ServicesProps {
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
 }
 
-// --- Data for Benefits ---
+// ... (Data for Benefits และ PALETTE ไม่เปลี่ยนแปลง)
 const serviceBenefits: { [key: string]: string[] } = {
   sell: [
     "รับเงินสดทันทีภายใน 30 นาที",
@@ -49,7 +43,6 @@ const serviceBenefits: { [key: string]: string[] } = {
     "ใช้ iCloud ของตัวเองได้ ไม่ติดไอคลาวด์ร้าน",
   ],
   pawn: [
-    // สมมติว่า Pawn มี benefits คล้ายๆ กัน
     "รับเงินสดทันที ไม่ต้องรอ",
     "ไม่ต้องใช้คนค้ำประกัน",
     "เก็บรักษาเครื่องให้อย่างดี",
@@ -61,72 +54,65 @@ const PALETTE = {
   sell: {
     text: "text-pink-600",
     iconBg: "bg-gradient-to-br from-pink-500 to-orange-500",
-    benefitBg: "border-pink-100 bg-gradient-to-br from-pink-50/75 to-orange-500/25",
-    benefitText: "text-pink-800",
-    benefitIcon: "text-pink-600",
     borderColor: "border-pink-500",
-    soft: "bg-pink-50/20",
+    soft: "bg-pink-50",
     ring: "ring-pink-500/20",
+    shadow: "shadow-pink-500/20",
+    solidBg: "bg-pink-600",
   },
   consignment: {
     text: "text-sky-600",
     iconBg: "bg-gradient-to-br from-cyan-500 to-sky-500",
-    benefitBg: "border-cyan-100 bg-gradient-to-br from-cyan-50/75 to-sky-500/25",
-    benefitText: "text-cyan-800",
-    benefitIcon: "text-cyan-600",
     borderColor: "border-sky-500",
-    soft: "bg-sky-50/20",
+    soft: "bg-sky-50",
     ring: "ring-sky-500/20",
+    shadow: "shadow-sky-500/20",
+    solidBg: "bg-sky-600",
   },
   tradein: {
     text: "text-amber-700",
     iconBg: "bg-gradient-to-br from-yellow-500 to-amber-500",
-    benefitBg: "border-amber-100 bg-gradient-to-br from-yellow-50/50 to-amber-400/50",
-    benefitText: "text-amber-800",
-    benefitIcon: "text-amber-600",
     borderColor: "border-amber-500",
-    soft: "bg-amber-50/20",
+    soft: "bg-amber-50",
     ring: "ring-amber-500/20",
+    shadow: "shadow-amber-500/20",
+    solidBg: "bg-amber-600",
   },
   refinance: {
     text: "text-purple-600",
     iconBg: "bg-gradient-to-br from-purple-500 to-violet-700",
-    benefitBg: "border-purple-100 bg-gradient-to-br from-purple-50/75 to-purple-500/25",
-    benefitText: "text-purple-800",
-    benefitIcon: "text-purple-600",
     borderColor: "border-purple-500",
-    soft: "bg-purple-50/20",
+    soft: "bg-purple-50",
     ring: "ring-purple-500/20",
+    shadow: "shadow-purple-500/20",
+    solidBg: "bg-purple-600",
   },
   "iphone-exchange": {
     text: "text-green-600",
     iconBg: "bg-gradient-to-br from-green-500 to-emerald-500",
-    benefitBg: "border-green-100 bg-gradient-to-br from-green-50/75 to-emerald-500/25",
-    benefitText: "text-green-800",
-    benefitIcon: "text-green-600",
     borderColor: "border-green-500",
-    soft: "bg-green-50/20",
+    soft: "bg-green-50",
     ring: "ring-green-500/20",
+    shadow: "shadow-green-500/20",
+    solidBg: "bg-green-600",
   },
   pawn: {
     text: "text-orange-600",
     iconBg: "bg-gradient-to-br from-amber-500 to-orange-500",
-    benefitBg: "border-orange-100 bg-gradient-to-br from-orange-50/75 to-amber-500/25",
-    benefitText: "text-orange-800",
-    benefitIcon: "text-orange-600",
     borderColor: "border-orange-500",
-    soft: "bg-orange-50/20",
+    soft: "bg-orange-50",
     ring: "ring-orange-500/20",
+    shadow: "shadow-orange-500/20",
+    solidBg: "bg-orange-600",
   },
   fallback: {
     text: "text-zinc-500",
     iconBg: "bg-zinc-200",
-    benefitBg: "bg-zinc-100 border-zinc-200",
-    benefitText: "text-zinc-800",
-    benefitIcon: "text-zinc-600",
     borderColor: "border-zinc-500",
-    soft: "bg-zinc-50/20",
+    soft: "bg-zinc-50",
     ring: "ring-zinc-500/20",
+    shadow: "shadow-zinc-500/20",
+    solidBg: "bg-zinc-500",
   },
 } as const;
 
@@ -145,23 +131,27 @@ const THB = (n: number) =>
     .replace("฿", "฿ ");
 
 export default function Services({ services, selectedService, setSelectedService }: ServicesProps) {
-  const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  const handleValueChange = (value: string) => {
-    // ถ้าคลิกอันเดิมที่เปิดอยู่ ให้ปิดมัน (ค่า value จะเป็น "" (string ว่าง))
-    // ถ้าคลิกอันใหม่ ให้ set state เป็น id ของอันใหม่
-    setSelectedService(value === selectedService ? "" : value);
+  const handleSelect = (serviceId: string) => {
+    setSelectedService((current) => (current === serviceId ? "" : serviceId));
   };
+
+  useEffect(() => {
+    if (selectedService && itemRefs.current[selectedService]) {
+      itemRefs.current[selectedService]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [selectedService]);
 
   return (
     <div className="flex w-full flex-1 flex-col">
-      <Accordion
-        type="single"
-        collapsible
-        className="flex w-full flex-col gap-3"
-        value={selectedService}
-        onValueChange={handleValueChange}
-      >
+      <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">
+        เลือกบริการที่ต้องการ
+      </h2>
+      <div className="flex w-full flex-col gap-4">
         {services.map((service) => {
           const isSelected = selectedService === service.id;
           const theme = getTheme(service.id);
@@ -169,59 +159,81 @@ export default function Services({ services, selectedService, setSelectedService
           const benefits = serviceBenefits[service.id] || [];
 
           return (
-            <AccordionItem
+            <motion.div
               key={service.id}
-              value={service.id}
-              ref={(el) => {
-                accordionRefs.current[service.id] = el;
-              }}
-              className={cn(
-                "rounded-2xl border shadow-sm transition-all duration-300 ease-in-out",
-                isSelected
-                  ? `${theme.borderColor} ${theme.soft} ${theme.ring} ring-2`
-                  : "border-border bg-card",
-              )}
+              layout
+              // [Chiron] ปรับเทียบความคมชัด: เพิ่มค่า opacity เพื่อรักษาความสามารถในการเปรียบเทียบ
+              animate={{ opacity: selectedService && !isSelected ? 0.85 : 1 }}
+              transition={{ duration: 0.3 }}
             >
-              <AccordionTrigger className="w-full cursor-pointer p-4 text-left hover:no-underline">
-                <div className="flex w-full items-center gap-4">
+              <button
+                ref={(el) => {
+                  itemRefs.current[service.id] = el;
+                }}
+                onClick={() => handleSelect(service.id)}
+                className={cn(
+                  "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
+                  isSelected
+                    ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
+                    : "border-border hover:border-slate-300",
+                )}
+              >
+                <AnimatePresence>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.2 }}
+                      className={cn(
+                        "absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full text-white",
+                        theme.iconBg,
+                      )}
+                    >
+                      <CircleDot className="h-5 w-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex flex-1 items-center gap-4">
                   <div
                     className={cn(
-                      "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-sm",
+                      "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
                       theme.iconBg,
                     )}
                   >
-                    <Icon className="h-6 w-6 text-white" />
+                    <Icon className="h-7 w-7 text-white" />
                   </div>
-                  <div className="flex-1 text-left">
-                    <h4 className="text-foreground font-semibold">{service.title}</h4>
+                  <div className="flex-1">
+                    <h4 className="text-foreground font-bold">{service.title}</h4>
                     <p className="text-muted-foreground text-sm">{service.description}</p>
                   </div>
-                  <div className="ml-2 text-right">
+                  <div className="flex items-center gap-1">
                     <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
                   </div>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                  className={cn("mt-2 rounded-xl border p-4", theme.benefitBg)}
-                >
-                  <ul className={cn("space-y-2 text-sm", theme.benefitText)}>
-                    {benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className={cn("mt-0.5 h-4 w-4 flex-shrink-0", theme.benefitIcon)} />
-                        <span>{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              </AccordionContent>
-            </AccordionItem>
+
+                <div className="bg-border my-4 h-px w-full" />
+
+                <ul className="text-muted-foreground space-y-2 text-sm">
+                  {benefits.map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-2.5">
+                      {/* [Chiron] เปลี่ยนจาก Check เป็น CircleDot และปรับขนาดเล็กน้อย */}
+                      <div
+                        className={cn(
+                          "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
+                          theme.solidBg,
+                        )}
+                      />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            </motion.div>
           );
         })}
-      </Accordion>
+      </div>
     </div>
   );
 }

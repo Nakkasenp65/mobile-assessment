@@ -1,5 +1,3 @@
-// src/app/assess/components/AssessStep1.tsx
-
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Box, Smartphone } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
@@ -24,7 +28,6 @@ import Image from "next/image";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
-
   onDeviceUpdate: (info: DeviceInfo) => void;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
@@ -33,26 +36,27 @@ interface AssessStep1Props {
 
 const AssessStep1 = ({
   deviceInfo,
-
   onDeviceUpdate,
   onConditionUpdate,
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
+  // --- Section: State Management ---
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { isDesktop } = useDeviceDetection();
 
+  // Track if user has selected a brand (for auto-collapse)
+  const [hasSelectedBrand, setHasSelectedBrand] = useState(false);
+  // Track if user manually opened accordion after first selection
+  const [isManuallyOpened, setIsManuallyOpened] = useState(false);
+
   const [availableModels, setAvailableModels] = useState<string[]>(() => {
-    if (deviceInfo.brand) {
-      return PHONE_DATA.models[deviceInfo.brand] ?? [];
-    }
+    if (deviceInfo.brand) return PHONE_DATA.models[deviceInfo.brand] ?? [];
     return [];
   });
 
   const [availableStorage, setAvailableStorage] = useState<string[]>(() => {
-    if (deviceInfo.model) {
-      return PHONE_DATA.storage[deviceInfo.model] ?? [];
-    }
+    if (deviceInfo.model) return PHONE_DATA.storage[deviceInfo.model] ?? [];
     return [];
   });
 
@@ -63,11 +67,15 @@ const AssessStep1 = ({
 
   const [userDeviceSelection, setUserDeviceSelection] = useState<
     "this_device" | "other_device" | null
-  >(isDesktop ? "other_device" : null);
+  >(isDesktop ? "other_device" : "this_device");
 
   const prevBrandRef = useRef(localInfo.brand);
   const prevModelRef = useRef(localInfo.model);
 
+  // Control accordion open/close state
+  const [accordionValue, setAccordionValue] = useState<string>("brand-selector");
+
+  // --- Section: Lifecycle & Effects ---
   useEffect(() => {
     if (localInfo.brand && localInfo.brand !== prevBrandRef.current) {
       const nextModels = PHONE_DATA.models[localInfo.brand] ?? [];
@@ -78,16 +86,11 @@ const AssessStep1 = ({
         storage: "",
       }));
       if (localInfo.brand !== "Apple") {
-        onConditionUpdate((prev) => ({
-          ...prev,
-          batteryHealth: "",
-        }));
+        onConditionUpdate((prev) => ({ ...prev, batteryHealth: "" }));
       }
-      if (nextModels.length === 1)
-        setLocalInfo((prev) => ({
-          ...prev,
-          model: nextModels[0],
-        }));
+      if (nextModels.length === 1) {
+        setLocalInfo((prev) => ({ ...prev, model: nextModels[0] }));
+      }
       prevBrandRef.current = localInfo.brand;
     }
   }, [localInfo.brand, onConditionUpdate]);
@@ -97,11 +100,9 @@ const AssessStep1 = ({
       const nextStorage = PHONE_DATA.storage[localInfo.model] ?? [];
       setAvailableStorage(nextStorage);
       setLocalInfo((prev) => ({ ...prev, storage: "" }));
-      if (nextStorage.length === 1)
-        setLocalInfo((prev) => ({
-          ...prev,
-          storage: nextStorage[0],
-        }));
+      if (nextStorage.length === 1) {
+        setLocalInfo((prev) => ({ ...prev, storage: nextStorage[0] }));
+      }
       prevModelRef.current = localInfo.model;
     }
   }, [localInfo.model]);
@@ -109,6 +110,26 @@ const AssessStep1 = ({
   useEffect(() => {
     onDeviceUpdate(localInfo);
   }, [localInfo, onDeviceUpdate]);
+
+  // --- Section: Event Handlers ---
+  const handleBrandChange = (brandId: string) => {
+    setLocalInfo((prev) => ({ ...prev, brand: brandId }));
+
+    // Close accordion only on first selection and if not manually opened
+    if (!hasSelectedBrand && !isManuallyOpened) {
+      setAccordionValue("");
+      setHasSelectedBrand(true);
+    }
+  };
+
+  const handleAccordionChange = (value: string) => {
+    setAccordionValue(value);
+
+    // If user opens accordion after first selection, mark as manually opened
+    if (hasSelectedBrand && value === "brand-selector") {
+      setIsManuallyOpened(true);
+    }
+  };
 
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     setLocalInfo((prev) => ({ ...prev, [field]: value }));
@@ -133,6 +154,7 @@ const AssessStep1 = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
+      {/* --- Section: Page Header --- */}
       <div className="text-center">
         <h2 className="text-foreground mb-2 text-3xl font-bold">ระบุรุ่นมือถือของคุณ</h2>
         <p className="text-muted-foreground text-sm md:text-base">
@@ -140,8 +162,9 @@ const AssessStep1 = ({
         </p>
       </div>
 
+      {/* --- Section: User Device Selection (Mobile Only) --- */}
       {!isDesktop && (
-        <div className="mb-8 space-y-3">
+        <div className="space-y-3">
           <label className="text-foreground block text-center text-lg font-semibold">
             คุณต้องการประเมินอุปกรณ์เครื่องใด?
           </label>
@@ -154,8 +177,6 @@ const AssessStep1 = ({
                   ? "border-primary bg-primary/10 ring-primary ring-2"
                   : "border-border bg-accent/50 hover:border-primary/50",
               )}
-              role="button"
-              aria-pressed={userDeviceSelection === "this_device"}
               whileTap={{ scale: 0.97 }}
             >
               <Smartphone className="text-primary h-8 w-8" />
@@ -169,8 +190,6 @@ const AssessStep1 = ({
                   ? "border-secondary bg-secondary/10 ring-secondary ring-2"
                   : "border-border bg-accent/50 hover:border-secondary/50",
               )}
-              role="button"
-              aria-pressed={userDeviceSelection === "other_device"}
               whileTap={{ scale: 0.97 }}
             >
               <Box className={cn("text-secondary h-8 w-8")} />
@@ -180,76 +199,87 @@ const AssessStep1 = ({
         </div>
       )}
 
+      {/* --- Section: Main Device Selection Form --- */}
       <div className="flex-grow space-y-6">
-        <div>
-          <label className="text-foreground mb-3 ml-1 block text-sm font-medium">
-            เลือกแบรนด์ที่ต้องการ
-          </label>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-            {PHONE_DATA.brands.map((brand) => {
-              const isSelected = localInfo.brand === brand.id;
-              return (
-                <button
-                  key={brand.id}
-                  onClick={() => handleSelectChange("brand", brand.id)}
-                  className={cn(
-                    "bg-card flex h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all duration-200",
-                    isSelected
-                      ? "border-secondary bg-secondary/10 ring-secondary ring-2"
-                      : "hover:border-primary/50",
-                  )}
-                >
-                  <div className="flex h-8 w-8 items-center justify-center">
-                    <img
-                      src={brand.logo}
-                      alt={`${brand.name} logo`}
-                      width="32"
-                      height="32"
+        {/* --- Sub-section: Brand Selection (Accordion) --- */}
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          value={accordionValue}
+          onValueChange={handleAccordionChange}
+        >
+          <AccordionItem value="brand-selector" className="border-none p-2">
+            <AccordionTrigger className="hover:no-underline">
+              <span className="text-foreground font-semibold">
+                {localInfo.brand ? `แบรนด์ที่เลือก: ${localInfo.brand}` : "เลือกแบรนด์"}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-3 gap-3 p-2 sm:grid-cols-4">
+                {PHONE_DATA.brands.map((brand) => {
+                  const isSelected = localInfo.brand === brand.id;
+                  return (
+                    <button
+                      key={brand.id}
+                      onClick={() => handleBrandChange(brand.id)}
                       className={cn(
-                        "h-auto max-h-8 w-auto max-w-8 object-contain",
-                        !isSelected && "grayscale",
+                        "flex h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all duration-200",
+                        isSelected
+                          ? "border-secondary bg-secondary/10 ring-secondary ring-2"
+                          : "hover:border-primary/50",
                       )}
-                    />
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-semibold",
-                      isSelected ? "text-secondary" : "text-muted-foreground",
-                    )}
-                  >
-                    {brand.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center">
+                        <img
+                          src={brand.logo}
+                          alt={`${brand.name} logo`}
+                          width="32"
+                          height="32"
+                          className={cn(
+                            "h-auto max-h-8 w-auto max-w-8 object-contain",
+                            !isSelected && "grayscale",
+                          )}
+                        />
+                      </div>
+                      <span
+                        className={cn(
+                          "text-sm font-semibold",
+                          isSelected ? "text-secondary" : "text-muted-foreground",
+                        )}
+                      >
+                        {brand.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
+        {/* --- Sub-section: Model & Storage Selection --- */}
         <AnimatePresence>
           {localInfo.brand && (
             <motion.div
-              initial={{
-                opacity: 0,
-                height: 0,
-                marginTop: 0,
-              }}
-              animate={{
-                opacity: 1,
-                height: "auto",
-                marginTop: "1.5rem",
-              }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              className="space-y-6 overflow-hidden"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-6 overflow-hidden p-2"
             >
-              <div>
+              <div className="">
                 <label className="text-foreground mb-2 ml-1 block text-sm font-medium">
                   รุ่น *
                 </label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("model", value)}
+                  onValueChange={(v) => handleSelectChange("model", v)}
                   value={localInfo.model}
                 >
-                  <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
+                  <SelectTrigger
+                    className={cn(
+                      "border-border bg-card h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500",
+                    )}
+                  >
                     <SelectValue placeholder="เลือกรุ่น" />
                   </SelectTrigger>
                   <SelectContent>
@@ -269,11 +299,15 @@ const AssessStep1 = ({
                   ความจุ *
                 </label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("storage", value)}
+                  onValueChange={(v) => handleSelectChange("storage", v)}
                   value={localInfo.storage}
                   disabled={!localInfo.model}
                 >
-                  <SelectTrigger className="border-border/50 h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500">
+                  <SelectTrigger
+                    className={cn(
+                      "border-border bg-card h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500",
+                    )}
+                  >
                     <SelectValue placeholder="เลือกความจุ" />
                   </SelectTrigger>
                   <SelectContent>
@@ -292,11 +326,10 @@ const AssessStep1 = ({
           )}
         </AnimatePresence>
 
+        {/* --- Section: Image Preview --- */}
         <div
           className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl transition-all duration-300"
-          style={{
-            height: isImageLoading || productData?.image_url ? "12rem" : "3rem",
-          }}
+          style={{ height: isImageLoading || productData?.image_url ? "12rem" : "3rem" }}
         >
           <AnimatePresence mode="wait">
             {isImageLoading && (
@@ -305,19 +338,16 @@ const AssessStep1 = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
               >
                 <div className="border-t-primary h-8 w-8 animate-spin rounded-full border-4 border-slate-200" />
               </motion.div>
             )}
-
             {!isImageLoading && productData?.image_url && (
               <motion.div
                 key="image"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
               >
                 <Image
                   width="160"
@@ -332,6 +362,7 @@ const AssessStep1 = ({
         </div>
       </div>
 
+      {/* --- Section: Action Buttons & Legal --- */}
       <div className="flex justify-end">
         <FramerButton
           onClick={onNext}
@@ -344,10 +375,7 @@ const AssessStep1 = ({
       </div>
 
       <div className="flex items-center">
-        <label
-          htmlFor="terms"
-          className="text-muted-foreground w-full text-center text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
+        <label className="text-muted-foreground w-full text-center text-sm leading-none">
           เมื่อประเมินราคา คุณยอมรับ{" "}
           <a href="/privacy" className="text-primary hover:text-primary/80 underline">
             นโยบายความเป็นส่วนตัว

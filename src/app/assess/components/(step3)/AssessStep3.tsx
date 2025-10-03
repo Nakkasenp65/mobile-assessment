@@ -2,11 +2,9 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Banknote,
-  Wrench,
   CreditCard,
   ShoppingBag,
   Handshake,
@@ -110,12 +108,9 @@ const AssessStep3 = ({
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
 
-  const [localSelectedService, setLocalSelectedService] = useState<string>("sell");
+  const [localSelectedService, setLocalSelectedService] = useState<string>("");
 
-  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } = usePriceCalculation(
-    deviceInfo,
-    conditionInfo,
-  );
+  const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(
     deviceInfo.brand,
@@ -134,7 +129,6 @@ const AssessStep3 = ({
 
   const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
   const calculatedExchangePrice = Math.round(finalPrice * 0.7);
-  const calculatedPawnPrice = Math.round(finalPrice * 0.7);
 
   const baseServices: ServiceOption[] = [
     {
@@ -158,13 +152,6 @@ const AssessStep3 = ({
       icon: TabletSmartphone,
       price: finalPrice,
     },
-    // {
-    //   id: "maintenance",
-    //   title: "บริการซ่อม",
-    //   description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
-    //   icon: Wrench,
-    //   price: totalRepairCost,
-    // },
   ];
 
   const isAppleDevice = deviceInfo.brand === "Apple";
@@ -240,27 +227,17 @@ const AssessStep3 = ({
           grade={grade}
           finalPrice={finalPrice}
           assessmentDate={assessmentDate}
-          // CHIRON: Systemic Interaction - ซ่อมแซมท่อส่งข้อมูลโดยการส่ง props ที่ถูกต้อง
-          // ตามสัญญาที่ได้รับการปรับปรุงใหม่ของ AssessmentSummary
           repairs={repairs}
           totalCost={totalRepairCost}
           isLoadingRepairPrices={isLoadingRepairPrices}
         />
 
         {/* Column 2: Service Selection */}
-        <div className="flex flex-col">
+        <div className="top-24 flex h-fit flex-col lg:sticky">
           <Services
             services={services}
             selectedService={localSelectedService}
             setSelectedService={setLocalSelectedService} // ใช้ state ภายในนี้
-            deviceInfo={deviceInfo}
-            conditionInfo={conditionInfo}
-            pawnPrice={calculatedPawnPrice}
-            refinancePrice={calculatedRefinancePrice}
-            exchangePrice={calculatedExchangePrice}
-            repairs={repairs}
-            totalRepairCost={totalRepairCost}
-            isLoadingRepairPrices={isLoadingRepairPrices}
           />
         </div>
       </div>
