@@ -1,5 +1,5 @@
 // src/app/assess/components/(step3)/Services.tsx
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ServiceOption } from "./AssessStep3";
 import { cn } from "@/lib/utils";
@@ -155,9 +155,19 @@ export default function Services({
   deviceInfo,
 }: ServicesProps) {
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  // ✨ [เพิ่ม] State สำหรับจัดการการเปิด/ปิดของ "ซ่อมบำรุง" โดยเฉพาะ
+  const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
 
   const handleSelect = (serviceId: string) => {
-    setSelectedService((current) => (current === serviceId ? "" : serviceId));
+    // ✨ [แก้ไข] แยก Logic การคลิก
+    if (serviceId === "maintenance") {
+      // ถ้าเป็น "ซ่อมบำรุง" ให้สลับ state ของตัวเองเท่านั้น
+      setIsMaintenanceOpen((current) => !current);
+    } else {
+      // ถ้าเป็น service อื่น, ให้ set state หลัก และปิด "ซ่อมบำรุง" (ถ้าเปิดอยู่)
+      setSelectedService((current) => (current === serviceId ? "" : serviceId));
+      setIsMaintenanceOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -176,11 +186,13 @@ export default function Services({
       </h2>
       <div className="flex w-full flex-col gap-4">
         {services.map((service) => {
-          const isSelected = selectedService === service.id;
+          const isMaintenance = service.id === "maintenance";
+          // ✨ [แก้ไข] isSelected จะขึ้นอยู่กับ state ที่แตกต่างกัน
+          const isSelected = isMaintenance ? isMaintenanceOpen : selectedService === service.id;
+
           const theme = getTheme(service.id);
           const Icon = service.icon as LucideIcon;
           const benefits = serviceBenefits[service.id] || [];
-          const isMaintenance = service.id === "maintenance";
 
           if (isMaintenance && repairs.length === 0) {
             return null;

@@ -26,8 +26,8 @@ interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onBack: () => void;
-  onNext: () => void; //  รับ onNext มา
-  setSelectedService: React.Dispatch<React.SetStateAction<string>>; //  รับ setSelectedService มา
+  onNext: () => void;
+  setSelectedService: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export interface ServiceOption {
@@ -191,19 +191,21 @@ const AssessStep3 = ({
       title: "ซ่อมบำรุง",
       description: "เลือกซ่อมเฉพาะส่วนที่ต้องการ",
       icon: Wrench,
-      price: totalRepairCost, // ใช้ totalRepairCost เป็น giá trị เริ่มต้น
+      price: totalRepairCost,
     },
   ];
 
   const handleConfirm = () => {
-    if (localSelectedService) {
-      // เปลี่ยนจาก alert เป็นการเรียก onNext()
+    if (localSelectedService && localSelectedService !== "maintenance") {
       onNext();
     }
   };
 
   useEffect(() => {
-    setSelectedService(localSelectedService);
+    // ✨ [แก้ไข] ส่งต่อ state ไปยัง parent component เฉพาะเมื่อไม่ใช่ 'maintenance'
+    if (localSelectedService !== "maintenance") {
+      setSelectedService(localSelectedService);
+    }
   }, [localSelectedService, setSelectedService]);
 
   useEffect(() => {
@@ -269,8 +271,9 @@ const AssessStep3 = ({
         </FramerButton>
 
         <FramerButton
-          onClick={handleConfirm} // ฟังก์ชันนี้จะเรียก onNext()
-          disabled={!localSelectedService}
+          onClick={handleConfirm}
+          // ✨ [แก้ไข] เงื่อนไข disabled จะเป็นจริงถ้าไม่ได้เลือก service หรือเลือก maintenance
+          disabled={!localSelectedService || localSelectedService === "maintenance"}
           size="lg"
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-xl px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
