@@ -10,8 +10,6 @@ import {
   X,
   Facebook,
   MessageCircle,
-  Twitter,
-  Youtube,
   Home,
   Search,
   Calculator,
@@ -23,7 +21,6 @@ import {
   Shield,
 } from "lucide-react";
 
-// --- Mobile Menu Component ---
 const MobileMenu = ({
   isOpen,
   setIsOpen,
@@ -325,24 +322,13 @@ const Navbar = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`transition-smooth relative rounded-xl px-6 py-2 text-sm font-medium transition-all duration-200 ${
+                  className={`rounded-xl px-6 py-2 text-sm font-medium transition-all duration-200 ${
                     isActive(item.href)
                       ? "gradient-primary text-primary-foreground scale-105 transform shadow-lg"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   }`}
                 >
                   {item.label}
-                  {isActive(item.href) && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="gradient-primary absolute inset-0 -z-10 rounded-xl"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  )}
                 </Link>
               ))}
             </div>
