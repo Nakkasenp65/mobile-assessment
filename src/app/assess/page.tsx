@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import AssessStep1 from "./components/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/(step3)/AssessStep3";
+import AssessStep4 from "./components/(step4)/AssessStep4"; //  เพิ่ม import สำหรับ Step 4
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
 
@@ -67,13 +68,16 @@ export default function AssessPage() {
     sensor: "",
     buttons: "",
   });
+  // เพิ่ม state สำหรับเก็บ service ที่เลือก
+  const [selectedService, setSelectedService] = useState<string>("");
 
   useEffect(() => {
     console.log(conditionInfo);
   }, [conditionInfo]);
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    // ปรับเงื่อนไขให้ไปถึง step 4 ได้
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -99,10 +103,10 @@ export default function AssessPage() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 pb-24 sm:py-16 sm:pb-4">
-        <ProgressBar currentStep={currentStep} totalSteps={3} />
+        {/* ปรับ totalSteps เป็น 4 */}
+        <ProgressBar currentStep={currentStep} totalSteps={4} />
 
         <div className="mt-8">
-          {/* เลือกแบรนด์ โมเดล และ ความจุ */}
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
@@ -113,7 +117,6 @@ export default function AssessPage() {
             />
           )}
 
-          {/* ตอบคำถาม(QuestionReport) วัดสายชาร์จ(Automated) และ ระบายสี(Interactive) */}
           {currentStep === 2 && (
             <AssessStep2
               isOwnDevice={isUserDevice}
@@ -124,11 +127,22 @@ export default function AssessPage() {
             />
           )}
 
-          {/* สรุปผลใบการประเมิน(POST API Result) */}
           {currentStep === 3 && (
             <AssessStep3
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
+              onBack={handleBack}
+              onNext={handleNext} // ส่ง onNext ไปเพื่อใช้ในการยืนยัน
+              setSelectedService={setSelectedService} // ส่ง state setter ไป
+            />
+          )}
+
+          {/* เพิ่มการแสดงผลสำหรับ Step 4 */}
+          {currentStep === 4 && (
+            <AssessStep4
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              selectedService={selectedService}
               onBack={handleBack}
             />
           )}

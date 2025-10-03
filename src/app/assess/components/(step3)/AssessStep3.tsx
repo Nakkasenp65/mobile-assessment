@@ -2,11 +2,9 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Banknote,
-  Wrench,
   CreditCard,
   ShoppingBag,
   Handshake,
@@ -27,6 +25,8 @@ interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onBack: () => void;
+  onNext: () => void; //  รับ onNext มา
+  setSelectedService: React.Dispatch<React.SetStateAction<string>>; //  รับ setSelectedService มา
 }
 
 export interface ServiceOption {
@@ -95,19 +95,22 @@ const mockRecords = {
   ],
 };
 
-const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
+const AssessStep3 = ({
+  deviceInfo,
+  conditionInfo,
+  onBack,
+  onNext,
+  setSelectedService,
+}: AssessStep3Props) => {
   const {
     totalRepairCost,
     repairs,
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
 
-  const [selectedService, setSelectedService] = useState<string>("sell");
+  const [localSelectedService, setLocalSelectedService] = useState<string>("");
 
-  const { finalPrice, grade, gradeTextStyle, gradeNeonColor } = usePriceCalculation(
-    deviceInfo,
-    conditionInfo,
-  );
+  const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(
     deviceInfo.brand,
@@ -126,7 +129,6 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
 
   const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
   const calculatedExchangePrice = Math.round(finalPrice * 0.7);
-  const calculatedPawnPrice = Math.round(finalPrice * 0.7);
 
   const baseServices: ServiceOption[] = [
     {
@@ -150,13 +152,6 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
       icon: TabletSmartphone,
       price: finalPrice,
     },
-    // {
-    //   id: "maintenance",
-    //   title: "บริการซ่อม",
-    //   description: "ซ่อมแซมโดยช่างผู้เชี่ยวชาญ",
-    //   icon: Wrench,
-    //   price: totalRepairCost,
-    // },
   ];
 
   const isAppleDevice = deviceInfo.brand === "Apple";
@@ -193,10 +188,15 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
   ];
 
   const handleConfirm = () => {
-    if (selectedService) {
-      alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
+    if (localSelectedService) {
+      // เปลี่ยนจาก alert เป็นการเรียก onNext()
+      onNext();
     }
   };
+
+  useEffect(() => {
+    setSelectedService(localSelectedService);
+  }, [localSelectedService, setSelectedService]);
 
   useEffect(() => {
     scrollTo(0, 0);
@@ -227,27 +227,17 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
           grade={grade}
           finalPrice={finalPrice}
           assessmentDate={assessmentDate}
-          // CHIRON: Systemic Interaction - ซ่อมแซมท่อส่งข้อมูลโดยการส่ง props ที่ถูกต้อง
-          // ตามสัญญาที่ได้รับการปรับปรุงใหม่ของ AssessmentSummary
           repairs={repairs}
           totalCost={totalRepairCost}
           isLoadingRepairPrices={isLoadingRepairPrices}
         />
 
         {/* Column 2: Service Selection */}
-        <div className="flex flex-col">
+        <div className="top-24 flex h-fit flex-col lg:sticky">
           <Services
             services={services}
-            selectedService={selectedService}
-            setSelectedService={setSelectedService}
-            deviceInfo={deviceInfo}
-            conditionInfo={conditionInfo}
-            pawnPrice={calculatedPawnPrice}
-            refinancePrice={calculatedRefinancePrice}
-            exchangePrice={calculatedExchangePrice}
-            repairs={repairs}
-            totalRepairCost={totalRepairCost}
-            isLoadingRepairPrices={isLoadingRepairPrices}
+            selectedService={localSelectedService}
+            setSelectedService={setLocalSelectedService} // ใช้ state ภายในนี้
           />
         </div>
       </div>
@@ -264,8 +254,8 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
         </FramerButton>
 
         <FramerButton
-          onClick={handleConfirm}
-          disabled={!selectedService}
+          onClick={handleConfirm} // ฟังก์ชันนี้จะเรียก onNext()
+          disabled={!localSelectedService}
           size="lg"
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-xl px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >

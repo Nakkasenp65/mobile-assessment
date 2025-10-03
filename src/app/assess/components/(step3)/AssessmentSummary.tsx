@@ -37,8 +37,9 @@ const AssessmentSummary = ({
   isLoadingRepairPrices,
 }: AssessmentSummaryProps) => {
   return (
-    <div className="sticky flex h-fit flex-col gap-3 lg:top-24">
+    <div className="sticky flex h-fit flex-col gap-4 lg:top-24">
       {/* Card ข้อมูลและราคา (รวมกัน) */}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -48,7 +49,7 @@ const AssessmentSummary = ({
         {/* ส่วนข้อมูลอุปกรณ์ */}
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center gap-4">
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-slate-50 p-1 dark:bg-zinc-700">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center dark:bg-zinc-700">
               {/* Product Image */}
               <AnimatePresence mode="wait">
                 {isImageLoading ? (
@@ -71,7 +72,7 @@ const AssessmentSummary = ({
                       alt={deviceInfo.model}
                       width={56}
                       height={56}
-                      className="object-contain"
+                      className="h-full w-full object-cover"
                     />
                   </motion.div>
                 ) : (

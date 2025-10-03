@@ -109,7 +109,7 @@ const MobileMenu = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={closeMenu}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm"
             aria-hidden="true"
           />
 
@@ -124,7 +124,7 @@ const MobileMenu = ({
               damping: 30,
             }}
             // [แก้ไข] เพิ่ม bg-white เพื่อให้มีพื้นหลังสีขาว
-            className="border-border fixed top-0 bottom-0 left-0 z-50 flex w-4/5 max-w-sm flex-col overflow-y-auto border-r bg-white shadow-2xl"
+            className="fixed top-0 bottom-0 left-0 z-50 flex w-4/5 max-w-sm flex-col overflow-y-auto bg-white shadow-2xl"
           >
             {/* Header with gradient */}
             <div className="gradient-primary relative p-4">
@@ -297,11 +297,9 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-30 w-full transition-all duration-300 ${
-          isScrolled
-            ? "bg-white/95 shadow-xl shadow-black/5 backdrop-blur-md" // [แก้ไข] เพิ่มพื้นหลังสีขาวและเส้นขอบ
-            : "bg-white" // [แก้ไข] ท
-        }`}
+        className={
+          "sticky top-0 z-30 w-full bg-white/75 backdrop-blur-2xl transition-all duration-300"
+        }
       >
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
