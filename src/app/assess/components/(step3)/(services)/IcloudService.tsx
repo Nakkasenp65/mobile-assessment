@@ -1,20 +1,13 @@
 // src/app/assess/components/(step3)/(services)/IcloudService.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../page";
-import {
-  AlertTriangle,
-  Lock,
-  Mail,
-  User,
-  Sparkles,
-  Check,
-} from "lucide-react";
+import { AlertTriangle, Lock, Mail, User, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -26,10 +19,7 @@ interface IcloudServiceProps {
 const INTEREST_RATE = 0.15; // 15%
 const SERVICE_FEE = 450; // 450 บาท
 
-const IcloudService = ({
-  deviceInfo,
-  icloudPawnPrice,
-}: IcloudServiceProps) => {
+const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
   const [formState, setFormState] = useState({
     customerName: "",
     appleId: "",
@@ -37,10 +27,7 @@ const IcloudService = ({
     termsAccepted: false,
   });
 
-  const handleInputChange = (
-    field: keyof typeof formState,
-    value: any,
-  ) => {
+  const handleInputChange = (field: keyof typeof formState, value: any) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -56,10 +43,7 @@ const IcloudService = ({
   }, [icloudPawnPrice]);
 
   const isFormComplete =
-    formState.customerName &&
-    formState.appleId &&
-    formState.password &&
-    formState.termsAccepted;
+    formState.customerName && formState.appleId && formState.password && formState.termsAccepted;
 
   const THB = (n: number) =>
     n.toLocaleString("th-TH", {
@@ -73,6 +57,10 @@ const IcloudService = ({
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
   };
+
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
   return (
     <main className="w-full space-y-6 pt-4">
@@ -88,12 +76,9 @@ const IcloudService = ({
       >
         <AlertTriangle className="h-8 w-8 flex-shrink-0 text-amber-500" />
         <div>
-          <h3 className="font-bold text-amber-900 dark:text-amber-100">
-            ข้อควรระวัง!
-          </h3>
+          <h3 className="font-bold text-amber-900 dark:text-amber-100">ข้อควรระวัง!</h3>
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            บริการนี้จำเป็นต้องใช้ Apple ID
-            และรหัสผ่านของท่าน
+            บริการนี้จำเป็นต้องใช้ Apple ID และรหัสผ่านของท่าน
             โปรดตรวจสอบให้แน่ใจว่าท่านได้สำรองข้อมูลและยอมรับความเสี่ยงทั้งหมดที่อาจเกิดขึ้น
           </p>
         </div>
@@ -119,9 +104,7 @@ const IcloudService = ({
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-indigo-800 dark:text-indigo-200">
-                ยอดประเมินสูงสุด
-              </span>
+              <span className="text-indigo-800 dark:text-indigo-200">ยอดประเมินสูงสุด</span>
               <span className="font-semibold text-indigo-900 dark:text-indigo-100">
                 {THB(icloudPawnPrice)}
               </span>
@@ -135,9 +118,7 @@ const IcloudService = ({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-indigo-800 dark:text-indigo-200">
-                หัก ค่าบริการ
-              </span>
+              <span className="text-indigo-800 dark:text-indigo-200">หัก ค่าบริการ</span>
               <span className="font-semibold text-red-600 dark:text-red-400">
                 - {THB(SERVICE_FEE)}
               </span>
@@ -147,9 +128,7 @@ const IcloudService = ({
           <div className="my-3 border-t border-indigo-200/50 dark:border-indigo-400/30" />
 
           <div className="text-center">
-            <p className="text-sm text-indigo-800 dark:text-indigo-200">
-              ยอดเงินที่คุณจะได้รับ
-            </p>
+            <p className="text-sm text-indigo-800 dark:text-indigo-200">ยอดเงินที่คุณจะได้รับ</p>
             <p className="mt-2 bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-blue-400">
               {THB(calculatedValues.netAmount)}
             </p>
@@ -173,9 +152,7 @@ const IcloudService = ({
         <ul className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
           <li className="flex items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
-            <span>
-              ไม่ต้องส่งตัวเครื่อง ใช้เพียง Apple ID
-            </span>
+            <span>ไม่ต้องส่งตัวเครื่อง ใช้เพียง Apple ID</span>
           </li>
           <li className="flex items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
@@ -202,39 +179,25 @@ const IcloudService = ({
         className="space-y-6"
       >
         {/* Form Inputs */}
-        <motion.div
-          variants={formVariants}
-          className="space-y-4"
-        >
-          <Label className="block text-lg font-semibold">
-            กรอกข้อมูลเพื่อดำเนินการ
-          </Label>
+        <motion.div variants={formVariants} className="space-y-4">
+          <Label className="block text-lg font-semibold">กรอกข้อมูลเพื่อดำเนินการ</Label>
 
           <div className="space-y-2">
-            <Label htmlFor="customerName-icloud">
-              ชื่อ-นามสกุล
-            </Label>
+            <Label htmlFor="customerName-icloud">ชื่อ-นามสกุล</Label>
             <div className="relative">
               <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
                 id="customerName-icloud"
                 placeholder="กรอกชื่อ-นามสกุล"
                 value={formState.customerName}
-                onChange={(e) =>
-                  handleInputChange(
-                    "customerName",
-                    e.target.value,
-                  )
-                }
+                onChange={(e) => handleInputChange("customerName", e.target.value)}
                 className="pl-10"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="appleId-icloud">
-              Apple ID (อีเมล)
-            </Label>
+            <Label htmlFor="appleId-icloud">Apple ID (อีเมล)</Label>
             <div className="relative">
               <Mail className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
@@ -242,21 +205,14 @@ const IcloudService = ({
                 type="email"
                 placeholder="example@icloud.com"
                 value={formState.appleId}
-                onChange={(e) =>
-                  handleInputChange(
-                    "appleId",
-                    e.target.value,
-                  )
-                }
+                onChange={(e) => handleInputChange("appleId", e.target.value)}
                 className="pl-10"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password-icloud">
-              รหัสผ่าน Apple ID
-            </Label>
+            <Label htmlFor="password-icloud">รหัสผ่าน Apple ID</Label>
             <div className="relative">
               <Lock className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
@@ -264,12 +220,7 @@ const IcloudService = ({
                 type="password"
                 placeholder="กรอกรหัสผ่าน"
                 value={formState.password}
-                onChange={(e) =>
-                  handleInputChange(
-                    "password",
-                    e.target.value,
-                  )
-                }
+                onChange={(e) => handleInputChange("password", e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -291,12 +242,7 @@ const IcloudService = ({
           <Checkbox
             id="terms-icloud"
             checked={formState.termsAccepted}
-            onCheckedChange={(checked) =>
-              handleInputChange(
-                "termsAccepted",
-                Boolean(checked),
-              )
-            }
+            onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
             className="mt-1"
           />
           <label
@@ -304,20 +250,13 @@ const IcloudService = ({
             className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             ฉันเข้าใจและยอมรับ{" "}
-            <a
-              href="#"
-              className="text-blue-600 underline dark:text-blue-400"
-            >
+            <a href="#" className="text-blue-600 underline dark:text-blue-400">
               ข้อตกลงและเงื่อนไขการใช้บริการจำนำ iCloud
             </a>{" "}
             รวมถึงความเสี่ยงที่เกี่ยวข้องทั้งหมด
           </label>
         </div>
-        <FramerButton
-          size="lg"
-          disabled={!isFormComplete}
-          className="h-14 w-full"
-        >
+        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันและรับเงินทันที
         </FramerButton>
       </motion.div>

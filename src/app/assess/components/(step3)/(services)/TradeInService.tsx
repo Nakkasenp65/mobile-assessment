@@ -1,11 +1,10 @@
 // src/app/assess/components/(step3)/(services)/TradeInService.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -14,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DeviceInfo } from "../../../page";
-import { Store, User, Phone, Check, TabletSmartphoneIcon } from "lucide-react";
+import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
 interface TradeInServiceProps {
@@ -52,11 +51,17 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
     color: "",
     appointmentDate: "",
     appointmentTime: "",
-    termsAccepted: false,
+    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof typeof formState, value: string) => {
+    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์
+    if (field === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const priceCalculation = useMemo(() => {
@@ -67,25 +72,29 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
     return {
       newDevicePrice: selectedDevice.price,
       tradeInValue: tradeInPrice,
-      additionalPayment: additionalPrice,
+      additionalPayment: additionalPrice > 0 ? additionalPrice : 0, // CHIRON: ป้องกันยอดติดลบ
     };
   }, [formState.newDevice, tradeInPrice]);
 
+  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
     formState.customerName &&
-    formState.phone &&
+    formState.phone.length === 10 &&
     formState.newDevice &&
     formState.storage &&
     formState.color &&
     formState.appointmentDate &&
-    formState.appointmentTime &&
-    formState.termsAccepted;
+    formState.appointmentTime;
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
   };
+
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
   return (
     <main className="w-full space-y-6 pt-4">
@@ -236,12 +245,16 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             <Label htmlFor="phone-tradein">เบอร์โทรศัพท์ติดต่อ</Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
               <Input
                 id="phone-tradein"
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
                 className="pl-10"
               />
             </div>
@@ -312,29 +325,24 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           y: 0,
           transition: { delay: 0.3 },
         }}
-        className="space-y-6 pt-4"
+        className="space-y-4 pt-4"
       >
-        <div className="flex items-start space-x-3">
-          <Checkbox
-            id="terms-tradein"
-            checked={formState.termsAccepted}
-            onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
-            className="mt-1"
-          />
-          <label
-            htmlFor="terms-tradein"
-            className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            ฉันยอมรับ{" "}
-            <a href="#" className="text-blue-600 underline">
-              ข้อตกลงและเงื่อนไข
-            </a>{" "}
-            สำหรับบริการแลกเปลี่ยนเครื่องใหม่
-          </label>
-        </div>
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันการแลกเปลี่ยนเครื่อง
         </FramerButton>
+        {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
+        <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
+          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot;
+          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+          <a
+            href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-amber-600 underline hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+          >
+            ข้อตกลงและเงื่อนไขการใช้บริการ
+          </a>
+        </p>
       </motion.div>
     </main>
   );

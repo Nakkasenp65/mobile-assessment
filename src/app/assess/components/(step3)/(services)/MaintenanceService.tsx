@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Wrench, Loader2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Wrench, Loader2, CheckCircle2 } from "lucide-react";
 import { DeviceInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { RepairItem } from "@/hooks/useRepairPrices";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils"; // CHIRON: Import `cn` utility สำหรับการจัดการ class แบบมีเงื่อนไข
 
 interface MaintenanceServiceProps {
   deviceInfo: DeviceInfo;
@@ -16,20 +15,20 @@ interface MaintenanceServiceProps {
   isLoading: boolean;
 }
 
-const MaintenanceService: React.FC<MaintenanceServiceProps> = ({
-  deviceInfo,
-  repairs,
-  totalCost,
-  isLoading,
-}) => {
+const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoading }) => {
   const [selectedRepairs, setSelectedRepairs] = useState<RepairItem[]>([]);
 
-  const handleSelectionChange = (repair: RepairItem, isSelected: boolean) => {
-    setSelectedRepairs((prev) => {
-      if (isSelected) {
-        return [...prev, repair];
+  // CHIRON: Structural Engineer - สร้างฟังก์ชันจัดการการเลือก/ยกเลิกที่ชัดเจน
+  // ลดความซับซ้อนของ logic ใน event handler
+  const handleToggleSelection = (repair: RepairItem) => {
+    setSelectedRepairs((currentSelected) => {
+      const isAlreadySelected = currentSelected.some((r) => r.part === repair.part);
+      if (isAlreadySelected) {
+        // ถ้ามีอยู่แล้ว ให้กรองออก (ยกเลิกการเลือก)
+        return currentSelected.filter((r) => r.part !== repair.part);
       } else {
-        return prev.filter((r) => r.part !== repair.part);
+        // ถ้ายังไม่มี ให้เพิ่มเข้าไป (เลือก)
+        return [...currentSelected, repair];
       }
     });
   };
@@ -59,29 +58,73 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
           </div>
         ) : repairs.length > 0 ? (
-          repairs.map((repair, index) => {
+          repairs.map((repair) => {
+            // CHIRON: คำนวณสถานะ `isSelected` ที่นี่ เพื่อใช้ขับเคลื่อน UI
             const isSelected = selectedRepairs.some((r) => r.part === repair.part);
             return (
-              <Label
-                key={index}
-                htmlFor={`repair-${index}`}
-                className="flex cursor-pointer items-center justify-between rounded-md p-2 hover:bg-slate-50 dark:hover:bg-zinc-700/50"
+              // CHIRON: Structural Engineer - เปลี่ยนจาก Label/Checkbox เป็น Button
+              // เพื่อความถูกต้องทาง Semantic และเพิ่มพื้นที่การกดให้ใหญ่ขึ้น
+              <motion.button
+                key={repair.part}
+                onClick={() => handleToggleSelection(repair)}
+                // CHIRON: ใช้ `cn` เพื่อจัดการ class ตาม state `isSelected`
+                className={cn(
+                  "relative flex w-full cursor-pointer items-center justify-between rounded-lg border-2 p-3 text-left transition-all duration-200",
+                  isSelected
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10"
+                    : "border-transparent bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700/50",
+                )}
+                whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-center gap-3">
-                  <Checkbox
-                    id={`repair-${index}`}
-                    checked={isSelected}
-                    onCheckedChange={(checked) => handleSelectionChange(repair, !!checked)}
-                  />
-                  <div className="flex items-center gap-2">
-                    <repair.icon className="h-5 w-5 text-slate-500" />
-                    <span className="text-slate-800 dark:text-zinc-100">{repair.part}</span>
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
+                      isSelected
+                        ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
+                        : "bg-slate-200 text-slate-500 dark:bg-zinc-700 dark:text-zinc-400",
+                    )}
+                  >
+                    <repair.icon className="h-5 w-5" />
+                  </div>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      isSelected
+                        ? "text-blue-800 dark:text-blue-200"
+                        : "text-slate-800 dark:text-zinc-100",
+                    )}
+                  >
+                    {repair.part}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      isSelected
+                        ? "text-blue-900 dark:text-blue-100"
+                        : "text-slate-800 dark:text-zinc-100",
+                    )}
+                  >
+                    ฿{repair.cost.toLocaleString()}
+                  </span>
+                  {/* CHIRON: แสดงสถานะการเลือกที่ชัดเจนด้วย Icon */}
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-300 dark:border-zinc-600">
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                        >
+                          <CheckCircle2 className="h-5 w-5 text-blue-500" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
-                <span className="font-semibold text-slate-800 dark:text-zinc-100">
-                  ฿{repair.cost.toLocaleString()}
-                </span>
-              </Label>
+              </motion.button>
             );
           })
         ) : (

@@ -1,12 +1,11 @@
 // src/app/assess/components/(step3)/(services)/IPhoneExchangeService.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -51,11 +50,17 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
     storeLocation: storeLocations[0],
     date: "",
     time: "",
-    termsAccepted: false,
+    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
   const handleInputChange = (field: keyof typeof formState, value: any) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์
+    if (field === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleLocationTypeChange = (newLocationType: "store" | "bts") => {
@@ -73,12 +78,12 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
     return { feeAmount: fee, netAmount: net };
   }, [exchangePrice]);
 
+  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
     formState.customerName &&
-    formState.phone &&
+    formState.phone.length === 10 &&
     formState.date &&
     formState.time &&
-    formState.termsAccepted &&
     locationType !== null &&
     (locationType === "bts" ? formState.btsStation : locationType === "store" ? true : false);
 
@@ -88,31 +93,13 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
     exit: { opacity: 0, y: -10 },
   };
 
-  return (
-    <main className="w-full space-y-6 pt-4">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mx-4 mb-4 rounded-xl border border-green-100 bg-gradient-to-br from-green-50/75 to-emerald-500/25 p-4"
-      >
-        <ul className="text-green-800 dark:text-green-200">
-          <li className="flex items-start gap-2">
-            <Wallet className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-            <span>รับเงินสดทันทีหลังส่งมอบเครื่อง</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Repeat className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-            <span>ต่อรอบได้ทุก 10 วัน โดยชำระค่าบริการ 15% ของวงเงิน</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Cloud className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-            <span>ใช้ iCloud ของตัวเองได้ ไม่ติดไอคลาวด์ร้าน</span>
-          </li>
-        </ul>
-      </motion.div>
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
-      <div className="mt-2 space-y-6 border-t pt-4 dark:border-zinc-700/50">
+  return (
+    <main className="w-full space-y-6">
+      <div className="space-y-6 pt-4 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -179,12 +166,16 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
               <Label htmlFor={`phone-exchange`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
                 <Input
                   id={`phone-exchange`}
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
                   className="pl-10"
                 />
               </div>
@@ -328,29 +319,24 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
             y: 0,
             transition: { delay: 0.3 },
           }}
-          className="space-y-6 pt-4"
+          className="space-y-4 pt-4"
         >
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id={`terms-exchange`}
-              checked={formState.termsAccepted}
-              onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
-              className="mt-1"
-            />
-            <label
-              htmlFor={`terms-exchange`}
-              className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              ฉันยอมรับ{" "}
-              <a href="#" className="text-blue-600 underline dark:text-blue-400">
-                ข้อตกลงและเงื่อนไข
-              </a>{" "}
-              สำหรับบริการไอโฟนแลกเงิน และค่าบริการ {SERVICE_FEE_RATE * 100}% ต่อรอบ 10 วัน
-            </label>
-          </div>
           <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
             ยืนยันและนัดหมาย
           </FramerButton>
+          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
+          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
+            การคลิก &quot;ยืนยันและนัดหมาย&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            <a
+              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-green-600 underline hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+            >
+              ข้อตกลงและเงื่อนไขการใช้บริการ
+            </a>
+          </p>
         </motion.div>
       </div>
     </main>

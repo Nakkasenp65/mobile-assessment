@@ -1,11 +1,10 @@
 // src/app/assess/components/(step3)/(services)/RefinanceService.tsx
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { DeviceInfo } from "../../../page";
 import {
@@ -17,7 +16,6 @@ import {
   FileUp,
   Receipt,
   CalendarDays,
-  CreditCard,
 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -48,19 +46,30 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
-    termsAccepted: false,
+    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
+    // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง
     occupation: "",
     documentFile: null as File | null,
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: string | boolean) => {
-    setFormState((prev) => {
-      const newState = { ...prev, [field]: value };
-      if (field === "occupation") {
-        newState.documentFile = null;
-      }
-      return newState;
-    });
+  const handleInputChange = (field: keyof typeof formState, value: string) => {
+    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
+    // ป้องกันข้อมูล "ปนเปื้อน" (Contaminated Data) ไม่ให้เข้าสู่ระบบ State
+    if (field === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormState((prev) => {
+        const newState = { ...prev, [field]: numericValue };
+        return newState;
+      });
+    } else {
+      setFormState((prev) => {
+        const newState = { ...prev, [field]: value };
+        if (field === "occupation") {
+          newState.documentFile = null;
+        }
+        return newState;
+      });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,10 +95,11 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
     return refinancePrice / REFINANCE_MONTHS;
   }, [refinancePrice]);
 
+  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
+  // โดยนำเงื่อนไขการยอมรับข้อตกลงออก และเพิ่มการตรวจสอบความยาวเบอร์โทร
   const isFormComplete =
     formState.customerName &&
-    formState.phone &&
-    formState.termsAccepted &&
+    formState.phone.length === 10 &&
     !!formState.occupation &&
     !!formState.documentFile;
 
@@ -114,6 +124,10 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
   };
+
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
   return (
     <main className="w-full space-y-6 pt-4">
@@ -225,12 +239,16 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
               <Label htmlFor={`phone-refinance`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
                 <Input
                   id={`phone-refinance`}
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
+                  inputMode="numeric" // บังคับใช้แป้นพิมพ์ตัวเลขบนมือถือ
+                  pattern="[0-9]{10}" // กำหนดรูปแบบที่เข้มงวดสำหรับ HTML5 validation
+                  maxLength={10} // จำกัดความยาวสูงสุด
                   className="pl-10"
                 />
               </div>
@@ -356,29 +374,25 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
             y: 0,
             transition: { delay: 0.3 },
           }}
-          className="space-y-6 pt-4"
+          className="space-y-4 pt-4"
         >
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id={`terms-refinance`}
-              checked={formState.termsAccepted}
-              onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
-              className="mt-1"
-            />
-            <label
-              htmlFor={`terms-refinance`}
-              className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              ฉันเข้าใจและยอมรับ{" "}
-              <a href="#" className="text-blue-600 underline dark:text-blue-400">
-                ข้อตกลงและเงื่อนไขการรีไฟแนนซ์
-              </a>{" "}
-              และยินยอมให้ตรวจสอบข้อมูลที่จำเป็น
-            </label>
-          </div>
           <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
             ยืนยันการรีไฟแนนซ์
           </FramerButton>
+          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
+          {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
+          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
+            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            <a
+              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-purple-600 underline hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+            >
+              ข้อตกลงและเงื่อนไขการใช้บริการ
+            </a>
+          </p>
         </motion.div>
       </div>
     </main>

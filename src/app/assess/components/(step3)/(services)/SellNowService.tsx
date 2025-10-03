@@ -1,12 +1,11 @@
 // src/app/assess/components/(step3)/(services)/SellNowService.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -16,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../page";
-import { Store, User, Phone, Home, Train, Check } from "lucide-react";
+import { Store, User, Phone, Home, Train } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
 interface SellNowServiceProps {
@@ -52,11 +51,19 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     storeLocation: storeLocations[0],
     date: "",
     time: "",
-    termsAccepted: false,
+    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
+    // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง ไม่จำเป็นต้องมี state แยก
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof typeof formState, value: string) => {
+    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
+    // ป้องกันข้อมูล "ปนเปื้อน" (Contaminated Data) ไม่ให้เข้าสู่ระบบ State โดยเด็ดขาด
+    if (field === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleLocationTypeChange = (newLocationType: "home" | "bts" | "store") => {
@@ -69,12 +76,13 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     setSelectedBtsLine("");
   };
 
+  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
+  // โดยนำเงื่อนไขการยอมรับข้อตกลงออก เพราะการกระทำของผู้ใช้จะเป็นตัวยืนยันเอง
   const isFormComplete =
     formState.customerName &&
-    formState.phone &&
+    formState.phone.length === 10 && // CHIRON: เพิ่มการตรวจสอบความยาวของเบอร์โทรศัพท์
     formState.date &&
     formState.time &&
-    formState.termsAccepted &&
     locationType !== null &&
     (locationType === "home"
       ? formState.address
@@ -89,6 +97,10 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
   };
+
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
   return (
     <main className="w-full space-y-6 pt-4">
@@ -148,14 +160,16 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
             <Label htmlFor={`phone-sell`}>เบอร์โทรศัพท์ติดต่อ</Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
               <Input
                 id={`phone-sell`}
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
-                inputMode="numeric"
-                maxLength={10}
+                inputMode="numeric" // บังคับใช้แป้นพิมพ์ตัวเลขบนมือถือ
+                pattern="[0-9]{10}" // กำหนดรูปแบบที่เข้มงวดสำหรับ HTML5 validation
+                maxLength={10} // จำกัดความยาวสูงสุด
                 className="h-12 pl-10"
               />
             </div>
@@ -365,22 +379,26 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           y: 0,
           transition: { delay: 0.3 },
         }}
-        className="space-y-6 pt-4"
+        className="space-y-4 pt-4" // CHIRON: ปรับแก้ระยะห่างเล็กน้อยเพื่อรองรับข้อความ
       >
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันการขายและรับเงินทันที
         </FramerButton>
-        <div className="flex w-full items-center justify-center space-x-3">
-          <label
-            htmlFor={`terms-sell`}
-            className="text-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+
+        {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
+        {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
+        <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
+          การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot;
+          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+          <a
+            href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-pink-600 underline hover:text-pink-700 dark:text-pink-400 dark:hover:text-pink-300"
           >
-            เมื่อกดยืนยัน ถือว่าข้อมูลข้างต้นของท่านเป็นความจริง และยอมรับ{" "}
-            <a href="#" className="text-blue-600 underline dark:text-blue-400">
-              ข้อตกลงและเงื่อนไขการขายสินค้า
-            </a>
-          </label>
-        </div>
+            ข้อตกลงและเงื่อนไขการใช้บริการ
+          </a>
+        </p>
       </motion.div>
     </main>
   );

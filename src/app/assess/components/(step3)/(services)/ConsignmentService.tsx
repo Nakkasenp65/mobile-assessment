@@ -1,11 +1,10 @@
 // src/app/assess/components/(step3)/(services)/ConsignmentService.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -41,15 +40,20 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
     customerName: "",
     phone: "",
     storeLocation: storeLocations[0],
-    desiredPrice: "", // เริ่มต้นเป็น string ว่าง เพื่อให้ placeholder ทำงานถูกต้อง
+    desiredPrice: "",
     additionalNotes: "",
     dropoffDate: "",
     dropoffTime: "",
-    termsAccepted: false,
+    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof typeof formState, value: string) => {
+    if (field === "phone" || field === "desiredPrice") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const { desiredPriceNum, serviceFeeAmount, netAmount } = useMemo(() => {
@@ -63,19 +67,23 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
     };
   }, [formState.desiredPrice, consignmentPrice]);
 
+  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
     formState.customerName &&
-    formState.phone &&
+    formState.phone.length === 10 &&
     formState.desiredPrice &&
     formState.dropoffDate &&
-    formState.dropoffTime &&
-    formState.termsAccepted;
+    formState.dropoffTime;
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
   };
+
+  useEffect(() => {
+    scrollTo(0, 0);
+  });
 
   return (
     <main className="w-full space-y-6 pt-4">
@@ -159,12 +167,16 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
               <Label htmlFor={`phone-consignment`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
                 <Input
                   id={`phone-consignment`}
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
                   className="pl-10"
                 />
               </div>
@@ -176,10 +188,12 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
 
             <div className="space-y-2">
               <Label htmlFor={`desiredPrice-consignment`}>ราคาที่ต้องการขาย (บาท)</Label>
+              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" สำหรับข้อมูลการเงิน */}
               <Input
                 id={`desiredPrice-consignment`}
-                type="number"
-                placeholder={`เช่น ${consignmentPrice}`}
+                type="text" // เปลี่ยนเป็น text เพื่อการควบคุมที่ดีกว่า
+                inputMode="numeric" // บังคับแป้นพิมพ์ตัวเลข
+                placeholder={`เช่น ${consignmentPrice.toLocaleString("th-TH")}`}
                 value={formState.desiredPrice}
                 onChange={(e) => handleInputChange("desiredPrice", e.target.value)}
               />
@@ -297,30 +311,24 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
             y: 0,
             transition: { delay: 0.3 },
           }}
-          className="space-y-6 pt-4"
+          className="space-y-4 pt-4"
         >
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id={`terms-consignment`}
-              checked={formState.termsAccepted}
-              onCheckedChange={(checked) => handleInputChange("termsAccepted", Boolean(checked))}
-              className="mt-1"
-            />
-            <label
-              htmlFor={`terms-consignment`}
-              className="text-sm leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              ฉันยอมรับ{" "}
-              <a href="#" className="text-blue-600 underline dark:text-blue-400">
-                ข้อตกลงและเงื่อนไข
-              </a>{" "}
-              สำหรับบริการฝากขายสินค้า และค่าบริการ {SERVICE_FEE_RATE * 100}% ต่อรอบการขายฝาก (10
-              วัน)
-            </label>
-          </div>
           <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
             ยืนยันการฝากขาย
           </FramerButton>
+          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
+          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
+            การคลิก &quot;ยืนยันการฝากขาย&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            <a
+              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-sky-600 underline hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+            >
+              ข้อตกลงและเงื่อนไขการใช้บริการ
+            </a>
+          </p>
         </motion.div>
       </div>
     </main>
