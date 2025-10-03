@@ -55,7 +55,7 @@ const HeroSection = () => {
         <section className="mt-6 w-full pb-6 sm:pb-14 lg:mt-8 xl:mt-2">
           <div className="container mx-auto">
             {/* Enhanced feature card with more depth */}
-            <div className="relative overflow-hidden rounded-2xl border-2 border-white/70 bg-white/95 p-4 shadow-2xl ring-2 ring-orange-100/60 backdrop-blur-md sm:p-6">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:p-6">
               {/* Subtle inner glow */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-50/40 via-transparent to-pink-50/40" />
 

@@ -10,6 +10,7 @@ import {
   Handshake,
   TabletSmartphone,
   Hash,
+  Wrench,
 } from "lucide-react";
 import { DeviceInfo, ConditionInfo } from "../../page";
 import { LucideIcon } from "lucide-react";
@@ -185,6 +186,13 @@ const AssessStep3 = ({
           },
         ]
       : []),
+    {
+      id: "maintenance",
+      title: "ซ่อมบำรุง",
+      description: "เลือกซ่อมเฉพาะส่วนที่ต้องการ",
+      icon: Wrench,
+      price: totalRepairCost, // ใช้ totalRepairCost เป็น giá trị เริ่มต้น
+    },
   ];
 
   const handleConfirm = () => {
@@ -237,7 +245,11 @@ const AssessStep3 = ({
           <Services
             services={services}
             selectedService={localSelectedService}
-            setSelectedService={setLocalSelectedService} // ใช้ state ภายในนี้
+            setSelectedService={setLocalSelectedService}
+            repairs={repairs}
+            totalCost={totalRepairCost}
+            isLoading={isLoadingRepairPrices}
+            deviceInfo={deviceInfo}
           />
         </div>
       </div>

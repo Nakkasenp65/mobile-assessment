@@ -102,7 +102,7 @@ export default function AssessPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 pb-24 sm:py-16 sm:pb-4">
+      <div className="container mx-auto px-4 py-8 pb-24 sm:py-16 sm:pb-24">
         {/* ปรับ totalSteps เป็น 4 */}
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 

@@ -281,12 +281,14 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </div>
 
           {repairs && repairs.length > 0 && (
-            <MaintenanceService
-              deviceInfo={deviceInfo}
-              repairs={repairs}
-              totalCost={totalCost}
-              isLoading={isLoading}
-            />
+            <div className="hidden md:block">
+              <MaintenanceService
+                deviceInfo={deviceInfo}
+                repairs={repairs}
+                totalCost={totalCost}
+                isLoading={isLoading}
+              />{" "}
+            </div>
           )}
         </AccordionContent>
       </AccordionItem>

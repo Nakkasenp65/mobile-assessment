@@ -3,15 +3,21 @@ import React, { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ServiceOption } from "./AssessStep3";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, CircleDot, LucideIcon } from "lucide-react";
+import { Check, CircleDot, LucideIcon, Wrench } from "lucide-react";
+import MaintenanceService from "./(services)/MaintenanceService";
+import { RepairItem } from "@/hooks/useRepairPrices";
+import { DeviceInfo } from "../../page";
 
 interface ServicesProps {
   services: ServiceOption[];
   selectedService: string;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
+  repairs: RepairItem[];
+  totalCost: number;
+  isLoading: boolean;
+  deviceInfo: DeviceInfo;
 }
 
-// ... (Data for Benefits และ PALETTE ไม่เปลี่ยนแปลง)
 const serviceBenefits: { [key: string]: string[] } = {
   sell: [
     "รับเงินสดทันทีภายใน 30 นาที",
@@ -105,6 +111,15 @@ const PALETTE = {
     shadow: "shadow-orange-500/20",
     solidBg: "bg-orange-600",
   },
+  maintenance: {
+    text: "text-slate-600",
+    iconBg: "bg-gradient-to-br from-slate-500 to-gray-500",
+    borderColor: "border-slate-500",
+    soft: "bg-slate-50",
+    ring: "ring-slate-500/20",
+    shadow: "shadow-slate-500/20",
+    solidBg: "bg-slate-600",
+  },
   fallback: {
     text: "text-zinc-500",
     iconBg: "bg-zinc-200",
@@ -130,7 +145,15 @@ const THB = (n: number) =>
     })
     .replace("฿", "฿ ");
 
-export default function Services({ services, selectedService, setSelectedService }: ServicesProps) {
+export default function Services({
+  services,
+  selectedService,
+  setSelectedService,
+  repairs,
+  totalCost,
+  isLoading,
+  deviceInfo,
+}: ServicesProps) {
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const handleSelect = (serviceId: string) => {
@@ -157,80 +180,105 @@ export default function Services({ services, selectedService, setSelectedService
           const theme = getTheme(service.id);
           const Icon = service.icon as LucideIcon;
           const benefits = serviceBenefits[service.id] || [];
+          const isMaintenance = service.id === "maintenance";
+
+          if (isMaintenance && repairs.length === 0) {
+            return null;
+          }
 
           return (
-            <motion.div
-              key={service.id}
-              layout
-              // [Chiron] ปรับเทียบความคมชัด: เพิ่มค่า opacity เพื่อรักษาความสามารถในการเปรียบเทียบ
-              animate={{ opacity: selectedService && !isSelected ? 0.85 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <button
-                ref={(el) => {
-                  itemRefs.current[service.id] = el;
-                }}
-                onClick={() => handleSelect(service.id)}
-                className={cn(
-                  "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
-                  isSelected
-                    ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
-                    : "border-border hover:border-slate-300",
-                )}
+            <div key={service.id} className={cn(isMaintenance && "block md:hidden")}>
+              <motion.div
+                layout
+                animate={{ opacity: selectedService && !isSelected ? 0.85 : 1 }}
+                transition={{ duration: 0.3 }}
               >
-                <AnimatePresence>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{ duration: 0.2 }}
+                <button
+                  ref={(el) => {
+                    itemRefs.current[service.id] = el;
+                  }}
+                  onClick={() => handleSelect(service.id)}
+                  className={cn(
+                    "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
+                    isSelected
+                      ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
+                      : "border-border hover:border-slate-300",
+                  )}
+                >
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        className={cn(
+                          "absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full text-white",
+                          theme.iconBg,
+                        )}
+                      >
+                        <CircleDot className="h-5 w-5" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="flex flex-1 items-center gap-4">
+                    <div
                       className={cn(
-                        "absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full text-white",
+                        "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
                         theme.iconBg,
                       )}
                     >
-                      <CircleDot className="h-5 w-5" />
-                    </motion.div>
+                      <Icon className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-foreground font-bold">{service.title}</h4>
+                      <p className="text-muted-foreground text-sm">{service.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
+                    </div>
+                  </div>
+
+                  {!isMaintenance && (
+                    <>
+                      <div className="bg-border my-4 h-px w-full" />
+                      <ul className="text-muted-foreground space-y-2 text-sm">
+                        {benefits.map((benefit, index) => (
+                          <li key={index} className="flex items-start gap-2.5">
+                            <div
+                              className={cn(
+                                "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
+                                theme.solidBg,
+                              )}
+                            />
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
                   )}
-                </AnimatePresence>
+                </button>
+              </motion.div>
 
-                <div className="flex flex-1 items-center gap-4">
-                  <div
-                    className={cn(
-                      "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
-                      theme.iconBg,
-                    )}
+              <AnimatePresence>
+                {isSelected && isMaintenance && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 overflow-hidden"
                   >
-                    <Icon className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-foreground font-bold">{service.title}</h4>
-                    <p className="text-muted-foreground text-sm">{service.description}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
-                  </div>
-                </div>
-
-                <div className="bg-border my-4 h-px w-full" />
-
-                <ul className="text-muted-foreground space-y-2 text-sm">
-                  {benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-start gap-2.5">
-                      {/* [Chiron] เปลี่ยนจาก Check เป็น CircleDot และปรับขนาดเล็กน้อย */}
-                      <div
-                        className={cn(
-                          "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
-                          theme.solidBg,
-                        )}
-                      />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </button>
-            </motion.div>
+                    <MaintenanceService
+                      deviceInfo={deviceInfo}
+                      repairs={repairs}
+                      totalCost={totalCost}
+                      isLoading={isLoading}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           );
         })}
       </div>
