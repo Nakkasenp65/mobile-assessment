@@ -27,6 +27,8 @@ interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onBack: () => void;
+  onNext: () => void; //  รับ onNext มา
+  setSelectedService: React.Dispatch<React.SetStateAction<string>>; //  รับ setSelectedService มา
 }
 
 export interface ServiceOption {
@@ -95,14 +97,20 @@ const mockRecords = {
   ],
 };
 
-const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) => {
+const AssessStep3 = ({
+  deviceInfo,
+  conditionInfo,
+  onBack,
+  onNext,
+  setSelectedService,
+}: AssessStep3Props) => {
   const {
     totalRepairCost,
     repairs,
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
 
-  const [selectedService, setSelectedService] = useState<string>("sell");
+  const [localSelectedService, setLocalSelectedService] = useState<string>("sell");
 
   const { finalPrice, grade, gradeTextStyle, gradeNeonColor } = usePriceCalculation(
     deviceInfo,
@@ -193,10 +201,15 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
   ];
 
   const handleConfirm = () => {
-    if (selectedService) {
-      alert("ขอบคุณสำหรับการใช้บริการ! เราจะติดต่อกลับภายใน 24 ชั่วโมง");
+    if (localSelectedService) {
+      // เปลี่ยนจาก alert เป็นการเรียก onNext()
+      onNext();
     }
   };
+
+  useEffect(() => {
+    setSelectedService(localSelectedService);
+  }, [localSelectedService, setSelectedService]);
 
   useEffect(() => {
     scrollTo(0, 0);
@@ -238,8 +251,8 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
         <div className="flex flex-col">
           <Services
             services={services}
-            selectedService={selectedService}
-            setSelectedService={setSelectedService}
+            selectedService={localSelectedService}
+            setSelectedService={setLocalSelectedService} // ใช้ state ภายในนี้
             deviceInfo={deviceInfo}
             conditionInfo={conditionInfo}
             pawnPrice={calculatedPawnPrice}
@@ -264,8 +277,8 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack }: AssessStep3Props) =>
         </FramerButton>
 
         <FramerButton
-          onClick={handleConfirm}
-          disabled={!selectedService}
+          onClick={handleConfirm} // ฟังก์ชันนี้จะเรียก onNext()
+          disabled={!localSelectedService}
           size="lg"
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-xl px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
