@@ -60,7 +60,7 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
 
   useEffect(() => {
     scrollTo(0, 0);
-  });
+  }, []);
 
   return (
     <main className="w-full space-y-6 pt-4">

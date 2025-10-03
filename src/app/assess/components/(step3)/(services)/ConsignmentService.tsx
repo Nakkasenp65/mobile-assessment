@@ -83,7 +83,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
 
   useEffect(() => {
     scrollTo(0, 0);
-  });
+  }, []);
 
   return (
     <main className="w-full space-y-6 pt-4">

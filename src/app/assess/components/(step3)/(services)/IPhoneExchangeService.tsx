@@ -95,7 +95,7 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
 
   useEffect(() => {
     scrollTo(0, 0);
-  });
+  }, []);
 
   return (
     <main className="w-full space-y-6">
