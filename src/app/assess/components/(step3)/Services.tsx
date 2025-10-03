@@ -187,7 +187,7 @@ export default function Services({
           }
 
           return (
-            <div key={service.id} className={cn(isMaintenance && "block md:hidden")}>
+            <div key={service.id} className={cn(isMaintenance && "block lg:hidden")}>
               <motion.div
                 layout
                 animate={{ opacity: selectedService && !isSelected ? 0.85 : 1 }}

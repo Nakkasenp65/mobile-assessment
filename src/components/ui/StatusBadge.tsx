@@ -22,7 +22,7 @@ export default function StatusBadge({ status }: { status: string }) {
   const Icon = config.icon;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${config.color}`}
+      className={`inline-flex items-center rounded-full px-1.5 py-1 text-xs font-medium md:text-sm ${config.color}`}
     >
       <Icon className="mr-1 h-4 w-4" />
       {config.label}

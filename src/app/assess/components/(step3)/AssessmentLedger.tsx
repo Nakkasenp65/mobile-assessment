@@ -281,7 +281,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </div>
 
           {repairs && repairs.length > 0 && (
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <MaintenanceService
                 deviceInfo={deviceInfo}
                 repairs={repairs}

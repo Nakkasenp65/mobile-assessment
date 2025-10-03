@@ -7,6 +7,7 @@ import { DeviceInfo } from "../../../page";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { cn } from "@/lib/utils"; // CHIRON: Import `cn` utility สำหรับการจัดการ class แบบมีเงื่อนไข
+import { Button } from "../../../../../components/ui/button";
 
 interface MaintenanceServiceProps {
   deviceInfo: DeviceInfo;
@@ -159,12 +160,16 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
-        className="flex justify-center pt-2"
+        className="justify-center pt-2"
       >
-        <FramerButton size="lg" className="h-14 w-full" disabled={selectedRepairs.length === 0}>
+        <Button
+          size="lg"
+          className="h-14 w-full bg-gradient-to-br from-stone-400 to-stone-500"
+          disabled={selectedRepairs.length === 0}
+        >
           <Wrench className="mr-2 h-4 w-4" />
           ติดต่องานซ่อม
-        </FramerButton>
+        </Button>
       </motion.div>
     </section>
   );

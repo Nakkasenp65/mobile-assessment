@@ -211,17 +211,20 @@ const AssessStep3 = ({
   }, []);
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col gap-8">
       {/* HEAD */}
-      <div className="mb-8 flex w-full flex-col items-center justify-center gap-2">
-        <h2 className="mb-2 text-3xl font-bold text-black">ผลการประเมินอุปกรณ์</h2>
-        <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600">
+      <div className="flex w-full flex-col items-center justify-center gap-2">
+        <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
+        {/* id + date + status */}
+        <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+          <div className="flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1.5 text-xs font-medium text-slate-600">
             <Hash className="h-4 w-4" />
             <span>รหัสการประเมิน: {mockRecords.id}</span>
           </div>
-          <p className="text-[#78716c]">อัพเดทล่าสุด: {mockRecords.assessmentDate}</p>
-          <StatusBadge status={mockRecords.status} />
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-[#78716c]">อัพเดทล่าสุด: {mockRecords.assessmentDate}</p>
+            <StatusBadge status={mockRecords.status} />
+          </div>
         </div>
       </div>
 
