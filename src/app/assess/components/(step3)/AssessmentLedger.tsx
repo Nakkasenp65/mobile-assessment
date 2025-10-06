@@ -1,8 +1,7 @@
 // src/app/assess/components/(step3)/AssessmentLedger.tsx
 "use client";
 
-import { ComponentType, useMemo } from "react";
-import { DeviceInfo, ConditionInfo } from "../../page";
+import { useMemo } from "react";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import {
   BatteryCharging,
@@ -26,19 +25,15 @@ import {
   PhoneCall,
   CircleDot,
   RadioTower,
+  LucideIcon,
 } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { ASSESSMENT_QUESTIONS } from "@/util/info";
+import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 
-// --- ICON and LABEL MAPs ---
-const ICON_MAP: Record<string, ComponentType<any>> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   brand: Smartphone,
   model: Cpu,
   storage: HardDrive,
@@ -88,7 +83,6 @@ const LABEL_MAP: Record<string, string> = {
   buttons: "ปุ่ม Power / Volume",
 };
 
-// --- Helper Function ---
 const isConsideredPassed = (key: string, value: string): boolean => {
   const positiveValues = [
     "model_th",
@@ -120,15 +114,7 @@ const isConsideredPassed = (key: string, value: string): boolean => {
 };
 
 // --- Sub-components ---
-const TestItem = ({
-  itemKey,
-  itemValue,
-  label,
-}: {
-  itemKey: string;
-  itemValue: string;
-  label: string;
-}) => {
+const TestItem = ({ itemKey, itemValue, label }: { itemKey: string; itemValue: string; label: string }) => {
   const Icon = ICON_MAP[itemKey];
   const isPassed = isConsideredPassed(itemKey, itemValue);
 
@@ -145,9 +131,7 @@ const TestItem = ({
     >
       <div className="relative flex-shrink-0">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm md:h-11 md:w-11">
-          <Icon
-            className={cn("h-5 w-5 md:h-6 md:w-6", isPassed ? "text-slate-600" : "text-orange-500")}
-          />
+          <Icon className={cn("h-5 w-5 md:h-6 md:w-6", isPassed ? "text-slate-600" : "text-orange-500")} />
         </div>
         <div
           className={cn(
@@ -163,17 +147,10 @@ const TestItem = ({
         </div>
       </div>
       <div className="flex flex-col">
-        <span
-          className={cn(
-            "text-sm font-semibold sm:w-max",
-            isPassed ? "text-slate-700" : "text-orange-800",
-          )}
-        >
+        <span className={cn("text-sm font-semibold sm:w-max", isPassed ? "text-slate-700" : "text-orange-800")}>
           {LABEL_MAP[itemKey] || itemKey}
         </span>
-        <span className={cn("text-xs", isPassed ? "text-slate-500" : "text-orange-600")}>
-          {label}
-        </span>
+        <span className={cn("text-xs", isPassed ? "text-slate-500" : "text-orange-600")}>{label}</span>
       </div>
     </div>
   );
@@ -217,9 +194,9 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
     const map: Record<string, Record<string, string>> = {};
     ASSESSMENT_QUESTIONS.forEach((section) => {
       section.questions.forEach((question) => {
-        map[question.id] = {};
+        map[String(question.id)] = {};
         question.options.forEach((option) => {
-          map[question.id][option.id] = option.label;
+          map[String(question.id)][String(option.id)] = option.label;
         });
       });
     });
@@ -230,9 +207,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
 
   const generalInfoKeys = ["modelType", "warranty", "accessories"];
   const conditionKeys = Object.keys(allInfo).filter(
-    (key) =>
-      allInfo[key as keyof typeof allInfo] &&
-      !["brand", "model", "storage", ...generalInfoKeys].includes(key),
+    (key) => allInfo[key as keyof typeof allInfo] && !["brand", "model", "storage", ...generalInfoKeys].includes(key),
   );
 
   return (
@@ -248,9 +223,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
             <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
               รายละเอียดสภาพเครื่อง
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-              คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด
-            </p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">คลิกเพื่อดูรายละเอียดผลการประเมินทั้งหมด</p>
           </div>
         </AccordionTrigger>
 
@@ -268,9 +241,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
               })}
             </div>
           </div>
-          <div
-            className={`flex flex-col gap-4 border-t pt-4 ${repairs && repairs.length > 0 && "border-b pb-6"}`}
-          >
+          <div className={`flex flex-col gap-4 border-t pt-4 ${repairs && repairs.length > 0 && "border-b pb-6"}`}>
             <div className="grid grid-cols-2 gap-3">
               {conditionKeys.map((key) => {
                 const value = allInfo[key as keyof typeof allInfo];

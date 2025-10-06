@@ -8,37 +8,7 @@ import AssessStep3 from "./components/(step3)/AssessStep3";
 import AssessStep4 from "./components/(step4)/AssessStep4"; //  เพิ่ม import สำหรับ Step 4
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
-
-export interface DeviceInfo {
-  brand: string;
-  model: string;
-  storage: string;
-}
-
-export interface ConditionInfo {
-  // ข้อมูลทั่วไป
-  modelType: string;
-  warranty: string;
-  accessories: string;
-  // สภาพภายนอก
-  bodyCondition: string;
-  screenGlass: string;
-  // การทำงานหน้าจอและประสิทธิภาพ
-  screenDisplay: string;
-  batteryHealth: string; // คำตอบจากคำถามเรื่องสุขภาพแบต
-  // ฟังก์ชันพื้นฐาน
-  camera: string;
-  wifi: string;
-  faceId: string;
-  speaker: string;
-  mic: string;
-  touchScreen: string;
-  charger: string;
-  call: string;
-  homeButton: string;
-  sensor: string;
-  buttons: string;
-}
+import { ConditionInfo, DeviceInfo } from "../../types/device";
 
 export default function AssessPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -68,7 +38,6 @@ export default function AssessPage() {
     sensor: "",
     buttons: "",
   });
-  // เพิ่ม state สำหรับเก็บ service ที่เลือก
   const [selectedService, setSelectedService] = useState<string>("");
 
   useEffect(() => {
@@ -76,7 +45,6 @@ export default function AssessPage() {
   }, [conditionInfo]);
 
   const handleNext = () => {
-    // ปรับเงื่อนไขให้ไปถึง step 4 ได้
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -102,11 +70,10 @@ export default function AssessPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 pb-24 sm:py-16 sm:pb-24">
-        {/* ปรับ totalSteps เป็น 4 */}
+      <div className="container mx-auto flex w-full flex-col gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 
-        <div className="mt-8">
+        <div>
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
@@ -132,8 +99,8 @@ export default function AssessPage() {
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               onBack={handleBack}
-              onNext={handleNext} // ส่ง onNext ไปเพื่อใช้ในการยืนยัน
-              setSelectedService={setSelectedService} // ส่ง state setter ไป
+              onNext={handleNext}
+              setSelectedService={setSelectedService}
             />
           )}
 

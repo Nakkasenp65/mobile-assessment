@@ -1,62 +1,8 @@
 "use client";
 
 import Layout from "../../../components/Layout/Layout";
+import { AssessmentRecord } from "../../../types/assessment";
 import AssessmentDetails from "../components/AssessmentDetails";
-
-// --- Interfaces ---
-interface ConditionInfo {
-  modelType: string;
-  warranty: string;
-  accessories: string;
-  bodyCondition: string;
-  screenGlass: string;
-  screenDisplay: string;
-  batteryHealth: string;
-  camera: string;
-  wifi: string;
-  faceId: string;
-  speaker: string;
-  mic: string;
-  touchScreen: string;
-  charger: string;
-}
-
-interface PawnServiceInfo {
-  customerName: string;
-  locationType: "home" | "bts" | "store";
-  homeAddress?: string;
-  province?: string;
-  district?: string;
-  btsLine?: string;
-  btsStation?: string;
-  storeBranch?: string;
-  appointmentDate: string;
-  appointmentTime: string;
-  phone: string;
-}
-
-interface AssessmentRecord {
-  id: string; // ✨ 2. เพิ่ม ID เข้าไปใน Interface
-  phoneNumber: string;
-  assessmentDate: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-    imageUrl: string;
-  };
-  conditionInfo: ConditionInfo;
-  pawnServiceInfo: PawnServiceInfo;
-  selectedService: {
-    name: string;
-    price: number;
-    appointmentDate: string;
-  };
-  status: "completed" | "pending" | "in-progress";
-  estimatedValue: number;
-  priceLockExpiresAt: string;
-  nextSteps: string[];
-}
 
 const getExpiryDate = (days: number): string => {
   const date = new Date();
@@ -65,61 +11,63 @@ const getExpiryDate = (days: number): string => {
   return date.toISOString();
 };
 
-const mockRecords: AssessmentRecord[] = [
-  {
-    id: "ASS-2568-0001",
-    phoneNumber: "0812345678",
-    assessmentDate: "25 กันยายน 2568",
-    device: {
-      brand: "Apple",
-      model: "iPhone 15 Pro",
-      storage: "256GB",
-      imageUrl:
-        "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708",
-    },
-    conditionInfo: {
-      modelType: "th",
-      warranty: "active_long",
-      accessories: "full",
-      bodyCondition: "mint",
-      screenGlass: "passed",
-      screenDisplay: "passed",
-      batteryHealth: "high",
-      camera: "passed",
-      wifi: "passed",
-      faceId: "passed",
-      speaker: "passed",
-      mic: "passed",
-      touchScreen: "passed",
-      charger: "failed",
-    },
-    pawnServiceInfo: {
-      customerName: "นางสาวสายฟ้า สมสุข",
-      locationType: "bts",
-      btsLine: "BTS - สายสุขุมวิท",
-      btsStation: "สยาม",
-      appointmentDate: "27 กันยายน 2568",
-      appointmentTime: "13:00 - 17:00",
-      phone: "0812345678",
-    },
-    selectedService: {
-      name: "บริการจำนำ (Pawn Service)",
-      price: 22600,
-      appointmentDate: "27 กันยายน 2568, 13:00 - 17:00 น.",
-    },
-    status: "completed",
-    estimatedValue: 28500,
-    priceLockExpiresAt: getExpiryDate(3),
-    nextSteps: [
-      "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
-      "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
-      "ชำระเงินและรับเอกสารการทำรายการ",
-    ],
+const mockRecords: AssessmentRecord = {
+  id: "ASS-2568-0001",
+  phoneNumber: "0812345678",
+  assessmentDate: "25 กันยายน 2568",
+  device: {
+    brand: "Apple",
+    model: "iPhone 15 Pro",
+    storage: "256GB",
+    imageUrl:
+      "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708",
   },
-];
+  conditionInfo: {
+    modelType: "model_th",
+    warranty: "warranty_active_long",
+    accessories: "acc_full",
+    bodyCondition: "body_mint",
+    screenGlass: "glass_ok",
+    screenDisplay: "display_ok",
+    batteryHealth: "battery_health_high",
+    camera: "camera_ok",
+    wifi: "wifi_ok",
+    faceId: "biometric_ok",
+    speaker: "speaker_ok",
+    mic: "mic_ok",
+    touchScreen: "touchscreen_ok",
+    charger: "charger_failed",
+    call: "call_ok",
+    homeButton: "home_button_ok",
+    sensor: "sensor_ok",
+    buttons: "buttons_ok",
+  },
+  pawnServiceInfo: {
+    customerName: "นางสาวสายฟ้า สมสุข",
+    locationType: "bts",
+    btsLine: "BTS - สายสุขุมวิท",
+    btsStation: "สยาม",
+    appointmentDate: "27 กันยายน 2568",
+    appointmentTime: "13:00 - 17:00",
+    phone: "0812345678",
+  },
+  selectedService: {
+    name: "บริการจำนำ (Pawn Service)",
+    price: 22600,
+    appointmentDate: "27 กันยายน 2568, 13:00 - 17:00 น.",
+  },
+  status: "completed",
+  estimatedValue: 28500,
+  priceLockExpiresAt: getExpiryDate(3),
+  nextSteps: [
+    "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
+    "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
+    "ชำระเงินและรับเอกสารการทำรายการ",
+  ],
+};
 
 export default function AssessmentRecordPage() {
-  const recordToShow = mockRecords[0];
+  const recordToShow = mockRecords; // ในอนาคตจะเปลี่ยนมาใช้ข้อมูลจริง
 
   return (
     // bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5]

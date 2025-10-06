@@ -1,21 +1,33 @@
 // src/app/assess/components/(step3)/Services.tsx
+
 import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ServiceOption } from "./AssessStep3";
 import { cn } from "@/lib/utils";
-import { Check, CircleDot, LucideIcon, Wrench } from "lucide-react";
+import {
+  Banknote,
+  CircleDot,
+  CreditCard,
+  Handshake,
+  LucideIcon,
+  ShoppingBag,
+  TabletSmartphone,
+  Wrench,
+} from "lucide-react";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { RepairItem } from "@/hooks/useRepairPrices";
-import { DeviceInfo } from "../../page";
+import { Button } from "../../../../components/ui/button";
+import { DeviceInfo } from "../../../../types/device";
+import { ServiceOption } from "../../../../types/service";
 
 interface ServicesProps {
-  services: ServiceOption[];
   selectedService: string;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
   repairs: RepairItem[];
   totalCost: number;
   isLoading: boolean;
   deviceInfo: DeviceInfo;
+  onNext: () => void;
+  finalPrice: number;
 }
 
 const serviceBenefits: { [key: string]: string[] } = {
@@ -48,12 +60,7 @@ const serviceBenefits: { [key: string]: string[] } = {
     "ต่อรอบได้ทุก 10 วัน โดยชำระค่าบริการ 15% ของวงเงิน",
     "ใช้ iCloud ของตัวเองได้ ไม่ติดไอคลาวด์ร้าน",
   ],
-  pawn: [
-    "รับเงินสดทันที ไม่ต้องรอ",
-    "ไม่ต้องใช้คนค้ำประกัน",
-    "เก็บรักษาเครื่องให้อย่างดี",
-    "ไถ่ถอนได้เมื่อครบกำหนด",
-  ],
+  pawn: ["รับเงินสดทันที ไม่ต้องรอ", "ไม่ต้องใช้คนค้ำประกัน", "เก็บรักษาเครื่องให้อย่างดี", "ไถ่ถอนได้เมื่อครบกำหนด"],
 };
 
 const PALETTE = {
@@ -146,25 +153,87 @@ const THB = (n: number) =>
     .replace("฿", "฿ ");
 
 export default function Services({
-  services,
   selectedService,
   setSelectedService,
   repairs,
   totalCost,
   isLoading,
   deviceInfo,
+  onNext,
+  finalPrice,
 }: ServicesProps) {
-  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  // ✨ [เพิ่ม] State สำหรับจัดการการเปิด/ปิดของ "ซ่อมบำรุง" โดยเฉพาะ
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
+  const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
+  const calculatedExchangePrice = Math.round(finalPrice * 0.7);
+  const isAppleDevice = deviceInfo.brand === "Apple";
+
+  const baseServices: ServiceOption[] = [
+    {
+      id: "sell",
+      title: "ขายทันที",
+      description: "รับเงินสดเต็มจำนวนทันที",
+      icon: Banknote,
+      price: finalPrice,
+    },
+    {
+      id: "consignment",
+      title: "ขายฝาก",
+      description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
+      icon: ShoppingBag,
+      price: finalPrice,
+    },
+    {
+      id: "tradein",
+      title: "เทิร์นเครื่อง",
+      description: "นำเครื่องเก่ามาแลกเครื่องใหม่คุ้มๆ",
+      icon: TabletSmartphone,
+      price: finalPrice,
+    },
+  ];
+
+  const coreServices: ServiceOption[] = [
+    baseServices[0],
+    ...(isAppleDevice
+      ? [
+          {
+            id: "refinance",
+            title: "บริการรีไฟแนนซ์",
+            description: "รับเงินก้อน ผ่อนชำระคืน 6 เดือน",
+            icon: CreditCard,
+            price: calculatedRefinancePrice,
+          },
+        ]
+      : []),
+    ...baseServices.slice(1),
+  ];
+
+  const services: ServiceOption[] = [
+    ...coreServices,
+    ...(isAppleDevice
+      ? [
+          {
+            id: "iphone-exchange",
+            title: "ไอโฟนแลกเงิน",
+            description: "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
+            icon: Handshake,
+            price: calculatedExchangePrice,
+          },
+        ]
+      : []),
+    {
+      id: "maintenance",
+      title: "ซ่อมบำรุง",
+      description: "เลือกซ่อมเฉพาะส่วนที่ต้องการ",
+      icon: Wrench,
+      price: totalCost,
+    },
+  ];
 
   const handleSelect = (serviceId: string) => {
-    // ✨ [แก้ไข] แยก Logic การคลิก
     if (serviceId === "maintenance") {
-      // ถ้าเป็น "ซ่อมบำรุง" ให้สลับ state ของตัวเองเท่านั้น
       setIsMaintenanceOpen((current) => !current);
     } else {
-      // ถ้าเป็น service อื่น, ให้ set state หลัก และปิด "ซ่อมบำรุง" (ถ้าเปิดอยู่)
       setSelectedService((current) => (current === serviceId ? "" : serviceId));
       setIsMaintenanceOpen(false);
     }
@@ -181,15 +250,11 @@ export default function Services({
 
   return (
     <div className="flex w-full flex-1 flex-col">
-      <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">
-        เลือกบริการที่ต้องการ
-      </h2>
+      <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">เลือกบริการที่ต้องการ</h2>
       <div className="flex w-full flex-col gap-4">
         {services.map((service) => {
           const isMaintenance = service.id === "maintenance";
-          // ✨ [แก้ไข] isSelected จะขึ้นอยู่กับ state ที่แตกต่างกัน
           const isSelected = isMaintenance ? isMaintenanceOpen : selectedService === service.id;
-
           const theme = getTheme(service.id);
           const Icon = service.icon as LucideIcon;
           const benefits = serviceBenefits[service.id] || [];
@@ -199,98 +264,119 @@ export default function Services({
           }
 
           return (
-            <div key={service.id} className={cn(isMaintenance && "block lg:hidden")}>
-              <motion.div
-                layout
-                animate={{ opacity: selectedService && !isSelected ? 0.85 : 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <button
-                  ref={(el) => {
-                    itemRefs.current[service.id] = el;
-                  }}
-                  onClick={() => handleSelect(service.id)}
-                  className={cn(
-                    "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
-                    isSelected
-                      ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
-                      : "border-border hover:border-slate-300",
-                  )}
-                >
-                  <AnimatePresence>
-                    {isSelected && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.2 }}
-                        className={cn(
-                          "absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full text-white",
-                          theme.iconBg,
-                        )}
-                      >
-                        <CircleDot className="h-5 w-5" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="flex flex-1 items-center gap-4">
-                    <div
-                      className={cn(
-                        "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
-                        theme.iconBg,
-                      )}
-                    >
-                      <Icon className="h-7 w-7 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-foreground font-bold">{service.title}</h4>
-                      <p className="text-muted-foreground text-sm">{service.description}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
-                    </div>
-                  </div>
-
-                  {!isMaintenance && (
-                    <>
-                      <div className="bg-border my-4 h-px w-full" />
-                      <ul className="text-muted-foreground space-y-2 text-sm">
-                        {benefits.map((benefit, index) => (
-                          <li key={index} className="flex items-start gap-2.5">
-                            <div
-                              className={cn(
-                                "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
-                                theme.solidBg,
-                              )}
-                            />
-                            <span>{benefit}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                </button>
-              </motion.div>
-
+            <motion.div
+              key={service.id}
+              ref={(el) => {
+                itemRefs.current[service.id] = el;
+              }}
+              layout
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className={cn(
+                "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
+                isSelected
+                  ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
+                  : "border-border hover:border-slate-300",
+                "cursor-pointer",
+              )}
+              onClick={() => handleSelect(service.id)}
+            >
               <AnimatePresence>
-                {isSelected && isMaintenance && (
+                {isSelected && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-4 overflow-hidden"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn(
+                      "absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full text-white",
+                      theme.iconBg,
+                    )}
                   >
-                    <MaintenanceService
-                      deviceInfo={deviceInfo}
-                      repairs={repairs}
-                      totalCost={totalCost}
-                      isLoading={isLoading}
-                    />
+                    <CircleDot className="h-5 w-5" />
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+
+              <div className="flex flex-1 items-center gap-4">
+                <div
+                  className={cn(
+                    "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
+                    theme.iconBg,
+                  )}
+                >
+                  <Icon className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-foreground font-bold">{service.title}</h4>
+                  <p className="text-muted-foreground text-sm">{service.description}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <p className="text-foreground text-lg font-bold">{THB(service.price)}</p>
+                </div>
+              </div>
+
+              {!isMaintenance && (
+                <>
+                  <div className="bg-border my-4 h-px w-full" />
+                  <ul className="text-muted-foreground space-y-2 text-sm">
+                    {benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start gap-2.5">
+                        <div className={cn("mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50", theme.solidBg)} />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* --- [แก้ไข] ส่วนของปุ่มยืนยัน --- */}
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
+                        exit={{ opacity: 0, height: 0, marginTop: "0px" }}
+                        transition={{ duration: 0.3 }}
+                        className="flex justify-end overflow-hidden"
+                      >
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNext();
+                          }}
+                          size="lg"
+                          className={cn(
+                            "h-12 w-full text-base font-bold text-white shadow-lg transition-all duration-300 sm:w-max",
+                            theme.solidBg,
+                            `hover:${theme.solidBg} hover:brightness-110`,
+                          )}
+                        >
+                          ยืนยันบริการนี้
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
+
+              {isMaintenance && (
+                <AnimatePresence>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
+                      exit={{ opacity: 0, height: 0, marginTop: "0px" }}
+                      className="lg:hidden"
+                    >
+                      <MaintenanceService
+                        deviceInfo={deviceInfo}
+                        repairs={repairs}
+                        totalCost={totalCost}
+                        isLoading={isLoading}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
+            </motion.div>
           );
         })}
       </div>

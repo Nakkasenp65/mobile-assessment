@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@config "../../tailwind.config.js";
 @custom-variant dark (&:is(.dark *));
 @plugin "tailwindcss-animate";
 
@@ -293,35 +293,13 @@
   --x-4: 0%;
   background-color: hsla(115, 0%, 100%, 1);
   background-image:
-    radial-gradient(
-      circle at var(--x-0) var(--y-0),
-      var(--c-0) var(--s-start-0),
-      transparent var(--s-end-0)
-    ),
-    radial-gradient(
-      circle at var(--x-1) var(--y-1),
-      var(--c-1) var(--s-start-1),
-      transparent var(--s-end-1)
-    ),
-    radial-gradient(
-      circle at var(--x-2) var(--y-2),
-      var(--c-2) var(--s-start-2),
-      transparent var(--s-end-2)
-    ),
-    radial-gradient(
-      circle at var(--x-3) var(--y-3),
-      var(--c-3) var(--s-start-3),
-      transparent var(--s-end-3)
-    ),
-    radial-gradient(
-      circle at var(--x-4) var(--y-4),
-      var(--c-4) var(--s-start-4),
-      transparent var(--s-end-4)
-    );
-  animation: hero-gradient-animation 30s linear infinite
-    alternate;
-  background-blend-mode:
-    normal, normal, normal, normal, normal;
+    radial-gradient(circle at var(--x-0) var(--y-0), var(--c-0) var(--s-start-0), transparent var(--s-end-0)),
+    radial-gradient(circle at var(--x-1) var(--y-1), var(--c-1) var(--s-start-1), transparent var(--s-end-1)),
+    radial-gradient(circle at var(--x-2) var(--y-2), var(--c-2) var(--s-start-2), transparent var(--s-end-2)),
+    radial-gradient(circle at var(--x-3) var(--y-3), var(--c-3) var(--s-start-3), transparent var(--s-end-3)),
+    radial-gradient(circle at var(--x-4) var(--y-4), var(--c-4) var(--s-start-4), transparent var(--s-end-4));
+  animation: hero-gradient-animation 30s linear infinite alternate;
+  background-blend-mode: normal, normal, normal, normal, normal;
 }
 
 @keyframes luxury-gradient {
@@ -396,9 +374,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary-hover: var(--secondary-hover);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(
-    --destructive-foreground
-  );
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-muted: var(--muted);
@@ -412,13 +388,9 @@
   --color-sidebar: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(
-    --sidebar-primary-foreground
-  );
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(
-    --sidebar-accent-foreground
-  );
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-chart-1: var(--chart-1);
@@ -442,15 +414,13 @@
 @layer base {
   @font-face {
     font-family: "LINESeedSansTH";
-    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff")
-      format("woff");
+    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff") format("woff");
     font-weight: 400;
   }
 
   @font-face {
     font-family: "LINESeedSansTH";
-    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff")
-      format("woff");
+    src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff") format("woff");
     font-weight: 700;
   }
 
@@ -485,21 +455,9 @@
     --chart-3: #6366f1;
     --chart-4: #a3e635;
     --chart-5: #fbbf24;
-    --gradient-main: linear-gradient(
-      135deg,
-      #fff8f0 0%,
-      #ffeaf5 100%
-    );
-    --gradient-card: linear-gradient(
-      135deg,
-      #ffffff 0%,
-      #fff9f2 100%
-    );
-    --gradient-primary: linear-gradient(
-      135deg,
-      #f97316 0%,
-      #ec4899 100%
-    );
+    --gradient-main: linear-gradient(135deg, #fff8f0 0%, #ffeaf5 100%);
+    --gradient-card: linear-gradient(135deg, #ffffff 0%, #fff9f2 100%);
+    --gradient-primary: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
     --sidebar-background: #fafafa;
     --sidebar-foreground: #404040;
     --sidebar-primary: #171717;
@@ -535,21 +493,9 @@
     --border: #2e2b29;
     --input: #2e2b29;
     --ring: #f97316;
-    --gradient-main: linear-gradient(
-      135deg,
-      #110e0c 0%,
-      #201a1d 100%
-    );
-    --gradient-card: linear-gradient(
-      135deg,
-      #1a1816 0%,
-      #211e1c 100%
-    );
-    --gradient-primary: linear-gradient(
-      135deg,
-      #f97316 0%,
-      #ec4899 100%
-    );
+    --gradient-main: linear-gradient(135deg, #110e0c 0%, #201a1d 100%);
+    --gradient-card: linear-gradient(135deg, #1a1816 0%, #211e1c 100%);
+    --gradient-primary: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
     --sidebar-background: #171717;
     --sidebar-foreground: #f5f5f5;
     --sidebar-primary: #60a5fa;

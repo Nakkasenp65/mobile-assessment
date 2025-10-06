@@ -2,17 +2,7 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  Banknote,
-  CreditCard,
-  ShoppingBag,
-  Handshake,
-  TabletSmartphone,
-  Hash,
-  Wrench,
-} from "lucide-react";
-import { DeviceInfo, ConditionInfo } from "../../page";
+import { ArrowLeft, Banknote, CreditCard, ShoppingBag, Handshake, TabletSmartphone, Hash, Wrench } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
@@ -21,6 +11,9 @@ import FramerButton from "../../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
 import StatusBadge from "../../../../components/ui/StatusBadge";
+import { ConditionInfo, DeviceInfo } from "../../../../types/device";
+import { AssessmentRecord } from "../../../../types/assessment";
+import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
 
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
@@ -30,14 +23,6 @@ interface AssessStep3Props {
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export interface ServiceOption {
-  id: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  price: number;
-}
-
 const getExpiryDate = (days: number): string => {
   const date = new Date();
   date.setDate(date.getDate() + days);
@@ -45,7 +30,7 @@ const getExpiryDate = (days: number): string => {
   return date.toISOString();
 };
 
-const mockRecords = {
+const mockRecords: AssessmentRecord = {
   id: "ASS-2568-0001",
   phoneNumber: "0812345678",
   assessmentDate: "25 กันยายน 2568",
@@ -53,24 +38,27 @@ const mockRecords = {
     brand: "Apple",
     model: "iPhone 15 Pro",
     storage: "256GB",
-    imageUrl:
-      "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708",
+    imageUrl: "https://lh3.googleusercontent.com/d/14EB_azrtiSrLtPVlIxWiU5Vg1hS8aw1A",
   },
   conditionInfo: {
-    modelType: "th",
-    warranty: "active_long",
-    accessories: "full",
-    bodyCondition: "mint",
-    screenGlass: "passed",
-    screenDisplay: "passed",
-    batteryHealth: "high",
-    camera: "passed",
-    wifi: "passed",
-    faceId: "passed",
-    speaker: "passed",
-    mic: "passed",
-    touchScreen: "passed",
-    charger: "failed",
+    modelType: "model_th",
+    warranty: "warranty_active_long",
+    accessories: "acc_full",
+    bodyCondition: "body_mint",
+    screenGlass: "glass_ok",
+    screenDisplay: "display_ok",
+    batteryHealth: "battery_health_high",
+    camera: "camera_ok",
+    wifi: "wifi_ok",
+    faceId: "biometric_ok",
+    speaker: "speaker_ok",
+    mic: "mic_ok",
+    touchScreen: "touchscreen_ok",
+    charger: "charger_failed",
+    call: "call_ok",
+    homeButton: "home_button_ok",
+    sensor: "sensor_ok",
+    buttons: "buttons_ok",
   },
   pawnServiceInfo: {
     customerName: "นางสาวสายฟ้า สมสุข",
@@ -96,13 +84,7 @@ const mockRecords = {
   ],
 };
 
-const AssessStep3 = ({
-  deviceInfo,
-  conditionInfo,
-  onBack,
-  onNext,
-  setSelectedService,
-}: AssessStep3Props) => {
+const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedService }: AssessStep3Props) => {
   const {
     totalRepairCost,
     repairs,
@@ -113,10 +95,7 @@ const AssessStep3 = ({
 
   const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
 
-  const { data: mobileData, isLoading: isImageLoading } = useMobile(
-    deviceInfo.brand,
-    deviceInfo.model,
-  );
+  const { data: mobileData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
 
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
@@ -128,73 +107,6 @@ const AssessStep3 = ({
       hour12: false,
     }) + " น.";
 
-  const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
-  const calculatedExchangePrice = Math.round(finalPrice * 0.7);
-
-  const baseServices: ServiceOption[] = [
-    {
-      id: "sell",
-      title: "ขายทันที",
-      description: "รับเงินสดเต็มจำนวนทันที",
-      icon: Banknote,
-      price: finalPrice,
-    },
-    {
-      id: "consignment",
-      title: "ขายฝาก",
-      description: "เราช่วยประกาศขายเพื่อให้ได้ราคาดีที่สุด",
-      icon: ShoppingBag,
-      price: finalPrice,
-    },
-    {
-      id: "tradein",
-      title: "เทิร์นเครื่อง",
-      description: "นำเครื่องเก่ามาแลกเครื่องใหม่คุ้มๆ",
-      icon: TabletSmartphone,
-      price: finalPrice,
-    },
-  ];
-
-  const isAppleDevice = deviceInfo.brand === "Apple";
-
-  const coreServices: ServiceOption[] = [
-    baseServices[0],
-    ...(isAppleDevice
-      ? [
-          {
-            id: "refinance",
-            title: "บริการรีไฟแนนซ์",
-            description: "รับเงินก้อน ผ่อนชำระคืน 6 เดือน",
-            icon: CreditCard,
-            price: calculatedRefinancePrice,
-          },
-        ]
-      : []),
-    ...baseServices.slice(1),
-  ];
-
-  const services: ServiceOption[] = [
-    ...coreServices,
-    ...(isAppleDevice
-      ? [
-          {
-            id: "iphone-exchange",
-            title: "ไอโฟนแลกเงิน",
-            description: "รับเงินสดทันที ต่อรอบได้ทุก 10 วัน",
-            icon: Handshake,
-            price: calculatedExchangePrice,
-          },
-        ]
-      : []),
-    {
-      id: "maintenance",
-      title: "ซ่อมบำรุง",
-      description: "เลือกซ่อมเฉพาะส่วนที่ต้องการ",
-      icon: Wrench,
-      price: totalRepairCost,
-    },
-  ];
-
   const handleConfirm = () => {
     if (localSelectedService && localSelectedService !== "maintenance") {
       onNext();
@@ -202,7 +114,6 @@ const AssessStep3 = ({
   };
 
   useEffect(() => {
-    // ✨ [แก้ไข] ส่งต่อ state ไปยัง parent component เฉพาะเมื่อไม่ใช่ 'maintenance'
     if (localSelectedService !== "maintenance") {
       setSelectedService(localSelectedService);
     }
@@ -213,21 +124,10 @@ const AssessStep3 = ({
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-8">
+    <div className="flex w-full flex-col gap-4 sm:gap-8">
       {/* HEAD */}
       <div className="flex w-full flex-col items-center justify-center gap-2">
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
-        {/* id + date + status */}
-        <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
-          <div className="flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1.5 text-xs font-medium text-slate-600">
-            <Hash className="h-4 w-4" />
-            <span>รหัสการประเมิน: {mockRecords.id}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-[#78716c]">อัพเดทล่าสุด: {mockRecords.assessmentDate}</p>
-            <StatusBadge status={mockRecords.status} />
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
@@ -235,6 +135,7 @@ const AssessStep3 = ({
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
+          mockRecords={mockRecords}
           isImageLoading={isImageLoading}
           mobileData={mobileData}
           grade={grade}
@@ -248,13 +149,14 @@ const AssessStep3 = ({
         {/* Column 2: Service Selection */}
         <div className="top-24 flex h-fit flex-col lg:sticky">
           <Services
-            services={services}
             selectedService={localSelectedService}
             setSelectedService={setLocalSelectedService}
             repairs={repairs}
             totalCost={totalRepairCost}
             isLoading={isLoadingRepairPrices}
             deviceInfo={deviceInfo}
+            onNext={onNext}
+            finalPrice={finalPrice}
           />
         </div>
       </div>
@@ -269,17 +171,9 @@ const AssessStep3 = ({
           <ArrowLeft className="h-4 w-4" />
           <span className="ml-2 hidden font-semibold sm:inline">ย้อนกลับ</span>
         </FramerButton>
-
-        <FramerButton
-          onClick={handleConfirm}
-          // ✨ [แก้ไข] เงื่อนไข disabled จะเป็นจริงถ้าไม่ได้เลือก service หรือเลือก maintenance
-          disabled={!localSelectedService || localSelectedService === "maintenance"}
-          size="lg"
-          className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-xl px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-        >
-          ยืนยันการเลือก
-        </FramerButton>
       </div>
+
+      <ScrollDownIndicator />
     </div>
   );
 };
