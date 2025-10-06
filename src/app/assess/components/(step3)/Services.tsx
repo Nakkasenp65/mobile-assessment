@@ -277,6 +277,7 @@ export default function Services({
                   ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
                   : "border-border hover:border-slate-300",
                 "cursor-pointer",
+                isMaintenance && "lg:hidden",
               )}
               onClick={() => handleSelect(service.id)}
             >
@@ -327,7 +328,6 @@ export default function Services({
                     ))}
                   </ul>
 
-                  {/* --- [แก้ไข] ส่วนของปุ่มยืนยัน --- */}
                   <AnimatePresence>
                     {isSelected && (
                       <motion.div

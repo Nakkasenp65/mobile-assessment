@@ -19,7 +19,9 @@ interface MaintenanceServiceProps {
 const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoading }) => {
   const [selectedRepairs, setSelectedRepairs] = useState<RepairItem[]>([]);
 
-  const handleToggleSelection = (repair: RepairItem) => {
+  // ✨ [แก้ไข] รับ event (e) เข้ามาและสั่ง e.stopPropagation()
+  const handleToggleSelection = (e: React.MouseEvent<HTMLButtonElement>, repair: RepairItem) => {
+    e.stopPropagation(); // <--- หยุด event ไม่ให้ลอยขึ้นไป
     setSelectedRepairs((currentSelected) => {
       const isAlreadySelected = currentSelected.some((r) => r.part === repair.part);
       if (isAlreadySelected) {
@@ -58,7 +60,8 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
             return (
               <motion.button
                 key={repair.part}
-                onClick={() => handleToggleSelection(repair)}
+                // ✨ [แก้ไข] ส่ง event (e) เข้าไปใน function ด้วย
+                onClick={(e) => handleToggleSelection(e, repair)}
                 className={cn(
                   "relative flex w-full cursor-pointer items-center justify-between rounded-lg border-2 p-3 text-left transition-all duration-200",
                   isSelected
