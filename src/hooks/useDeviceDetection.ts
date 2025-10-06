@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 
-export interface DeviceInfo {
+export interface PlatformInfo {
   isAndroid: boolean;
   isIOS: boolean;
-  isMobile: boolean; //ครอบคลุมทั้ง Android, iOS, iPadOS
+  isMobile: boolean;
   isDesktop: boolean;
 }
 
-export const useDeviceDetection = (): DeviceInfo => {
-  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
+export const useDeviceDetection = (): PlatformInfo => {
+  const [deviceInfo, setDeviceInfo] = useState<PlatformInfo>({
     isAndroid: false,
     isIOS: false,
     isMobile: false,
@@ -20,8 +20,7 @@ export const useDeviceDetection = (): DeviceInfo => {
   useEffect(() => {
     const userAgent = navigator.userAgent;
 
-    const isIOS =
-      /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window && "MSStream" in window);
     const isAndroid = /android/i.test(userAgent);
     const isMobile = isIOS || isAndroid;
     const isDesktop = !isMobile;
