@@ -1,7 +1,7 @@
 // src/app/assess/components/(step1)/AssessStep1.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMobile } from "@/hooks/useMobile";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
@@ -32,9 +32,9 @@ const StepWrapper: React.FC<{ children: React.ReactNode; title: string; descript
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: -30 }}
     transition={{ duration: 0.3, ease: "easeInOut" }}
-    className="absolute flex h-full w-full flex-col gap-8"
+    className="absolute flex h-full w-full flex-col"
   >
-    <div className="text-center">
+    <div className="mb-8 text-center">
       <h2 className="text-foreground text-2xl font-bold md:text-3xl">{title}</h2>
       <p className="text-muted-foreground text-sm md:text-base">{description}</p>
     </div>
@@ -74,26 +74,29 @@ interface AssessStep1Props {
   onUserDeviceUpdate: (value: boolean) => void;
 }
 
-const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext, onUserDeviceUpdate }: AssessStep1Props) => {
+const AssessStep1 = ({
+  deviceInfo,
+  onDeviceUpdate,
+  onConditionUpdate,
+  onNext,
+  onUserDeviceUpdate,
+}: AssessStep1Props) => {
   const { isDesktop } = useDeviceDetection();
-  // Start with 'selectDeviceType' by default. The useEffect will correct it for desktops.
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
-
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
+  const initialSetupDone = useRef(false);
 
-  // ✨ [THE FIX] This effect runs when `isDesktop` value is determined.
   useEffect(() => {
-    // If it's a desktop, force the step to 'selectBrand'.
-    if (isDesktop) {
+    if (isDesktop && !initialSetupDone.current) {
       setCurrentStep("selectBrand");
       setUserDeviceSelection("other_device");
       onUserDeviceUpdate(false);
+      initialSetupDone.current = true;
     }
   }, [isDesktop, onUserDeviceUpdate]);
 
-  // Update parent component when localInfo changes
   useEffect(() => {
     onDeviceUpdate(localInfo);
   }, [localInfo, onDeviceUpdate]);
@@ -101,7 +104,6 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext, onUserDeviceUpdate }:
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     setLocalInfo((prev) => {
       const newState = { ...prev, [field]: value };
-      // Reset subsequent selections
       if (field === "brand") {
         newState.productType = "";
         newState.model = "";
@@ -176,17 +178,9 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext, onUserDeviceUpdate }:
   };
 
   const renderCurrentStep = () => {
-    // Don't render anything until device detection is complete on mobile
-    if (!isDesktop && currentStep === "selectDeviceType" && userDeviceSelection === null) {
-      return (
-        <StepWrapper title="ประเมินอุปกรณ์เครื่องใด?" description="เลือกเพื่อดำเนินการในขั้นตอนถัดไป">
-          <UserDeviceSelection selectedValue={userDeviceSelection} onSelect={handleUserDeviceSelect} />
-        </StepWrapper>
-      );
-    }
-
     switch (currentStep) {
       case "selectDeviceType":
+        if (isDesktop) return null;
         return (
           <StepWrapper title="ประเมินอุปกรณ์เครื่องใด?" description="เลือกเพื่อดำเนินการในขั้นตอนถัดไป">
             <UserDeviceSelection selectedValue={userDeviceSelection} onSelect={handleUserDeviceSelect} />
@@ -226,22 +220,19 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext, onUserDeviceUpdate }:
         const availableStorage = PHONE_DATA.storage[localInfo.model] || [];
         return (
           <StepWrapper title="ระบุรุ่นและความจุ" description="ข้อมูลนี้จำเป็นสำหรับการประเมินราคาที่แม่นยำ">
-            <div className="flex flex-col items-start gap-8 md:flex-row">
-              <div className="w-full flex-shrink-0 md:w-1/2">
-                <DeviceImagePreview
-                  isLoading={isImageLoading}
-                  imageUrl={productData?.image_url}
-                  altText={`${localInfo.brand} ${localInfo.model}`}
-                />
-              </div>
-              <div className="w-full md:w-1/2">
-                <ModelAndStorageSelector
-                  localInfo={localInfo}
-                  availableModels={availableModels}
-                  availableStorage={availableStorage}
-                  onSelectChange={handleSelectChange}
-                />
-              </div>
+            {/* ✨ [แก้ไข] เปลี่ยนเป็น flex-col และจัดกึ่งกลางทั้งหมด */}
+            <div className="flex flex-col items-center gap-8">
+              <DeviceImagePreview
+                isLoading={isImageLoading}
+                imageUrl={productData?.image_url}
+                altText={`${localInfo.brand} ${localInfo.model}`}
+              />
+              <ModelAndStorageSelector
+                localInfo={localInfo}
+                availableModels={availableModels}
+                availableStorage={availableStorage}
+                onSelectChange={handleSelectChange}
+              />
             </div>
             <NavigationButtons
               onBack={prevStep}
@@ -265,7 +256,6 @@ const AssessStep1 = ({ deviceInfo, onDeviceUpdate, onNext, onUserDeviceUpdate }:
           </StepWrapper>
         );
       default:
-        // Render nothing if on desktop and initial step is still selectDeviceType before useEffect kicks in
         return null;
     }
   };

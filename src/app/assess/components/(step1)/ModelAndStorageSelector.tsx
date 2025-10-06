@@ -1,17 +1,9 @@
 // src/app/assess/components/(step1)/ModelAndStorageSelector.tsx
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { DeviceInfo } from "../../../../types/device";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface ModelAndStorageSelectorProps {
   localInfo: DeviceInfo;
@@ -20,58 +12,70 @@ interface ModelAndStorageSelectorProps {
   onSelectChange: (field: keyof DeviceInfo, value: string) => void;
 }
 
-export default function ModelAndStorageSelector({
+const ModelAndStorageSelector = ({
   localInfo,
   availableModels,
   availableStorage,
   onSelectChange,
-}: ModelAndStorageSelectorProps) {
+}: ModelAndStorageSelectorProps) => {
   return (
-    <div className="space-y-6">
-      <div>
-        <label className="text-foreground mb-2 ml-1 block text-sm font-medium">รุ่น *</label>
-        <Select onValueChange={(v) => onSelectChange("model", v)} value={localInfo.model}>
-          <SelectTrigger
-            className={cn("border-border bg-card h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500")}
-          >
+    // ✨ [แก้ไข] จำกัดความกว้างและจัดกึ่งกลาง
+    <div className="flex w-full max-w-2xl flex-col gap-6">
+      {/* Model Selection */}
+      <div className="grid w-full gap-2">
+        <Label htmlFor="model-select" className="text-foreground text-base font-semibold">
+          รุ่น <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={localInfo.model || ""}
+          onValueChange={(value) => onSelectChange("model", value)}
+          disabled={!localInfo.brand || !availableModels.length}
+        >
+          <SelectTrigger id="model-select" className="h-14 w-full rounded-xl text-base">
             <SelectValue placeholder="เลือกรุ่น" />
           </SelectTrigger>
           <SelectContent>
-            <SelectGroup>
-              <SelectLabel>รุ่น</SelectLabel>
-              {availableModels.map((model) => (
-                <SelectItem key={model} value={model}>
+            {availableModels.length > 0 ? (
+              availableModels.map((model) => (
+                <SelectItem key={model} value={model} className="cursor-pointer py-2 text-base">
                   {model}
                 </SelectItem>
-              ))}
-            </SelectGroup>
+              ))
+            ) : (
+              <p className="text-muted-foreground px-4 py-2 text-sm">ไม่พบรุ่นสำหรับยี่ห้อนี้</p>
+            )}
           </SelectContent>
         </Select>
       </div>
-      <div>
-        <label className="text-foreground mb-2 ml-1 block text-sm font-medium">ความจุ *</label>
+
+      {/* Storage Selection */}
+      <div className="grid w-full gap-2">
+        <Label htmlFor="storage-select" className="text-foreground text-base font-semibold">
+          ความจุ <span className="text-red-500">*</span>
+        </Label>
         <Select
-          onValueChange={(v) => onSelectChange("storage", v)}
-          value={localInfo.storage}
-          disabled={!localInfo.model}
+          value={localInfo.storage || ""}
+          onValueChange={(value) => onSelectChange("storage", value)}
+          disabled={!localInfo.model || !availableStorage.length}
         >
-          <SelectTrigger
-            className={cn("border-border bg-card h-14 w-full rounded-xl px-4 text-base focus:ring-orange-500")}
-          >
+          <SelectTrigger id="storage-select" className="h-14 w-full rounded-xl text-base">
             <SelectValue placeholder="เลือกความจุ" />
           </SelectTrigger>
           <SelectContent>
-            <SelectGroup>
-              <SelectLabel>ความจุ</SelectLabel>
-              {availableStorage.map((storage) => (
-                <SelectItem key={storage} value={storage}>
+            {availableStorage.length > 0 ? (
+              availableStorage.map((storage) => (
+                <SelectItem key={storage} value={storage} className="cursor-pointer py-2 text-base">
                   {storage}
                 </SelectItem>
-              ))}
-            </SelectGroup>
+              ))
+            ) : (
+              <p className="text-muted-foreground px-4 py-2 text-sm">ไม่พบความจุสำหรับรุ่นนี้</p>
+            )}
           </SelectContent>
         </Select>
       </div>
     </div>
   );
-}
+};
+
+export default ModelAndStorageSelector;

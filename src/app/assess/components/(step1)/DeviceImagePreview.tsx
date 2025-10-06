@@ -1,46 +1,40 @@
 // src/app/assess/components/(step1)/DeviceImagePreview.tsx
-"use client";
-
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DeviceImagePreviewProps {
-  isLoading: boolean;
   imageUrl?: string;
   altText: string;
+  isLoading: boolean;
 }
 
-export default function DeviceImagePreview({ isLoading, imageUrl, altText }: DeviceImagePreviewProps) {
-  const showPreview = isLoading || imageUrl;
-
+const DeviceImagePreview = ({ imageUrl, altText, isLoading }: DeviceImagePreviewProps) => {
   return (
-    <div
-      className="flex min-h-[3rem] items-center justify-center overflow-hidden rounded-xl pb-4 transition-all duration-300"
-      style={{ height: showPreview ? "12rem" : "3rem" }}
-    >
-      <AnimatePresence mode="wait">
-        {isLoading && (
-          <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="border-t-primary h-8 w-8 animate-spin rounded-full border-4 border-slate-200" />
-          </motion.div>
-        )}
-        {!isLoading && imageUrl && (
-          <motion.div
-            key="image"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
+    // ✨ [แก้ไข] ปรับเพื่อให้ภาพจัดกึ่งกลางและมีขนาดที่เหมาะสม
+    <div className="flex w-full items-center justify-center">
+      {isLoading ? (
+        <Skeleton className="h-[250px] w-[250px] rounded-2xl" />
+      ) : (
+        <div className="relative h-[250px] w-[250px] overflow-hidden rounded-2xl">
+          {imageUrl ? (
             <Image
-              width="160"
-              height="160"
               src={imageUrl}
               alt={altText}
-              className="h-auto max-h-40 w-auto object-contain"
+              fill
+              style={{ objectFit: "contain" }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority
+              className="p-4"
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ) : (
+            <div className="text-muted-foreground flex h-full w-full items-center justify-center text-center text-sm">
+              ไม่พบรูปภาพ
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default DeviceImagePreview;
