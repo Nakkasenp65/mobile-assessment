@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { DeviceInfo, ConditionInfo } from "../app/assess/page";
+import { DeviceInfo, ConditionInfo } from "@/types/device";
 
 // =================================================================
 // [Business Logic Rules] - The single source of truth for pricing.
@@ -113,15 +113,10 @@ export interface PriceCalculationResult {
   gradeNeonColor: string;
 }
 
-export const usePriceCalculation = (
-  deviceInfo: DeviceInfo,
-  conditionInfo: ConditionInfo,
-): PriceCalculationResult => {
+export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: ConditionInfo): PriceCalculationResult => {
   return useMemo(() => {
     const { model, storage } = deviceInfo;
-    const calculatedBasePrice =
-      (BASE_PRICES[model] || BASE_PRICES["default"]) +
-      (STORAGE_ADJUSTMENTS[storage] || 0);
+    const calculatedBasePrice = (BASE_PRICES[model] || BASE_PRICES["default"]) + (STORAGE_ADJUSTMENTS[storage] || 0);
 
     const adjustments: PriceAdjustment[] = [];
     let totalAdjustment = 0;
@@ -140,8 +135,7 @@ export const usePriceCalculation = (
       if (typedKey === "touchScreen" && value.includes("%")) {
         const percentage = parseInt(value, 10);
         const status = percentage >= 90 ? "passed" : "failed";
-        impact =
-          status === "passed" ? 0 : CONDITION_ADJUSTMENTS.touchScreen.failed;
+        impact = status === "passed" ? 0 : CONDITION_ADJUSTMENTS.touchScreen.failed;
         displayValue = `${percentage}% (${TRANSLATION_MAP[status]})`;
       } else {
         const adjustmentRule = CONDITION_ADJUSTMENTS[typedKey];

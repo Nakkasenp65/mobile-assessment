@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DeviceInfo } from "../../../page";
+import { DeviceInfo } from "../../../../../types/device";
 import { AlertTriangle, Lock, Mail, User, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";
@@ -42,8 +42,7 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
     };
   }, [icloudPawnPrice]);
 
-  const isFormComplete =
-    formState.customerName && formState.appleId && formState.password && formState.termsAccepted;
+  const isFormComplete = formState.customerName && formState.appleId && formState.password && formState.termsAccepted;
 
   const THB = (n: number) =>
     n.toLocaleString("th-TH", {
@@ -105,23 +104,17 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-indigo-800 dark:text-indigo-200">ยอดประเมินสูงสุด</span>
-              <span className="font-semibold text-indigo-900 dark:text-indigo-100">
-                {THB(icloudPawnPrice)}
-              </span>
+              <span className="font-semibold text-indigo-900 dark:text-indigo-100">{THB(icloudPawnPrice)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-indigo-800 dark:text-indigo-200">
-                หัก ดอกเบี้ย (15% ต่อ 10 วัน)
-              </span>
+              <span className="text-indigo-800 dark:text-indigo-200">หัก ดอกเบี้ย (15% ต่อ 10 วัน)</span>
               <span className="font-semibold text-red-600 dark:text-red-400">
                 - {THB(calculatedValues.interestAmount)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-indigo-800 dark:text-indigo-200">หัก ค่าบริการ</span>
-              <span className="font-semibold text-red-600 dark:text-red-400">
-                - {THB(SERVICE_FEE)}
-              </span>
+              <span className="font-semibold text-red-600 dark:text-red-400">- {THB(SERVICE_FEE)}</span>
             </div>
           </div>
 
@@ -146,9 +139,7 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
         transition={{ delay: 0.2 }}
         className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-400/30 dark:bg-indigo-400/10"
       >
-        <h4 className="mb-3 text-sm font-semibold text-indigo-900 dark:text-indigo-100">
-          ข้อดีของบริการนี้
-        </h4>
+        <h4 className="mb-3 text-sm font-semibold text-indigo-900 dark:text-indigo-100">ข้อดีของบริการนี้</h4>
         <ul className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
           <li className="flex items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />

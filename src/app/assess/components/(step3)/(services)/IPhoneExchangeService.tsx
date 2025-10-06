@@ -6,14 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DeviceInfo } from "../../../page";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Train, Repeat, Wallet, Cloud } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -118,15 +112,11 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-green-800 dark:text-green-200">วงเงินสูงสุด</span>
-                <span className="font-semibold text-green-900 dark:text-green-100">
-                  {THB(exchangePrice)}
-                </span>
+                <span className="font-semibold text-green-900 dark:text-green-100">{THB(exchangePrice)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-green-800 dark:text-green-200">ค่าบริการรอบแรก (15%)</span>
-                <span className="font-semibold text-red-600 dark:text-red-400">
-                  - {THB(feeAmount)}
-                </span>
+                <span className="font-semibold text-red-600 dark:text-red-400">- {THB(feeAmount)}</span>
               </div>
             </div>
             <div className="!my-3 border-t border-green-200/50 dark:border-green-400/30" />
@@ -242,13 +232,11 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
                             <SelectValue placeholder="เลือกสถานี" />
                           </SelectTrigger>
                           <SelectContent>
-                            {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map(
-                              (station) => (
-                                <SelectItem key={station} value={station}>
-                                  {station}
-                                </SelectItem>
-                              ),
-                            )}
+                            {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
+                              <SelectItem key={station} value={station}>
+                                {station}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -326,8 +314,7 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
           </FramerButton>
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันและนัดหมาย&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            การคลิก &quot;ยืนยันและนัดหมาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
               href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
               target="_blank"

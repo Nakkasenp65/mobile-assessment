@@ -5,14 +5,8 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DeviceInfo } from "../../../page";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -132,15 +126,11 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-amber-800">ราคาเครื่องใหม่</span>
-                <span className="font-semibold text-amber-900">
-                  {THB(priceCalculation.newDevicePrice)}
-                </span>
+                <span className="font-semibold text-amber-900">{THB(priceCalculation.newDevicePrice)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-amber-800">หัก มูลค่าเครื่องเก่า</span>
-                <span className="font-semibold text-green-600">
-                  - {THB(priceCalculation.tradeInValue)}
-                </span>
+                <span className="font-semibold text-green-600">- {THB(priceCalculation.tradeInValue)}</span>
               </div>
               <div className="my-2 border-t border-amber-200/50" />
               <div className="flex justify-between">
@@ -167,10 +157,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           <Label className="block text-lg font-semibold">1. เลือกเครื่องใหม่ที่ต้องการ</Label>
           <div className="space-y-2">
             <Label htmlFor="newDevice-tradein">รุ่นเครื่อง</Label>
-            <Select
-              value={formState.newDevice}
-              onValueChange={(value) => handleInputChange("newDevice", value)}
-            >
+            <Select value={formState.newDevice} onValueChange={(value) => handleInputChange("newDevice", value)}>
               <SelectTrigger id="newDevice-tradein" className="w-full">
                 <SelectValue placeholder="เลือกเครื่องที่ต้องการ" />
               </SelectTrigger>
@@ -189,10 +176,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="storage-tradein">ความจุ</Label>
-              <Select
-                value={formState.storage}
-                onValueChange={(value) => handleInputChange("storage", value)}
-              >
+              <Select value={formState.storage} onValueChange={(value) => handleInputChange("storage", value)}>
                 <SelectTrigger id="storage-tradein" className="w-full">
                   <SelectValue placeholder="เลือกความจุ" />
                 </SelectTrigger>
@@ -207,10 +191,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="color-tradein">สี</Label>
-              <Select
-                value={formState.color}
-                onValueChange={(value) => handleInputChange("color", value)}
-              >
+              <Select value={formState.color} onValueChange={(value) => handleInputChange("color", value)}>
                 <SelectTrigger id="color-tradein" className="w-full">
                   <SelectValue placeholder="เลือกสี" />
                 </SelectTrigger>
@@ -332,8 +313,8 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
         </FramerButton>
         {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot;
-          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
+          และยอมรับใน{" "}
           <a
             href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
             target="_blank"

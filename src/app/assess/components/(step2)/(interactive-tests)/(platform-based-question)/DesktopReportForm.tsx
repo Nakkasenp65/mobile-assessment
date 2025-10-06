@@ -2,17 +2,12 @@
 
 import { useMemo, useState, useRef, useEffect } from "react";
 import { ArrowLeft, Circle, CheckCircle2 } from "lucide-react";
-import { ConditionInfo } from "../../../../page";
+import { ConditionInfo } from "../../../../../../types/device";
 import { ASSESSMENT_QUESTIONS } from "../../../../../../util/info";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
-import QuestionWrapper from "@/components/ui/QuestionWrapper";
+import QuestionWrapper from "../../../../../../components/ui/QuestionWrapper";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DesktopReportFormProps {
   conditionInfo: ConditionInfo;
@@ -21,12 +16,7 @@ interface DesktopReportFormProps {
   onBack: () => void;
 }
 
-const DesktopReportForm = ({
-  conditionInfo,
-  onConditionUpdate,
-  onComplete,
-  onBack,
-}: DesktopReportFormProps) => {
+const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBack }: DesktopReportFormProps) => {
   const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
   const [openSections, setOpenSections] = useState<string[]>(["section-0"]);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -56,9 +46,7 @@ const DesktopReportForm = ({
 
   // ตรวจสอบว่าตอบคำถามที่แสดงผลครบทุกข้อแล้วหรือยัง
   const isComplete = useMemo(() => {
-    const allRequiredQuestions = relevantSections.flatMap((s) =>
-      s.questions.filter((q) => q.type === "choice"),
-    );
+    const allRequiredQuestions = relevantSections.flatMap((s) => s.questions.filter((q) => q.type === "choice"));
     return allRequiredQuestions.every((q) => !!conditionInfo[q.id]);
   }, [conditionInfo, relevantSections]);
 
@@ -118,17 +106,10 @@ const DesktopReportForm = ({
     <div className="flex w-full max-w-4xl flex-col gap-8">
       <div className="text-center">
         <h1 className="text-foreground mb-2 text-3xl font-bold">ประเมินสภาพเครื่อง</h1>
-        <p className="text-muted-foreground">
-          กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ
-        </p>
+        <p className="text-muted-foreground">กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ</p>
       </div>
 
-      <Accordion
-        type="multiple"
-        value={openSections}
-        onValueChange={setOpenSections}
-        className="flex flex-col gap-4"
-      >
+      <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="flex flex-col gap-4">
         {relevantSections.map((section, sectionIndex) => {
           const isCompleted = isSectionComplete(sectionIndex);
           const inProgress = isSectionInProgress(sectionIndex);
@@ -157,9 +138,7 @@ const DesktopReportForm = ({
 
                   {/* Section Title */}
                   <div className="flex flex-col items-start gap-1 text-left">
-                    <h2 className="text-foreground text-base font-semibold md:text-lg">
-                      {section.section}
-                    </h2>
+                    <h2 className="text-foreground text-base font-semibold md:text-lg">{section.section}</h2>
                     <p className="text-muted-foreground text-xs md:text-sm">
                       {isCompleted
                         ? "เสร็จสมบูรณ์"
@@ -177,7 +156,7 @@ const DesktopReportForm = ({
                   <div className="divide-border/50 flex flex-col divide-y">
                     {choiceQuestions.map((question) => (
                       <QuestionWrapper
-                        key={question.id}
+                        key={String(question.id)}
                         question={question}
                         conditionInfo={conditionInfo}
                         onConditionUpdate={handleUpdate}
@@ -190,15 +169,13 @@ const DesktopReportForm = ({
                 {toggleQuestions.length > 0 && (
                   <>
                     <div className="mt-6 flex items-center gap-3">
-                      <h3 className="text-foreground text-base font-semibold md:text-lg">
-                        ปัญหาด้านการใช้งานที่พบ
-                      </h3>
+                      <h3 className="text-foreground text-base font-semibold md:text-lg">ปัญหาด้านการใช้งานที่พบ</h3>
                       <span className="text-muted-foreground text-xs">(ไม่จำเป็นต้องเลือก)</span>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5">
                       {toggleQuestions.map((question) => (
                         <QuestionWrapper
-                          key={question.id}
+                          key={String(question.id)}
                           question={question}
                           conditionInfo={conditionInfo}
                           onConditionUpdate={handleUpdate}

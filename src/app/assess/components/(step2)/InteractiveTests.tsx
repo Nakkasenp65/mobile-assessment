@@ -8,20 +8,17 @@ import MicrophoneDetection from "./(interactive-tests)/MicrophoneDetection";
 import CameraDetection from "./(interactive-tests)/CameraDetection";
 import { TouchscreenTest } from "./(interactive-tests)/TouchscreenTest";
 import TestButton from "./(interactive-tests)/TestButton";
-import { ConditionInfo } from "../../page";
+import { ConditionInfo } from "../../../../types/device";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 
 export type TestName = "speaker" | "mic" | "camera" | "touchScreen";
 
-// ✨ [แก้ไข] เปลี่ยน TestStatus เป็น string
 export type TestStatus = string;
 
 interface InteractiveTestsProps {
   onFlowComplete: () => void;
   onBack: () => void;
-  onTestsConcluded: (
-    results: Partial<Pick<ConditionInfo, "speaker" | "mic" | "camera" | "touchScreen">>,
-  ) => void;
+  onTestsConcluded: (results: Partial<Pick<ConditionInfo, "speaker" | "mic" | "camera" | "touchScreen">>) => void;
 }
 
 const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: InteractiveTestsProps) => {
@@ -34,31 +31,29 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
     camera: "pending",
     touchScreen: "pending",
   });
+  // State to store the raw percentage, though we won't pass it up directly anymore
   const [touchscreenPercentage, setTouchscreenPercentage] = useState<number | null>(null);
 
-  // ✨ [แก้ไข] ปรับ handler ให้รองรับค่า result ที่เป็น string หรือ number
   const handleTestConcluded = useCallback(
     (testName: TestName, result: string | number) => {
       console.log(testName, result);
       setActiveTest(null);
 
+      let resultStatus: TestStatus = "pending";
+
       if (testName === "touchScreen" && typeof result === "number") {
-        setTouchscreenPercentage(result);
-        const resultStatus = result >= 90 ? "touchscreen_ok" : "touchscreen_failed";
-        setTestResults((prevResults) => ({
-          ...prevResults,
-          touchScreen: resultStatus,
-        }));
+        setTouchscreenPercentage(result); // Store raw percentage
+        resultStatus = result >= 90 ? "touchscreen_ok" : "touchscreen_failed";
       } else if (typeof result === "string") {
-        setTestResults((prevResults) => ({
-          ...prevResults,
-          [testName]: result,
-        }));
+        resultStatus = result;
       }
 
-      setCurrentTestIndex((prevIndex) =>
-        prevIndex < testSequence.length - 1 ? prevIndex + 1 : prevIndex,
-      );
+      setTestResults((prevResults) => ({
+        ...prevResults,
+        [testName]: resultStatus,
+      }));
+
+      setCurrentTestIndex((prevIndex) => (prevIndex < testSequence.length - 1 ? prevIndex + 1 : prevIndex));
     },
     [testSequence.length],
   );
@@ -67,15 +62,15 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
 
   useEffect(() => {
     if (allTestsConcluded) {
+      // ✨ [แก้ไข] ส่งค่าสถานะที่ถูกต้องจาก testResults สำหรับทุกอย่าง
       onTestsConcluded({
-        speaker: testResults.speaker,
-        mic: testResults.mic,
-        camera: testResults.camera,
-        // ✨ [แก้ไข] ส่งค่า % สำหรับ Touchscreen เหมือนเดิม
-        touchScreen: `${touchscreenPercentage}%`,
+        speaker: testResults.speaker as ConditionInfo["speaker"],
+        mic: testResults.mic as ConditionInfo["mic"],
+        camera: testResults.camera as ConditionInfo["camera"],
+        touchScreen: testResults.touchScreen as ConditionInfo["touchScreen"],
       });
     }
-  }, [allTestsConcluded, testResults, touchscreenPercentage, onTestsConcluded]);
+  }, [allTestsConcluded, testResults, onTestsConcluded]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -149,10 +144,7 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
         isOpen={activeTest === "speaker"}
         onConclude={(result) => handleTestConcluded("speaker", result)}
       />
-      <MicrophoneDetection
-        isOpen={activeTest === "mic"}
-        onConclude={(result) => handleTestConcluded("mic", result)}
-      />
+      <MicrophoneDetection isOpen={activeTest === "mic"} onConclude={(result) => handleTestConcluded("mic", result)} />
       <CameraDetection
         isOpen={activeTest === "camera"}
         onConclude={(result) => handleTestConcluded("camera", result)}

@@ -5,15 +5,9 @@ import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DeviceInfo } from "../../../page";
+import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone, Camera, TrendingUp, Bell, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -126,15 +120,11 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
           <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-cyan-100/50 blur-2xl dark:bg-cyan-400/20" />
           <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-sky-100/50 blur-2xl dark:bg-sky-400/20" />
           <div className="relative z-10">
-            <h3 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">
-              ราคาประเมินเพื่อฝากขาย
-            </h3>
+            <h3 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">ราคาประเมินเพื่อฝากขาย</h3>
             <p className="mt-2 bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-cyan-400 dark:to-sky-400">
               {THB(consignmentPrice)}
             </p>
-            <p className="mt-2 text-sm text-cyan-800/80 dark:text-cyan-200/80">
-              เราช่วยขายให้คุณเพื่อได้ราคาดีที่สุด
-            </p>
+            <p className="mt-2 text-sm text-cyan-800/80 dark:text-cyan-200/80">เราช่วยขายให้คุณเพื่อได้ราคาดีที่สุด</p>
           </div>
         </motion.div>
 
@@ -197,9 +187,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
                 value={formState.desiredPrice}
                 onChange={(e) => handleInputChange("desiredPrice", e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">
-                *ราคาแนะนำจากตลาด: {THB(consignmentPrice)}
-              </p>
+              <p className="text-muted-foreground text-xs">*ราคาแนะนำจากตลาด: {THB(consignmentPrice)}</p>
             </div>
 
             <div className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-4 dark:border-cyan-400/30 dark:bg-cyan-400/10">
@@ -209,9 +197,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-cyan-800 dark:text-cyan-200">ราคาที่ต้องการขาย</span>
-                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">
-                    {THB(desiredPriceNum)}
-                  </span>
+                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">{THB(desiredPriceNum)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-cyan-800 dark:text-cyan-200">
@@ -221,9 +207,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
                 </div>
                 <div className="my-2 border-t border-cyan-200/50 dark:border-cyan-400/20" />
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-cyan-900 dark:text-cyan-100">
-                    ยอดเงินสุทธิที่จะได้รับ
-                  </span>
+                  <span className="font-bold text-cyan-900 dark:text-cyan-100">ยอดเงินสุทธิที่จะได้รับ</span>
                   <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent dark:from-cyan-400 dark:to-sky-400">
                     {THB(netAmount)}
                   </span>
@@ -318,8 +302,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
           </FramerButton>
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการฝากขาย&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            การคลิก &quot;ยืนยันการฝากขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
               href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
               target="_blank"

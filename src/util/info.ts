@@ -1,5 +1,5 @@
 import { ComponentType } from "react";
-import { ConditionInfo } from "../app/assess/page";
+import { ConditionInfo } from "../types/device";
 import {
   Smartphone,
   ShieldCheck,
@@ -34,8 +34,10 @@ import {
   CameraOff,
   Hand,
   Mic, // ✨ Import ไอคอน
-  MicOff, // ✨ Import ไอคอน
+  MicOff,
+  LucideIcon, // ✨ Import ไอคอน
 } from "lucide-react";
+import { IconType } from "react-icons";
 
 export type Platform = "DESKTOP" | "IOS" | "ANDROID";
 export type QuestionType = "choice" | "toggle";
@@ -43,13 +45,13 @@ export type QuestionType = "choice" | "toggle";
 export interface QuestionOption {
   id: string;
   label: string;
-  icon: ComponentType<any>;
+  icon: LucideIcon | IconType;
 }
 
 export interface Question {
   id: keyof ConditionInfo;
   question: string;
-  icon: ComponentType<any>;
+  icon: LucideIcon | IconType;
   type: QuestionType;
   platforms: Platform[];
   options: QuestionOption[];

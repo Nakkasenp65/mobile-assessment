@@ -1,15 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { ConditionInfo } from "../../../../page";
+import { ArrowLeft } from "lucide-react";
+import { ConditionInfo } from "../../../../../../types/device";
 import { ASSESSMENT_QUESTIONS } from "../../../../../../util/info";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
@@ -47,10 +42,11 @@ const MobileQuestionAccordion = ({
   );
 
   const findFirstUnanswered = () => {
-    return allVisibleQuestions.find((q) => !conditionInfo[q.id])?.id || "";
+    const unansweredId = allVisibleQuestions.find((q) => !conditionInfo[q.id])?.id;
+    return unansweredId !== undefined ? String(unansweredId) : "";
   };
 
-  const [openAccordionValue, setOpenAccordionValue] = useState<string>(findFirstUnanswered);
+  const [openAccordionValue, setOpenAccordionValue] = useState<string>(findFirstUnanswered());
 
   useEffect(() => {
     if (openAccordionValue) {
@@ -68,7 +64,7 @@ const MobileQuestionAccordion = ({
     onConditionUpdate(updatedConditionInfo);
 
     const nextUnanswered = allVisibleQuestions.find((q) => !updatedConditionInfo[q.id]);
-    setOpenAccordionValue(nextUnanswered ? nextUnanswered.id : "");
+    setOpenAccordionValue(nextUnanswered ? String(nextUnanswered.id) : "");
   };
 
   const isComplete = useMemo(() => {
@@ -108,10 +104,10 @@ const MobileQuestionAccordion = ({
                 return (
                   <AccordionItem
                     ref={(el) => {
-                      itemRefs.current[question.id] = el;
+                      itemRefs.current[String(question.id)] = el;
                     }}
-                    value={question.id}
-                    key={question.id}
+                    value={String(question.id)}
+                    key={String(question.id)}
                     className={cn(
                       "bg-card rounded-xl border shadow-sm transition-all duration-300",
                       openAccordionValue === question.id
@@ -147,24 +143,20 @@ const MobileQuestionAccordion = ({
 
                         <div className="flex-grow">
                           <p className="text-foreground font-semibold">{question.question}</p>
-                          {selectedLabel && (
-                            <p className="text-primary mt-0.5 text-sm font-medium">
-                              {selectedLabel}
-                            </p>
-                          )}
+                          {selectedLabel && <p className="text-primary mt-0.5 text-sm font-medium">{selectedLabel}</p>}
                         </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <RadioGroup
                         value={selectedValue}
-                        onValueChange={(value) => handleUpdate(question.id, value)}
+                        onValueChange={(value) => handleUpdate(question.id as keyof ConditionInfo, value)}
                         className="flex flex-col gap-3 border-t pt-4"
                       >
                         {question.options.map((option) => (
                           <Label
                             key={option.id}
-                            htmlFor={`${question.id}-${option.id}`}
+                            htmlFor={`${String(question.id)}-${String(option.id)}`}
                             className={cn(
                               "flex cursor-pointer items-center rounded-lg border p-4 transition-all",
                               selectedValue === option.id
@@ -172,7 +164,7 @@ const MobileQuestionAccordion = ({
                                 : "border-border bg-card hover:bg-accent",
                             )}
                           >
-                            <RadioGroupItem value={option.id} id={`${question.id}-${option.id}`} />
+                            <RadioGroupItem value={option.id} id={`${String(question.id)}-${String(option.id)}`} />
                             <span className="text-foreground ml-3 font-medium">{option.label}</span>
                           </Label>
                         ))}

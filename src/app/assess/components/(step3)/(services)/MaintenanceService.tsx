@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wrench, Loader2, CheckCircle2 } from "lucide-react";
-import { DeviceInfo } from "../../../page";
+import { DeviceInfo } from "../../../../../types/device";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { cn } from "@/lib/utils"; // CHIRON: Import `cn` utility สำหรับการจัดการ class แบบมีเงื่อนไข

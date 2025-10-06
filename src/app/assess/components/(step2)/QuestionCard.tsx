@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ConditionInfo } from "../../page";
+import { ConditionInfo } from "../../../../types/device";
 
 interface QuestionCardProps {
   question: Question;
@@ -15,16 +15,16 @@ interface Question {
 
 const QuestionCard = ({ question, selectedValue, onOptionChange }: QuestionCardProps) => (
   <div>
-    <p className="text-center text-xl font-medium text-foreground mb-6 h-12 flex items-center justify-center">
+    <p className="text-foreground mb-6 flex h-12 items-center justify-center text-center text-xl font-medium">
       {question.question} *
     </p>
     <div className="space-y-3">
       {question.options.map((option) => (
         <label
           key={option.value}
-          className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:bg-accent ${
+          className={`hover:bg-accent flex cursor-pointer items-center rounded-xl border p-4 transition-all duration-200 ${
             selectedValue === option.value
-              ? "border-primary bg-primary/10 ring-2 ring-primary"
+              ? "border-primary bg-primary/10 ring-primary ring-2"
               : "border-border hover:border-primary/50"
           }`}
         >
@@ -37,13 +37,13 @@ const QuestionCard = ({ question, selectedValue, onOptionChange }: QuestionCardP
             className="sr-only"
           />
           <div
-            className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center transition-all duration-200 ${
+            className={`mr-4 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all duration-200 ${
               selectedValue === option.value ? "border-primary bg-primary" : "border-muted-foreground/50"
             }`}
           >
             {selectedValue === option.value && (
               <motion.div
-                className="w-2 h-2 rounded-full bg-white"
+                className="h-2 w-2 rounded-full bg-white"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.2 }}

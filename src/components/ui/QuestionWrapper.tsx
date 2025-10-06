@@ -2,7 +2,7 @@
 
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 import { Question, Platform } from "@/util/info";
-import { ConditionInfo } from "@/app/assess/page";
+import { ConditionInfo } from "../../types/device";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -31,9 +31,7 @@ const ChoiceInput = ({ question, currentValue, onSelect }) => (
         {/* ส่วน icon + label */}
         <div className="flex flex-col items-center gap-2">
           {option.icon && (
-            <option.icon
-              className={`h-6 w-6 ${currentValue === option.id ? "text-orange-500" : "text-gray-600"}`}
-            />
+            <option.icon className={`h-6 w-6 ${currentValue === option.id ? "text-orange-500" : "text-gray-600"}`} />
           )}
           <span className="text-xs sm:font-bold">{option.label}</span>
         </div>
@@ -47,11 +45,7 @@ const ToggleInput = ({ question, currentValue, onToggle }) => {
   const Icon = question.icon;
 
   return (
-    <motion.button
-      onClick={onToggle}
-      whileTap={{ scale: 0.9 }}
-      className="flex flex-col items-center gap-2"
-    >
+    <motion.button onClick={onToggle} whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-2">
       <div
         className={cn(
           "flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors",
@@ -101,11 +95,7 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
     // แบบปุ่มกดเปิดปิด
     case "toggle":
       return (
-        <ToggleInput
-          question={question}
-          currentValue={conditionInfo[question.id] as string}
-          onToggle={handleToggle}
-        />
+        <ToggleInput question={question} currentValue={conditionInfo[question.id] as string} onToggle={handleToggle} />
       );
     default:
       return null;

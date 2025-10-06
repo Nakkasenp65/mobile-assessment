@@ -1,7 +1,7 @@
 // src/app/assess/components/(step2)/QuestionReport.tsx
 
 "use client";
-import { ConditionInfo } from "../../page";
+import { ConditionInfo } from "../../../../types/device";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 // Removed unnecessary imports for old question sets
 import DesktopReportForm from "./(interactive-tests)/(platform-based-question)/DesktopReportForm";

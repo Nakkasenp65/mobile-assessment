@@ -6,17 +6,8 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { DeviceInfo } from "../../../page";
-import {
-  User,
-  Phone,
-  Sparkles,
-  Check,
-  Briefcase,
-  FileUp,
-  Receipt,
-  CalendarDays,
-} from "lucide-react";
+import { DeviceInfo } from "../../../../../types/device";
+import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
 // Interface for Component Props
@@ -98,10 +89,7 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
   // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   // โดยนำเงื่อนไขการยอมรับข้อตกลงออก และเพิ่มการตรวจสอบความยาวเบอร์โทร
   const isFormComplete =
-    formState.customerName &&
-    formState.phone.length === 10 &&
-    !!formState.occupation &&
-    !!formState.documentFile;
+    formState.customerName && formState.phone.length === 10 && !!formState.occupation && !!formState.documentFile;
 
   const documentUploadDetails = useMemo(() => {
     if (formState.occupation === OCCUPATION_TYPES.SALARIED) {
@@ -187,26 +175,20 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
           transition={{ delay: 0.1 }}
           className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 dark:border-purple-400/30 dark:bg-purple-400/10"
         >
-          <h4 className="mb-3 text-sm font-semibold text-purple-900 dark:text-purple-100">
-            รายละเอียดการผ่อนชำระ
-          </h4>
+          <h4 className="mb-3 text-sm font-semibold text-purple-900 dark:text-purple-100">รายละเอียดการผ่อนชำระ</h4>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-purple-800 dark:text-purple-200">ยอดผ่อนชำระต่อเดือน</span>
             </div>
-            <span className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              {THB(monthlyPayment)}
-            </span>
+            <span className="text-2xl font-bold text-purple-700 dark:text-purple-300">{THB(monthlyPayment)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-purple-800 dark:text-purple-200">ระยะเวลา</span>
             </div>
-            <span className="font-semibold text-purple-800 dark:text-purple-200">
-              {REFINANCE_MONTHS} เดือน
-            </span>
+            <span className="font-semibold text-purple-800 dark:text-purple-200">{REFINANCE_MONTHS} เดือน</span>
           </div>
         </motion.div>
 
@@ -268,8 +250,7 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
                     } focus:border-violet-400 focus:outline-none`}
                     onClick={() => handleInputChange("occupation", value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ")
-                        handleInputChange("occupation", value);
+                      if (e.key === "Enter" || e.key === " ") handleInputChange("occupation", value);
                     }}
                     aria-checked={formState.occupation === value}
                     role="radio"
@@ -323,8 +304,7 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
                 >
                   <FileUp className="mb-2 h-8 w-8 text-violet-600" />
                   <span className="text-center text-sm text-violet-800">
-                    ลากไฟล์มาวางที่นี่ หรือ{" "}
-                    <span className="font-semibold text-violet-600 underline">เลือกไฟล์</span>
+                    ลากไฟล์มาวางที่นี่ หรือ <span className="font-semibold text-violet-600 underline">เลือกไฟล์</span>
                   </span>
                   <input
                     ref={fileRef}
@@ -357,9 +337,7 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
                       </button>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {documentUploadDetails.description}
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">{documentUploadDetails.description}</p>
                   )}
                 </div>
               </motion.div>
@@ -382,8 +360,8 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
+            และยอมรับใน{" "}
             <a
               href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
               target="_blank"

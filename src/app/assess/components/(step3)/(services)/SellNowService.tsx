@@ -6,15 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DeviceInfo } from "../../../page";
+import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Home, Train } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 
@@ -117,15 +111,11 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-pink-100/50 blur-2xl dark:bg-pink-400/20" />
         <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-orange-100/50 blur-2xl dark:bg-orange-400/20" />
         <div className="relative z-10">
-          <h3 className="text-lg font-semibold text-pink-900 dark:text-pink-100">
-            ยอดเงินที่คุณจะได้รับ
-          </h3>
+          <h3 className="text-lg font-semibold text-pink-900 dark:text-pink-100">ยอดเงินที่คุณจะได้รับ</h3>
           <p className="mt-2 bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-pink-400 dark:to-orange-400">
             {THB(sellPrice)}
           </p>
-          <p className="mt-2 text-sm text-pink-800/80 dark:text-pink-200/80">
-            รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น
-          </p>
+          <p className="mt-2 text-sm text-pink-800/80 dark:text-pink-200/80">รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น</p>
         </div>
       </motion.div>
 
@@ -299,13 +289,11 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                           <SelectValue placeholder="เลือกสถานี" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map(
-                            (station) => (
-                              <SelectItem key={station} value={station}>
-                                {station}
-                              </SelectItem>
-                            ),
-                          )}
+                          {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
+                            <SelectItem key={station} value={station}>
+                              {station}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -388,8 +376,8 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
         {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-          การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot;
-          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+          การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
+          และยอมรับใน{" "}
           <a
             href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
             target="_blank"

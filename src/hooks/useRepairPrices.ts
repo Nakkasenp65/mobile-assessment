@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { useMemo } from "react";
-import { ConditionInfo } from "../app/assess/page";
+import { ConditionInfo } from "../types/device";
 import {
   Smartphone,
   MonitorSmartphone,
@@ -75,10 +75,7 @@ const PART_METADATA: Record<string, { name: string; icon: LucideIcon }> = {
  * @param model - ชื่อรุ่นของอุปกรณ์
  * @param conditionInfo - ข้อมูลสภาพเครื่องทั้งหมด
  */
-export const useRepairPrices = (
-  model: string,
-  conditionInfo: ConditionInfo,
-): RepairCalculationResult => {
+export const useRepairPrices = (model: string, conditionInfo: ConditionInfo): RepairCalculationResult => {
   const { data: priceMap, isLoading } = useQuery({
     queryKey: ["repairPrices", model],
     queryFn: async (): Promise<RepairPriceData> => {

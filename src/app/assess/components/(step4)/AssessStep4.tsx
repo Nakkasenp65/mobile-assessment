@@ -3,7 +3,7 @@
 "use client";
 
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
-import { ConditionInfo, DeviceInfo } from "../../page";
+import { ConditionInfo, DeviceInfo } from "@/types/device";
 import SellNowService from "../(step3)/(services)/SellNowService";
 import TradeInService from "../(step3)/(services)/TradeInService";
 import ConsignmentService from "../(step3)/(services)/ConsignmentService";
@@ -50,11 +50,7 @@ const AssessStep4 = ({ deviceInfo, conditionInfo, selectedService, onBack }: Ass
       case "pawn":
         return <PawnService deviceInfo={deviceInfo} pawnPrice={servicePrice} />;
       default:
-        return (
-          <div className="text-muted-foreground text-center">
-            ขออภัย, ไม่พบฟอร์มสำหรับบริการที่เลือก
-          </div>
-        );
+        return <div className="text-muted-foreground text-center">ขออภัย, ไม่พบฟอร์มสำหรับบริการที่เลือก</div>;
     }
   };
 
@@ -71,9 +67,7 @@ const AssessStep4 = ({ deviceInfo, conditionInfo, selectedService, onBack }: Ass
     <div className="mx-auto max-w-2xl">
       <div className="mb-8 text-center">
         <h2 className="text-foreground text-3xl font-bold">กรอกข้อมูลเพื่อดำเนินการ</h2>
-        <p className="text-primary mt-1 text-lg font-semibold">
-          {serviceTitles[selectedService] || "บริการที่เลือก"}
-        </p>
+        <p className="text-primary mt-1 text-lg font-semibold">{serviceTitles[selectedService] || "บริการที่เลือก"}</p>
       </div>
 
       {renderServiceForm()}

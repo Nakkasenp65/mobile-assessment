@@ -47,9 +47,9 @@ export default function ScrollDownIndicator() {
               repeat: Infinity, // ทำซ้ำไปเรื่อยๆ
               ease: "easeInOut",
             }}
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-white bg-white shadow-lg"
+            className="from-primary to-secondary flex h-12 w-12 items-center justify-center rounded-full border border-white bg-gradient-to-br shadow-lg"
           >
-            <ChevronDown className="h-6 w-6 text-gray-800" />
+            <ChevronDown className="h-6 w-6 text-white" />
           </motion.div>
         </motion.div>
       )}

@@ -1,6 +1,9 @@
 // src/util/phone.ts
 
-import { Smartphone, Tablet, Laptop, Watch, Ear, Ellipsis, LucideIcon } from "lucide-react";
+import { Smartphone, Tablet, Laptop, Watch, Ear, Ellipsis, LucideIcon, Pen } from "lucide-react";
+import { BsEarbuds } from "react-icons/bs";
+import { IoWatchOutline } from "react-icons/io5";
+import type { IconType } from "react-icons";
 
 // สร้าง Interface เพื่อกำหนดโครงสร้างข้อมูลให้ชัดเจน
 interface PhoneData {
@@ -9,9 +12,9 @@ interface PhoneData {
     name: string;
     logo?: string;
     import?: string;
-    icon?: LucideIcon;
+    icon?: LucideIcon | IconType;
   }[];
-  products: Record<string, { id: string; name: string; icon: LucideIcon }[]>;
+  products: Record<string, { id: string; name: string; icon: LucideIcon | IconType }[]>;
   models: Record<string, string[]>;
   storage: Record<string, string[]>;
 }
@@ -69,8 +72,9 @@ export const PHONE_DATA: PhoneData = {
       { id: "iPhone", name: "iPhone", icon: Smartphone },
       { id: "iPad", name: "iPad", icon: Tablet },
       { id: "Mac", name: "Mac", icon: Laptop },
-      { id: "Apple Watch", name: "Apple Watch", icon: Watch },
-      { id: "AirPods", name: "AirPods", icon: Ear },
+      { id: "Apple Watch", name: "Apple Watch", icon: IoWatchOutline },
+      { id: "AirPods", name: "AirPods", icon: BsEarbuds },
+      { id: "Apple Pencil", name: "Apple Pencil", icon: Pen },
     ],
   },
   models: {
