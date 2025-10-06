@@ -1,4 +1,4 @@
-// src/app/assess/components/AssessStep1.tsx
+// src/app/assess/components/(step1)/AssessStep1.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,11 +8,12 @@ import { PHONE_DATA } from "../../../../util/phone";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 
-// Import a new component
 import UserDeviceSelection from "./UserDeviceSelection";
 import BrandSelector from "./BrandSelector";
 import ModelAndStorageSelector from "./ModelAndStorageSelector";
 import DeviceImagePreview from "./DeviceImagePreview";
+import ProductSelector from "./ProductSelector";
+import SimpleAssessmentForm from "./SimpleAssessmentForm";
 
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
@@ -29,66 +30,44 @@ const AssessStep1 = ({
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
-  // --- Section: State Management ---
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { isDesktop } = useDeviceDetection();
-
-  const [hasSelectedBrand, setHasSelectedBrand] = useState(false);
+  const [hasSelectedBrand, setHasSelectedBrand] = useState(!!deviceInfo.brand);
   const [isManuallyOpened, setIsManuallyOpened] = useState(false);
   const [accordionValue, setAccordionValue] = useState<string>("brand-selector");
-
-  const [availableModels, setAvailableModels] = useState<string[]>(() => {
-    if (deviceInfo.brand) return PHONE_DATA.models[deviceInfo.brand] ?? [];
-    return [];
-  });
-
-  const [availableStorage, setAvailableStorage] = useState<string[]>(() => {
-    if (deviceInfo.model) return PHONE_DATA.storage[deviceInfo.model] ?? [];
-    return [];
-  });
-
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [availableStorage, setAvailableStorage] = useState<string[]>([]);
   const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
-
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(
     isDesktop ? "other_device" : null,
   );
 
   const prevBrandRef = useRef(localInfo.brand);
-  const prevModelRef = useRef(localInfo.model);
+  const prevProductTypeRef = useRef(localInfo.productType);
 
-  // --- Section: Lifecycle & Effects ---
   useEffect(() => {
     if (localInfo.brand && localInfo.brand !== prevBrandRef.current) {
-      const nextModels = PHONE_DATA.models[localInfo.brand] ?? [];
+      setLocalInfo((prev) => ({ ...prev, productType: "", model: "", storage: "" }));
+      prevBrandRef.current = localInfo.brand;
+    }
+  }, [localInfo.brand]);
+
+  useEffect(() => {
+    if (localInfo.productType && localInfo.productType !== prevProductTypeRef.current) {
+      const nextModels = PHONE_DATA.models[localInfo.productType] ?? [];
       setAvailableModels(nextModels);
       setLocalInfo((prev) => ({ ...prev, model: "", storage: "" }));
-      if (localInfo.brand !== "Apple") {
-        onConditionUpdate((prev) => ({ ...prev, batteryHealth: "" }));
-      }
       if (nextModels.length === 1) {
         setLocalInfo((prev) => ({ ...prev, model: nextModels[0] }));
       }
-      prevBrandRef.current = localInfo.brand;
+      prevProductTypeRef.current = localInfo.productType;
     }
-  }, [localInfo.brand, onConditionUpdate]);
-
-  useEffect(() => {
-    if (localInfo.model && localInfo.model !== prevModelRef.current) {
-      const nextStorage = PHONE_DATA.storage[localInfo.model] ?? [];
-      setAvailableStorage(nextStorage);
-      setLocalInfo((prev) => ({ ...prev, storage: "" }));
-      if (nextStorage.length === 1) {
-        setLocalInfo((prev) => ({ ...prev, storage: nextStorage[0] }));
-      }
-      prevModelRef.current = localInfo.model;
-    }
-  }, [localInfo.model]);
+  }, [localInfo.productType]);
 
   useEffect(() => {
     onDeviceUpdate(localInfo);
   }, [localInfo, onDeviceUpdate]);
 
-  // --- Section: Event Handlers ---
   const handleBrandChange = (brandId: string) => {
     setLocalInfo((prev) => ({ ...prev, brand: brandId }));
     if (!hasSelectedBrand && !isManuallyOpened) {
@@ -113,12 +92,22 @@ const AssessStep1 = ({
     onUserDeviceUpdate(selection === "this_device");
   };
 
-  const allBrands = PHONE_DATA.brands.map((b) => b.id);
-  const isValidBrand = allBrands.includes(localInfo.brand);
-  const isValidModel = isValidBrand && availableModels.includes(localInfo.model);
-  const isValidStorage = isValidModel && availableStorage.includes(localInfo.storage);
-  const isUserDeviceOk = isDesktop || userDeviceSelection !== null;
-  const isComplete = isValidBrand && isValidModel && isValidStorage && isUserDeviceOk;
+  const isAppleProductSelected = localInfo.brand === "Apple" && localInfo.productType;
+  const isDetailedAssessment =
+    isAppleProductSelected && (localInfo.productType === "iPhone" || localInfo.productType === "iPad");
+  const isSimpleAssessment = isAppleProductSelected && !["iPhone", "iPad"].includes(localInfo.productType || "");
+  const isOtherBrand = localInfo.brand && localInfo.brand !== "Apple";
+
+  const isComplete = (() => {
+    if (isDetailedAssessment || isOtherBrand) {
+      return !!(localInfo.brand && localInfo.model && localInfo.storage);
+    }
+    if (isSimpleAssessment) {
+      // For simple assessment, we just need brand and product type
+      return !!(localInfo.brand && localInfo.productType);
+    }
+    return false;
+  })();
 
   return (
     <motion.div
@@ -128,9 +117,9 @@ const AssessStep1 = ({
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
       <div className="text-center">
-        <h2 className="text-foreground mb-2 text-3xl font-bold">ระบุรุ่นมือถือของคุณ</h2>
+        <h2 className="text-foreground mb-2 text-3xl font-bold">ระบุรุ่นอุปกรณ์ของคุณ</h2>
         <p className="text-muted-foreground text-sm md:text-base">
-          เลือกยี่ห้อ รุ่น และความจุของเครื่องที่ต้องการประเมิน
+          เลือกยี่ห้อ, ประเภท, รุ่น, และความจุของเครื่องที่ต้องการประเมิน
         </p>
       </div>
 
@@ -145,7 +134,18 @@ const AssessStep1 = ({
         />
 
         <AnimatePresence>
-          {localInfo.brand && (
+          {localInfo.brand === "Apple" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ProductSelector
+                selectedProduct={localInfo.productType || ""}
+                onProductChange={(p) => handleSelectChange("productType", p)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {(isDetailedAssessment || isOtherBrand) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
@@ -154,10 +154,16 @@ const AssessStep1 = ({
             >
               <ModelAndStorageSelector
                 localInfo={localInfo}
-                availableModels={availableModels}
-                availableStorage={availableStorage}
+                availableModels={PHONE_DATA.models[localInfo.productType || localInfo.brand] || []}
+                availableStorage={PHONE_DATA.storage[localInfo.model] || []}
                 onSelectChange={handleSelectChange}
               />
+            </motion.div>
+          )}
+
+          {isSimpleAssessment && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <SimpleAssessmentForm />
             </motion.div>
           )}
         </AnimatePresence>

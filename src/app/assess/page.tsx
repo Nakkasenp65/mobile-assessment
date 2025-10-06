@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/(step3)/AssessStep3";
-import AssessStep4 from "./components/(step4)/AssessStep4"; //  เพิ่ม import สำหรับ Step 4
+import AssessStep4 from "./components/(step4)/AssessStep4";
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
 import { ConditionInfo, DeviceInfo } from "../../types/device";
@@ -15,6 +15,7 @@ export default function AssessPage() {
   const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
     brand: "",
+    productType: "",
     model: "",
     storage: "",
   });
@@ -41,17 +42,33 @@ export default function AssessPage() {
   const [selectedService, setSelectedService] = useState<string>("");
 
   useEffect(() => {
-    console.log(conditionInfo);
-  }, [conditionInfo]);
+    console.log("Device Info Updated:", deviceInfo);
+  }, [deviceInfo]);
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    // Skip to step 3 for non-phone/tablet Apple products
+    if (
+      currentStep === 1 &&
+      deviceInfo.brand === "Apple" &&
+      deviceInfo.productType &&
+      !["iPhone", "iPad"].includes(deviceInfo.productType)
+    ) {
+      setCurrentStep(3);
+    } else if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
+    // Handle skipping back from step 3 for non-phone/tablet Apple products
+    if (
+      currentStep === 3 &&
+      deviceInfo.brand === "Apple" &&
+      deviceInfo.productType &&
+      !["iPhone", "iPad"].includes(deviceInfo.productType)
+    ) {
+      setCurrentStep(1);
+    } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -63,10 +80,6 @@ export default function AssessPage() {
   const handleUserDeviceUpdate = (value: boolean) => {
     setIsUserDevice(value);
   };
-
-  useEffect(() => {
-    console.log("เป็นเครื่องที่ถืออยู่: ", isUserDevice);
-  }, [isUserDevice]);
 
   return (
     <Layout>
@@ -104,7 +117,6 @@ export default function AssessPage() {
             />
           )}
 
-          {/* เพิ่มการแสดงผลสำหรับ Step 4 */}
           {currentStep === 4 && (
             <AssessStep4
               deviceInfo={deviceInfo}

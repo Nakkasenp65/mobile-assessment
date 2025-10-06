@@ -2,15 +2,13 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Banknote, CreditCard, ShoppingBag, Handshake, TabletSmartphone, Hash, Wrench } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
 import Services from "./Services";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
-import StatusBadge from "../../../../components/ui/StatusBadge";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
 import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
@@ -85,6 +83,8 @@ const mockRecords: AssessmentRecord = {
 };
 
 const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedService }: AssessStep3Props) => {
+  const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+
   const {
     totalRepairCost,
     repairs,
@@ -125,13 +125,11 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
 
   return (
     <div className="flex w-full flex-col gap-4 sm:gap-8">
-      {/* HEAD */}
       <div className="flex w-full flex-col items-center justify-center gap-2">
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
-        {/* Column 1: Assessment Summary */}
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -139,14 +137,13 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
           isImageLoading={isImageLoading}
           mobileData={mobileData}
           grade={grade}
-          finalPrice={finalPrice}
+          finalPrice={isPriceable ? finalPrice : 0}
           assessmentDate={assessmentDate}
           repairs={repairs}
           totalCost={totalRepairCost}
           isLoadingRepairPrices={isLoadingRepairPrices}
         />
 
-        {/* Column 2: Service Selection */}
         <div className="top-24 flex h-fit flex-col lg:sticky">
           <Services
             selectedService={localSelectedService}
@@ -156,12 +153,11 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
             isLoading={isLoadingRepairPrices}
             deviceInfo={deviceInfo}
             onNext={onNext}
-            finalPrice={finalPrice}
+            finalPrice={isPriceable ? finalPrice : 0}
           />
         </div>
       </div>
 
-      {/* Footer Buttons */}
       <div className="mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
         <FramerButton
           variant="ghost"

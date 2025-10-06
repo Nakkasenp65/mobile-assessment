@@ -1,5 +1,7 @@
+// src/types/device.ts
 export interface DeviceInfo {
   brand: string;
+  productType?: "iPhone" | "iPad" | "Mac" | "Apple Watch" | "AirPods" | string;
   model: string;
   storage: string;
 }

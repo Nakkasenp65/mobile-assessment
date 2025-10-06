@@ -1,6 +1,6 @@
-// src/app/assess/components/phone.ts
+// src/util/phone.ts
 
-import { Ellipsis, LucideIcon } from "lucide-react";
+import { Smartphone, Tablet, Laptop, Watch, Ear, Ellipsis, LucideIcon } from "lucide-react";
 
 // สร้าง Interface เพื่อกำหนดโครงสร้างข้อมูลให้ชัดเจน
 interface PhoneData {
@@ -11,6 +11,7 @@ interface PhoneData {
     import?: string;
     icon?: LucideIcon;
   }[];
+  products: Record<string, { id: string; name: string; icon: LucideIcon }[]>;
   models: Record<string, string[]>;
   storage: Record<string, string[]>;
 }
@@ -63,8 +64,17 @@ export const PHONE_DATA: PhoneData = {
       icon: Ellipsis,
     },
   ],
-  models: {
+  products: {
     Apple: [
+      { id: "iPhone", name: "iPhone", icon: Smartphone },
+      { id: "iPad", name: "iPad", icon: Tablet },
+      { id: "Mac", name: "Mac", icon: Laptop },
+      { id: "Apple Watch", name: "Apple Watch", icon: Watch },
+      { id: "AirPods", name: "AirPods", icon: Ear },
+    ],
+  },
+  models: {
+    iPhone: [
       "iPhone 15 Pro Max",
       "iPhone 15 Pro",
       "iPhone 15 Plus",
@@ -82,6 +92,7 @@ export const PHONE_DATA: PhoneData = {
       "iPhone 11 Pro",
       "iPhone 11",
     ],
+    iPad: ["iPad Pro 12.9-inch (6th gen)", "iPad Pro 11-inch (4th gen)", "iPad Air (5th gen)", "iPad (10th gen)"],
     Samsung: [
       "Galaxy S24 Ultra",
       "Galaxy S24 Plus",
@@ -112,7 +123,7 @@ export const PHONE_DATA: PhoneData = {
     Others: [],
   },
   storage: {
-    // Apple
+    // Apple iPhone
     "iPhone 15 Pro Max": ["256 GB", "512 GB", "1 TB"],
     "iPhone 15 Pro": ["128 GB", "256 GB", "512 GB", "1 TB"],
     "iPhone 15 Plus": ["128 GB", "256 GB", "512 GB"],
@@ -129,6 +140,11 @@ export const PHONE_DATA: PhoneData = {
     "iPhone 11 Pro Max": ["64 GB", "128 GB", "256 GB"],
     "iPhone 11 Pro": ["64 GB", "128 GB", "256 GB"],
     "iPhone 11": ["64 GB", "128 GB", "256 GB"],
+    // Apple iPad
+    "iPad Pro 12.9-inch (6th gen)": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+    "iPad Pro 11-inch (4th gen)": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+    "iPad Air (5th gen)": ["64 GB", "256 GB"],
+    "iPad (10th gen)": ["64 GB", "256 GB"],
     // Samsung
     "Galaxy S24 Ultra": ["256 GB", "512 GB", "1 TB"],
     "Galaxy S24 Plus": ["256 GB", "512 GB"],
