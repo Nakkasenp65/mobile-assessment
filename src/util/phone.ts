@@ -1,17 +1,20 @@
 // src/app/assess/components/phone.ts
 
+import { Ellipsis, LucideIcon } from "lucide-react";
+
 // สร้าง Interface เพื่อกำหนดโครงสร้างข้อมูลให้ชัดเจน
 interface PhoneData {
   brands: {
     id: string;
     name: string;
-    logo: string;
+    logo?: string;
+    import?: string;
+    icon?: LucideIcon;
   }[];
   models: Record<string, string[]>;
   storage: Record<string, string[]>;
 }
 
-// ส่งออกข้อมูลทั้งหมดในตัวแปรเดียวเพื่อให้ import ไปใช้ง่าย
 export const PHONE_DATA: PhoneData = {
   brands: [
     {
@@ -25,16 +28,6 @@ export const PHONE_DATA: PhoneData = {
       logo: "https://cdn.simpleicons.org/samsung/black",
     },
     {
-      id: "Google",
-      name: "Google",
-      logo: "https://cdn.simpleicons.org/google/black",
-    },
-    {
-      id: "Xiaomi",
-      name: "Xiaomi",
-      logo: "https://cdn.simpleicons.org/xiaomi/black",
-    },
-    {
       id: "Oppo",
       name: "Oppo",
       logo: "https://cdn.simpleicons.org/oppo/black",
@@ -45,9 +38,29 @@ export const PHONE_DATA: PhoneData = {
       logo: "https://cdn.simpleicons.org/vivo/black",
     },
     {
-      id: "OnePlus",
-      name: "OnePlus",
-      logo: "https://cdn.simpleicons.org/oneplus/black",
+      id: "Xiaomi",
+      name: "Xiaomi",
+      logo: "https://cdn.simpleicons.org/xiaomi/black",
+    },
+    {
+      id: "Redmi",
+      name: "Redmi",
+      import: "/assets/redmi.svg",
+    },
+    {
+      id: "Realme",
+      name: "Realme",
+      import: "/assets/realme.svg",
+    },
+    {
+      id: "Honor",
+      name: "Honor",
+      logo: "https://cdn.simpleicons.org/Honor/black",
+    },
+    {
+      id: "Others",
+      name: "อื่นๆ",
+      icon: Ellipsis,
     },
   ],
   models: {
@@ -82,7 +95,8 @@ export const PHONE_DATA: PhoneData = {
       "Galaxy A55",
       "Galaxy A35",
     ],
-    Google: ["Pixel 8 Pro", "Pixel 8", "Pixel 7a", "Pixel 7 Pro", "Pixel 7"],
+    Oppo: ["Oppo Find N3 Flip", "Oppo Reno11 Pro", "Oppo Reno11", "Oppo Reno10 Pro Plus", "Oppo A98", "Oppo A79"],
+    Vivo: ["Vivo X100 Pro", "Vivo V30 Pro", "Vivo V30", "Vivo V29", "Vivo Y36"],
     Xiaomi: [
       "Xiaomi 14",
       "Xiaomi 13T Pro",
@@ -92,21 +106,10 @@ export const PHONE_DATA: PhoneData = {
       "POCO F5 Pro",
       "POCO F5",
     ],
-    Oppo: [
-      "Oppo Find N3 Flip",
-      "Oppo Reno11 Pro",
-      "Oppo Reno11",
-      "Oppo Reno10 Pro Plus",
-      "Oppo A98",
-      "Oppo A79",
-    ],
-    Vivo: ["Vivo X100 Pro", "Vivo V30 Pro", "Vivo V30", "Vivo V29", "Vivo Y36"],
-    OnePlus: [
-      "OnePlus 12",
-      "OnePlus 11",
-      "OnePlus Nord 3",
-      "OnePlus Nord CE 3 Lite",
-    ],
+    Redmi: ["Redmi Note 14 Pro+", "Redmi Note 14 Pro", "Redmi Note 13", "Redmi 13C", "Redmi A3"],
+    Realme: ["Realme GT 6", "Realme 12 Pro+", "Realme 12+", "Realme C67", "Realme Narzo 70 Pro"],
+    Honor: ["Honor Magic6 Pro", "Honor 200 Pro", "Honor Magic V2", "Honor 90"],
+    Others: [],
   },
   storage: {
     // Apple
@@ -138,20 +141,6 @@ export const PHONE_DATA: PhoneData = {
     "Galaxy Z Flip5": ["256 GB", "512 GB"],
     "Galaxy A55": ["128 GB", "256 GB"],
     "Galaxy A35": ["128 GB", "256 GB"],
-    // Google
-    "Pixel 8 Pro": ["128 GB", "256 GB", "512 GB", "1 TB"],
-    "Pixel 8": ["128 GB", "256 GB"],
-    "Pixel 7a": ["128 GB"],
-    "Pixel 7 Pro": ["128 GB", "256 GB", "512 GB"],
-    "Pixel 7": ["128 GB", "256 GB"],
-    // Xiaomi
-    "Xiaomi 14": ["256 GB", "512 GB"],
-    "Xiaomi 13T Pro": ["256 GB", "512 GB", "1 TB"],
-    "Xiaomi 13T": ["256 GB"],
-    "Redmi Note 13 Pro Plus": ["256 GB", "512 GB"],
-    "Redmi Note 13 Pro": ["256 GB"],
-    "POCO F5 Pro": ["256 GB", "512 GB"],
-    "POCO F5": ["256 GB"],
     // Oppo
     "Oppo Find N3 Flip": ["256 GB"],
     "Oppo Reno11 Pro": ["256 GB", "512 GB"],
@@ -165,10 +154,30 @@ export const PHONE_DATA: PhoneData = {
     "Vivo V30": ["256 GB"],
     "Vivo V29": ["256 GB", "512 GB"],
     "Vivo Y36": ["128 GB", "256 GB"],
-    // OnePlus
-    "OnePlus 12": ["256 GB", "512 GB"],
-    "OnePlus 11": ["128 GB", "256 GB"],
-    "OnePlus Nord 3": ["128 GB", "256 GB"],
-    "OnePlus Nord CE 3 Lite": ["128 GB", "256 GB"],
+    // Xiaomi
+    "Xiaomi 14": ["256 GB", "512 GB"],
+    "Xiaomi 13T Pro": ["256 GB", "512 GB", "1 TB"],
+    "Xiaomi 13T": ["256 GB"],
+    "Redmi Note 13 Pro Plus": ["256 GB", "512 GB"],
+    "Redmi Note 13 Pro": ["256 GB"],
+    "POCO F5 Pro": ["256 GB", "512 GB"],
+    "POCO F5": ["256 GB"],
+    // Redmi
+    "Redmi Note 14 Pro+": ["256 GB", "512 GB"],
+    "Redmi Note 14 Pro": ["128 GB", "256 GB", "512 GB"],
+    "Redmi Note 13": ["128 GB", "256 GB"],
+    "Redmi 13C": ["128 GB", "256 GB"],
+    "Redmi A3": ["64 GB", "128 GB"],
+    // Realme
+    "Realme GT 6": ["256 GB", "512 GB", "1 TB"],
+    "Realme 12 Pro+": ["128 GB", "256 GB", "512 GB"],
+    "Realme 12+": ["128 GB", "256 GB"],
+    "Realme C67": ["128 GB", "256 GB"],
+    "Realme Narzo 70 Pro": ["128 GB", "256 GB"],
+    // Honor
+    "Honor Magic6 Pro": ["256 GB", "512 GB", "1 TB"],
+    "Honor 200 Pro": ["256 GB", "512 GB", "1 TB"],
+    "Honor Magic V2": ["256 GB", "512 GB", "1 TB"],
+    "Honor 90": ["256 GB", "512 GB"],
   },
 };

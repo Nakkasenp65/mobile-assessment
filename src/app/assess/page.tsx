@@ -2,7 +2,7 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import AssessStep1 from "./components/AssessStep1";
+import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/(step3)/AssessStep3";
 import AssessStep4 from "./components/(step4)/AssessStep4"; //  เพิ่ม import สำหรับ Step 4
