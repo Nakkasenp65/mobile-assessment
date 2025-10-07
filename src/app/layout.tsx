@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Provider/Providers";
 import "./globals.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "OK Mobile ประเมินสภาพเครื่อง",
@@ -24,6 +25,8 @@ export default function RootLayout({
       <body>
         <Providers>{children}</Providers>
       </body>
+      <Script src="https://api.longdo.com/map/?key=YOUR_API_KEY" />
+      <Script src="https://api.longdo.com/address-form/js/addressform.js" />
     </html>
   );
 }

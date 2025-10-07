@@ -1,3 +1,4 @@
+// src/app/assess/components/(step3)/(services)/SellNowService.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,23 +11,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Home, Train } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-
-import L, { LatLng } from "leaflet";
-import "leaflet/dist/leaflet.css";
-
-// Fix Leaflet marker icons for React/Next.js environment
-delete L.Icon.Default.prototype._getIconUrl;
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
-});
+import dynamic from "next/dynamic";
+import type { LongdoAddressData } from "../LongdoAddressForm";
 
 interface SellNowServiceProps {
   deviceInfo: DeviceInfo;
   sellPrice: number;
 }
+
+// --- Dynamic Import for LongdoAddressForm ---
+const LongdoAddressForm = dynamic(() => import("../LongdoAddressForm"), {
+  ssr: false,
+  loading: () => <div className="h-24 w-full animate-pulse rounded-md border bg-slate-100"></div>,
+});
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
@@ -49,88 +46,21 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
-    address: "",
-    province: "BKK",
-    district: "PHN",
+    addressDetails: "", // สำหรับบ้านเลขที่, ซอย, ถนน
+    province: "",
+    district: "",
+    subdistrict: "",
+    postcode: "",
     btsStation: "",
     storeLocation: storeLocations[0],
     date: "",
     time: "",
   });
 
-  const [clientLatLng, setClientLatLng] = useState<LatLng | null>(null);
-  const [map, setMap] = useState<L.Map | null>(null);
-  const [marker, setMarker] = useState<L.Marker | null>(null);
-  const [loadingAddress, setLoadingAddress] = useState(false);
-
-  // Request geolocation when locationType is "home"
-  useEffect(() => {
-    if (locationType === "home" && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latlng = new L.LatLng(position.coords.latitude, position.coords.longitude);
-          setClientLatLng(latlng);
-        },
-        (error) => {
-          console.error(error.message);
-          setClientLatLng(null);
-        },
-      );
-    }
-  }, [locationType]);
-
-  // Initialize Leaflet map if clientLatLng is set and no map exists yet
-  useEffect(() => {
-    if (locationType === "home" && clientLatLng && !map) {
-      const leafletMap = L.map("leaflet-map", {
-        center: clientLatLng,
-        zoom: 15,
-        scrollWheelZoom: false,
-      });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(leafletMap);
-
-      const leafletMarker = L.marker(clientLatLng, { draggable: true }).addTo(leafletMap);
-
-      leafletMarker.on("dragend", (e) => {
-        const markerLatLng = (e.target as L.Marker).getLatLng();
-        setClientLatLng(markerLatLng);
-      });
-
-      setMarker(leafletMarker);
-      setMap(leafletMap);
-    }
-  }, [clientLatLng, locationType, map]);
-
-  // Update marker position if clientLatLng changes (user moved marker)
-  useEffect(() => {
-    if (marker && clientLatLng) {
-      marker.setLatLng(clientLatLng);
-      if (map) {
-        map.panTo(clientLatLng);
-      }
-      // Reverse geocode to get address
-      setLoadingAddress(true);
-      fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${clientLatLng.lat}&lon=${clientLatLng.lng}&accept-language=th`,
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          const address = data.display_name || "";
-          setFormState((prev) => ({ ...prev, address }));
-          setLoadingAddress(false);
-        })
-        .catch(() => {
-          setLoadingAddress(false);
-        });
-    }
-  }, [clientLatLng, marker, map]);
-
   const handleInputChange = (field: keyof typeof formState, value: string) => {
+    // กรองเอาเฉพาะตัวเลขสำหรับเบอร์โทรศัพท์
     if (field === "phone") {
-      const numericValue = value.replace(/[^0-9]/g, "");
-      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+      setFormState((prev) => ({ ...prev, [field]: value.replace(/[^0-9]/g, "") }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
     }
@@ -138,17 +68,28 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   const handleLocationTypeChange = (newLocationType: "home" | "bts" | "store") => {
     setLocationType(newLocationType);
+    // รีเซ็ตค่าที่อยู่เมื่อเปลี่ยนประเภทสถานที่
     setFormState((prev) => ({
       ...prev,
-      address: "",
+      addressDetails: "",
+      province: "",
+      district: "",
+      subdistrict: "",
+      postcode: "",
       btsStation: "",
     }));
     setSelectedBtsLine("");
-    setClientLatLng(null);
-    if (map) {
-      map.remove();
-      setMap(null);
-    }
+  };
+
+  // --- Handler for Longdo Address Form ---
+  const handleAddressSelect = (data: LongdoAddressData) => {
+    setFormState((prev) => ({
+      ...prev,
+      province: data.province,
+      district: data.district,
+      subdistrict: data.subdistrict,
+      postcode: data.postcode,
+    }));
   };
 
   const isFormComplete =
@@ -158,12 +99,10 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     formState.time &&
     locationType !== null &&
     (locationType === "home"
-      ? formState.address && !loadingAddress
+      ? formState.province && formState.addressDetails // ตรวจสอบว่าเลือกที่อยู่จาก Longdo และกรอกรายละเอียดครบ
       : locationType === "bts"
         ? formState.btsStation
-        : locationType === "store"
-          ? true
-          : false);
+        : locationType === "store");
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
@@ -177,14 +116,11 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   return (
     <main className="w-full space-y-6 pt-4">
-      {/* Price Display */}
+      {/* SECTION: Price Display */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1],
-        }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative overflow-hidden rounded-2xl border border-pink-200 bg-gradient-to-br from-orange-50 via-pink-50 to-white p-6 text-center shadow-lg dark:border-pink-400/30 dark:from-orange-400/10 dark:via-pink-400/10"
       >
         <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-pink-100/50 blur-2xl dark:bg-pink-400/20" />
@@ -198,25 +134,22 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </div>
       </motion.div>
 
-      {/* Main Form */}
+      {/* SECTION: Main Form */}
       <motion.div
         initial="initial"
         animate="animate"
-        variants={{
-          animate: { transition: { staggerChildren: 0.1 } },
-        }}
+        variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
         className="space-y-6"
       >
-        {/* Step 1: Customer Details */}
+        {/* Customer Details */}
         <motion.div variants={formVariants} className="space-y-4">
           <Label className="block text-lg font-semibold">กรอกข้อมูลเพื่อดำเนินการ</Label>
-
           <div className="space-y-2">
-            <Label htmlFor={`customerName-sell`}>ชื่อ-นามสกุล</Label>
+            <Label htmlFor="customerName-sell">ชื่อ-นามสกุล</Label>
             <div className="relative">
               <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
-                id={`customerName-sell`}
+                id="customerName-sell"
                 placeholder="กรอกชื่อ-นามสกุล"
                 value={formState.customerName}
                 onChange={(e) => handleInputChange("customerName", e.target.value)}
@@ -224,13 +157,12 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               />
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor={`phone-sell`}>เบอร์โทรศัพท์ติดต่อ</Label>
+            <Label htmlFor="phone-sell">เบอร์โทรศัพท์ติดต่อ</Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
               <Input
-                id={`phone-sell`}
+                id="phone-sell"
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
@@ -244,7 +176,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </div>
         </motion.div>
 
-        {/* Step 2: Location Selection */}
+        {/* Location Selection */}
         <motion.div variants={formVariants}>
           <Label className="mb-3 block text-lg font-semibold">เลือกสถานที่รับซื้อ</Label>
           <div className="grid grid-cols-3 gap-3">
@@ -254,8 +186,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               onClick={() => handleLocationTypeChange("home")}
               className="flex h-auto flex-col items-center gap-2 py-4"
             >
-              <Home className="h-6 w-6" />
-              <span className="text-xs">รับซื้อถึงบ้าน</span>
+              <Home className="h-6 w-6" /> <span className="text-xs">รับซื้อถึงบ้าน</span>
             </Button>
             <Button
               type="button"
@@ -263,8 +194,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               onClick={() => handleLocationTypeChange("bts")}
               className="flex h-auto flex-col items-center gap-2 py-4"
             >
-              <Train className="h-6 w-6" />
-              <span className="text-xs">BTS/MRT</span>
+              <Train className="h-6 w-6" /> <span className="text-xs">BTS/MRT</span>
             </Button>
             <Button
               type="button"
@@ -272,13 +202,12 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               onClick={() => handleLocationTypeChange("store")}
               className="flex h-auto flex-col items-center gap-2 py-4"
             >
-              <Store className="h-6 w-6" />
-              <span className="text-xs">รับซื้อที่ร้าน</span>
+              <Store className="h-6 w-6" /> <span className="text-xs">รับซื้อที่ร้าน</span>
             </Button>
           </div>
         </motion.div>
 
-        {/* Step 3: Location Details (Conditional) */}
+        {/* Location Details (Conditional) */}
         <AnimatePresence mode="wait">
           {locationType && (
             <motion.div
@@ -291,89 +220,55 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
             >
               <Label className="block text-lg font-semibold">ระบุรายละเอียดสถานที่</Label>
 
-              {/* Home pickup with Leaflet map and auto address */}
               {locationType === "home" && (
                 <motion.div key="home-form" variants={formVariants} className="space-y-4">
                   <p className="text-sm font-bold text-red-600">
                     *หากต้องการขายด่วนภายในวันนี้ กรุณาติดต่อ 098-950-9222
                   </p>
-                  <div
-                    className="min-h-[300px] rounded border border-gray-300"
-                    id="leaflet-map"
-                    style={{ width: "100%" }}
-                  />
-                  <Label htmlFor={`address-sell`} className="mt-2">
-                    ระบุที่อยู่ (ดึงจากตำแหน่งบนแผนที่)
-                  </Label>
-                  {loadingAddress ? (
-                    <p className="text-gray-500 italic">กำลังดึงข้อมูลที่อยู่...</p>
-                  ) : (
+                  <LongdoAddressForm onAddressSelect={handleAddressSelect} />
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="address-details-sell">ที่อยู่โดยละเอียด (บ้านเลขที่, ชื่ออาคาร, ซอย)</Label>
                     <Textarea
-                      id={`address-sell`}
-                      placeholder="ที่อยู่โดยละเอียด"
-                      value={formState.address}
-                      onChange={(e) => handleInputChange("address", e.target.value)}
+                      id="address-details-sell"
+                      placeholder="เช่น 123/45 หมู่ 6 อาคาร ABC, ชั้น 10, ซอยสุขุมวิท 101"
+                      value={formState.addressDetails}
+                      onChange={(e) => handleInputChange("addressDetails", e.target.value)}
                       className="min-h-[80px]"
                     />
-                  )}
-                </motion.div>
-              )}
-
-              {locationType === "bts" && (
-                <motion.div key="bts-form" variants={formVariants} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`bts-line-sell`}>สายรถไฟ BTS/MRT</Label>
-                      <Select onValueChange={setSelectedBtsLine}>
-                        <SelectTrigger id={`bts-line-sell`} className="w-full">
-                          <SelectValue placeholder="เลือกสายรถไฟ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.keys(btsMrtData).map((line) => (
-                            <SelectItem key={line} value={line}>
-                              {line}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`bts-station-sell`}>ระบุสถานี</Label>
-                      <Select
-                        disabled={!selectedBtsLine}
-                        onValueChange={(value) => handleInputChange("btsStation", value)}
-                      >
-                        <SelectTrigger id={`bts-station-sell`} className="w-full">
-                          <SelectValue placeholder="เลือกสถานี" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
-                            <SelectItem key={station} value={station}>
-                              {station}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {locationType === "store" && (
-                <motion.div key="store-form" variants={formVariants} className="space-y-4">
+              {locationType === "bts" && (
+                <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`store-branch-sell`}>สาขา</Label>
-                    <Select
-                      value={formState.storeLocation}
-                      onValueChange={(value) => handleInputChange("storeLocation", value)}
-                    >
-                      <SelectTrigger id={`store-branch-sell`} className="w-full">
-                        <SelectValue />
+                    <Label htmlFor="bts-line-sell">สายรถไฟ BTS/MRT</Label>
+                    <Select onValueChange={setSelectedBtsLine}>
+                      <SelectTrigger id="bts-line-sell" className="w-full">
+                        <SelectValue placeholder="เลือกสายรถไฟ" />
                       </SelectTrigger>
                       <SelectContent>
-                        {storeLocations.map((loc) => (
-                          <SelectItem key={loc} value={loc}>
-                            {loc}
+                        {Object.keys(btsMrtData).map((line) => (
+                          <SelectItem key={line} value={line}>
+                            {line}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bts-station-sell">ระบุสถานี</Label>
+                    <Select
+                      disabled={!selectedBtsLine}
+                      onValueChange={(value) => handleInputChange("btsStation", value)}
+                    >
+                      <SelectTrigger id="bts-station-sell" className="w-full">
+                        <SelectValue placeholder="เลือกสถานี" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
+                          <SelectItem key={station} value={station}>
+                            {station}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -381,18 +276,39 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                   </div>
                 </motion.div>
               )}
+
+              {locationType === "store" && (
+                <motion.div key="store-form" variants={formVariants} className="space-y-2">
+                  <Label htmlFor="store-branch-sell">สาขา</Label>
+                  <Select
+                    value={formState.storeLocation}
+                    onValueChange={(value) => handleInputChange("storeLocation", value)}
+                  >
+                    <SelectTrigger id="store-branch-sell" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {storeLocations.map((loc) => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Step 4: Date & Time */}
+        {/* Date & Time Selection */}
         <motion.div variants={formVariants} className="space-y-4">
           <Label className="block text-lg font-semibold">เลือกวันและเวลาที่สะดวก</Label>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor={`date-sell`}>วัน</Label>
+              <Label htmlFor="date-sell">วัน</Label>
               <Select onValueChange={(value) => handleInputChange("date", value)}>
-                <SelectTrigger id={`date-sell`} className="w-full">
+                <SelectTrigger id="date-sell" className="w-full">
                   <SelectValue placeholder="เลือกวัน" />
                 </SelectTrigger>
                 <SelectContent>
@@ -402,9 +318,9 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor={`time-sell`}>เวลา</Label>
+              <Label htmlFor="time-sell">เวลา</Label>
               <Select onValueChange={(value) => handleInputChange("time", value)}>
-                <SelectTrigger id={`time-sell`} className="w-full">
+                <SelectTrigger id="time-sell" className="w-full">
                   <SelectValue placeholder="เลือกเวลา" />
                 </SelectTrigger>
                 <SelectContent>
@@ -417,14 +333,10 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </motion.div>
       </motion.div>
 
-      {/* Confirmation */}
+      {/* SECTION: Confirmation */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: { delay: 0.3 },
-        }}
+        animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
         className="space-y-4 pt-4"
       >
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
