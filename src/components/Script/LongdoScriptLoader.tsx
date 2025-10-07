@@ -5,24 +5,17 @@ import Script from "next/script";
 import { useState } from "react";
 
 const LongdoScriptLoader = () => {
-  // --- SECTION: State for Script Loading ---
-  // [แก้ไข] เพิ่ม State เพื่อจัดการลำดับการโหลด Script
-  // Longdo Address Form (addressform.js) จำเป็นต้องรอให้ Longdo Map SDK (map) โหลดเสร็จก่อน
-  // เราจึงใช้ State `isMapSdkLoaded` เป็นตัวควบคุม
   const [isMapSdkLoaded, setIsMapSdkLoaded] = useState(false);
 
   return (
     <>
-      {/* --- Script 1: Longdo Map SDK (ต้องโหลดก่อนเสมอ) --- */}
       <Script
         id="longdo-map-sdk"
         src={`https://api.longdo.com/map/?key=${process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY}`}
-        strategy="afterInteractive" // แนะนำให้ระบุ strategy เพื่อความชัดเจน
+        strategy="afterInteractive"
         onLoad={() => {
           console.log("✅ Longdo Map SDK loaded successfully.");
-          // [ปรับปรุง] ส่ง Event เดิมเผื่อมีส่วนอื่นใช้งาน แต่หลักๆ เราจะใช้ State
           window.dispatchEvent(new Event("longdo-map-sdk-loaded"));
-          // เมื่อ SDK หลักโหลดเสร็จ, อัปเดต State เพื่อเริ่มโหลด Script ตัวถัดไป
           setIsMapSdkLoaded(true);
         }}
         onError={(e) => {
@@ -30,9 +23,6 @@ const LongdoScriptLoader = () => {
         }}
       />
 
-      {/* --- Script 2: Longdo Address Form (จะโหลดเมื่อ SDK พร้อม) --- */}
-      {/* [แก้ไข] ใช้ State ในการ Render Script ตัวที่สองแบบมีเงื่อนไข (Conditional Rendering) */}
-      {/* ทำให้มั่นใจได้ 100% ว่าจะเริ่มโหลด script นี้หลังจาก SDK หลักพร้อมใช้งานแล้ว */}
       {isMapSdkLoaded && (
         <Script
           id="longdo-address-form-script"

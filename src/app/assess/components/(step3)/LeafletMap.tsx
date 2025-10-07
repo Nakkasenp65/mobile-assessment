@@ -1,25 +1,14 @@
-// src/app/assess/components/(step3)/LeafletMap.tsx
-
 "use client";
 
 import { useEffect, useRef } from "react";
 import L, { LatLng, Map, Marker } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Import image assets directly for bundler compatibility
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-// This is a common workaround for Next.js with Leaflet
-// It prevents an error where Leaflet tries to find the icon URL itself.
-// We are providing the URLs directly below.
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-
+// CDN direct icon workaround
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x.src,
-  iconUrl: markerIcon.src,
-  shadowUrl: markerShadow.src,
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
 interface LeafletMapProps {
@@ -32,7 +21,7 @@ const LeafletMap = ({ center, onLatLngChange }: LeafletMapProps) => {
   const mapRef = useRef<Map | null>(null);
   const markerRef = useRef<Marker | null>(null);
 
-  // Effect for initializing the map
+  // Initial map creation
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current && center) {
       const map = L.map(mapContainerRef.current, {
@@ -42,7 +31,7 @@ const LeafletMap = ({ center, onLatLngChange }: LeafletMapProps) => {
       });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: "© OpenStreetMap contributors",
       }).addTo(map);
 
       const marker = L.marker(center, { draggable: true }).addTo(map);
@@ -57,7 +46,7 @@ const LeafletMap = ({ center, onLatLngChange }: LeafletMapProps) => {
     }
   }, [center, onLatLngChange]);
 
-  // Effect for updating map/marker position when center prop changes
+  // Update marker/map view when center changes
   useEffect(() => {
     if (mapRef.current && markerRef.current && center) {
       if (!markerRef.current.getLatLng().equals(center)) {

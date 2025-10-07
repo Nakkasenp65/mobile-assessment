@@ -9,22 +9,36 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DeviceInfo } from "../../../../../types/device";
-import { Store, User, Phone, Home, Train } from "lucide-react";
+import { Store, User, Phone, Home, Train, Loader2 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../LongdoAddressForm";
+
+// --- [เพิ่ม] Import ที่จำเป็น ---
+import useLocation from "@/hooks/useLocation";
+import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
+
+// --- [เพิ่ม] Dynamic import สำหรับ Map และ Form ---
+const LeafletMap = dynamic(() => import("../LeafletMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[300px] w-full items-center justify-center rounded border border-gray-300 bg-gray-100">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+    </div>
+  ),
+});
+const LongdoAddressForm = dynamic(() => import("../LongdoAddressForm"), {
+  ssr: false,
+  loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
+});
+
+// --- [เพิ่ม] ประกาศ Type สำหรับพิกัด ---
+type LatLngLiteral = { lat: number; lng: number };
 
 interface SellNowServiceProps {
   deviceInfo: DeviceInfo;
   sellPrice: number;
 }
-
-// --- SECTION: DYNAMIC IMPORT ---
-// เราจะใช้ dynamic import เพื่อให้แน่ใจว่า Component นี้จะถูก render ฝั่ง Client เท่านั้น
-// เพราะ Longdo Address Form ต้องทำงานกับ `window` object
-const LongdoAddressForm = dynamic(() => import("../LongdoAddressForm"), {
-  ssr: false,
-});
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
@@ -34,12 +48,7 @@ const btsMrtData = {
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
-const THB = (n: number) =>
-  n.toLocaleString("th-TH", {
-    style: "currency",
-    currency: "THB",
-    minimumFractionDigits: 0,
-  });
+const THB = (n: number) => n.toLocaleString("th-TH", { style: "currency", currency: "THB", minimumFractionDigits: 0 });
 
 const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
@@ -47,7 +56,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
-    addressDetails: "", // สำหรับบ้านเลขที่, ซอย, ถนน
+    addressDetails: "",
     province: "",
     district: "",
     subdistrict: "",
@@ -58,8 +67,35 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     time: "",
   });
 
+  // --- [เพิ่ม] State และ Hook สำหรับจัดการตำแหน่งและแผนที่ ---
+  const { location: initialLocation } = useLocation();
+  const [mapCenter, setMapCenter] = useState<LatLngLiteral | null>(null);
+
+  // Effect: ตั้งค่าตำแหน่งเริ่มต้นของแผนที่
+  useEffect(() => {
+    if (initialLocation && !mapCenter) {
+      setMapCenter({ lat: initialLocation.latitude, lng: initialLocation.longitude });
+    }
+  }, [initialLocation, mapCenter]);
+
+  // --- [เพิ่ม] Effect สำหรับยิง API ของ Longdo ---
+  useEffect(() => {
+    if (mapCenter) {
+      const apiKey = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
+      const url = `https://api.longdo.com/map/services/address?lon=${mapCenter.lng}&lat=${mapCenter.lat}&key=${apiKey}`;
+
+      console.log(`🚀 Firing API Request to: ${url}`);
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("📍 Longdo API Response:", data);
+        })
+        .catch((err) => console.error("❌ Failed to fetch Longdo API:", err));
+    }
+  }, [mapCenter]); // ทำงานทุกครั้งที่ mapCenter เปลี่ยน
+
   const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
-    // กรองเอาเฉพาะตัวเลขสำหรับเบอร์โทรศัพท์
     if (field === "phone") {
       setFormState((prev) => ({ ...prev, [field]: (value as string).replace(/[^0-9]/g, "") }));
     } else {
@@ -69,7 +105,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   const handleLocationTypeChange = (newLocationType: "home" | "bts" | "store") => {
     setLocationType(newLocationType);
-    // รีเซ็ตค่าที่อยู่เมื่อเปลี่ยนประเภทสถานที่
     setFormState((prev) => ({
       ...prev,
       addressDetails: "",
@@ -82,15 +117,15 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     setSelectedBtsLine("");
   };
 
-  // --- SECTION: Handler for Longdo Address Form ---
-  // สร้างฟังก์ชันนี้เพื่อรับข้อมูลที่อยู่จาก Component ลูก
   const handleAddressSelect = (data: LongdoAddressData) => {
+    console.log("📝 Form data received from LongdoAddressForm:", data);
     setFormState((prev) => ({
       ...prev,
       province: data.province,
       district: data.district,
       subdistrict: data.subdistrict,
       postcode: data.postcode,
+      addressDetails: data.address,
     }));
   };
 
@@ -101,16 +136,12 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     formState.time &&
     locationType !== null &&
     (locationType === "home"
-      ? formState.province && formState.addressDetails // ตรวจสอบว่าเลือกที่อยู่จาก Longdo และกรอกรายละเอียดครบ
+      ? formState.province && formState.addressDetails
       : locationType === "bts"
         ? formState.btsStation
         : locationType === "store");
 
-  const formVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-  };
+  const formVariants = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
 
   useEffect(() => {
     scrollTo(0, 0);
@@ -118,7 +149,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   return (
     <main className="w-full space-y-6 pt-4">
-      {/* --- SECTION: Price Display (no changes) --- */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -136,14 +166,12 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </div>
       </motion.div>
 
-      {/* --- SECTION: Main Form --- */}
       <motion.div
         initial="initial"
         animate="animate"
         variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
         className="space-y-6"
       >
-        {/* Customer Details */}
         <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
           <Label className="block text-lg font-semibold">กรอกข้อมูลเพื่อดำเนินการ</Label>
           <div className="space-y-2">
@@ -178,11 +206,8 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </div>
         </motion.div>
 
-        {/* Location Selection */}
-        <motion.div variants={formVariants} className="border-border flex flex-col gap-4">
+        <motion.div variants={formVariants} className="flex flex-col gap-4">
           <Label className="block text-lg font-semibold">เลือกสถานที่รับซื้อ</Label>
-
-          {/* Location Buttons */}
           <div className="grid grid-cols-3 gap-3">
             <Button
               type="button"
@@ -210,7 +235,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
             </Button>
           </div>
 
-          {/* --- SECTION: Location Details (Conditional) --- */}
           <AnimatePresence mode="wait">
             {locationType && (
               <motion.div
@@ -219,17 +243,26 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className={`border-border flex flex-col gap-4 border-b pb-8 ${locationType === "home" ? "-mt-4" : ""}`}
+                className="border-border flex flex-col gap-4 border-b pb-8"
               >
-                {/* --- SECTION: Home Location Details รับซื้อถึงที่ --- */}
                 {locationType === "home" && (
                   <motion.div key="home-form" variants={formVariants} className="flex flex-col gap-4">
-                    {/* --- RENDER LONGDO FORM --- */}
+                    <LongdoScriptLoader />
+                    <Label className="block text-base font-semibold">ปักหมุดตำแหน่งของคุณ</Label>
+                    <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
                     <LongdoAddressForm onAddressSelect={handleAddressSelect} />
+                    <div className="space-y-2">
+                      <Label htmlFor="addressDetails-sell">บ้านเลขที่, ซอย, ถนน</Label>
+                      <Input
+                        id="addressDetails-sell"
+                        placeholder="กรอกรายละเอียดเพิ่มเติม"
+                        value={formState.addressDetails}
+                        onChange={(e) => handleInputChange("addressDetails", e.target.value)}
+                        className="h-12"
+                      />
+                    </div>
                   </motion.div>
                 )}
-
-                {/* --- SECTION: BTS Location Details --- */}
                 {locationType === "bts" && (
                   <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -267,8 +300,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                     </div>
                   </motion.div>
                 )}
-
-                {/* --- SECTION: ห้าง Location Details --- */}
                 {locationType === "store" && (
                   <motion.div key="store-form" variants={formVariants} className="space-y-2">
                     <Label htmlFor="store-branch-sell">สาขา</Label>
@@ -294,7 +325,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Date & Time Selection */}
         <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
           <Label className="block text-lg font-semibold">เลือกวันและเวลาที่สะดวก</Label>
           <div className="grid grid-cols-2 gap-4">
@@ -350,7 +380,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </motion.div>
       </motion.div>
 
-      {/* SECTION: Confirmation */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
@@ -359,7 +388,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันการขายและรับเงินทันที
         </FramerButton>
-
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
           การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
           และยอมรับใน{" "}
