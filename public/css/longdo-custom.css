@@ -1,0 +1,119 @@
+/* public/css/longdo-custom.css */
+
+/* 
+  ไฟล์นี้จะถูกโหลดโดยตรงผ่าน option 'style' ของ Longdo Address Form
+  เพื่อแก้ปัญหา CSS Specificity ที่สไตล์จาก default.css ของ Longdo
+  มาทับสไตล์ที่เรากำหนดใน globals.css
+*/
+
+/* --- Main Container Scope --- */
+#longdo-address-form-container form {
+  display: block; /* Ensure form is visible */
+}
+
+#longdo-address-form-container form ~ p {
+  display: none; /* Hide the initial "Loading..." text */
+}
+
+/* --- Generic styles for all form elements --- */
+#longdo-address-form-container input[type="text"],
+#longdo-address-form-container select,
+#longdo-address-form-container textarea {
+  /* Core Styles from Shadcn UI */
+  display: flex;
+  height: 3rem; /* 48px */
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.375rem; /* rounded-md */
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem; /* text-sm */
+
+  /* Ring styles for focus state */
+  outline: none;
+  --ring-offset-shadow: 0 0 0 var(--ring-offset-width, 2px) var(--ring-offset-color);
+  --ring-shadow: 0 0 0 calc(var(--ring-width, 2px) + var(--ring-offset-width, 2px)) var(--ring-color);
+}
+
+#longdo-address-form-container input[type="text"]:focus,
+#longdo-address-form-container select:focus,
+#longdo-address-form-container textarea:focus {
+  box-shadow:
+    var(--ring-offset-shadow),
+    var(--ring-shadow),
+    0 0 #0000;
+  border-color: var(--ring);
+}
+
+/* --- Custom dropdown arrow for <select> elements --- */
+#longdo-address-form-container select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2.5rem;
+}
+
+/* --- Specific style for the <textarea> --- */
+#longdo-address-form-container textarea#etc {
+  min-height: 80px;
+  padding-top: 0.75rem;
+}
+
+/* --- Layout adjustments for the <table> structure --- */
+#longdo-address-form-container table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#longdo-address-form-container td {
+  padding: 0;
+  padding-bottom: 0.75rem;
+}
+
+#longdo-address-form-container tr > td:not(:last-child) {
+  padding-right: 0.75rem;
+}
+
+#longdo-address-form-container tr:last-child > td {
+  padding-bottom: 0;
+}
+
+/* --- Style for Labels --- */
+#longdo-address-form-container .small-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: var(--foreground);
+}
+
+/* --- Style for error messages --- */
+#longdo-address-form-container .error span {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--destructive);
+}
+
+#longdo-address-form-container .error-input {
+  border-color: var(--destructive) !important; /* Use !important to ensure override */
+}
+
+#longdo-address-form-container .error-input:focus {
+  border-color: var(--destructive) !important;
+  box-shadow: 0 0 0 2px var(--destructive);
+}
+
+/* --- Hide the country selector --- */
+#longdo-address-form-container select#country,
+#longdo-address-form-container #country_label {
+  display: none;
+}
