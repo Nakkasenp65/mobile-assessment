@@ -1,4 +1,3 @@
-// src/app/assess/components/(step3)/(services)/SellNowService.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +10,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Home, Train } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+
+import L, { LatLng } from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet marker icons for React/Next.js environment
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+});
 
 interface SellNowServiceProps {
   deviceInfo: DeviceInfo;
@@ -45,13 +56,78 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     storeLocation: storeLocations[0],
     date: "",
     time: "",
-    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
-    // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง ไม่จำเป็นต้องมี state แยก
   });
 
+  const [clientLatLng, setClientLatLng] = useState<LatLng | null>(null);
+  const [map, setMap] = useState<L.Map | null>(null);
+  const [marker, setMarker] = useState<L.Marker | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+
+  // Request geolocation when locationType is "home"
+  useEffect(() => {
+    if (locationType === "home" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latlng = new L.LatLng(position.coords.latitude, position.coords.longitude);
+          setClientLatLng(latlng);
+        },
+        (error) => {
+          console.error(error.message);
+          setClientLatLng(null);
+        },
+      );
+    }
+  }, [locationType]);
+
+  // Initialize Leaflet map if clientLatLng is set and no map exists yet
+  useEffect(() => {
+    if (locationType === "home" && clientLatLng && !map) {
+      const leafletMap = L.map("leaflet-map", {
+        center: clientLatLng,
+        zoom: 15,
+        scrollWheelZoom: false,
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(leafletMap);
+
+      const leafletMarker = L.marker(clientLatLng, { draggable: true }).addTo(leafletMap);
+
+      leafletMarker.on("dragend", (e) => {
+        const markerLatLng = (e.target as L.Marker).getLatLng();
+        setClientLatLng(markerLatLng);
+      });
+
+      setMarker(leafletMarker);
+      setMap(leafletMap);
+    }
+  }, [clientLatLng, locationType, map]);
+
+  // Update marker position if clientLatLng changes (user moved marker)
+  useEffect(() => {
+    if (marker && clientLatLng) {
+      marker.setLatLng(clientLatLng);
+      if (map) {
+        map.panTo(clientLatLng);
+      }
+      // Reverse geocode to get address
+      setLoadingAddress(true);
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${clientLatLng.lat}&lon=${clientLatLng.lng}&accept-language=th`,
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          const address = data.display_name || "";
+          setFormState((prev) => ({ ...prev, address }));
+          setLoadingAddress(false);
+        })
+        .catch(() => {
+          setLoadingAddress(false);
+        });
+    }
+  }, [clientLatLng, marker, map]);
+
   const handleInputChange = (field: keyof typeof formState, value: string) => {
-    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
-    // ป้องกันข้อมูล "ปนเปื้อน" (Contaminated Data) ไม่ให้เข้าสู่ระบบ State โดยเด็ดขาด
     if (field === "phone") {
       const numericValue = value.replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
@@ -68,18 +144,21 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
       btsStation: "",
     }));
     setSelectedBtsLine("");
+    setClientLatLng(null);
+    if (map) {
+      map.remove();
+      setMap(null);
+    }
   };
 
-  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
-  // โดยนำเงื่อนไขการยอมรับข้อตกลงออก เพราะการกระทำของผู้ใช้จะเป็นตัวยืนยันเอง
   const isFormComplete =
     formState.customerName &&
-    formState.phone.length === 10 && // CHIRON: เพิ่มการตรวจสอบความยาวของเบอร์โทรศัพท์
+    formState.phone.length === 10 &&
     formState.date &&
     formState.time &&
     locationType !== null &&
     (locationType === "home"
-      ? formState.address
+      ? formState.address && !loadingAddress
       : locationType === "bts"
         ? formState.btsStation
         : locationType === "store"
@@ -150,16 +229,15 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
             <Label htmlFor={`phone-sell`}>เบอร์โทรศัพท์ติดต่อ</Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
               <Input
                 id={`phone-sell`}
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
-                inputMode="numeric" // บังคับใช้แป้นพิมพ์ตัวเลขบนมือถือ
-                pattern="[0-9]{10}" // กำหนดรูปแบบที่เข้มงวดสำหรับ HTML5 validation
-                maxLength={10} // จำกัดความยาวสูงสุด
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
                 className="h-12 pl-10"
               />
             </div>
@@ -213,51 +291,31 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
             >
               <Label className="block text-lg font-semibold">ระบุรายละเอียดสถานที่</Label>
 
+              {/* Home pickup with Leaflet map and auto address */}
               {locationType === "home" && (
                 <motion.div key="home-form" variants={formVariants} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`address-sell`}>ที่อยู่</Label>
-                    <p className="text-sm font-bold text-red-600">
-                      *หากต้องการขายด่วนภายในวันนี้ กรุณาติดต่อ 098-950-9222
-                    </p>
+                  <p className="text-sm font-bold text-red-600">
+                    *หากต้องการขายด่วนภายในวันนี้ กรุณาติดต่อ 098-950-9222
+                  </p>
+                  <div
+                    className="min-h-[300px] rounded border border-gray-300"
+                    id="leaflet-map"
+                    style={{ width: "100%" }}
+                  />
+                  <Label htmlFor={`address-sell`} className="mt-2">
+                    ระบุที่อยู่ (ดึงจากตำแหน่งบนแผนที่)
+                  </Label>
+                  {loadingAddress ? (
+                    <p className="text-gray-500 italic">กำลังดึงข้อมูลที่อยู่...</p>
+                  ) : (
                     <Textarea
                       id={`address-sell`}
-                      placeholder="กรอกที่อยู่โดยละเอียด"
+                      placeholder="ที่อยู่โดยละเอียด"
                       value={formState.address}
                       onChange={(e) => handleInputChange("address", e.target.value)}
                       className="min-h-[80px]"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`province-sell`}>จังหวัด</Label>
-                      <Select
-                        value={formState.province}
-                        onValueChange={(value) => handleInputChange("province", value)}
-                      >
-                        <SelectTrigger id={`province-sell`} className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="BKK">กรุงเทพมหานคร</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`district-sell`}>เขต</Label>
-                      <Select
-                        value={formState.district}
-                        onValueChange={(value) => handleInputChange("district", value)}
-                      >
-                        <SelectTrigger id={`district-sell`} className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PHN">เขตพระนคร</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                  )}
                 </motion.div>
               )}
 
@@ -367,19 +425,17 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           y: 0,
           transition: { delay: 0.3 },
         }}
-        className="space-y-4 pt-4" // CHIRON: ปรับแก้ระยะห่างเล็กน้อยเพื่อรองรับข้อความ
+        className="space-y-4 pt-4"
       >
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันการขายและรับเงินทันที
         </FramerButton>
 
-        {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
-        {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
           การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
           และยอมรับใน{" "}
           <a
-            href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-pink-600 underline hover:text-pink-700 dark:text-pink-400 dark:hover:text-pink-300"

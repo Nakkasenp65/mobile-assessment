@@ -34,6 +34,7 @@
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
     "konva": "^10.0.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "network-information-types": "^0.1.1",
     "next": "15.5.3",
