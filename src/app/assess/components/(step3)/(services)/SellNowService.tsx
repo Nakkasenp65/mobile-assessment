@@ -14,11 +14,13 @@ import FramerButton from "@/components/ui/framer/FramerButton";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../LongdoAddressForm";
 
-// --- [เพิ่ม] Import ที่จำเป็น ---
+// --- Import ที่จำเป็น ---
 import useLocation from "@/hooks/useLocation";
 import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
+import { useLongdoReverseGeocode } from "@/hooks/useLongdoReverseGeocode";
+import type { LatLng } from "leaflet";
 
-// --- [เพิ่ม] Dynamic import สำหรับ Map และ Form ---
+// --- Dynamic import สำหรับ Map และ Form ---
 const LeafletMap = dynamic(() => import("../LeafletMap"), {
   ssr: false,
   loading: () => (
@@ -31,9 +33,6 @@ const LongdoAddressForm = dynamic(() => import("../LongdoAddressForm"), {
   ssr: false,
   loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
 });
-
-// --- [เพิ่ม] ประกาศ Type สำหรับพิกัด ---
-type LatLngLiteral = { lat: number; lng: number };
 
 interface SellNowServiceProps {
   deviceInfo: DeviceInfo;
@@ -67,33 +66,17 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     time: "",
   });
 
-  // --- [เพิ่ม] State และ Hook สำหรับจัดการตำแหน่งและแผนที่ ---
   const { location: initialLocation } = useLocation();
-  const [mapCenter, setMapCenter] = useState<LatLngLiteral | null>(null);
+  const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
+  const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
 
-  // Effect: ตั้งค่าตำแหน่งเริ่มต้นของแผนที่
   useEffect(() => {
     if (initialLocation && !mapCenter) {
-      setMapCenter({ lat: initialLocation.latitude, lng: initialLocation.longitude });
+      import("leaflet").then((L) => {
+        setMapCenter(new L.LatLng(initialLocation.latitude, initialLocation.longitude));
+      });
     }
   }, [initialLocation, mapCenter]);
-
-  // --- [เพิ่ม] Effect สำหรับยิง API ของ Longdo ---
-  useEffect(() => {
-    if (mapCenter) {
-      const apiKey = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
-      const url = `https://api.longdo.com/map/services/address?lon=${mapCenter.lng}&lat=${mapCenter.lat}&key=${apiKey}`;
-
-      console.log(`🚀 Firing API Request to: ${url}`);
-
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("📍 Longdo API Response:", data);
-        })
-        .catch((err) => console.error("❌ Failed to fetch Longdo API:", err));
-    }
-  }, [mapCenter]); // ทำงานทุกครั้งที่ mapCenter เปลี่ยน
 
   const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
     if (field === "phone") {
@@ -118,7 +101,6 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
   };
 
   const handleAddressSelect = (data: LongdoAddressData) => {
-    console.log("📝 Form data received from LongdoAddressForm:", data);
     setFormState((prev) => ({
       ...prev,
       province: data.province,
@@ -149,6 +131,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   return (
     <main className="w-full space-y-6 pt-4">
+      {/* Price Display */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -166,12 +149,14 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </div>
       </motion.div>
 
+      {/* Main Form */}
       <motion.div
         initial="initial"
         animate="animate"
         variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
         className="space-y-6"
       >
+        {/* Step 1: Personal Info */}
         <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
           <Label className="block text-lg font-semibold">กรอกข้อมูลเพื่อดำเนินการ</Label>
           <div className="space-y-2">
@@ -206,6 +191,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </div>
         </motion.div>
 
+        {/* Step 2: Location */}
         <motion.div variants={formVariants} className="flex flex-col gap-4">
           <Label className="block text-lg font-semibold">เลือกสถานที่รับซื้อ</Label>
           <div className="grid grid-cols-3 gap-3">
@@ -250,7 +236,10 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
                     <LongdoScriptLoader />
                     <Label className="block text-base font-semibold">ปักหมุดตำแหน่งของคุณ</Label>
                     <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
-                    <LongdoAddressForm onAddressSelect={handleAddressSelect} />
+                    <LongdoAddressForm
+                      onAddressSelect={handleAddressSelect}
+                      initialData={geocodeData as LongdoAddressData | null} // ✨ ส่ง geocodeData ลงไป
+                    />
                     <div className="space-y-2">
                       <Label htmlFor="addressDetails-sell">บ้านเลขที่, ซอย, ถนน</Label>
                       <Input
@@ -325,6 +314,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </AnimatePresence>
         </motion.div>
 
+        {/* Step 3: Appointment */}
         <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
           <Label className="block text-lg font-semibold">เลือกวันและเวลาที่สะดวก</Label>
           <div className="grid grid-cols-2 gap-4">
@@ -380,6 +370,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         </motion.div>
       </motion.div>
 
+      {/* Confirmation */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}

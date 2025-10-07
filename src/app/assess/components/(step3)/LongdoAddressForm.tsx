@@ -9,21 +9,29 @@ export interface LongdoAddressData {
   province: string;
   postcode: string;
   address: string;
+  road?: string;
+  aoi?: string;
 }
 
 interface LongdoAddressFormProps {
   onAddressSelect: (address: LongdoAddressData) => void;
+  initialData?: LongdoAddressData | null;
 }
 
 declare const longdo: any;
 
-const LongdoAddressForm = ({ onAddressSelect }: LongdoAddressFormProps) => {
+const LongdoAddressForm = ({ onAddressSelect, initialData }: LongdoAddressFormProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const onAddressSelectRef = useRef(onAddressSelect);
+  const initialDataRef = useRef(initialData);
 
   useEffect(() => {
     onAddressSelectRef.current = onAddressSelect;
   }, [onAddressSelect]);
+
+  useEffect(() => {
+    initialDataRef.current = initialData;
+  }, [initialData]);
 
   useEffect(() => {
     const scrapeAddressData = () => {
@@ -67,16 +75,56 @@ const LongdoAddressForm = ({ onAddressSelect }: LongdoAddressFormProps) => {
             const observer = new MutationObserver((mutationsList, obs) => {
               for (const mutation of mutationsList) {
                 if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-                  if (document.getElementById("postal_code")) {
-                    console.log("✅ Longdo Form elements detected. Attaching listeners.");
-                    const elementsToWatch = ["subdistrict", "district", "province", "postal_code", "etc"];
-                    elementsToWatch.forEach((id) => {
-                      const el = document.getElementById(id);
-                      if (el) {
-                        el.addEventListener("input", scrapeAddressData);
-                        el.addEventListener("change", scrapeAddressData);
+                  const postcodeEl = document.getElementById("postal_code") as HTMLInputElement;
+                  if (postcodeEl) {
+                    console.log("✅ Longdo Form elements detected.");
+
+                    if (initialDataRef.current?.postcode) {
+                      const data = initialDataRef.current;
+                      console.log("Applying initial geocode data:", data);
+
+                      // --- วิธีที่ 1: กระตุ้นสคริปต์ Longdo ผ่านรหัสไปรษณีย์ ---
+                      postcodeEl.value = data.postcode;
+                      postcodeEl.dispatchEvent(new Event("input", { bubbles: true }));
+                      postcodeEl.dispatchEvent(new Event("blur", { bubbles: true }));
+
+                      const addressEl = document.getElementById("etc") as HTMLTextAreaElement;
+                      const fullAddress = `${data.road || ""} ${data.aoi || ""}`.trim();
+                      if (addressEl) {
+                        addressEl.value = fullAddress;
+                        addressEl.dispatchEvent(new Event("input", { bubbles: true }));
                       }
-                    });
+
+                      // --- วิธีที่ 2: บังคับตั้งค่า UI โดยตรง (Fallback) ---
+                      // ใช้ Timeout เพื่อรอให้สคริปต์ Longdo มีเวลาสร้าง Options
+                      setTimeout(() => {
+                        console.log("Forcing UI update for dropdowns...");
+                        const provinceEl = document.getElementById("province") as HTMLSelectElement;
+                        const districtEl = document.getElementById("district") as HTMLSelectElement;
+                        const subdistrictEl = document.getElementById("subdistrict") as HTMLSelectElement;
+
+                        const forceSetUiValue = (selectEl: HTMLSelectElement, text: string) => {
+                          if (!selectEl || !text) return;
+
+                          const optionIndex = Array.from(selectEl.options).findIndex((opt) => opt.text === text);
+
+                          if (optionIndex > -1) {
+                            selectEl.selectedIndex = optionIndex;
+                            selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+                            console.log(`✅ UI for ${selectEl.id} set to index ${optionIndex} ("${text}")`);
+                          } else {
+                            console.warn(
+                              `Could not find option "${text}" for ${selectEl.id}. Options may not be loaded yet.`,
+                            );
+                          }
+                        };
+
+                        forceSetUiValue(provinceEl, data.province);
+                        forceSetUiValue(districtEl, data.district);
+                        forceSetUiValue(subdistrictEl, data.subdistrict);
+                      }, 500); // หน่วงเวลา 500ms
+                    }
+
                     obs.disconnect();
                     return;
                   }
