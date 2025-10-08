@@ -41,10 +41,6 @@ export default function AssessPage() {
   });
   const [selectedService, setSelectedService] = useState<string>("");
 
-  useEffect(() => {
-    console.log("Device Info Updated:", deviceInfo);
-  }, [deviceInfo]);
-
   const handleNext = () => {
     // Skip to step 3 for non-phone/tablet Apple products
     if (

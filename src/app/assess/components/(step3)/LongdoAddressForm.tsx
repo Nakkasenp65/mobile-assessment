@@ -1,8 +1,8 @@
-// src/app/assess/components/(step3)/LongdoAddressForm.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
 
+// Interface ยังคงเดิม
 export interface LongdoAddressData {
   subdistrict: string;
   district: string;
@@ -14,144 +14,121 @@ export interface LongdoAddressData {
 }
 
 interface LongdoAddressFormProps {
-  onAddressSelect: (address: LongdoAddressData) => void;
+  // ✨ เอา onAddressSelect ออก
+  // onAddressSelect: (address: LongdoAddressData) => void;
+  // ✨ เพิ่ม Callback เพื่อแจ้งว่าฟอร์มพร้อมใช้งานแล้ว
+  onFormReady: () => void;
   initialData?: LongdoAddressData | null;
 }
 
 declare const longdo: any;
 
-const LongdoAddressForm = ({ onAddressSelect, initialData }: LongdoAddressFormProps) => {
+const LongdoAddressForm = ({ onFormReady, initialData }: LongdoAddressFormProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const onAddressSelectRef = useRef(onAddressSelect);
-  const initialDataRef = useRef(initialData);
+  const isFormInitialized = useRef(false);
+  const lastPopulatedData = useRef<string | null>(null);
 
   useEffect(() => {
-    onAddressSelectRef.current = onAddressSelect;
-  }, [onAddressSelect]);
-
-  useEffect(() => {
-    initialDataRef.current = initialData;
-  }, [initialData]);
-
-  useEffect(() => {
-    const scrapeAddressData = () => {
-      const subdistrictEl = document.getElementById("subdistrict") as HTMLSelectElement;
-      const districtEl = document.getElementById("district") as HTMLSelectElement;
-      const provinceEl = document.getElementById("province") as HTMLSelectElement;
-      const postcodeEl = document.getElementById("postal_code") as HTMLInputElement;
-      const addressEl = document.getElementById("etc") as HTMLTextAreaElement;
-
-      const subdistrictText =
-        subdistrictEl && subdistrictEl.selectedIndex > -1
-          ? subdistrictEl.options[subdistrictEl.selectedIndex].text
-          : "";
-      const districtText =
-        districtEl && districtEl.selectedIndex > -1 ? districtEl.options[districtEl.selectedIndex].text : "";
-      const provinceText =
-        provinceEl && provinceEl.selectedIndex > -1 ? provinceEl.options[provinceEl.selectedIndex].text : "";
-
-      const data: LongdoAddressData = {
-        subdistrict: subdistrictText,
-        district: districtText,
-        province: provinceText,
-        postcode: postcodeEl?.value || "",
-        address: addressEl?.value || "",
-      };
-      onAddressSelectRef.current(data);
-    };
-
     const initializeForm = () => {
-      if (typeof longdo !== "undefined" && longdo.AddressForm) {
+      if (typeof longdo !== "undefined" && longdo.AddressForm && containerRef.current && !isFormInitialized.current) {
+        containerRef.current.innerHTML = "";
         try {
           new longdo.AddressForm("longdo-address-form-container", {
             style: "/css/longdo-custom.css",
             showLabels: true,
-            onchanged: scrapeAddressData,
+            // ✨ ไม่จำเป็นต้องใช้ onchanged แล้ว เพราะ Parent จะดัก Event เอง
           });
+          isFormInitialized.current = true;
           console.log("✅ Longdo Address Form initialized.");
-
-          const container = document.getElementById("longdo-address-form-container");
-          if (container) {
-            const observer = new MutationObserver((mutationsList, obs) => {
-              for (const mutation of mutationsList) {
-                if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-                  const postcodeEl = document.getElementById("postal_code") as HTMLInputElement;
-                  if (postcodeEl) {
-                    console.log("✅ Longdo Form elements detected.");
-
-                    if (initialDataRef.current?.postcode) {
-                      const data = initialDataRef.current;
-                      console.log("Applying initial geocode data:", data);
-
-                      // --- วิธีที่ 1: กระตุ้นสคริปต์ Longdo ผ่านรหัสไปรษณีย์ ---
-                      postcodeEl.value = data.postcode;
-                      postcodeEl.dispatchEvent(new Event("input", { bubbles: true }));
-                      postcodeEl.dispatchEvent(new Event("blur", { bubbles: true }));
-
-                      const addressEl = document.getElementById("etc") as HTMLTextAreaElement;
-                      const fullAddress = `${data.road || ""} ${data.aoi || ""}`.trim();
-                      if (addressEl) {
-                        addressEl.value = fullAddress;
-                        addressEl.dispatchEvent(new Event("input", { bubbles: true }));
-                      }
-
-                      // --- วิธีที่ 2: บังคับตั้งค่า UI โดยตรง (Fallback) ---
-                      // ใช้ Timeout เพื่อรอให้สคริปต์ Longdo มีเวลาสร้าง Options
-                      setTimeout(() => {
-                        console.log("Forcing UI update for dropdowns...");
-                        const provinceEl = document.getElementById("province") as HTMLSelectElement;
-                        const districtEl = document.getElementById("district") as HTMLSelectElement;
-                        const subdistrictEl = document.getElementById("subdistrict") as HTMLSelectElement;
-
-                        const forceSetUiValue = (selectEl: HTMLSelectElement, text: string) => {
-                          if (!selectEl || !text) return;
-
-                          const optionIndex = Array.from(selectEl.options).findIndex((opt) => opt.text === text);
-
-                          if (optionIndex > -1) {
-                            selectEl.selectedIndex = optionIndex;
-                            selectEl.dispatchEvent(new Event("change", { bubbles: true }));
-                            console.log(`✅ UI for ${selectEl.id} set to index ${optionIndex} ("${text}")`);
-                          } else {
-                            console.warn(
-                              `Could not find option "${text}" for ${selectEl.id}. Options may not be loaded yet.`,
-                            );
-                          }
-                        };
-
-                        forceSetUiValue(provinceEl, data.province);
-                        forceSetUiValue(districtEl, data.district);
-                        forceSetUiValue(subdistrictEl, data.subdistrict);
-                      }, 500); // หน่วงเวลา 500ms
-                    }
-
-                    obs.disconnect();
-                    return;
-                  }
-                }
-              }
-            });
-            observer.observe(container, { childList: true, subtree: true });
-          }
+          // ✨ ส่งสัญญาณบอก Parent ว่าฟอร์มพร้อมแล้ว!
+          onFormReady();
         } catch (error) {
           console.error("❌ Longdo Address Form initialization failed:", error);
         }
       }
     };
 
-    if (typeof longdo !== "undefined" && longdo.AddressForm) {
-      initializeForm();
-    } else {
-      window.addEventListener("longdo-all-scripts-ready", initializeForm, { once: true });
+    const populateForm = async (data: LongdoAddressData) => {
+      // ... (ส่วน populateForm ทั้งหมดเหมือนเดิมเป๊ะ ไม่ต้องแก้ไข)
+      if (!isFormInitialized.current) return;
+
+      const setSelectValueByText = (selectEl: HTMLSelectElement, text: string): boolean => {
+        const option = Array.from(selectEl.options).find((opt) => opt.text === text);
+        if (option) {
+          if (selectEl.value !== option.value) {
+            selectEl.value = option.value;
+            selectEl.dispatchEvent(new Event("input", { bubbles: true }));
+            selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          return true;
+        }
+        return false;
+      };
+
+      const waitUntilOptionExists = async (
+        elementId: string,
+        text: string,
+        retries = 15,
+        delay = 200,
+      ): Promise<HTMLSelectElement | null> => {
+        for (let i = 0; i < retries; i++) {
+          const selectEl = document.getElementById(elementId) as HTMLSelectElement;
+          if (selectEl) {
+            const option = Array.from(selectEl.options).find((opt) => opt.text === text);
+            if (option) return selectEl;
+          }
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        console.warn(`❌ Timeout waiting for option "${text}" in #${elementId}.`);
+        return null;
+      };
+
+      const postcodeEl = document.getElementById("postal_code") as HTMLInputElement;
+      if (postcodeEl && postcodeEl.value !== data.postcode) {
+        postcodeEl.value = data.postcode;
+        postcodeEl.dispatchEvent(new Event("input", { bubbles: true }));
+        postcodeEl.dispatchEvent(new Event("blur", { bubbles: true }));
+      }
+
+      const addressEl = document.getElementById("etc") as HTMLTextAreaElement;
+      if (addressEl) {
+        const addressText = data.address || `${data.road || ""} ${data.aoi || ""}`.trim();
+        if (addressEl.value !== addressText) {
+          addressEl.value = addressText;
+          addressEl.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }
+
+      const provinceEl = await waitUntilOptionExists("province", data.province);
+      if (provinceEl) setSelectValueByText(provinceEl, data.province);
+
+      const districtEl = await waitUntilOptionExists("district", data.district);
+      if (districtEl) {
+        setSelectValueByText(districtEl, data.district);
+        const subdistrictEl = await waitUntilOptionExists("subdistrict", data.subdistrict);
+        if (subdistrictEl) setSelectValueByText(subdistrictEl, data.subdistrict);
+      }
+    };
+
+    // --- Main Logic ---
+    if (!isFormInitialized.current) {
+      if (typeof longdo !== "undefined" && longdo.AddressForm) {
+        initializeForm();
+      } else {
+        window.addEventListener("longdo-all-scripts-ready", initializeForm, { once: true });
+      }
+    }
+
+    const dataSignature = JSON.stringify(initialData);
+    if (isFormInitialized.current && initialData && lastPopulatedData.current !== dataSignature) {
+      lastPopulatedData.current = dataSignature;
+      populateForm(initialData);
     }
 
     return () => {
       window.removeEventListener("longdo-all-scripts-ready", initializeForm);
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
     };
-  }, []);
+  }, [initialData, onFormReady]); // ✨ เปลี่ยน Dependency
 
   return (
     <div ref={containerRef} id="longdo-address-form-container" className="w-full">

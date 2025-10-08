@@ -1,12 +1,6 @@
 // FaqSection.tsx
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { InteractiveGridPattern } from "@/components/ui/shadcn-io/interactive-grid-pattern";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 // [ADD] Import ไอคอน Plus และ Minus
 import { Plus, Minus } from "lucide-react";
 
@@ -27,13 +21,9 @@ const faqs = [
 
 const FaqSection = () => (
   <section className="relative py-24 sm:py-32">
-    <InteractiveGridPattern className="absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(white,transparent_85%)] fill-white" />
-
     <div className="container mx-auto px-4">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-          คำถามที่พบบ่อย
-        </h2>
+        <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">คำถามที่พบบ่อย</h2>
         <p className="text-muted-foreground mt-6 text-lg leading-8">
           เราได้รวบรวมคำตอบสำหรับคำถามที่ลูกค้าสงสัยมากที่สุดไว้ที่นี่
         </p>
@@ -59,9 +49,7 @@ const FaqSection = () => (
                 </div>
               </AccordionTrigger>
               {/* [MOD] ปรับ Padding ของ Content */}
-              <AccordionContent className="text-muted-foreground px-6 pt-0 pb-6 text-base">
-                {faq.a}
-              </AccordionContent>
+              <AccordionContent className="text-muted-foreground px-6 pt-0 pb-6 text-base">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
