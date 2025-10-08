@@ -118,33 +118,8 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
   }, []);
 
   return (
-    <main className="w-full space-y-6 pt-4">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mx-4 mb-4 rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50/75 to-purple-500/25 p-4"
-      >
-        <ul className="text-purple-800 dark:text-purple-200">
-          <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-            <span>รับเงินก้อนไปใช้ก่อนได้ทันที!</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-            <span>แบ่งชำระคืนเบาๆ นานสูงสุด 6 เดือน</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-            <span>ไม่ต้องใช้คนค้ำประกัน</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-            <span>อนุมัติไวภายใน 15 นาที</span>
-          </li>
-        </ul>
-      </motion.div>
-      <div className="mt-2 space-y-6 border-t pt-4 dark:border-zinc-700/50">
+    <main className="w-full space-y-6">
+      <div className="mt-2 flex flex-col gap-6 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

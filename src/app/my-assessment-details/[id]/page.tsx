@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Layout from "../../../components/Layout/Layout";
 import { AssessmentRecord } from "../../../types/assessment";
-import AssessmentDetails from "../components/AssessmentDetails";
+import AssessStep3 from "../../assess/components/(step3)/AssessStep3";
+import AssessStep4 from "../../assess/components/(step4)/AssessStep4";
 
 const getExpiryDate = (days: number): string => {
   const date = new Date();
@@ -67,14 +70,63 @@ const mockRecords: AssessmentRecord = {
 };
 
 export default function AssessmentRecordPage() {
-  const recordToShow = mockRecords; // ในอนาคตจะเปลี่ยนมาใช้ข้อมูลจริง
+  const router = useRouter();
+  const [step, setStep] = useState(1); // 1 = Service Selection (AssessStep3), 2 = Service Form (AssessStep4)
+  const [selectedService, setSelectedService] = useState<string>("");
+
+  // Extract data from mockRecords
+  const { device, conditionInfo } = mockRecords;
+
+  // Transform device data to match DeviceInfo type
+  const deviceInfo = {
+    brand: device.brand,
+    model: device.model,
+    storage: device.storage,
+    productType: device.brand === "Apple" ? "iPhone" : "Android", // Simplified logic
+    imageUrl: device.imageUrl,
+  };
+
+  // Handler to advance to service form
+  const handleNext = () => {
+    if (step === 1 && selectedService) {
+      setStep(2);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Handler for back navigation
+  const handleBack = () => {
+    if (step === 2) {
+      setStep(1); // Return to service selection
+      window.scrollTo(0, 0);
+    } else {
+      router.push("/my-assessments"); // Exit to assessments list
+    }
+  };
 
   return (
-    // bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5]
     <Layout>
-      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-white px-4 py-16 text-center">
+      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-white px-4 py-8 text-center sm:py-16">
         <div className="z-10 container flex w-full flex-col items-center">
-          {recordToShow && <AssessmentDetails record={recordToShow} />}
+          {step === 1 && (
+            <AssessStep3
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              onBack={handleBack}
+              onNext={handleNext}
+              setSelectedService={setSelectedService}
+              priceLockExpiresAt={mockRecords.priceLockExpiresAt}
+            />
+          )}
+
+          {step === 2 && (
+            <AssessStep4
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              selectedService={selectedService}
+              onBack={handleBack}
+            />
+          )}
         </div>
       </main>
     </Layout>

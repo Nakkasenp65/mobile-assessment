@@ -1,3 +1,4 @@
+// src/app/assess/components/(step3)/(services)/MaintenanceService.tsx
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -6,7 +7,7 @@ import { Wrench, Loader2, CheckCircle2 } from "lucide-react";
 import { DeviceInfo } from "../../../../../types/device";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { RepairItem } from "@/hooks/useRepairPrices";
-import { cn } from "@/lib/utils"; // CHIRON: Import `cn` utility สำหรับการจัดการ class แบบมีเงื่อนไข
+import { cn } from "@/lib/utils";
 import { Button } from "../../../../../components/ui/button";
 
 interface MaintenanceServiceProps {
@@ -19,9 +20,8 @@ interface MaintenanceServiceProps {
 const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoading }) => {
   const [selectedRepairs, setSelectedRepairs] = useState<RepairItem[]>([]);
 
-  // ✨ [แก้ไข] รับ event (e) เข้ามาและสั่ง e.stopPropagation()
   const handleToggleSelection = (e: React.MouseEvent<HTMLButtonElement>, repair: RepairItem) => {
-    e.stopPropagation(); // <--- หยุด event ไม่ให้ลอยขึ้นไป
+    e.stopPropagation();
     setSelectedRepairs((currentSelected) => {
       const isAlreadySelected = currentSelected.some((r) => r.part === repair.part);
       if (isAlreadySelected) {
@@ -60,7 +60,6 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
             return (
               <motion.button
                 key={repair.part}
-                // ✨ [แก้ไข] ส่ง event (e) เข้าไปใน function ด้วย
                 onClick={(e) => handleToggleSelection(e, repair)}
                 className={cn(
                   "relative flex w-full cursor-pointer items-center justify-between rounded-lg border-2 p-3 text-left transition-all duration-200",
@@ -99,7 +98,6 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
                   >
                     ฿{repair.cost.toLocaleString()}
                   </span>
-                  {/* CHIRON: แสดงสถานะการเลือกที่ชัดเจนด้วย Icon */}
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-300 dark:border-zinc-600">
                     <AnimatePresence>
                       {isSelected && (
@@ -146,6 +144,10 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
           size="lg"
           className="h-14 w-full bg-gradient-to-br from-stone-400 to-stone-500"
           disabled={selectedRepairs.length === 0}
+          onClick={(e) => {
+            e.stopPropagation();
+            alert("is contacting the maintenance service as a complete log sign for testing");
+          }}
         >
           <Wrench className="mr-2 h-4 w-4" />
           ติดต่องานซ่อม

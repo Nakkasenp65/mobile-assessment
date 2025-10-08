@@ -211,12 +211,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   );
 
   return (
-    <Accordion
-      type="single"
-      collapsible
-      className="w-full overflow-hidden rounded-2xl shadow-sm"
-      defaultValue="details"
-    >
+    <Accordion type="single" collapsible className="w-full overflow-hidden rounded-2xl" defaultValue="details">
       <AccordionItem value="details">
         <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
           <div className="flex w-full flex-col items-start">
@@ -241,7 +236,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
               })}
             </div>
           </div>
-          <div className={`flex flex-col gap-4 border-t pt-4 ${repairs && repairs.length > 0 && "border-b pb-6"}`}>
+          <div className={`flex flex-col gap-4 border-t pt-4 lg:border-b lg:pb-4`}>
             <div className="grid grid-cols-2 gap-3">
               {conditionKeys.map((key) => {
                 const value = allInfo[key as keyof typeof allInfo];

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone, Camera, TrendingUp, Bell, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { DateSelect } from "@/components/ui/date-select";
 
 // Interface for Component Props
 interface ConsignmentServiceProps {
@@ -34,40 +35,31 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
     customerName: "",
     phone: "",
     storeLocation: storeLocations[0],
-    desiredPrice: "",
     additionalNotes: "",
     dropoffDate: "",
     dropoffTime: "",
-    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: string) => {
-    if (field === "phone" || field === "desiredPrice") {
-      const numericValue = value.replace(/[^0-9]/g, "");
+  const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
+    if (field === "phone") {
+      const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
     }
   };
 
-  const { desiredPriceNum, serviceFeeAmount, netAmount } = useMemo(() => {
-    const price = parseFloat(formState.desiredPrice) || consignmentPrice;
-    const fee = price * SERVICE_FEE_RATE;
-    const net = price - fee;
+  const { serviceFeeAmount, netAmount } = useMemo(() => {
+    const fee = consignmentPrice * SERVICE_FEE_RATE;
+    const net = consignmentPrice - fee;
     return {
-      desiredPriceNum: price,
       serviceFeeAmount: fee,
       netAmount: net,
     };
-  }, [formState.desiredPrice, consignmentPrice]);
+  }, [consignmentPrice]);
 
-  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
-    formState.customerName &&
-    formState.phone.length === 10 &&
-    formState.desiredPrice &&
-    formState.dropoffDate &&
-    formState.dropoffTime;
+    formState.customerName && formState.phone.length === 10 && formState.dropoffDate && formState.dropoffTime;
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
@@ -80,34 +72,8 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
   }, []);
 
   return (
-    <main className="w-full space-y-6 pt-4">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mx-4 mb-4 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50/75 to-sky-500/25 p-4"
-      >
-        <ul className="text-cyan-800 dark:text-cyan-200">
-          <li className="flex items-start gap-2">
-            <Camera className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
-            <span>ถ่ายรูปสินค้าแบบมืออาชีพเพื่อดึงดูดลูกค้า</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <TrendingUp className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
-            <span>ทีมการตลาดช่วยโปรโมทในหลายช่องทาง</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Bell className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
-            <span>แจ้งเตือนและรายงานความคืบหน้าสม่ำเสมอ</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
-            <span>คิดค่าบริการก็ต่อเมื่อสินค้าขายได้แล้วเท่านั้น</span>
-          </li>
-        </ul>
-      </motion.div>
-
-      <div className="mt-2 space-y-6 border-t pt-4 dark:border-zinc-700/50">
+    <main className="w-full space-y-6">
+      <div className="mt-2 flex flex-col gap-6 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -157,7 +123,6 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
               <Label htmlFor={`phone-consignment`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-                {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
                 <Input
                   id={`phone-consignment`}
                   type="tel"
@@ -174,21 +139,7 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
           </motion.div>
 
           <motion.div variants={formVariants} className="space-y-4">
-            <Label className="block text-lg font-semibold">ระบุราคาและรายละเอียด</Label>
-
-            <div className="space-y-2">
-              <Label htmlFor={`desiredPrice-consignment`}>ราคาที่ต้องการขาย (บาท)</Label>
-              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" สำหรับข้อมูลการเงิน */}
-              <Input
-                id={`desiredPrice-consignment`}
-                type="text" // เปลี่ยนเป็น text เพื่อการควบคุมที่ดีกว่า
-                inputMode="numeric" // บังคับแป้นพิมพ์ตัวเลข
-                placeholder={`เช่น ${consignmentPrice.toLocaleString("th-TH")}`}
-                value={formState.desiredPrice}
-                onChange={(e) => handleInputChange("desiredPrice", e.target.value)}
-              />
-              <p className="text-muted-foreground text-xs">*ราคาแนะนำจากตลาด: {THB(consignmentPrice)}</p>
-            </div>
+            <Label className="block text-lg font-semibold">รายละเอียดเพิ่มเติม</Label>
 
             <div className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-4 dark:border-cyan-400/30 dark:bg-cyan-400/10">
               <h4 className="mb-3 text-sm font-semibold text-cyan-900 dark:text-cyan-100">
@@ -196,8 +147,8 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-cyan-800 dark:text-cyan-200">ราคาที่ต้องการขาย</span>
-                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">{THB(desiredPriceNum)}</span>
+                  <span className="text-cyan-800 dark:text-cyan-200">ราคาประเมินฝากขาย</span>
+                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">{THB(consignmentPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-cyan-800 dark:text-cyan-200">
@@ -255,18 +206,11 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor={`date-consignment`}>วัน</Label>
-                <Select
+                <DateSelect
                   value={formState.dropoffDate}
                   onValueChange={(value) => handleInputChange("dropoffDate", value)}
-                >
-                  <SelectTrigger id={`date-consignment`} className="w-full">
-                    <SelectValue placeholder="เลือกวัน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">วันนี้</SelectItem>
-                    <SelectItem value="tomorrow">พรุ่งนี้</SelectItem>
-                  </SelectContent>
-                </Select>
+                  className="h-12 w-full"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`time-consignment`}>เวลา</Label>
@@ -274,13 +218,20 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
                   value={formState.dropoffTime}
                   onValueChange={(value) => handleInputChange("dropoffTime", value)}
                 >
-                  <SelectTrigger id={`time-consignment`} className="w-full">
+                  <SelectTrigger id={`time-consignment`} className="h-12 w-full">
                     <SelectValue placeholder="เลือกเวลา" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="11-14">11:00 - 14:00</SelectItem>
-                    <SelectItem value="14-17">14:00 - 17:00</SelectItem>
-                    <SelectItem value="17-20">17:00 - 20:00</SelectItem>
+                    <SelectItem value="11:00">11:00</SelectItem>
+                    <SelectItem value="12:00">12:00</SelectItem>
+                    <SelectItem value="13:00">13:00</SelectItem>
+                    <SelectItem value="14:00">14:00</SelectItem>
+                    <SelectItem value="15:00">15:00</SelectItem>
+                    <SelectItem value="16:00">16:00</SelectItem>
+                    <SelectItem value="17:00">17:00</SelectItem>
+                    <SelectItem value="18:00">18:00</SelectItem>
+                    <SelectItem value="19:00">19:00</SelectItem>
+                    <SelectItem value="20:00">20:00</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -300,11 +251,10 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
           <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
             ยืนยันการฝากขาย
           </FramerButton>
-          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
             การคลิก &quot;ยืนยันการฝากขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
-              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-sky-600 underline hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"

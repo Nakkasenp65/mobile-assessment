@@ -8,6 +8,7 @@ import { RepairItem } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
 import { AnimatePresence } from "framer-motion";
+import { PriceLockCountdown } from "../../../../components/ui/PriceLockCountdown";
 
 interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
@@ -21,6 +22,7 @@ interface AssessmentSummaryProps {
   repairs: RepairItem[];
   totalCost: number;
   isLoadingRepairPrices: boolean;
+  priceLockExpiresAt?: string; // Optional for countdown
 }
 
 const AssessmentSummary = ({
@@ -35,13 +37,14 @@ const AssessmentSummary = ({
   repairs,
   totalCost,
   isLoadingRepairPrices,
+  priceLockExpiresAt,
 }: AssessmentSummaryProps) => {
   const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
 
   return (
     <div className="flex h-fit flex-col gap-4">
       {/* <Star /> */}
-      <div className="flex w-full flex-col gap-2 rounded-2xl border p-4 shadow-sm dark:bg-zinc-800">
+      <div className="flex w-full flex-col gap-1 rounded-2xl border p-4 sm:gap-2 dark:bg-zinc-800">
         <div className="flex items-center justify-start">
           <div className="flex items-center gap-0.5 rounded-full bg-slate-100 p-1 px-1.5 text-xs font-medium text-slate-600">
             <span>รหัสการประเมิน #{mockRecords.id}</span>
@@ -74,7 +77,7 @@ const AssessmentSummary = ({
               </AnimatePresence>
             </div>
 
-            <div className="flex flex-5 flex-col gap-0.5 sm:flex-4 sm:gap-2">
+            <div className="flex flex-5 flex-col items-start gap-0.5 sm:flex-4 sm:gap-2">
               <h3 className="text-foreground text-base font-bold sm:text-lg lg:text-xl">
                 {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
               </h3>
@@ -130,6 +133,10 @@ const AssessmentSummary = ({
                 .-
               </p>
             </div>
+
+            {/* Price Lock Countdown - Apple style compact */}
+            {priceLockExpiresAt && <PriceLockCountdown expiresAt={priceLockExpiresAt} compact className="mt-1 mb-2" />}
+
             <p className="text-muted-foreground text-xs"> {assessmentDate}</p>
           </div>
         )}
@@ -140,7 +147,7 @@ const AssessmentSummary = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="border-border rounded-2xl border shadow-sm"
+        className="border-border rounded-2xl border"
       >
         <AssessmentLedger
           deviceInfo={deviceInfo}

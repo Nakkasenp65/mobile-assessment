@@ -5,6 +5,9 @@
   เพื่อแก้ปัญหา CSS Specificity ที่สไตล์จาก default.css ของ Longdo
   มาทับสไตล์ที่เรากำหนดใน globals.css
 */
+#longdo-address-form-container * {
+  font-family: "LINESeedSansTH", sans-serif !important;
+}
 
 /* --- Main Container Scope --- */
 #longdo-address-form-container form {
@@ -25,7 +28,7 @@
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  border-radius: 0.375rem; /* rounded-md */
+  border-radius: 0.75rem; /* rounded-md */
   border: 1px solid var(--border);
   background-color: var(--card);
   padding: 0.5rem 0.75rem;

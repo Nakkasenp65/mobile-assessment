@@ -17,7 +17,7 @@ export default function ScrollDownIndicator({ targetRef }: ScrollDownIndicatorPr
     if (targetRef.current) {
       const targetTopPosition = targetRef.current.getBoundingClientRect().top;
 
-      if (targetTopPosition - 100 < window.innerHeight) {
+      if (targetTopPosition + 300 < window.innerHeight) {
         setIsVisible(false);
       } else {
         setIsVisible(true);

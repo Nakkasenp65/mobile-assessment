@@ -3,17 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  ArrowUpDown,
-  Banknote,
-  CircleDot,
-  CreditCard,
-  Handshake,
-  LucideIcon,
-  ShoppingBag,
-  TabletSmartphone,
-  Wrench,
-} from "lucide-react";
+import { ArrowUpDown, Banknote, CircleDot, CreditCard, Handshake, LucideIcon, ShoppingBag, Wrench } from "lucide-react";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { Button } from "../../../../components/ui/button";

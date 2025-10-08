@@ -90,7 +90,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
   }, []);
 
   return (
-    <main className="w-full space-y-6 pt-4">
+    <main className="w-full space-y-6">
       {/* Trade-In Value Display */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

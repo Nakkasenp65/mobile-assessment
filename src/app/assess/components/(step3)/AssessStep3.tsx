@@ -82,9 +82,17 @@ interface AssessStep3Props {
   onBack: () => void;
   onNext: () => void;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
+  priceLockExpiresAt?: string; // Optional for price lock countdown
 }
 
-const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedService }: AssessStep3Props) => {
+const AssessStep3 = ({
+  deviceInfo,
+  conditionInfo,
+  onBack,
+  onNext,
+  setSelectedService,
+  priceLockExpiresAt,
+}: AssessStep3Props) => {
   const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
 
   // ✨ 2. สร้าง ref สำหรับอ้างอิงถึง section ของ service
@@ -147,6 +155,7 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
           repairs={repairs}
           totalCost={totalRepairCost}
           isLoadingRepairPrices={isLoadingRepairPrices}
+          priceLockExpiresAt={priceLockExpiresAt}
         />
 
         {/* ✨ 3. เพิ่ม ref และ id ให้กับ div ที่ครอบ Services */}
