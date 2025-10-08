@@ -17,7 +17,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({ isFormComplete, handleConfi
       className="space-y-4 pt-4"
     >
       <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full" onClick={handleConfirmSell}>
-        ยืนยันการขายและรับเงินทันที
+        ยืนยันการขาย
       </FramerButton>
       <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
         การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ

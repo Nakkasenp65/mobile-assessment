@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
+  ArrowUpDown,
   Banknote,
   CircleDot,
   CreditCard,
@@ -187,7 +188,7 @@ export default function Services({
       id: "tradein",
       title: "เทิร์นเครื่อง",
       description: "นำเครื่องเก่ามาแลกเครื่องใหม่คุ้มๆ",
-      icon: TabletSmartphone,
+      icon: ArrowUpDown,
       price: finalPrice,
     },
   ];

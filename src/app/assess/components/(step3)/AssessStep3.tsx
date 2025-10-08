@@ -1,7 +1,7 @@
 // src/app/assess/components/(step3)/AssessStep3.tsx
 
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // ✨ 1. import useRef
 import { ArrowLeft } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
@@ -13,13 +13,7 @@ import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
 import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
 
-interface AssessStep3Props {
-  deviceInfo: DeviceInfo;
-  conditionInfo: ConditionInfo;
-  onBack: () => void;
-  onNext: () => void;
-  setSelectedService: React.Dispatch<React.SetStateAction<string>>;
-}
+// ... (โค้ดส่วน getExpiryDate และ mockRecords ไม่มีการเปลี่ยนแปลง) ...
 
 const getExpiryDate = (days: number): string => {
   const date = new Date();
@@ -82,8 +76,19 @@ const mockRecords: AssessmentRecord = {
   ],
 };
 
+interface AssessStep3Props {
+  deviceInfo: DeviceInfo;
+  conditionInfo: ConditionInfo;
+  onBack: () => void;
+  onNext: () => void;
+  setSelectedService: React.Dispatch<React.SetStateAction<string>>;
+}
+
 const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedService }: AssessStep3Props) => {
   const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+
+  // ✨ 2. สร้าง ref สำหรับอ้างอิงถึง section ของ service
+  const servicesRef = useRef<HTMLDivElement>(null);
 
   const {
     totalRepairCost,
@@ -144,7 +149,8 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
           isLoadingRepairPrices={isLoadingRepairPrices}
         />
 
-        <div className="top-24 flex h-fit flex-col lg:sticky">
+        {/* ✨ 3. เพิ่ม ref และ id ให้กับ div ที่ครอบ Services */}
+        <div ref={servicesRef} id="services-section" className="top-24 flex h-fit flex-col lg:sticky">
           <Services
             selectedService={localSelectedService}
             setSelectedService={setLocalSelectedService}
@@ -169,7 +175,8 @@ const AssessStep3 = ({ deviceInfo, conditionInfo, onBack, onNext, setSelectedSer
         </FramerButton>
       </div>
 
-      <ScrollDownIndicator />
+      {/* ✨ 4. ส่ง ref ที่สร้างไว้ไปยัง ScrollDownIndicator */}
+      <ScrollDownIndicator targetRef={servicesRef} />
     </div>
   );
 };

@@ -40,7 +40,8 @@ const AssessmentSummary = ({
 
   return (
     <div className="flex h-fit flex-col gap-4">
-      <div className="flex w-full flex-col gap-2 rounded-2xl border p-2 shadow-sm sm:p-4 dark:bg-zinc-800">
+      {/* <Star /> */}
+      <div className="flex w-full flex-col gap-2 rounded-2xl border p-4 shadow-sm dark:bg-zinc-800">
         <div className="flex items-center justify-start">
           <div className="flex items-center gap-0.5 rounded-full bg-slate-100 p-1 px-1.5 text-xs font-medium text-slate-600">
             <span>รหัสการประเมิน #{mockRecords.id}</span>
@@ -106,8 +107,9 @@ const AssessmentSummary = ({
         </div>
 
         {isPriceable && (
-          <div className="border-border flex flex-col gap-2 border-t pt-2">
-            <div className="flex items-center justify-between">
+          <div className="border-border flex flex-col items-center gap-2 border-t pt-2">
+            {/* <Star /> */}
+            <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-500/20">
                   <Star className="h-4 w-4 text-rose-500 dark:text-rose-400" />
@@ -115,6 +117,8 @@ const AssessmentSummary = ({
                 <p className="text-foreground font-semibold">ราคาประเมิน</p>
               </div>
             </div>
+
+            {/* <Star /> */}
             <div className="py-2">
               <p className="bg-gradient-to-r from-rose-500 via-pink-600 to-amber-500 bg-clip-text text-center text-5xl font-bold text-transparent">
                 {finalPrice.toLocaleString("th-TH", {
@@ -123,6 +127,7 @@ const AssessmentSummary = ({
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
                 })}
+                .-
               </p>
             </div>
             <p className="text-muted-foreground text-xs"> {assessmentDate}</p>
@@ -130,6 +135,7 @@ const AssessmentSummary = ({
         )}
       </div>
 
+      {/* Ledger Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

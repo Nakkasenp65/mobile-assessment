@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../../LongdoAddressForm";
 import type { LatLng } from "leaflet";
+import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 1. Import Hook ใหม่
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
   ssr: false,
@@ -22,12 +23,7 @@ const LongdoAddressForm = dynamic(() => import("../../LongdoAddressForm"), {
   loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
 });
 
-const btsMrtData = {
-  "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
-  "BTS - สายสีลม": ["สยาม", "ศาลาแดง", "ช่องนนทรี", "สุรศักดิ์", "สะพานตากสิน"],
-  "MRT - สายสีน้ำเงิน": ["สุขุมวิท", "เพชรบุรี", "พระราม 9", "ศูนย์วัฒนธรรมฯ", "สีลม"],
-};
-
+// ✨ 2. ลบ btsMrtData และ storeLocations ที่เป็นข้อมูลเก่าออก
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 interface LocationDetailsProps {
@@ -57,6 +53,9 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   handleAddressChange,
   formVariants,
 }) => {
+  // ✨ 3. เรียกใช้ Hook เพื่อดึงข้อมูล BTS
+  const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
+
   return (
     <AnimatePresence mode="wait">
       {locationType && (
@@ -72,25 +71,25 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
             <motion.div key="home-form" variants={formVariants} className="flex flex-col gap-4">
               <Label className="block text-base font-semibold">ปักหมุดตำแหน่งของคุณ</Label>
               <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
-              <LongdoAddressForm
-                initialData={geocodeData} // ✨ FIX: Removed the incorrect type assertion
-                onAddressChange={handleAddressChange}
-              />
+              <LongdoAddressForm initialData={geocodeData} onAddressChange={handleAddressChange} />
             </motion.div>
           )}
 
           {locationType === "bts" && (
             <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="bts-line-sell">สายรถไฟ BTS/MRT</Label>
-                <Select onValueChange={setSelectedBtsLine}>
+                <Label htmlFor="bts-line-sell">สายรถไฟ</Label>
+                {/* ✨ 4. ใช้ข้อมูลจาก API มาแสดงใน Select */}
+                <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                   <SelectTrigger id="bts-line-sell" className="w-full">
-                    <SelectValue placeholder="เลือกสายรถไฟ" />
+                    <SelectValue
+                      placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(btsMrtData).map((line) => (
-                      <SelectItem key={line} value={line}>
-                        {line}
+                    {btsData?.lines.map((line) => (
+                      <SelectItem key={line.LineId} value={line.LineName_TH}>
+                        {line.LineName_TH}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -103,9 +102,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                     <SelectValue placeholder="เลือกสถานี" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
-                      <SelectItem key={station} value={station}>
-                        {station}
+                    {/* ✨ 5. ใช้ข้อมูลสถานีจาก API ตามสายที่เลือก */}
+                    {(btsData?.stationsByLine[selectedBtsLine] || []).map((station) => (
+                      <SelectItem key={station.StationId} value={station.StationNameTH}>
+                        {station.StationNameTH}
                       </SelectItem>
                     ))}
                   </SelectContent>

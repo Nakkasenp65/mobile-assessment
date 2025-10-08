@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { DateSelect } from "@/components/ui/date-select"; // ✨ 1. Import DateSelect
 
 interface TradeInServiceProps {
   deviceInfo: DeviceInfo;
@@ -45,13 +46,12 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
     color: "",
     appointmentDate: "",
     appointmentTime: "",
-    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: string) => {
-    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์
+  // ✨ 2. อัปเดต Type ของ value ให้รองรับ Date ได้
+  const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
     if (field === "phone") {
-      const numericValue = value.replace(/[^0-9]/g, "");
+      const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
@@ -66,11 +66,10 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
     return {
       newDevicePrice: selectedDevice.price,
       tradeInValue: tradeInPrice,
-      additionalPayment: additionalPrice > 0 ? additionalPrice : 0, // CHIRON: ป้องกันยอดติดลบ
+      additionalPayment: additionalPrice > 0 ? additionalPrice : 0,
     };
   }, [formState.newDevice, tradeInPrice]);
 
-  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
     formState.customerName &&
     formState.phone.length === 10 &&
@@ -158,7 +157,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
           <div className="space-y-2">
             <Label htmlFor="newDevice-tradein">รุ่นเครื่อง</Label>
             <Select value={formState.newDevice} onValueChange={(value) => handleInputChange("newDevice", value)}>
-              <SelectTrigger id="newDevice-tradein" className="w-full">
+              <SelectTrigger id="newDevice-tradein" className="h-12 w-full">
                 <SelectValue placeholder="เลือกเครื่องที่ต้องการ" />
               </SelectTrigger>
               <SelectContent>
@@ -177,7 +176,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             <div className="space-y-2">
               <Label htmlFor="storage-tradein">ความจุ</Label>
               <Select value={formState.storage} onValueChange={(value) => handleInputChange("storage", value)}>
-                <SelectTrigger id="storage-tradein" className="w-full">
+                <SelectTrigger id="storage-tradein" className="h-12 w-full">
                   <SelectValue placeholder="เลือกความจุ" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,7 +191,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             <div className="space-y-2">
               <Label htmlFor="color-tradein">สี</Label>
               <Select value={formState.color} onValueChange={(value) => handleInputChange("color", value)}>
-                <SelectTrigger id="color-tradein" className="w-full">
+                <SelectTrigger id="color-tradein" className="h-12 w-full">
                   <SelectValue placeholder="เลือกสี" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,7 +217,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                 placeholder="กรอกชื่อ-นามสกุล"
                 value={formState.customerName}
                 onChange={(e) => handleInputChange("customerName", e.target.value)}
-                className="pl-10"
+                className="h-12 pl-10"
               />
             </div>
           </div>
@@ -226,7 +225,6 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
             <Label htmlFor="phone-tradein">เบอร์โทรศัพท์ติดต่อ</Label>
             <div className="relative">
               <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-              {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
               <Input
                 id="phone-tradein"
                 type="tel"
@@ -236,7 +234,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                 inputMode="numeric"
                 pattern="[0-9]{10}"
                 maxLength={10}
-                className="pl-10"
+                className="h-12 pl-10"
               />
             </div>
           </div>
@@ -250,7 +248,7 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
               value={formState.storeLocation}
               onValueChange={(value) => handleInputChange("storeLocation", value)}
             >
-              <SelectTrigger id="store-branch-tradein" className="w-full">
+              <SelectTrigger id="store-branch-tradein" className="h-12 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -262,21 +260,15 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
               </SelectContent>
             </Select>
           </div>
+          {/* ✨ 3. แก้ไขส่วนเลือกวันและเวลาทั้งหมด */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date-tradein">วัน</Label>
-              <Select
+              <DateSelect
                 value={formState.appointmentDate}
                 onValueChange={(value) => handleInputChange("appointmentDate", value)}
-              >
-                <SelectTrigger id="date-tradein" className="w-full">
-                  <SelectValue placeholder="เลือกวัน" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">วันนี้</SelectItem>
-                  <SelectItem value="tomorrow">พรุ่งนี้</SelectItem>
-                </SelectContent>
-              </Select>
+                className="h-12 w-full"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="time-tradein">เวลา</Label>
@@ -284,13 +276,20 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
                 value={formState.appointmentTime}
                 onValueChange={(value) => handleInputChange("appointmentTime", value)}
               >
-                <SelectTrigger id="time-tradein" className="w-full">
+                <SelectTrigger id="time-tradein" className="h-12 w-full">
                   <SelectValue placeholder="เลือกเวลา" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="11-14">11:00 - 14:00</SelectItem>
-                  <SelectItem value="14-17">14:00 - 17:00</SelectItem>
-                  <SelectItem value="17-20">17:00 - 20:00</SelectItem>
+                  <SelectItem value="11:00">11:00</SelectItem>
+                  <SelectItem value="12:00">12:00</SelectItem>
+                  <SelectItem value="13:00">13:00</SelectItem>
+                  <SelectItem value="14:00">14:00</SelectItem>
+                  <SelectItem value="15:00">15:00</SelectItem>
+                  <SelectItem value="16:00">16:00</SelectItem>
+                  <SelectItem value="17:00">17:00</SelectItem>
+                  <SelectItem value="18:00">18:00</SelectItem>
+                  <SelectItem value="19:00">19:00</SelectItem>
+                  <SelectItem value="20:00">20:00</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -311,12 +310,11 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
         <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
           ยืนยันการแลกเปลี่ยนเครื่อง
         </FramerButton>
-        {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
           การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
           และยอมรับใน{" "}
           <a
-            href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-amber-600 underline hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"

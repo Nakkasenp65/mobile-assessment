@@ -7,21 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateSelect } from "@/components/ui/date-select"; // ✨ 1. Import DateSelect
 import { DeviceInfo } from "../../../../../types/device";
-import { Store, User, Phone, Train, Repeat, Wallet, Cloud } from "lucide-react";
+import { Store, User, Phone, Train } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 2. Import Hook สำหรับ BTS
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
   deviceInfo: DeviceInfo;
   exchangePrice: number;
 }
-
-const btsMrtData = {
-  "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
-  "BTS - สายสีลม": ["สยาม", "ศาลาแดง", "ช่องนนทรี", "สุรศักดิ์", "สะพานตากสิน"],
-  "MRT - สายสีน้ำเงิน": ["สุขุมวิท", "เพชรบุรี", "พระราม 9", "ศูนย์วัฒนธรรมฯ", "สีลม"],
-};
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 const SERVICE_FEE_RATE = 0.15; // 15%
@@ -37,6 +33,8 @@ const THB = (n: number) =>
 const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServiceProps) => {
   const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
+  const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations(); // ✨ 3. เรียกใช้ Hook
+
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
@@ -44,13 +42,11 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
     storeLocation: storeLocations[0],
     date: "",
     time: "",
-    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
   });
 
   const handleInputChange = (field: keyof typeof formState, value: any) => {
-    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์
     if (field === "phone") {
-      const numericValue = value.replace(/[^0-9]/g, "");
+      const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
@@ -72,7 +68,6 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
     return { feeAmount: fee, netAmount: net };
   }, [exchangePrice]);
 
-  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   const isFormComplete =
     formState.customerName &&
     formState.phone.length === 10 &&
@@ -148,7 +143,7 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
                   placeholder="กรอกชื่อ-นามสกุล"
                   value={formState.customerName}
                   onChange={(e) => handleInputChange("customerName", e.target.value)}
-                  className="pl-10"
+                  className="h-12 pl-10"
                 />
               </div>
             </div>
@@ -156,7 +151,6 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
               <Label htmlFor={`phone-exchange`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-                {/* CHIRON: Structural Engineer - บังคับใช้ "สัญญาอินพุต" ตามกฎที่กำหนด */}
                 <Input
                   id={`phone-exchange`}
                   type="tel"
@@ -166,12 +160,13 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength={10}
-                  className="pl-10"
+                  className="h-12 pl-10"
                 />
               </div>
             </div>
           </motion.div>
 
+          {/* ✨ 4. ส่วนเลือกสถานที่และรายละเอียด (ปรับปรุงใหม่ทั้งหมด) */}
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="mb-3 block text-lg font-semibold">เลือกสถานที่ส่งมอบเครื่อง</Label>
             <div className="grid grid-cols-2 gap-3">
@@ -208,33 +203,35 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
                   {locationType === "bts" && (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor={`bts-line-exchange`}>สายรถไฟ BTS/MRT</Label>
-                        <Select onValueChange={setSelectedBtsLine}>
-                          <SelectTrigger id={`bts-line-exchange`} className="w-full">
-                            <SelectValue placeholder="เลือกสายรถไฟ" />
+                        <Label htmlFor={`bts-line-exchange`}>สายรถไฟ</Label>
+                        <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
+                          <SelectTrigger id={`bts-line-exchange`} className="h-12 w-full">
+                            <SelectValue
+                              placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "ผิดพลาด" : "เลือกสายรถไฟ"}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.keys(btsMrtData).map((line) => (
-                              <SelectItem key={line} value={line}>
-                                {line}
+                            {btsData?.lines.map((line) => (
+                              <SelectItem key={line.LineId} value={line.LineName_TH}>
+                                {line.LineName_TH}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`bts-station-exchange`}>ระบุสถานี</Label>
+                        <Label htmlFor={`bts-station-exchange`}>สถานี</Label>
                         <Select
                           disabled={!selectedBtsLine}
                           onValueChange={(value) => handleInputChange("btsStation", value)}
                         >
-                          <SelectTrigger id={`bts-station-exchange`} className="w-full">
+                          <SelectTrigger id={`bts-station-exchange`} className="h-12 w-full">
                             <SelectValue placeholder="เลือกสถานี" />
                           </SelectTrigger>
                           <SelectContent>
-                            {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
-                              <SelectItem key={station} value={station}>
-                                {station}
+                            {(btsData?.stationsByLine[selectedBtsLine] || []).map((station) => (
+                              <SelectItem key={station.StationId} value={station.StationNameTH}>
+                                {station.StationNameTH}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -250,7 +247,7 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
                         value={formState.storeLocation}
                         onValueChange={(value) => handleInputChange("storeLocation", value)}
                       >
-                        <SelectTrigger id={`store-branch-exchange`} className="w-full">
+                        <SelectTrigger id={`store-branch-exchange`} className="h-12 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -268,31 +265,35 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
             </AnimatePresence>
           </motion.div>
 
+          {/* ✨ 5. ส่วนเลือกวันและเวลา (ปรับปรุงใหม่) */}
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">เลือกวันและเวลานัดหมาย</Label>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor={`date-exchange`}>วัน</Label>
-                <Select onValueChange={(value) => handleInputChange("date", value)}>
-                  <SelectTrigger id={`date-exchange`} className="w-full">
-                    <SelectValue placeholder="เลือกวัน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">วันนี้</SelectItem>
-                    <SelectItem value="tomorrow">พรุ่งนี้</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DateSelect
+                  value={formState.date}
+                  onValueChange={(value) => handleInputChange("date", value)}
+                  className="h-12 w-full"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`time-exchange`}>เวลา</Label>
                 <Select onValueChange={(value) => handleInputChange("time", value)}>
-                  <SelectTrigger id={`time-exchange`} className="w-full">
+                  <SelectTrigger id={`time-exchange`} className="h-12 w-full">
                     <SelectValue placeholder="เลือกเวลา" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="11-14">11:00 - 14:00</SelectItem>
-                    <SelectItem value="14-17">14:00 - 17:00</SelectItem>
-                    <SelectItem value="17-20">17:00 - 20:00</SelectItem>
+                    <SelectItem value="11:00">11:00</SelectItem>
+                    <SelectItem value="12:00">12:00</SelectItem>
+                    <SelectItem value="13:00">13:00</SelectItem>
+                    <SelectItem value="14:00">14:00</SelectItem>
+                    <SelectItem value="15:00">15:00</SelectItem>
+                    <SelectItem value="16:00">16:00</SelectItem>
+                    <SelectItem value="17:00">17:00</SelectItem>
+                    <SelectItem value="18:00">18:00</SelectItem>
+                    <SelectItem value="19:00">19:00</SelectItem>
+                    <SelectItem value="20:00">20:00</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -312,11 +313,10 @@ const IPhoneExchangeService = ({ deviceInfo, exchangePrice }: IPhoneExchangeServ
           <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
             ยืนยันและนัดหมาย
           </FramerButton>
-          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
             การคลิก &quot;ยืนยันและนัดหมาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
-              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-green-600 underline hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
