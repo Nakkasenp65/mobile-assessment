@@ -3,8 +3,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-// Interface สำหรับผลลัพธ์จาก Longdo API
-export interface LongdoGeocodeResult {
+// Interface for the raw data from Longdo API
+interface LongdoApiResponse {
   province: string;
   district: string;
   subdistrict: string;
@@ -13,13 +13,24 @@ export interface LongdoGeocodeResult {
   road?: string;
 }
 
-// Type สำหรับพิกัด
+// Interface for the data structure used in our components
+export interface LongdoGeocodeResult {
+  province: string;
+  district: string;
+  subdistrict: string;
+  postcode: string;
+  address: string; // <-- Added required address field
+  aoi?: string;
+  road?: string;
+}
+
+// Type for coordinates
 interface LatLng {
   lat: number;
   lng: number;
 }
 
-// ฟังก์ชันสำหรับยิง API
+// Function to call the API
 const fetchAddress = async (latLng: LatLng | null): Promise<LongdoGeocodeResult | null> => {
   if (!latLng) {
     return null;
@@ -38,9 +49,14 @@ const fetchAddress = async (latLng: LatLng | null): Promise<LongdoGeocodeResult 
     if (!response.ok) {
       throw new Error("Failed to fetch address from Longdo API");
     }
-    const data: LongdoGeocodeResult = await response.json();
-    console.log("📍 Longdo API Response:", data); // Log ค่าที่ได้จาก API
-    return data;
+    const data: LongdoApiResponse = await response.json();
+    console.log("📍 Longdo API Response:", data); // Log the raw data
+
+    // ✨ **FIX:** Construct the address string from 'aoi' and 'road'
+    const address = `${data.aoi || ""} ${data.road || ""}`.trim();
+
+    // Return the complete object that matches our component's required data structure
+    return { ...data, address };
   } catch (error) {
     console.error("❌ Error fetching Longdo API:", error);
     return null;
@@ -52,8 +68,8 @@ export const useLongdoReverseGeocode = (latLng: LatLng | null) => {
   return useQuery({
     queryKey: ["longdo-geocode", latLng],
     queryFn: () => fetchAddress(latLng),
-    enabled: !!latLng, // Hook จะทำงานก็ต่อเมื่อมีค่า latLng เท่านั้น
-    staleTime: Infinity, // ไม่ต้อง refetch อัตโนมัติ
-    gcTime: 1000 * 60 * 5, // เก็บ cache ไว้ 5 นาที
+    enabled: !!latLng,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 5,
   });
 };
