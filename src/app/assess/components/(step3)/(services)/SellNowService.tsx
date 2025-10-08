@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateSelect } from "@/components/ui/date-select";
 import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Home, Train, Loader2 } from "lucide-react";
-import FramerButton from "@/components/ui/framer/FramerButton";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../LongdoAddressForm";
-
-// ... (Imports อื่นๆ เหมือนเดิม)
 import useLocation from "@/hooks/useLocation";
-import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
 import { useLongdoReverseGeocode } from "@/hooks/useLongdoReverseGeocode";
 import type { LatLng } from "leaflet";
 
@@ -32,12 +29,6 @@ const LongdoAddressForm = dynamic(() => import("../LongdoAddressForm"), {
   loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
 });
 
-// ... (btsMrtData, storeLocations, THB function เหมือนเดิม)
-interface SellNowServiceProps {
-  deviceInfo: DeviceInfo;
-  sellPrice: number;
-}
-
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
   "BTS - สายสีลม": ["สยาม", "ศาลาแดง", "ช่องนนทรี", "สุรศักดิ์", "สะพานตากสิน"],
@@ -47,6 +38,11 @@ const btsMrtData = {
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 const THB = (n: number) => n.toLocaleString("th-TH", { style: "currency", currency: "THB", minimumFractionDigits: 0 });
+
+interface SellNowServiceProps {
+  deviceInfo: DeviceInfo;
+  sellPrice: number;
+}
 
 const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
@@ -65,14 +61,11 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     time: "",
   });
 
-  console.log(formState);
+  console.log("Current form state:", formState);
 
   const { location: initialLocation } = useLocation();
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
   const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
-
-  // ✨ State ใหม่เพื่อรอสัญญาณจาก LongdoAddressForm
-  const [isLongdoFormReady, setIsLongdoFormReady] = useState(false);
 
   useEffect(() => {
     if (initialLocation && !mapCenter) {
@@ -82,78 +75,35 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     }
   }, [initialLocation, mapCenter]);
 
-  // ✨✨✨ useEffect ใหม่: สำหรับจัดการ Two-Way Binding โดยตรง ✨✨✨
-  useEffect(() => {
-    // ถ้าฟอร์มยังไม่พร้อม ก็ไม่ต้องทำอะไร
-    if (!isLongdoFormReady) return;
-
-    // ฟังก์ชันที่จะอ่านค่าจาก DOM แล้วอัปเดต State
-    const handleFormUpdate = () => {
-      const subdistrictEl = document.getElementById("subdistrict") as HTMLSelectElement;
-      const districtEl = document.getElementById("district") as HTMLSelectElement;
-      const provinceEl = document.getElementById("province") as HTMLSelectElement;
-      const postcodeEl = document.getElementById("postal_code") as HTMLInputElement;
-      const addressEl = document.getElementById("etc") as HTMLTextAreaElement;
-
-      setFormState((prev) => ({
-        ...prev,
-        province: provinceEl?.options[provinceEl.selectedIndex]?.text || "",
-        district: districtEl?.options[districtEl.selectedIndex]?.text || "",
-        subdistrict: subdistrictEl?.options[subdistrictEl.selectedIndex]?.text || "",
-        postcode: postcodeEl?.value || "",
-        addressDetails: addressEl?.value || "",
-      }));
-    };
-
-    // ผูก Listener
-    const elementIds = ["province", "district", "subdistrict", "postal_code", "etc"];
-    elementIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        const eventType = el.tagName === "SELECT" ? "change" : "input";
-        el.addEventListener(eventType, handleFormUpdate);
-      }
-    });
-
-    console.log("✅ All event listeners attached by SellNowService.");
-
-    // Cleanup function: สำคัญมาก!
-    return () => {
-      elementIds.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) {
-          const eventType = el.tagName === "SELECT" ? "change" : "input";
-          el.removeEventListener(eventType, handleFormUpdate);
-        }
-      });
-      console.log("✅ All event listeners removed by SellNowService.");
-    };
-  }, [isLongdoFormReady]); // ✨ Effect นี้จะทำงานแค่ครั้งเดียวเมื่อฟอร์มพร้อม
-
   const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
-    if (field === "phone") {
-      setFormState((prev) => ({ ...prev, [field]: (value as string).replace(/[^0-9]/g, "") }));
-    } else {
-      setFormState((prev) => ({ ...prev, [field]: value }));
-    }
+    setFormState((prev) => ({
+      ...prev,
+      [field]: field === "phone" ? (value as string).replace(/[^0-9]/g, "") : value,
+    }));
   };
 
   const handleLocationTypeChange = (newLocationType: "home" | "bts" | "store") => {
     setLocationType(newLocationType);
-    setFormState((prev) => ({
-      ...prev,
-      addressDetails: "",
-      province: "",
-      district: "",
-      subdistrict: "",
-      postcode: "",
-      btsStation: "",
-    }));
-    setSelectedBtsLine("");
   };
 
-  // ✨ handleAddressSelect ไม่ได้ใช้แล้ว สามารถลบออกได้
-  // const handleAddressSelect = ...
+  // ✨ สร้าง Callback function ที่เสถียรด้วย useCallback
+  const handleAddressChange = useCallback((address: LongdoAddressData) => {
+    console.log("🟢 Parent received address update:", address);
+    setFormState((prev) => ({
+      ...prev,
+      province: address.province,
+      district: address.district,
+      subdistrict: address.subdistrict,
+      postcode: address.postcode,
+      addressDetails: address.address,
+    }));
+  }, []);
+
+  const handleConfirmSell = () => {
+    // ✨ ไม่ต้องดึงข้อมูลจาก DOM อีกแล้ว เพราะ State ถูกต้องเสมอ
+    console.log("✅ Final form state on submit:", formState);
+    alert("ข้อมูลถูกส่งแล้ว! (ดูใน Console)");
+  };
 
   const isFormComplete =
     formState.customerName &&
@@ -175,7 +125,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
 
   return (
     <main className="w-full space-y-6 pt-4">
-      {/* ... (JSX ส่วนอื่นๆ เหมือนเดิมทั้งหมด) ... */}
+      {/* ... ส่วน JSX ทั้งหมดข้างบนเหมือนเดิม ไม่ต้องแก้ไข ... */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -274,16 +224,15 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
               >
                 {locationType === "home" && (
                   <motion.div key="home-form" variants={formVariants} className="flex flex-col gap-4">
-                    <LongdoScriptLoader />
                     <Label className="block text-base font-semibold">ปักหมุดตำแหน่งของคุณ</Label>
                     <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
                     <LongdoAddressForm
-                      // ✨ ส่ง onFormReady และ initialData ลงไป
-                      onFormReady={() => setIsLongdoFormReady(true)}
                       initialData={geocodeData as LongdoAddressData | null}
+                      onAddressChange={handleAddressChange}
                     />
                   </motion.div>
                 )}
+                {/* ... ส่วนของ bts และ store เหมือนเดิม ... */}
                 {locationType === "bts" && (
                   <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -346,6 +295,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
           </AnimatePresence>
         </motion.div>
 
+        {/* ... ส่วน JSX ที่เหลือทั้งหมดเหมือนเดิม ไม่ต้องแก้ไข ... */}
         <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
           <Label className="block text-lg font-semibold">เลือกวันและเวลาที่สะดวก</Label>
           <div className="grid grid-cols-2 gap-4">
@@ -405,7 +355,7 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
         animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
         className="space-y-4 pt-4"
       >
-        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full" onClick={handleConfirmSell}>
           ยืนยันการขายและรับเงินทันที
         </FramerButton>
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
