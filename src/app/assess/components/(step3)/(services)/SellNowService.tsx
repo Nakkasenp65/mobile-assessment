@@ -78,7 +78,8 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
     alert("ข้อมูลถูกส่งแล้ว! (ดูใน Console)");
   };
 
-  const isFormComplete =
+  // ✨ FIX: Ensure the final value is always a boolean
+  const isFormComplete = !!(
     formState.customerName &&
     formState.phone.length === 10 &&
     formState.date &&
@@ -88,7 +89,8 @@ const SellNowService = ({ deviceInfo, sellPrice }: SellNowServiceProps) => {
       ? formState.province && formState.addressDetails
       : locationType === "bts"
         ? formState.btsStation
-        : locationType === "store");
+        : locationType === "store")
+  );
 
   const formVariants = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
 
