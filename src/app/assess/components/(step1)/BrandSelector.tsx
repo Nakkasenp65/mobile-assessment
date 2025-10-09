@@ -43,13 +43,14 @@ export default function BrandSelector({
                 backgroundColor: isSelected || isHovered ? brandColor : "transparent",
               }}
               className={cn(
-                "flex aspect-square h-32 w-full flex-col items-center justify-center rounded-sm border p-9 transition-all duration-300",
+                "flex aspect-square h-32 w-full flex-col items-center justify-center rounded-sm border transition-all duration-300",
                 isSelected || isHovered
                   ? "border-transparent shadow-xl"
                   : "border-gray-200 hover:border-transparent hover:shadow-xl",
+                brand.name === "Apple" || brand.name === "Xiaomi" ? "p-10" : "p-7",
               )}
             >
-              <div className="flex h-full w-full items-center justify-center">
+              <div className="flex aspect-square h-full w-auto items-center justify-center">
                 {(brand.logo || brand.import) && (
                   <img
                     src={brand.logo || brand.import}
