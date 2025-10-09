@@ -1,7 +1,6 @@
-// src/app/assess/page.tsx
-
+// SECTION: src/app/assess/page.tsx
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/(step3)/AssessStep3";
@@ -20,6 +19,8 @@ export default function AssessPage() {
     storage: "",
   });
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
+    // ✨ [เพิ่ม] กำหนดค่าเริ่มต้นสำหรับ canUnlockIcloud
+    canUnlockIcloud: true,
     modelType: "",
     warranty: "",
     accessories: "",
@@ -82,10 +83,12 @@ export default function AssessPage() {
       <div className="container mx-auto flex w-full flex-col gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 
-        <div>
+        <div className="">
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
+              // ✨ [แก้ไข] ส่ง conditionInfo และ setConditionInfo ไปยัง Step 1
+              conditionInfo={conditionInfo}
               onDeviceUpdate={handleDeviceUpdate}
               onConditionUpdate={setConditionInfo}
               onUserDeviceUpdate={handleUserDeviceUpdate}

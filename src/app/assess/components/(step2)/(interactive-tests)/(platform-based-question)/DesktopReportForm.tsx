@@ -90,7 +90,7 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
               block: "start",
             });
           }
-        }, 400);
+        }, 100);
       }
     });
 

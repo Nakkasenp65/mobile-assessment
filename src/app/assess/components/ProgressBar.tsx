@@ -6,7 +6,7 @@ interface ProgressBarProps {
 const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   return (
     <div className={`mx-auto w-full max-w-2xl ${currentStep >= 3 && "hidden"}`}>
-      <div className={`flex items-center justify-between md:mb-4`}>
+      <div className={`flex items-center justify-between md:mb-2`}>
         <span className="text-muted-foreground text-sm font-medium">
           ขั้นตอนที่ {currentStep} จาก {totalSteps}
         </span>

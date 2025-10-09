@@ -7,6 +7,7 @@ export interface DeviceInfo {
 }
 
 export interface ConditionInfo {
+  canUnlockIcloud: boolean;
   // ข้อมูลทั่วไป
   modelType: "model_th" | "model_inter_new" | "model_inter_old" | "";
   warranty: "warranty_active_long" | "warranty_active_short" | "warranty_inactive" | "";

@@ -1,7 +1,11 @@
-// src/app/assess/components/(step1)/ModelAndStorageSelector.tsx
+// SECTION: src/app/assess/components/(step1)/ModelAndStorageSelector.tsx
 "use client";
 
-import { DeviceInfo } from "../../../../types/device";
+// ✨ [เพิ่ม] import สิ่งที่จำเป็น
+import { motion, AnimatePresence } from "framer-motion";
+import { LockKeyhole } from "lucide-react";
+import clsx from "clsx";
+import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
@@ -10,6 +14,9 @@ interface ModelAndStorageSelectorProps {
   availableModels: string[];
   availableStorage: string[];
   onSelectChange: (field: keyof DeviceInfo, value: string) => void;
+  // ✨ [เพิ่ม] รับ props สำหรับ condition
+  conditionInfo: ConditionInfo;
+  onConditionUpdate: (updater: (prev: ConditionInfo) => ConditionInfo) => void;
 }
 
 const ModelAndStorageSelector = ({
@@ -17,9 +24,19 @@ const ModelAndStorageSelector = ({
   availableModels,
   availableStorage,
   onSelectChange,
+  // ✨ [เพิ่ม] รับ props ที่เพิ่มเข้ามา
+  conditionInfo,
+  onConditionUpdate,
 }: ModelAndStorageSelectorProps) => {
+  // ✨ [เพิ่ม] Handler สำหรับอัปเดตสถานะ iCloud
+  const handleIcloudToggle = () => {
+    onConditionUpdate((prev) => ({
+      ...prev,
+      canUnlockIcloud: !prev.canUnlockIcloud,
+    }));
+  };
+
   return (
-    // ✨ [แก้ไข] จำกัดความกว้างและจัดกึ่งกลาง
     <div className="flex w-full max-w-2xl flex-col gap-6">
       {/* Model Selection */}
       <div className="grid w-full gap-2">
@@ -74,6 +91,67 @@ const ModelAndStorageSelector = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* ✨ [เพิ่ม] ส่วนของคำถาม iCloud */}
+      <AnimatePresence>
+        {localInfo.brand === "Apple" && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{
+              opacity: 1,
+              height: "auto",
+              y: 0,
+            }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{
+              duration: 0.3,
+              ease: "easeInOut",
+            }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+              <label
+                htmlFor="icloud-toggle"
+                className="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none lg:text-base"
+              >
+                <LockKeyhole className="h-5 w-5 text-gray-500" />
+                สามารถปลดล็อก iCloud ได้
+              </label>
+              <button
+                type="button"
+                id="icloud-toggle"
+                role="switch"
+                aria-checked={conditionInfo.canUnlockIcloud}
+                onClick={handleIcloudToggle}
+                className={clsx(
+                  "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:outline-none",
+                  {
+                    "bg-pink-500": conditionInfo.canUnlockIcloud,
+                    "bg-gray-200": !conditionInfo.canUnlockIcloud,
+                  },
+                )}
+              >
+                <motion.span
+                  aria-hidden="true"
+                  layout
+                  transition={{
+                    type: "spring",
+                    stiffness: 700,
+                    damping: 30,
+                  }}
+                  className={clsx(
+                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                    {
+                      "translate-x-5": conditionInfo.canUnlockIcloud,
+                      "translate-x-0": !conditionInfo.canUnlockIcloud,
+                    },
+                  )}
+                />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

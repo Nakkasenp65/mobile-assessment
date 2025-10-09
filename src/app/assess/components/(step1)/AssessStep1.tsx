@@ -1,4 +1,4 @@
-// src/app/assess/components/(step1)/AssessStep1.tsx
+// SECTION: src/app/assess/components/(step1)/AssessStep1.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -22,23 +22,27 @@ import DeviceImagePreview from "./DeviceImagePreview";
 type StepName = "selectDeviceType" | "selectBrand" | "selectProduct" | "selectModelStorage" | "simpleAssessment";
 
 // --- Helper Components ---
-const StepWrapper: React.FC<{ children: React.ReactNode; title: string; description: string }> = ({
-  children,
-  title,
-  description,
-}) => (
+const StepWrapper: React.FC<{
+  children: React.ReactNode;
+  title: string;
+  description: string;
+  direction: number;
+}> = ({ children, title, description, direction }) => (
   <motion.div
-    initial={{ opacity: 0, x: 30 }}
+    key={title}
+    custom={direction}
+    initial={{ opacity: 0, x: 30 * direction }}
     animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -30 }}
-    transition={{ duration: 0.3, ease: "easeInOut" }}
-    className="absolute flex h-full w-full flex-col"
+    exit={{ opacity: 0, x: -30 * direction }}
+    transition={{ duration: 0.4, ease: "easeInOut" }}
+    // ✨ [แก้ไข] ลบ absolute และ h-full/w-full เพื่อให้ layout เป็นไปตามปกติ
+    className="flex w-full flex-col"
   >
     <div className="mb-8 text-center">
       <h2 className="text-foreground text-2xl font-bold md:text-3xl">{title}</h2>
       <p className="text-muted-foreground text-sm md:text-base">{description}</p>
     </div>
-    <div className="flex flex-1 flex-col">{children}</div>
+    <div className="flex h-max flex-1 flex-col">{children}</div>
   </motion.div>
 );
 
@@ -68,6 +72,7 @@ const NavigationButtons: React.FC<{ onBack?: () => void; onNext: () => void; isN
 // --- Main Component ---
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
+  conditionInfo: ConditionInfo;
   onDeviceUpdate: (info: DeviceInfo) => void;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
@@ -76,6 +81,7 @@ interface AssessStep1Props {
 
 const AssessStep1 = ({
   deviceInfo,
+  conditionInfo,
   onDeviceUpdate,
   onConditionUpdate,
   onNext,
@@ -83,6 +89,7 @@ const AssessStep1 = ({
 }: AssessStep1Props) => {
   const { isDesktop } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
+  const [direction, setDirection] = useState(1);
   const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
@@ -123,10 +130,24 @@ const AssessStep1 = ({
   const handleUserDeviceSelect = (selection: "this_device" | "other_device") => {
     setUserDeviceSelection(selection);
     onUserDeviceUpdate(selection === "this_device");
+    setDirection(1);
     setCurrentStep("selectBrand");
   };
 
+  const handleProductSelectAndNext = (productId: string) => {
+    setDirection(1);
+    handleSelectChange("productType", productId);
+
+    const isDetailed = productId === "iPhone" || productId === "iPad";
+    if (isDetailed) {
+      setCurrentStep("selectModelStorage");
+    } else {
+      setCurrentStep("simpleAssessment");
+    }
+  };
+
   const nextStep = () => {
+    setDirection(1);
     switch (currentStep) {
       case "selectBrand":
         if (localInfo.brand === "Apple") {
@@ -136,12 +157,6 @@ const AssessStep1 = ({
         }
         break;
       case "selectProduct":
-        const isDetailed = localInfo.productType === "iPhone" || localInfo.productType === "iPad";
-        if (isDetailed) {
-          setCurrentStep("selectModelStorage");
-        } else {
-          setCurrentStep("simpleAssessment");
-        }
         break;
       case "selectModelStorage":
       case "simpleAssessment":
@@ -153,6 +168,7 @@ const AssessStep1 = ({
   };
 
   const prevStep = () => {
+    setDirection(-1);
     switch (currentStep) {
       case "selectBrand":
         if (!isDesktop) {
@@ -182,13 +198,22 @@ const AssessStep1 = ({
       case "selectDeviceType":
         if (isDesktop) return null;
         return (
-          <StepWrapper title="ประเมินอุปกรณ์เครื่องใด?" description="เลือกเพื่อดำเนินการในขั้นตอนถัดไป">
+          <StepWrapper
+            title="ประเมินอุปกรณ์เครื่องใด?"
+            description="เลือกเพื่อดำเนินการในขั้นตอนถัดไป"
+            direction={direction}
+          >
             <UserDeviceSelection selectedValue={userDeviceSelection} onSelect={handleUserDeviceSelect} />
           </StepWrapper>
         );
+
       case "selectBrand":
         return (
-          <StepWrapper title="ระบุยี่ห้ออุปกรณ์ของคุณ" description="เลือกยี่ห้อของเครื่องที่ต้องการประเมิน">
+          <StepWrapper
+            title="ระบุยี่ห้ออุปกรณ์ของคุณ"
+            description="เลือกยี่ห้อของเครื่องที่ต้องการประเมิน"
+            direction={direction}
+          >
             <BrandSelector
               selectedBrand={localInfo.brand}
               onBrandChange={(brand) => handleSelectChange("brand", brand)}
@@ -202,25 +227,36 @@ const AssessStep1 = ({
             />
           </StepWrapper>
         );
+
       case "selectProduct":
         return (
           <StepWrapper
             title="เลือกประเภทผลิตภัณฑ์ Apple"
             description="เลือกประเภทของอุปกรณ์ Apple ที่คุณต้องการประเมิน"
+            direction={direction}
           >
             <ProductSelector
               selectedProduct={localInfo.productType || ""}
-              onProductChange={(p) => handleSelectChange("productType", p)}
+              onProductChange={handleProductSelectAndNext}
             />
-            <NavigationButtons onBack={prevStep} onNext={nextStep} isNextDisabled={!localInfo.productType} />
+            <div className="mt-auto flex w-full justify-start pt-6">
+              <FramerButton variant="ghost" onClick={prevStep} className="flex h-12 items-center rounded-full px-6">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                <span className="font-semibold">ย้อนกลับ</span>
+              </FramerButton>
+            </div>
           </StepWrapper>
         );
+
       case "selectModelStorage":
         const availableModels = PHONE_DATA.models[localInfo.productType || localInfo.brand] || [];
         const availableStorage = PHONE_DATA.storage[localInfo.model] || [];
         return (
-          <StepWrapper title="ระบุรุ่นและความจุ" description="ข้อมูลนี้จำเป็นสำหรับการประเมินราคาที่แม่นยำ">
-            {/* ✨ [แก้ไข] เปลี่ยนเป็น flex-col และจัดกึ่งกลางทั้งหมด */}
+          <StepWrapper
+            title="ระบุรุ่นและความจุ"
+            description="ข้อมูลนี้จำเป็นสำหรับการประเมินราคาที่แม่นยำ"
+            direction={direction}
+          >
             <div className="flex flex-col items-center gap-8">
               <DeviceImagePreview
                 isLoading={isImageLoading}
@@ -232,6 +268,8 @@ const AssessStep1 = ({
                 availableModels={availableModels}
                 availableStorage={availableStorage}
                 onSelectChange={handleSelectChange}
+                conditionInfo={conditionInfo}
+                onConditionUpdate={onConditionUpdate}
               />
             </div>
             <NavigationButtons
@@ -241,11 +279,13 @@ const AssessStep1 = ({
             />
           </StepWrapper>
         );
+
       case "simpleAssessment":
         return (
           <StepWrapper
             title="รายละเอียดเพิ่มเติม"
             description={`กรอกรายละเอียดเกี่ยวกับ ${localInfo.productType} ของคุณ`}
+            direction={direction}
           >
             <SimpleAssessmentForm />
             <NavigationButtons
@@ -267,9 +307,8 @@ const AssessStep1 = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
-      <div className="relative" style={{ minHeight: "70vh" }}>
-        <AnimatePresence mode="wait">{renderCurrentStep()}</AnimatePresence>
-      </div>
+      {/* ✨ [แก้ไข] ลบ div ที่ครอบ AnimatePresence ซึ่งเคยมี relative และ min-height */}
+      <AnimatePresence mode="wait">{renderCurrentStep()}</AnimatePresence>
     </motion.div>
   );
 };

@@ -11,6 +11,7 @@ interface PhoneData {
     id: string;
     name: string;
     logo?: string;
+    color?: string;
     import?: string;
     icon?: LucideIcon | IconType;
   }[];
@@ -25,46 +26,55 @@ export const PHONE_DATA: PhoneData = {
       id: "Apple",
       name: "Apple",
       logo: "https://cdn.simpleicons.org/apple/black",
+      color: "bg-[black]",
     },
     {
       id: "Samsung",
       name: "Samsung",
       logo: "https://cdn.simpleicons.org/samsung/black",
+      color: "bg-[#1363DF]",
     },
     {
       id: "Oppo",
       name: "Oppo",
       logo: "https://cdn.simpleicons.org/oppo/black",
+      color: "bg-[#008A45]",
     },
     {
       id: "Vivo",
       name: "Vivo",
       logo: "https://cdn.simpleicons.org/vivo/black",
+      color: "bg-[#415FFF]",
     },
     {
       id: "Xiaomi",
       name: "Xiaomi",
       logo: "https://cdn.simpleicons.org/xiaomi/black",
+      color: "bg-[#FF6900]",
     },
     {
       id: "Redmi",
       name: "Redmi",
       import: "/assets/redmi.svg",
+      color: "bg-[#e61d40]",
     },
     {
       id: "Realme",
       name: "Realme",
       import: "/assets/realme.svg",
+      color: "bg-[#fac91b]",
     },
     {
       id: "Honor",
       name: "Honor",
       logo: "https://cdn.simpleicons.org/Honor/black",
+      color: "bg-[#3bb1ff]",
     },
     {
       id: "Others",
       name: "อื่นๆ",
       icon: Ellipsis,
+      color: "bg-[black]",
     },
   ],
   products: {
