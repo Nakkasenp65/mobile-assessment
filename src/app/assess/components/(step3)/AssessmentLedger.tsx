@@ -231,8 +231,8 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
             <div className="space-y-2 border-t border-slate-100 pt-3">
               {generalInfoKeys.map((key) => {
                 const value = allInfo[key as keyof typeof allInfo];
-                const label = optionsLabelMap[key]?.[value] || value;
-                return <GeneralInfoItem key={key} itemKey={key} label={label} />;
+                const label = optionsLabelMap[key]?.[String(value)] || value;
+                return <GeneralInfoItem key={key} itemKey={key} label={String(label)} />;
               })}
             </div>
           </div>
@@ -240,8 +240,8 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
             <div className="grid grid-cols-2 gap-3">
               {conditionKeys.map((key) => {
                 const value = allInfo[key as keyof typeof allInfo];
-                const label = optionsLabelMap[key]?.[value] || value;
-                return <TestItem key={key} itemKey={key} itemValue={value} label={label} />;
+                const label = optionsLabelMap[key]?.[String(value)] || value;
+                return <TestItem key={key} itemKey={key} itemValue={String(value)} label={String(label)} />;
               })}
             </div>
           </div>

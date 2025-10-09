@@ -130,9 +130,9 @@ export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: Condi
       if (!value) continue;
 
       let impact = 0;
-      let displayValue = TRANSLATION_MAP[value] || value;
+      let displayValue = TRANSLATION_MAP[String(value)] || String(value);
 
-      if (typedKey === "touchScreen" && value.includes("%")) {
+      if (typedKey === "touchScreen" && typeof value === "string" && value.includes("%")) {
         const percentage = parseInt(value, 10);
         const status = percentage >= 90 ? "passed" : "failed";
         impact = status === "passed" ? 0 : CONDITION_ADJUSTMENTS.touchScreen.failed;
@@ -140,7 +140,7 @@ export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: Condi
       } else {
         const adjustmentRule = CONDITION_ADJUSTMENTS[typedKey];
         if (adjustmentRule) {
-          impact = adjustmentRule[value] ?? 0;
+          impact = adjustmentRule[String(value)] ?? 0;
         }
       }
 

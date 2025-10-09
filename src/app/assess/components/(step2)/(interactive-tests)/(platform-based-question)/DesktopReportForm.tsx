@@ -16,12 +16,17 @@ interface DesktopReportFormProps {
   onBack: () => void;
 }
 
-const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBack }: DesktopReportFormProps) => {
+export default function DesktopReportForm({
+  conditionInfo,
+  onConditionUpdate,
+  onComplete,
+  onBack,
+}: DesktopReportFormProps) {
   const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
   const [openSections, setOpenSections] = useState<string[]>(["section-0"]);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // กรองคำถามที่เกี่ยวข้องกับ Platform ที่แสดงผลเท่านั้น
+  // Filter questions relevant to the current platform
   const relevantSections = useMemo(() => {
     const currentPlatform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
     return ASSESSMENT_QUESTIONS.map((section) => ({
@@ -30,27 +35,27 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
     })).filter((section) => section.questions.length > 0);
   }, [isDesktop, isIOS, isAndroid]);
 
-  // ตรวจสอบว่าแต่ละ Section ตอบครบหรือยัง
+  // Check if each section is fully answered
   const isSectionComplete = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
     const requiredQuestions = section.questions.filter((q) => q.type === "choice");
     return requiredQuestions.every((q) => !!conditionInfo[q.id]);
   };
 
-  // ตรวจสอบว่า Section มีคำตอบบางข้อแล้วหรือยัง (สำหรับแสดงสถานะ in-progress)
+  // Check if a section has at least one answer (for in-progress state)
   const isSectionInProgress = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
     const requiredQuestions = section.questions.filter((q) => q.type === "choice");
     return requiredQuestions.some((q) => !!conditionInfo[q.id]);
   };
 
-  // ตรวจสอบว่าตอบคำถามที่แสดงผลครบทุกข้อแล้วหรือยัง
+  // Check if all displayed questions are answered
   const isComplete = useMemo(() => {
     const allRequiredQuestions = relevantSections.flatMap((s) => s.questions.filter((q) => q.type === "choice"));
     return allRequiredQuestions.every((q) => !!conditionInfo[q.id]);
   }, [conditionInfo, relevantSections]);
 
-  // ฟังก์ชันสำหรับอัปเดต State
+  // Function to update state
   const handleUpdate = (questionId: keyof ConditionInfo, value: string) => {
     onConditionUpdate((prev) => ({
       ...prev,
@@ -58,22 +63,20 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
     }));
   };
 
-  // Track previous completion state to detect when section just completed
+  // Track previous completion state to detect when a section is just completed
   const prevCompletionRef = useRef<boolean[]>([]);
 
-  // ตรวจสอบว่า Section เสร็จสิ้นแล้ว และเลื่อนไปยัง Section ถัดไป
+  // Auto-advance to the next section upon completion
   useEffect(() => {
     relevantSections.forEach((section, index) => {
       const complete = isSectionComplete(index);
       const wasComplete = prevCompletionRef.current[index];
       const nextIndex = index + 1;
 
-      // ตรวจสอบว่าเพิ่งเสร็จสิ้น (ไม่ใช่การแก้ไขซ้ำ)
       if (complete && !wasComplete && nextIndex < relevantSections.length) {
         const currentSectionId = `section-${index}`;
         const nextSectionId = `section-${nextIndex}`;
 
-        // ปิด Section ปัจจุบัน และเปิด Section ถัดไป
         setOpenSections((prev) => {
           const filtered = prev.filter((id) => id !== currentSectionId);
           if (!filtered.includes(nextSectionId)) {
@@ -82,14 +85,11 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
           return filtered;
         });
 
-        // Scroll ไปยัง Section ถัดไป
         setTimeout(() => {
           const element = sectionRefs.current[nextIndex];
           if (element) {
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-
             const offsetPosition = elementPosition - 100;
-
             window.scrollTo({
               top: offsetPosition,
               behavior: "smooth",
@@ -99,7 +99,6 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
       }
     });
 
-    // Update previous completion state
     prevCompletionRef.current = relevantSections.map((_, index) => isSectionComplete(index));
   }, [conditionInfo, relevantSections]);
 
@@ -114,7 +113,13 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
         <p className="text-muted-foreground">กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ</p>
       </div>
 
-      <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="flex flex-col gap-4">
+      {/* ✨ [FIX] The `gap-4` class now handles spacing, ensuring consistency. */}
+      <Accordion
+        type="multiple"
+        value={openSections}
+        onValueChange={setOpenSections}
+        className="flex w-full flex-col gap-4"
+      >
         {relevantSections.map((section, sectionIndex) => {
           const isCompleted = isSectionComplete(sectionIndex);
           const inProgress = isSectionInProgress(sectionIndex);
@@ -130,9 +135,9 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
               }}
               className="border-border bg-card rounded-2xl border shadow-sm"
             >
-              <AccordionTrigger className="flex items-center px-4 py-4 hover:no-underline data-[state=open]:mb-8 data-[state=open]:rounded-b-none data-[state=open]:border-b">
+              {/* ✨ [FIX] Removed `data-[state=open]:mb-8` to prevent layout shifts. */}
+              <AccordionTrigger className="flex items-center px-4 py-4 hover:no-underline data-[state=open]:rounded-b-none data-[state=open]:border-b">
                 <div className="flex items-center gap-3">
-                  {/* Status Icon */}
                   {isCompleted ? (
                     <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
                   ) : inProgress ? (
@@ -140,8 +145,6 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
                   ) : (
                     <Circle className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                   )}
-
-                  {/* Section Title */}
                   <div className="flex flex-col items-start gap-1 text-left">
                     <h2 className="text-foreground text-base font-semibold md:text-lg">{section.section}</h2>
                     <p className="text-muted-foreground text-xs md:text-sm">
@@ -155,8 +158,8 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
                 </div>
               </AccordionTrigger>
 
-              <AccordionContent className="px-4 pb-4 md:px-6 md:pb-6">
-                {/* ส่วนที่ 1: Render คำถามแบบ Choice (ถ้ามี) */}
+              {/* ✨ [FIX] Added `pt-4` to the content to create space that was previously handled by the trigger's margin. */}
+              <AccordionContent className="px-4 pt-4 pb-4 md:px-6 md:pb-6">
                 {choiceQuestions.length > 0 && (
                   <div className="divide-border/50 flex flex-col divide-y">
                     {choiceQuestions.map((question) => (
@@ -170,7 +173,6 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
                   </div>
                 )}
 
-                {/* ส่วนที่ 2: Render คำถามแบบ Toggle (ถ้ามี) */}
                 {toggleQuestions.length > 0 && (
                   <>
                     <div className="mt-6 flex items-center gap-3">
@@ -195,7 +197,6 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
         })}
       </Accordion>
 
-      {/* Footer Buttons */}
       <div className="border-border mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
         <FramerButton
           variant="ghost"
@@ -216,6 +217,4 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
       </div>
     </div>
   );
-};
-
-export default DesktopReportForm;
+}

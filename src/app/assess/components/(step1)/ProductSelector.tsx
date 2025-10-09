@@ -33,7 +33,7 @@ const ProductButton = ({
       onClick={onClick}
       // Add tap event handlers
       onTapStart={() => setIsTapping(true)}
-      onTapEnd={() => setIsTapping(false)}
+      onPointerUp={() => setIsTapping(false)}
       // Keep the scale animation on tap
       whileTap={{ scale: 0.95 }}
       transition={{ type: "spring", stiffness: 1000, damping: 30 }}

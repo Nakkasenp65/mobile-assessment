@@ -21,7 +21,7 @@ import DeviceImagePreview from "./DeviceImagePreview";
 // --- Types ---
 type StepName = "selectDeviceType" | "selectBrand" | "selectProduct" | "selectModelStorage" | "simpleAssessment";
 
-// SECTION: Helper Components
+// --- Helper Components ---
 const StepWrapper: React.FC<{
   children: React.ReactNode;
   title: string;
@@ -68,7 +68,7 @@ const NavigationButtons: React.FC<{ onBack?: () => void; onNext: () => void; isN
   </div>
 );
 
-// SECTION: Main Component Props
+// --- Main Component ---
 interface AssessStep1Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
@@ -78,7 +78,6 @@ interface AssessStep1Props {
   onUserDeviceUpdate: (value: boolean) => void;
 }
 
-// SECTION: Main Component
 const AssessStep1 = ({
   deviceInfo,
   conditionInfo,
@@ -87,7 +86,6 @@ const AssessStep1 = ({
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
-  // SECTION: State Management
   const { isDesktop } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
   const [direction, setDirection] = useState(1);
@@ -96,58 +94,36 @@ const AssessStep1 = ({
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
   const initialSetupDone = useRef(false);
 
-  // SECTION: Helper Function - Check URL Parameters
-  const hasRequiredUrlParams = (info: DeviceInfo): boolean => {
-    return !!(info.brand && info.model && info.storage);
-  };
-
-  // SECTION: Sync deviceInfo from props to local state
+  // ✨ [แก้ไข] เพิ่ม useEffect นี้เพื่อ Sync prop `deviceInfo` กับ state `localInfo`
   useEffect(() => {
     setLocalInfo(deviceInfo);
   }, [deviceInfo]);
 
-  // SECTION: Initial Setup for Desktop
   useEffect(() => {
     if (initialSetupDone.current) return;
 
+    const hasUrlParams = !!(deviceInfo.brand && deviceInfo.model && deviceInfo.storage);
+
     if (isDesktop) {
-      // ✨ [Desktop] ตั้งค่าเริ่มต้นว่าเป็นเครื่องคนอื่น
       setUserDeviceSelection("other_device");
       onUserDeviceUpdate(false);
 
-      // ✨ [Desktop] ตรวจสอบว่ามี URL params ครบหรือไม่
-      const hasUrlParams = hasRequiredUrlParams(deviceInfo);
-
       if (hasUrlParams) {
-        // ✨ [Skip] ถ้ามี URL params ครบแล้ว ข้ามไป Step 2 เลย
-        console.log("Desktop: URL params detected, skipping to next step");
         onNext();
       } else {
-        // ✨ [No URL Params] ไม่มี URL params ให้เริ่มที่ selectBrand
-        console.log("Desktop: No URL params, starting from brand selection");
         setCurrentStep("selectBrand");
       }
-
-      initialSetupDone.current = true;
-    } else {
-      // ✨ [Mobile] เริ่มต้นที่ selectDeviceType เสมอ
-      console.log("Mobile: Starting from device type selection");
-      setCurrentStep("selectDeviceType");
       initialSetupDone.current = true;
     }
   }, [isDesktop, onUserDeviceUpdate, deviceInfo, onNext]);
 
-  // SECTION: Sync local info to parent
   useEffect(() => {
     onDeviceUpdate(localInfo);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localInfo]); // ✨ ลบ onDeviceUpdate ออกจาก dependency เพราะ wrap ด้วย useCallback แล้วใน parent
+  }, [localInfo, onDeviceUpdate]);
 
-  // SECTION: Handle Field Changes
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     setLocalInfo((prev) => {
       const newState = { ...prev, [field]: value };
-      // ✨ [Reset] รีเซ็ตค่าที่ขึ้นต่อกันเมื่อเปลี่ยนค่าด้านบน
       if (field === "brand") {
         newState.productType = "";
         newState.model = "";
@@ -164,48 +140,33 @@ const AssessStep1 = ({
     });
   };
 
-  // SECTION: Handle User Device Selection
   const handleUserDeviceSelect = (selection: "this_device" | "other_device") => {
     setUserDeviceSelection(selection);
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
 
-    // ✨ [Check URL Params] ใช้ deviceInfo จาก props เพราะมันได้รับค่าจาก URL แล้ว
-    const hasUrlParams = hasRequiredUrlParams(deviceInfo);
-    console.log("Mobile: Checking URL params after device selection:", {
-      brand: deviceInfo.brand,
-      model: deviceInfo.model,
-      storage: deviceInfo.storage,
-      hasUrlParams,
-    });
+    // ตอนนี้ localInfo จะมีข้อมูลที่อัปเดตจาก URL แล้ว
+    const hasUrlParams = !!(localInfo.brand && localInfo.model && localInfo.storage);
 
     if (hasUrlParams) {
-      // ✨ [Skip] ถ้ามี URL params ครบแล้ว ข้ามไป Step 2 เลย
-      console.log("Mobile: URL params detected, skipping to next step");
       onNext();
     } else {
-      // ✨ [No URL Params] ไม่มี URL params ให้ไปที่ selectBrand
-      console.log("Mobile: No URL params, proceeding to brand selection");
       setCurrentStep("selectBrand");
     }
   };
 
-  // SECTION: Handle Product Selection and Navigate
   const handleProductSelectAndNext = (productId: string) => {
     setDirection(1);
     handleSelectChange("productType", productId);
 
-    // ✨ [Detailed Assessment] iPhone และ iPad ต้องเลือก Model และ Storage
     const isDetailed = productId === "iPhone" || productId === "iPad";
     if (isDetailed) {
       setCurrentStep("selectModelStorage");
     } else {
-      // ✨ [Simple Assessment] อุปกรณ์อื่นๆ ใช้แบบฟอร์มง่าย
       setCurrentStep("simpleAssessment");
     }
   };
 
-  // SECTION: Navigate to Next Step
   const nextStep = () => {
     setDirection(1);
     switch (currentStep) {
@@ -217,11 +178,9 @@ const AssessStep1 = ({
         }
         break;
       case "selectProduct":
-        // ✨ [Product Selected] จะถูกจัดการโดย handleProductSelectAndNext
         break;
       case "selectModelStorage":
       case "simpleAssessment":
-        // ✨ [Complete] ไป Step 2
         onNext();
         break;
       default:
@@ -229,7 +188,6 @@ const AssessStep1 = ({
     }
   };
 
-  // SECTION: Navigate to Previous Step
   const prevStep = () => {
     setDirection(-1);
     switch (currentStep) {
@@ -256,10 +214,8 @@ const AssessStep1 = ({
     }
   };
 
-  // SECTION: Render Current Step
   const renderCurrentStep = () => {
     switch (currentStep) {
-      // SECTION: Step - Device Type Selection (Mobile Only)
       case "selectDeviceType":
         if (isDesktop) return null;
         return (
@@ -272,7 +228,6 @@ const AssessStep1 = ({
           </StepWrapper>
         );
 
-      // SECTION: Step - Brand Selection
       case "selectBrand":
         return (
           <StepWrapper
@@ -294,7 +249,6 @@ const AssessStep1 = ({
           </StepWrapper>
         );
 
-      // SECTION: Step - Product Selection (Apple Only)
       case "selectProduct":
         return (
           <StepWrapper
@@ -315,7 +269,6 @@ const AssessStep1 = ({
           </StepWrapper>
         );
 
-      // SECTION: Step - Model and Storage Selection
       case "selectModelStorage":
         const availableModels = PHONE_DATA.models[localInfo.productType || localInfo.brand] || [];
         const availableStorage = PHONE_DATA.storage[localInfo.model] || [];
@@ -348,7 +301,6 @@ const AssessStep1 = ({
           </StepWrapper>
         );
 
-      // SECTION: Step - Simple Assessment Form (Non-iPhone/iPad)
       case "simpleAssessment":
         return (
           <StepWrapper
@@ -369,7 +321,6 @@ const AssessStep1 = ({
     }
   };
 
-  // SECTION: Component Render
   return (
     <motion.div
       className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl p-2 md:p-6"

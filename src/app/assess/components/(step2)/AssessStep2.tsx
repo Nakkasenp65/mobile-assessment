@@ -146,7 +146,7 @@ const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack, isOwnDe
   const showFullReport = isDesktop || !isOwnDevice;
 
   return (
-    <div className="md:border-border mx-auto flex max-w-2xl flex-col rounded-xl md:p-2">
+    <div className="md:border-border flex flex-1 flex-col items-center justify-center rounded-xl md:p-2">
       {/* แจ้งเตือนอนุญาตการใช้ ไมโครโฟนและกล้อง */}
       <PermissionPrompt
         open={showPermissionPrompt}
@@ -162,6 +162,7 @@ const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack, isOwnDe
           animate="center"
           exit="exit"
           transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="w-full"
         >
           {/* (ถามทุกแพลตฟอร์ม) เลือกตอบ */}
           {currentSubStep === "physical" && (

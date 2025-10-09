@@ -44,6 +44,7 @@ const mockRecords: AssessmentRecord = {
     homeButton: "home_button_ok",
     sensor: "sensor_ok",
     buttons: "buttons_ok",
+    canUnlockIcloud: true,
   },
   pawnServiceInfo: {
     customerName: "นางสาวสายฟ้า สมสุข",
