@@ -24,7 +24,6 @@ const DeviceImagePreview = ({ imageUrl, altText, isLoading }: DeviceImagePreview
               style={{ objectFit: "contain" }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority
-              className="p-4"
             />
           ) : (
             <div className="text-muted-foreground flex h-full w-full items-center justify-center text-center text-sm">

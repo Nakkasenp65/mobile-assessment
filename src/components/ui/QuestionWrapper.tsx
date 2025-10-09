@@ -1,8 +1,8 @@
 "use client";
 
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
-import { Question, Platform } from "@/util/info";
-import { ConditionInfo } from "../../types/device";
+import { Question, Platform } from "@/util/info"; // ตรวจสอบ Path ให้ถูกต้อง
+import { ConditionInfo } from "../../types/device"; // ตรวจสอบ Path ให้ถูกต้อง
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -13,52 +13,77 @@ interface QuestionWrapperProps {
   onConditionUpdate: (questionId: keyof ConditionInfo, value: string) => void;
 }
 
+// --- คอมโพเนนต์ย่อยสำหรับ Choice Input (ไม่มีการเปลี่ยนแปลง) ---
 const ChoiceInput = ({ question, currentValue, onSelect }) => (
-  <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-    {question.options.map((option) => (
-      // ส่วนปุ่ม
-      <button
-        key={option.id}
-        type="button"
-        onClick={() => onSelect(option.id)}
-        className={cn(
-          "flex h-20 items-center justify-center rounded-2xl border-1 transition-all",
-          currentValue === option.id
-            ? "border-primary bg-primary/10 ring-primary ring-2"
-            : "hover:border-primary/30 bg-orange-500/5",
-        )}
-      >
-        {/* ส่วน icon + label */}
-        <div className="flex flex-col items-center gap-2">
-          {option.icon && (
-            <option.icon className={`h-6 w-6 ${currentValue === option.id ? "text-orange-500" : "text-gray-600"}`} />
+  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+    {question.options.map((option) => {
+      const isSelected = currentValue === option.id;
+      return (
+        <motion.button
+          key={option.id}
+          type="button"
+          onClick={() => onSelect(option.id)}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          className={cn(
+            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium transition-all duration-200",
+            isSelected
+              ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+              : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
           )}
-          <span className="text-xs sm:font-bold">{option.label}</span>
-        </div>
-      </button>
-    ))}
+        >
+          {option.icon && <option.icon className="h-6 w-6" />}
+          <span className="font-semibold">{option.label}</span>
+        </motion.button>
+      );
+    })}
   </div>
 );
 
+// --- ✨ [แก้ไข] คอมโพเนนต์ย่อยสำหรับ Toggle Input กลับไปใช้ดีไซน์วงกลม + สีใหม่ ---
 const ToggleInput = ({ question, currentValue, onToggle }) => {
-  const isProblem = currentValue === question.options[1].id;
+  const isProblem = currentValue === question.options[1].id; // สมมติว่าตัวเลือกที่ 2 คือ "มีปัญหา"
   const Icon = question.icon;
 
   return (
-    <motion.button onClick={onToggle} whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-2">
+    <motion.button
+      onClick={onToggle}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+      // Container หลัก จัดวาง ไอคอนวงกลม และ ข้อความ ในแนวตั้ง
+      className="flex flex-col items-center justify-center gap-2 text-center"
+    >
+      {/* ส่วนของวงกลม */}
       <div
         className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors",
-          isProblem ? "border-primary/20 bg-primary/10" : "border-gray-300 bg-white",
+          "flex h-14 w-14 items-center justify-center rounded-full border transition-all duration-500",
+          isProblem
+            ? // สไตล์เมื่อถูกเลือก: พื้นหลัง primary, ไม่มีเส้นขอบ
+              "bg-primary shadow-primary/30 border-transparent shadow-lg"
+            : // สไตล์ปกติ: พื้นหลัง card, มีเส้นขอบ
+              "bg-card border-border",
         )}
       >
-        <Icon className={cn("h-6 w-6", isProblem ? "text-primary" : "text-gray-500")} />
+        {/* ไอคอนข้างในวงกลม */}
+        {Icon && (
+          <Icon
+            className={cn(
+              "h-7 w-7 transition-colors duration-100",
+              // เมื่อถูกเลือก ไอคอนเป็นสีขาว (primary-foreground), ปกติเป็นสีเทา
+              isProblem ? "text-primary-foreground" : "text-muted-foreground",
+            )}
+          />
+        )}
       </div>
-      <span className="w-max truncate px-1 text-xs">{question.question}</span>
+      {/* ข้อความข้างนอกวงกลม */}
+      <span className="w-max px-1 text-xs font-bold">{question.question}</span>
     </motion.button>
   );
 };
 
+// --- คอมโพเนนต์หลัก (ไม่มีการเปลี่ยนแปลง) ---
 const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: QuestionWrapperProps) => {
   const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
   const currentPlatform: Platform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
@@ -68,34 +93,36 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
   }
 
   const handleChange = (value: string) => {
-    onConditionUpdate(question.id, value);
+    onConditionUpdate(question.id as keyof ConditionInfo, value);
   };
 
   const handleToggle = () => {
-    const currentValue = conditionInfo[question.id] as string;
+    const currentValue = conditionInfo[question.id as keyof ConditionInfo] as string;
     const okValue = question.options[0].id;
     const problemValue = question.options[1].id;
     const newValue = currentValue === problemValue ? okValue : problemValue;
-    onConditionUpdate(question.id, newValue);
+    onConditionUpdate(question.id as keyof ConditionInfo, newValue);
   };
 
   switch (question.type) {
-    // แบบ choice เลือกตอบ
     case "choice":
       return (
         <div className="py-4 first:pt-0">
-          <h3 className="text-foreground mb-3 font-semibold">{question.question}</h3>
+          <h3 className="text-foreground mb-3 text-base font-semibold md:text-lg">{question.question}</h3>
           <ChoiceInput
             question={question}
-            currentValue={conditionInfo[question.id] as string}
+            currentValue={conditionInfo[question.id as keyof ConditionInfo] as string}
             onSelect={handleChange}
           />
         </div>
       );
-    // แบบปุ่มกดเปิดปิด
     case "toggle":
       return (
-        <ToggleInput question={question} currentValue={conditionInfo[question.id] as string} onToggle={handleToggle} />
+        <ToggleInput
+          question={question}
+          currentValue={conditionInfo[question.id as keyof ConditionInfo] as string}
+          onToggle={handleToggle}
+        />
       );
     default:
       return null;
