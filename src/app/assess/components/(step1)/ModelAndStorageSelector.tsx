@@ -152,6 +152,19 @@ const ModelAndStorageSelector = ({
           </motion.div>
         )}
       </AnimatePresence>
+      {/* ✨ [เพิ่ม] ข้อความแจ้งเรื่องข้อตกลงและเงื่อนไข */}
+      <p className="mt-4 text-center text-xs text-gray-500">
+        เมื่อเริ่มประเมินถือว่าท่านได้ยอมรับ{" "}
+        <a
+          href="/terms-and-conditions"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-pink-600 underline hover:text-pink-700"
+        >
+          ข้อตกลงและเงื่อนไข
+        </a>{" "}
+        การใช้บริการ
+      </p>
     </div>
   );
 };

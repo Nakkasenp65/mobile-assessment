@@ -43,103 +43,124 @@ const AssessmentSummary = ({
 
   return (
     <div className="flex h-fit flex-col gap-4">
-      {/* <Star /> */}
-      <div className="flex w-full flex-col gap-1 rounded-2xl border p-4 sm:gap-2 dark:bg-zinc-800">
-        <div className="flex items-center justify-start">
-          <div className="flex items-center gap-0.5 rounded-full bg-slate-100 p-1 px-1.5 text-xs font-medium text-slate-600">
+      {/* Assessment Summary - Redesigned */}
+      <div className="flex w-full flex-col overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+        {/* Header Section with Assessment ID */}
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 px-5 py-3 dark:from-zinc-800 dark:to-zinc-800/50">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm dark:bg-zinc-700/80 dark:text-zinc-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
             <span>รหัสการประเมิน #{mockRecords.id}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center gap-1">
-            <div className="flex h-16 w-16 flex-1 flex-shrink-0 items-center justify-center dark:bg-zinc-700">
-              <AnimatePresence mode="wait">
-                {isImageLoading ? (
-                  <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-                  </motion.div>
-                ) : mobileData?.image_url ? (
-                  <motion.div key="image" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                    <Image
-                      src={mobileData.image_url}
-                      alt={deviceInfo.model}
-                      width={56}
-                      height={56}
-                      className="h-full w-full object-cover"
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div key="no-image" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <ImageOff className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
-                  </motion.div>
+        {/* Main Content Section */}
+        <div className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            {/* Left: Device Info */}
+            <div className="flex flex-1 items-start gap-4">
+              {/* Device Image with refined styling */}
+              <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200/50 shadow-sm dark:from-zinc-800 dark:to-zinc-700/50">
+                <AnimatePresence mode="wait">
+                  {isImageLoading ? (
+                    <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <div className="h-7 w-7 animate-spin rounded-full border-3 border-gray-300 border-t-blue-500 dark:border-zinc-600 dark:border-t-blue-400" />
+                    </motion.div>
+                  ) : mobileData?.image_url ? (
+                    <motion.div
+                      key="image"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative h-full w-full"
+                    >
+                      <Image
+                        src={mobileData.image_url}
+                        alt={deviceInfo.model}
+                        width={80}
+                        height={80}
+                        className="h-full w-full object-contain p-2"
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="no-image" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <ImageOff className="h-10 w-10 text-gray-300 dark:text-zinc-600" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Device Details */}
+              <div className="flex flex-col gap-2">
+                <h3 className="text-foreground text-lg leading-tight font-bold sm:text-xl">
+                  {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
+                </h3>
+                {deviceInfo.storage && (
+                  <div className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    <CardSim className="h-3.5 w-3.5" />
+                    <span>{deviceInfo.storage}</span>
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
-
-            <div className="flex flex-5 flex-col items-start gap-0.5 sm:flex-4 sm:gap-2">
-              <h3 className="text-foreground text-base font-bold sm:text-lg lg:text-xl">
-                {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
-              </h3>
-              {deviceInfo.storage && (
-                <span className="font inline-flex w-max items-center gap-0.5 rounded-lg bg-slate-100 px-1 py-0.5 text-xs text-slate-600 dark:bg-zinc-700 dark:text-zinc-300">
-                  <CardSim className="h-3.5 w-3.5" />
-                  {deviceInfo.storage}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {isPriceable && (
-            <div className="pr-1">
-              <motion.span
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: 0.2,
-                }}
-                className="text-6xl font-black text-green-500"
-              >
-                {grade}
-              </motion.span>
-            </div>
-          )}
-        </div>
-
-        {isPriceable && (
-          <div className="border-border flex flex-col items-center gap-2 border-t pt-2">
-            {/* <Star /> */}
-            <div className="flex w-full items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-500/20">
-                  <Star className="h-4 w-4 text-rose-500 dark:text-rose-400" />
-                </div>
-                <p className="text-foreground font-semibold">ราคาประเมิน</p>
               </div>
             </div>
 
-            {/* <Star /> */}
-            <div className="py-2">
-              <p className="bg-gradient-to-r from-rose-500 via-pink-600 to-amber-500 bg-clip-text text-center text-5xl font-bold text-transparent">
-                {finalPrice.toLocaleString("th-TH", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-                .-
-              </p>
-            </div>
-
-            {/* Price Lock Countdown - Apple style compact */}
-            {priceLockExpiresAt && <PriceLockCountdown expiresAt={priceLockExpiresAt} compact className="mt-1 mb-2" />}
-
-            <p className="text-muted-foreground text-xs"> {assessmentDate}</p>
+            {/* Right: Grade Badge */}
+            {isPriceable && (
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15,
+                  delay: 0.2,
+                }}
+                className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm dark:from-green-900/20 dark:to-emerald-900/20"
+              >
+                <span className="text-5xl font-black text-green-600 dark:text-green-400">{grade}</span>
+              </motion.div>
+            )}
           </div>
-        )}
+
+          {/* Price Section */}
+          {isPriceable && (
+            <div className="mt-6 space-y-4">
+              {/* Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-zinc-700" />
+
+              {/* Price Label */}
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-muted-foreground text-sm font-medium">ราคาประเมิน</p>
+              </div>
+
+              {/* Price Display - Refined gradient */}
+              <div className="relative py-2">
+                <motion.p
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                  className="bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent sm:text-6xl"
+                >
+                  {finalPrice.toLocaleString("th-TH", {
+                    style: "currency",
+                    currency: "THB",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}
+                </motion.p>
+              </div>
+
+              {/* Price Lock Countdown */}
+              {priceLockExpiresAt && (
+                <div className="flex justify-center">
+                  <PriceLockCountdown expiresAt={priceLockExpiresAt} compact />
+                </div>
+              )}
+
+              {/* Assessment Date */}
+              <p className="text-muted-foreground text-center text-xs font-medium">{assessmentDate}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Ledger Section */}

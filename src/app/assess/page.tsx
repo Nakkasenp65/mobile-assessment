@@ -1,6 +1,7 @@
 // SECTION: src/app/assess/page.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
 import AssessStep3 from "./components/(step3)/AssessStep3";
@@ -10,6 +11,7 @@ import Layout from "@/components/Layout/Layout";
 import { ConditionInfo, DeviceInfo } from "../../types/device";
 
 export default function AssessPage() {
+  // SECTION: State Management
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
@@ -19,7 +21,6 @@ export default function AssessPage() {
     storage: "",
   });
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
-    // ✨ [เพิ่ม] กำหนดค่าเริ่มต้นสำหรับ canUnlockIcloud
     canUnlockIcloud: true,
     modelType: "",
     warranty: "",
@@ -41,9 +42,39 @@ export default function AssessPage() {
     buttons: "",
   });
   const [selectedService, setSelectedService] = useState<string>("");
+  const searchParams = useSearchParams();
 
+  // SECTION: Handle URL Parameters
+  useEffect(() => {
+    const brand = searchParams.get("brand");
+    const productType = searchParams.get("productType"); // ✨ [เพิ่ม] ดึงค่า productType
+    const model = searchParams.get("model");
+    const capacity = searchParams.get("capacity");
+    const isIcloudUnlock = searchParams.get("isIcloudUnlock");
+
+    if (brand || productType || model || capacity || isIcloudUnlock) {
+      console.log("Parameters from URL:");
+      console.log({ brand, productType, model, capacity, isIcloudUnlock });
+
+      setDeviceInfo((prev) => ({
+        ...prev,
+        brand: brand || prev.brand,
+        productType: productType || prev.productType, // ✨ [เพิ่ม] ตั้งค่า productType
+        model: model || prev.model,
+        storage: capacity || prev.storage,
+      }));
+
+      if (isIcloudUnlock !== null) {
+        setConditionInfo((prev) => ({
+          ...prev,
+          canUnlockIcloud: isIcloudUnlock === "true",
+        }));
+      }
+    }
+  }, [searchParams]);
+
+  // SECTION: Navigation Handlers
   const handleNext = () => {
-    // Skip to step 3 for non-phone/tablet Apple products
     if (
       currentStep === 1 &&
       deviceInfo.brand === "Apple" &&
@@ -57,7 +88,6 @@ export default function AssessPage() {
   };
 
   const handleBack = () => {
-    // Handle skipping back from step 3 for non-phone/tablet Apple products
     if (
       currentStep === 3 &&
       deviceInfo.brand === "Apple" &&
@@ -70,6 +100,7 @@ export default function AssessPage() {
     }
   };
 
+  // SECTION: State Update Handlers
   const handleDeviceUpdate = (info: DeviceInfo) => {
     setDeviceInfo(info);
   };
@@ -78,16 +109,16 @@ export default function AssessPage() {
     setIsUserDevice(value);
   };
 
+  // SECTION: Render Component
   return (
     <Layout>
       <div className="container mx-auto flex w-full flex-col gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 
-        <div className="">
+        <div className="flex flex-col">
           {currentStep === 1 && (
             <AssessStep1
               deviceInfo={deviceInfo}
-              // ✨ [แก้ไข] ส่ง conditionInfo และ setConditionInfo ไปยัง Step 1
               conditionInfo={conditionInfo}
               onDeviceUpdate={handleDeviceUpdate}
               onConditionUpdate={setConditionInfo}

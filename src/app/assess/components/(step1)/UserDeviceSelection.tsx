@@ -15,17 +15,6 @@ interface UserDeviceSelectionProps {
   onSelect: (selection: Selection) => void;
 }
 
-const imageVariants = {
-  initial: {
-    scale: 1,
-    transition: { type: "spring", stiffness: 400, damping: 15 },
-  },
-  hover: {
-    scale: 1.1, // ขยาย 10%
-    transition: { type: "spring", stiffness: 400, damping: 15 },
-  },
-};
-
 // Reusable OptionCard component for a cleaner structure
 const OptionCard = ({
   value,
@@ -69,7 +58,7 @@ const OptionCard = ({
 );
 
 const UserDeviceSelection = ({ selectedValue, onSelect }: UserDeviceSelectionProps) => (
-  <div className="flex h-full flex-col items-center justify-center gap-8 px-4 sm:flex-row sm:items-stretch">
+  <div className="flex h-full flex-col items-center justify-center gap-8 sm:flex-row sm:items-stretch">
     <OptionCard
       value="this_device"
       title="ที่กำลังใช้อยู่"

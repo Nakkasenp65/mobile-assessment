@@ -84,13 +84,18 @@ const DesktopReportForm = ({ conditionInfo, onConditionUpdate, onComplete, onBac
 
         // Scroll ไปยัง Section ถัดไป
         setTimeout(() => {
-          if (sectionRefs.current[nextIndex]) {
-            sectionRefs.current[nextIndex]?.scrollIntoView({
+          const element = sectionRefs.current[nextIndex];
+          if (element) {
+            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+
+            const offsetPosition = elementPosition - 100;
+
+            window.scrollTo({
+              top: offsetPosition,
               behavior: "smooth",
-              block: "start",
             });
           }
-        }, 100);
+        }, 300);
       }
     });
 
