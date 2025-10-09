@@ -1,3 +1,4 @@
+// src/hooks/usePriceCalculation.ts
 "use client";
 
 import { useMemo } from "react";
@@ -23,7 +24,10 @@ const STORAGE_ADJUSTMENTS: Record<string, number> = {
   "1 TB": 10000,
 };
 
-const CONDITION_ADJUSTMENTS: Record<string, Record<string, number>> = {
+const CONDITION_ADJUSTMENTS: Record<string, Record<string, number | boolean>> = {
+  // [เพิ่ม] เพิ่มกฎสำหรับการหักเงินกรณีติด iCloud
+  // กำหนดค่าหักล้างราคาทั้งหมด (ใช้ตัวเลขสูงๆ ไปเลย)
+  canUnlockIcloud: { true: 0, false: -100000 },
   screenGlass: { passed: 0, failed: -1500, defect: -5000 },
   screenDisplay: { passed: 0, failed: -3000, defect: -8000 },
   powerOn: { passed: 0, failed: -4000 },
@@ -44,6 +48,9 @@ const CONDITION_ADJUSTMENTS: Record<string, Record<string, number>> = {
 };
 
 const TRANSLATION_MAP: Record<string, string> = {
+  // [เพิ่ม] เพิ่มการแปลค่า true/false เป็นภาษาไทย
+  true: "ทำได้",
+  false: "ทำไม่ได้",
   perfect: "สมบูรณ์แบบ",
   failed: "มีปัญหาเล็กน้อย",
   defect: "มีตำหนิ/เสีย",
@@ -63,6 +70,8 @@ const TRANSLATION_MAP: Record<string, string> = {
 };
 
 const LABEL_MAP: Record<string, string> = {
+  // [เพิ่ม] เพิ่ม Label สำหรับ canUnlockIcloud
+  canUnlockIcloud: "ปลดล็อก iCloud",
   brand: "ยี่ห้อ",
   model: "รุ่น",
   storage: "ความจุ",
@@ -127,7 +136,9 @@ export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: Condi
       const value = allInfo[typedKey];
       const label = LABEL_MAP[typedKey];
 
-      if (!value) continue;
+      // [แก้ไข] เปลี่ยนเงื่อนไขการตรวจสอบค่า
+      // ให้ข้ามเฉพาะค่าที่เป็น null, undefined หรือ "" แต่ยังคงทำงานกับค่า false
+      if (value === null || value === undefined || value === "") continue;
 
       let impact = 0;
       let displayValue = TRANSLATION_MAP[String(value)] || String(value);
@@ -135,12 +146,14 @@ export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: Condi
       if (typedKey === "touchScreen" && typeof value === "string" && value.includes("%")) {
         const percentage = parseInt(value, 10);
         const status = percentage >= 90 ? "passed" : "failed";
-        impact = status === "passed" ? 0 : CONDITION_ADJUSTMENTS.touchScreen.failed;
+        impact = status === "passed" ? 0 : (CONDITION_ADJUSTMENTS.touchScreen?.failed as number);
         displayValue = `${percentage}% (${TRANSLATION_MAP[status]})`;
       } else {
         const adjustmentRule = CONDITION_ADJUSTMENTS[typedKey];
         if (adjustmentRule) {
-          impact = adjustmentRule[String(value)] ?? 0;
+          // ใช้ String(value) เพื่อแปลง boolean (true/false) เป็น string ("true"/"false")
+          // เพื่อให้สามารถดึงค่าจาก object ได้ถูกต้อง
+          impact = (adjustmentRule[String(value) as keyof typeof adjustmentRule] as number) ?? 0;
         }
       }
 
@@ -162,7 +175,7 @@ export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: Condi
     return {
       basePrice: calculatedBasePrice,
       adjustments,
-      finalPrice: Math.max(0, finalPrice),
+      finalPrice: Math.max(0, finalPrice), // ทำให้ราคาไม่ติดลบ
       grade,
       gradeTextStyle,
       gradeNeonColor,

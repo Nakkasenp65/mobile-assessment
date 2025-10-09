@@ -94,7 +94,7 @@ const AssessStep3 = ({
   setSelectedService,
   priceLockExpiresAt,
 }: AssessStep3Props) => {
-  const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+  const isPriceable = conditionInfo.canUnlockIcloud;
 
   // ✨ 2. สร้าง ref สำหรับอ้างอิงถึง section ของ service
   const servicesRef = useRef<HTMLDivElement>(null);
@@ -108,6 +108,9 @@ const AssessStep3 = ({
   const [localSelectedService, setLocalSelectedService] = useState<string>("");
 
   const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
+
+  console.log("Final Price:", finalPrice);
+  console.log("Grade:", grade);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
 

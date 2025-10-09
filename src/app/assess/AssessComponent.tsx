@@ -19,7 +19,7 @@ export default function AssessComponent() {
     model: "",
     storage: "",
   });
-  console.log(deviceInfo);
+  console.log("Device info in AssessComponent: ", deviceInfo);
 
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
     canUnlockIcloud: true,
@@ -43,7 +43,7 @@ export default function AssessComponent() {
     buttons: "",
   });
 
-  console.log(conditionInfo);
+  console.log("Condition info in AssessComponent: ", conditionInfo);
 
   const [selectedService, setSelectedService] = useState<string>("");
   const searchParams = useSearchParams();

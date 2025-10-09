@@ -1,13 +1,11 @@
-// src/app/assess/step3/AssessmentSummary.tsx
 import React from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ImageOff, Star, CardSim } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ImageOff, XCircle, CardSim } from "lucide-react"; // ✨ [ADD] Import XCircle icon
 import AssessmentLedger from "./AssessmentLedger";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
-import { AnimatePresence } from "framer-motion";
 import { PriceLockCountdown } from "../../../../components/ui/PriceLockCountdown";
 
 interface AssessmentSummaryProps {
@@ -39,7 +37,7 @@ const AssessmentSummary = ({
   isLoadingRepairPrices,
   priceLockExpiresAt,
 }: AssessmentSummaryProps) => {
-  const isPriceable = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+  const isPriceable = conditionInfo.canUnlockIcloud;
 
   return (
     <div className="flex h-fit flex-col gap-4">
@@ -58,7 +56,7 @@ const AssessmentSummary = ({
           <div className="flex items-start justify-between gap-4">
             {/* Left: Device Info */}
             <div className="flex flex-1 items-start gap-4">
-              {/* Device Image with refined styling */}
+              {/* Device Image */}
               <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200/50 shadow-sm dark:from-zinc-800 dark:to-zinc-700/50">
                 <AnimatePresence mode="wait">
                   {isImageLoading ? (
@@ -103,7 +101,7 @@ const AssessmentSummary = ({
               </div>
             </div>
 
-            {/* Right: Grade Badge */}
+            {/* Right: Grade Badge (Only if priceable) */}
             {isPriceable && (
               <motion.div
                 initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
@@ -121,18 +119,14 @@ const AssessmentSummary = ({
             )}
           </div>
 
-          {/* Price Section */}
-          {isPriceable && (
+          {/* ✨ [UPDATE] Conditional Rendering for Price vs. iCloud Lock Message */}
+          {isPriceable ? (
+            // Price Section (Visible when priceable)
             <div className="mt-6 space-y-4">
-              {/* Divider */}
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-zinc-700" />
-
-              {/* Price Label */}
               <div className="flex items-center justify-center gap-2">
                 <p className="text-muted-foreground text-sm font-medium">ราคาประเมิน</p>
               </div>
-
-              {/* Price Display - Refined gradient */}
               <div className="relative py-2">
                 <motion.p
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -148,17 +142,29 @@ const AssessmentSummary = ({
                   })}
                 </motion.p>
               </div>
-
-              {/* Price Lock Countdown */}
               {priceLockExpiresAt && (
                 <div className="flex justify-center">
                   <PriceLockCountdown expiresAt={priceLockExpiresAt} compact />
                 </div>
               )}
-
-              {/* Assessment Date */}
               <p className="text-muted-foreground text-center text-xs font-medium">{assessmentDate}</p>
             </div>
+          ) : (
+            // iCloud Locked Message (Visible when not priceable)
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-6 flex items-center gap-4 rounded-2xl border border-red-500/50 bg-red-50/50 p-4 dark:border-red-500/30 dark:bg-red-500/10"
+            >
+              <XCircle className="h-10 w-10 flex-shrink-0 text-red-500 dark:text-red-400" />
+              <div>
+                <h4 className="font-bold text-red-800 dark:text-red-300">ไม่สามารถประเมินราคาได้</h4>
+                <p className="text-sm text-red-700/90 dark:text-red-300/80">
+                  ขออภัย เราไม่รับซื้ออุปกรณ์ที่ติดล็อค iCloud
+                </p>
+              </div>
+            </motion.div>
           )}
         </div>
       </div>

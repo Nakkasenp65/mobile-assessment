@@ -79,7 +79,7 @@ interface AssessStep1Props {
 }
 
 const AssessStep1 = ({
-  deviceInfo,
+  deviceInfo, // [เปลี่ยน] เราจะใช้ prop นี้โดยตรง
   conditionInfo,
   onDeviceUpdate,
   onConditionUpdate,
@@ -89,15 +89,20 @@ const AssessStep1 = ({
   const { isDesktop } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
   const [direction, setDirection] = useState(1);
-  const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
-  const { data: productData, isLoading: isImageLoading } = useMobile(localInfo.brand, localInfo.model);
+  // [ลบ] ไม่ใช้ localInfo state แล้ว
+  // const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
+  const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
   const initialSetupDone = useRef(false);
 
-  // ✨ [แก้ไข] เพิ่ม useEffect นี้เพื่อ Sync prop `deviceInfo` กับ state `localInfo`
-  useEffect(() => {
-    setLocalInfo(deviceInfo);
-  }, [deviceInfo]);
+  // [ลบ] useEffect สองตัวนี้ไม่จำเป็นแล้ว เพราะเราจะไมจัดการ state ซ้ำซ้อน
+  // useEffect(() => {
+  //   setLocalInfo(deviceInfo);
+  // }, [deviceInfo]);
+  //
+  // useEffect(() => {
+  //   onDeviceUpdate(localInfo);
+  // }, [localInfo, onDeviceUpdate]);
 
   useEffect(() => {
     if (initialSetupDone.current) return;
@@ -117,27 +122,27 @@ const AssessStep1 = ({
     }
   }, [isDesktop, onUserDeviceUpdate, deviceInfo, onNext]);
 
-  useEffect(() => {
-    onDeviceUpdate(localInfo);
-  }, [localInfo, onDeviceUpdate]);
-
+  // [แก้ไข] แก้ไข handleSelectChange ให้เรียก onDeviceUpdate โดยตรง
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
-    setLocalInfo((prev) => {
-      const newState = { ...prev, [field]: value };
-      if (field === "brand") {
-        newState.productType = "";
-        newState.model = "";
-        newState.storage = "";
-      }
-      if (field === "productType") {
-        newState.model = "";
-        newState.storage = "";
-      }
-      if (field === "model") {
-        newState.storage = "";
-      }
-      return newState;
-    });
+    // สร้าง state ใหม่จาก deviceInfo ที่ได้รับมา
+    const newState = { ...deviceInfo, [field]: value };
+
+    // ใช้ Logic การล้างค่าเหมือนเดิม
+    if (field === "brand") {
+      newState.productType = "";
+      newState.model = "";
+      newState.storage = "";
+    }
+    if (field === "productType") {
+      newState.model = "";
+      newState.storage = "";
+    }
+    if (field === "model") {
+      newState.storage = "";
+    }
+
+    // ส่ง state ที่อัปเดตแล้วกลับไปให้ Parent Component
+    onDeviceUpdate(newState);
   };
 
   const handleUserDeviceSelect = (selection: "this_device" | "other_device") => {
@@ -145,8 +150,8 @@ const AssessStep1 = ({
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
 
-    // ตอนนี้ localInfo จะมีข้อมูลที่อัปเดตจาก URL แล้ว
-    const hasUrlParams = !!(localInfo.brand && localInfo.model && localInfo.storage);
+    // [เปลี่ยน] ตรวจสอบจาก prop deviceInfo โดยตรง
+    const hasUrlParams = !!(deviceInfo.brand && deviceInfo.model && deviceInfo.storage);
 
     if (hasUrlParams) {
       onNext();
@@ -171,7 +176,8 @@ const AssessStep1 = ({
     setDirection(1);
     switch (currentStep) {
       case "selectBrand":
-        if (localInfo.brand === "Apple") {
+        // [เปลี่ยน] ใช้ deviceInfo.brand
+        if (deviceInfo.brand === "Apple") {
           setCurrentStep("selectProduct");
         } else {
           setCurrentStep("selectModelStorage");
@@ -200,7 +206,8 @@ const AssessStep1 = ({
         setCurrentStep("selectBrand");
         break;
       case "selectModelStorage":
-        if (localInfo.brand === "Apple") {
+        // [เปลี่ยน] ใช้ deviceInfo.brand
+        if (deviceInfo.brand === "Apple") {
           setCurrentStep("selectProduct");
         } else {
           setCurrentStep("selectBrand");
@@ -236,7 +243,8 @@ const AssessStep1 = ({
             direction={direction}
           >
             <BrandSelector
-              selectedBrand={localInfo.brand}
+              // [เปลี่ยน] ใช้ deviceInfo.brand
+              selectedBrand={deviceInfo.brand}
               onBrandChange={(brand) => handleSelectChange("brand", brand)}
               accordionValue="brand-selector"
               onAccordionChange={() => {}}
@@ -244,7 +252,8 @@ const AssessStep1 = ({
             <NavigationButtons
               onBack={isDesktop ? undefined : prevStep}
               onNext={nextStep}
-              isNextDisabled={!localInfo.brand}
+              // [เปลี่ยน] ใช้ deviceInfo.brand
+              isNextDisabled={!deviceInfo.brand}
             />
           </StepWrapper>
         );
@@ -257,7 +266,8 @@ const AssessStep1 = ({
             direction={direction}
           >
             <ProductSelector
-              selectedProduct={localInfo.productType || ""}
+              // [เปลี่ยน] ใช้ deviceInfo.productType
+              selectedProduct={deviceInfo.productType || ""}
               onProductChange={handleProductSelectAndNext}
             />
             <div className="mt-auto flex w-full justify-start pt-6">
@@ -270,8 +280,9 @@ const AssessStep1 = ({
         );
 
       case "selectModelStorage":
-        const availableModels = PHONE_DATA.models[localInfo.productType || localInfo.brand] || [];
-        const availableStorage = PHONE_DATA.storage[localInfo.model] || [];
+        // [เปลี่ยน] ใช้ deviceInfo
+        const availableModels = PHONE_DATA.models[deviceInfo.productType || deviceInfo.brand] || [];
+        const availableStorage = PHONE_DATA.storage[deviceInfo.model] || [];
         return (
           <StepWrapper
             title="ระบุรุ่นและความจุ"
@@ -282,10 +293,12 @@ const AssessStep1 = ({
               <DeviceImagePreview
                 isLoading={isImageLoading}
                 imageUrl={productData?.image_url}
-                altText={`${localInfo.brand} ${localInfo.model}`}
+                // [เปลี่ยน] ใช้ deviceInfo
+                altText={`${deviceInfo.brand} ${deviceInfo.model}`}
               />
               <ModelAndStorageSelector
-                localInfo={localInfo}
+                // [เปลี่ยน] ส่ง deviceInfo เข้าไปแทน localInfo
+                localInfo={deviceInfo}
                 availableModels={availableModels}
                 availableStorage={availableStorage}
                 onSelectChange={handleSelectChange}
@@ -296,7 +309,8 @@ const AssessStep1 = ({
             <NavigationButtons
               onBack={prevStep}
               onNext={nextStep}
-              isNextDisabled={!localInfo.brand || !localInfo.model || !localInfo.storage}
+              // [เปลี่ยน] ใช้ deviceInfo
+              isNextDisabled={!deviceInfo.brand || !deviceInfo.model || !deviceInfo.storage}
             />
           </StepWrapper>
         );
@@ -304,15 +318,17 @@ const AssessStep1 = ({
       case "simpleAssessment":
         return (
           <StepWrapper
+            // [เปลี่ยน] ใช้ deviceInfo.productType
             title="รายละเอียดเพิ่มเติม"
-            description={`กรอกรายละเอียดเกี่ยวกับ ${localInfo.productType} ของคุณ`}
+            description={`กรอกรายละเอียดเกี่ยวกับ ${deviceInfo.productType} ของคุณ`}
             direction={direction}
           >
             <SimpleAssessmentForm />
             <NavigationButtons
               onBack={prevStep}
               onNext={nextStep}
-              isNextDisabled={!localInfo.brand || !localInfo.productType}
+              // [เปลี่ยน] ใช้ deviceInfo
+              isNextDisabled={!deviceInfo.brand || !deviceInfo.productType}
             />
           </StepWrapper>
         );
