@@ -1,4 +1,6 @@
-// SECTION: HeroAssessmentForm.tsx
+// src/app/(main)/components/(hero)/HeroAssessmentForm.tsx
+// [IMPROVED]: Ensured productType is passed in the URL for Apple devices.
+
 "use client";
 import { useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +27,6 @@ const HeroAssessmentForm = () => {
   const [selectedProductType, setSelectedProductType] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedStorage, setSelectedStorage] = useState<string>("");
-  // ✨ [ลบ] state ของ termsAccepted ออกไป
   const [canUnlockIcloud, setCanUnlockIcloud] = useState<boolean>(true);
 
   // SECTION: Event Handlers
@@ -56,6 +57,7 @@ const HeroAssessmentForm = () => {
       productType: selectedProductType,
       model: selectedModel,
       capacity: selectedStorage,
+      isFromMainPage: "true",
     });
 
     if (selectedBrand === "Apple") {

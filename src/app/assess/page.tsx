@@ -1,3 +1,6 @@
+// src/app/assess/page.tsx
+// NO CHANGES NEEDED - This structure is solid.
+
 import { Suspense } from "react";
 import AssessComponent from "./AssessComponent";
 

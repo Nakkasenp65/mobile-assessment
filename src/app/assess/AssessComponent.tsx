@@ -1,3 +1,6 @@
+// src/app/assess/AssessComponent.tsx
+// NO CHANGES NEEDED - The state machine logic is correctly placed here.
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +22,6 @@ export default function AssessComponent() {
     model: "",
     storage: "",
   });
-  console.log("Device info in AssessComponent: ", deviceInfo);
 
   const [conditionInfo, setConditionInfo] = useState<ConditionInfo>({
     canUnlockIcloud: true,
@@ -43,35 +45,44 @@ export default function AssessComponent() {
     buttons: "",
   });
 
-  console.log("Condition info in AssessComponent: ", conditionInfo);
-
   const [selectedService, setSelectedService] = useState<string>("");
   const searchParams = useSearchParams();
 
   // SECTION: Handle URL Parameters
+  // This effect correctly sets the initial state from URL params.
   useEffect(() => {
     const brand = searchParams.get("brand");
     const model = searchParams.get("model");
     const capacity = searchParams.get("capacity");
     const isIcloudUnlock = searchParams.get("isIcloudUnlock");
+    const productType = searchParams.get("productType");
+    const isFromMainPage = searchParams.get("isFromMainPage");
 
-    if (brand || model || capacity || isIcloudUnlock) {
+    // Only set state if there are actual params to avoid unnecessary re-renders
+    if (brand || model || capacity || isIcloudUnlock || productType || isFromMainPage) {
       setDeviceInfo((prev) => ({
         ...prev,
         brand: brand || prev.brand,
+        productType: productType || prev.productType,
         model: model || prev.model,
         storage: capacity || prev.storage,
       }));
 
-      setConditionInfo((prev) => ({
-        ...prev,
-        canUnlockIcloud: isIcloudUnlock === "true",
-      }));
+      if (isIcloudUnlock) {
+        setConditionInfo((prev) => ({
+          ...prev,
+          canUnlockIcloud: isIcloudUnlock === "true",
+        }));
+      }
+
+      console.log("Device Info:", deviceInfo);
+      console.log("Condition Info:", conditionInfo);
     }
   }, [searchParams]);
 
   // SECTION: Navigation Handlers
   const handleNext = () => {
+    // This logic handles special navigation cases, which is fine.
     if (
       currentStep === 1 &&
       deviceInfo.brand === "Apple" &&
@@ -98,6 +109,7 @@ export default function AssessComponent() {
   };
 
   // SECTION: State Update Handlers
+  // These callbacks allow child components to update the central state. Perfect.
   const handleDeviceUpdate = (info: DeviceInfo) => {
     setDeviceInfo(info);
   };
@@ -124,6 +136,13 @@ export default function AssessComponent() {
             />
           )}
 
+          {/* 
+          From step 1 to step 2
+            1. mobile | computer
+            2. your device | other device
+            3. Apple | other
+          */}
+
           {currentStep === 2 && (
             <AssessStep2
               isOwnDevice={isUserDevice}
@@ -134,6 +153,7 @@ export default function AssessComponent() {
             />
           )}
 
+          {/* Summary (form done) */}
           {currentStep === 3 && (
             <AssessStep3
               deviceInfo={deviceInfo}

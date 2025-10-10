@@ -96,7 +96,6 @@ const AssessStep3 = ({
 }: AssessStep3Props) => {
   const isPriceable = conditionInfo.canUnlockIcloud;
 
-  // ✨ 2. สร้าง ref สำหรับอ้างอิงถึง section ของ service
   const servicesRef = useRef<HTMLDivElement>(null);
 
   const {
