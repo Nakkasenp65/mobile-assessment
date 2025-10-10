@@ -3,7 +3,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ConditionInfo } from "../../../../types/device";
+import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { DiagnosticsResult } from "./AutomatedDiagnostics";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import QuestionReport from "./QuestionReport";
@@ -59,6 +59,7 @@ function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow:
 }
 
 interface AssessStep2Props {
+  deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
@@ -68,7 +69,14 @@ interface AssessStep2Props {
 
 type SubStep = "physical" | "automated" | "interactive";
 
-const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack, isOwnDevice }: AssessStep2Props) => {
+const AssessStep2 = ({
+  deviceInfo,
+  conditionInfo,
+  onConditionUpdate,
+  onNext,
+  onBack,
+  isOwnDevice,
+}: AssessStep2Props) => {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid } = useDeviceDetection();
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
@@ -167,6 +175,7 @@ const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack, isOwnDe
           {/* (ถามทุกแพลตฟอร์ม) เลือกตอบ */}
           {currentSubStep === "physical" && (
             <QuestionReport
+              deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               onConditionUpdate={onConditionUpdate}
               onComplete={determineNextStep}

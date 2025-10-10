@@ -1,15 +1,17 @@
+// src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/DesktopReportForm.tsx
+
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
 import { ArrowLeft, Circle, CheckCircle2 } from "lucide-react";
-import { ConditionInfo } from "../../../../../../types/device";
-import { ASSESSMENT_QUESTIONS } from "../../../../../../util/info";
+import { ConditionInfo, DeviceInfo } from "../../../../../../types/device";
+import { ASSESSMENT_QUESTIONS, Platform } from "../../../../../../util/info";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 import QuestionWrapper from "../../../../../../components/ui/QuestionWrapper";
-import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DesktopReportFormProps {
+  deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onComplete: () => void;
@@ -17,45 +19,55 @@ interface DesktopReportFormProps {
 }
 
 export default function DesktopReportForm({
+  deviceInfo,
   conditionInfo,
   onConditionUpdate,
   onComplete,
   onBack,
 }: DesktopReportFormProps) {
-  const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
   const [openSections, setOpenSections] = useState<string[]>(["section-0"]);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter questions relevant to the current platform
   const relevantSections = useMemo(() => {
-    const currentPlatform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
+    const getTargetPlatforms = (): Platform[] => {
+      if (deviceInfo.brand === "Apple") {
+        return ["IOS", "DESKTOP"];
+      } else {
+        return ["ANDROID", "OTHER"];
+      }
+    };
+
+    const targetPlatforms = getTargetPlatforms();
+
     return ASSESSMENT_QUESTIONS.map((section) => ({
       ...section,
-      questions: section.questions.filter((q) => q.platforms.includes(currentPlatform)),
+      questions: section.questions.filter((q) => q.platforms.some((platform) => targetPlatforms.includes(platform))),
     })).filter((section) => section.questions.length > 0);
-  }, [isDesktop, isIOS, isAndroid]);
+  }, [deviceInfo.brand]);
 
-  // Check if each section is fully answered
+  // ✨ [แก้ไข] เปลี่ยนชื่อและ Logic: รวมทั้ง choice และ toggle เป็นคำถามที่ต้องตอบทั้งหมด
+  const allRequiredQuestions = useMemo(() => relevantSections.flatMap((s) => s.questions), [relevantSections]);
+
+  // ✨ [แก้ไข] Logic: ตรวจสอบคำถาม "ทั้งหมด" ใน Section (ทั้ง choice และ toggle)
   const isSectionComplete = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
-    const requiredQuestions = section.questions.filter((q) => q.type === "choice");
-    return requiredQuestions.every((q) => !!conditionInfo[q.id]);
+    // ไม่ต้องกรอง type แล้ว เพราะทุกคำถามใน section ถือว่าบังคับตอบ
+    return section.questions.every((q) => !!conditionInfo[q.id]);
   };
 
-  // Check if a section has at least one answer (for in-progress state)
+  // ✨ [แก้ไข] Logic: ตรวจสอบว่ามีคำถามใดๆ ใน Section ถูกตอบแล้วหรือยัง
   const isSectionInProgress = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
-    const requiredQuestions = section.questions.filter((q) => q.type === "choice");
-    return requiredQuestions.some((q) => !!conditionInfo[q.id]);
+    return section.questions.some((q) => !!conditionInfo[q.id]);
   };
 
-  // Check if all displayed questions are answered
+  // ✨ [แก้ไข] Logic: ตรวจสอบความสมบูรณ์จาก list ของคำถามที่บังคับตอบทั้งหมด
   const isComplete = useMemo(() => {
-    const allRequiredQuestions = relevantSections.flatMap((s) => s.questions.filter((q) => q.type === "choice"));
+    // หากไม่มีคำถามที่ต้องตอบเลย ให้ถือว่าสมบูรณ์
+    if (allRequiredQuestions.length === 0) return true;
     return allRequiredQuestions.every((q) => !!conditionInfo[q.id]);
-  }, [conditionInfo, relevantSections]);
+  }, [conditionInfo, allRequiredQuestions]);
 
-  // Function to update state
   const handleUpdate = (questionId: keyof ConditionInfo, value: string) => {
     onConditionUpdate((prev) => ({
       ...prev,
@@ -63,10 +75,8 @@ export default function DesktopReportForm({
     }));
   };
 
-  // Track previous completion state to detect when a section is just completed
   const prevCompletionRef = useRef<boolean[]>([]);
 
-  // Auto-advance to the next section upon completion
   useEffect(() => {
     relevantSections.forEach((section, index) => {
       const complete = isSectionComplete(index);
@@ -102,9 +112,9 @@ export default function DesktopReportForm({
     prevCompletionRef.current = relevantSections.map((_, index) => isSectionComplete(index));
   }, [conditionInfo, relevantSections]);
 
-  useEffect(() => {
-    scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   scrollTo(0, 0);
+  // }, []);
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-8">
@@ -113,7 +123,6 @@ export default function DesktopReportForm({
         <p className="text-muted-foreground">กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ</p>
       </div>
 
-      {/* ✨ [FIX] The `gap-4` class now handles spacing, ensuring consistency. */}
       <Accordion
         type="multiple"
         value={openSections}
@@ -126,6 +135,10 @@ export default function DesktopReportForm({
           const choiceQuestions = section.questions.filter((q) => q.type === "choice");
           const toggleQuestions = section.questions.filter((q) => q.type === "toggle");
 
+          // ✨ [แก้ไข] Logic การนับ: รวมจำนวนคำถามทั้งหมดใน Section
+          const totalQuestionsInSection = section.questions.length;
+          const answeredInSection = section.questions.filter((q) => !!conditionInfo[q.id]).length;
+
           return (
             <AccordionItem
               key={`section-${sectionIndex}`}
@@ -135,7 +148,6 @@ export default function DesktopReportForm({
               }}
               className="border-border bg-card rounded-2xl border shadow-sm"
             >
-              {/* ✨ [FIX] Removed `data-[state=open]:mb-8` to prevent layout shifts. */}
               <AccordionTrigger className="flex items-center px-4 py-4 hover:no-underline data-[state=open]:rounded-b-none data-[state=open]:border-b">
                 <div className="flex items-center gap-3">
                   {isCompleted ? (
@@ -147,37 +159,46 @@ export default function DesktopReportForm({
                   )}
                   <div className="flex flex-col items-start gap-1 text-left">
                     <h2 className="text-foreground text-base font-semibold md:text-lg">{section.section}</h2>
+                    {/* ✨ [แก้ไข] อัปเดตข้อความแสดงสถานะให้ถูกต้อง */}
                     <p className="text-muted-foreground text-xs md:text-sm">
                       {isCompleted
                         ? "เสร็จสมบูรณ์"
                         : inProgress
-                          ? "กรอกข้อมูลบางส่วน"
-                          : `${choiceQuestions.length} คำถาม`}
+                          ? `ตอบแล้ว ${answeredInSection} จาก ${totalQuestionsInSection} ข้อ`
+                          : `${totalQuestionsInSection} คำถาม`}
                     </p>
                   </div>
                 </div>
               </AccordionTrigger>
 
-              {/* ✨ [FIX] Added `pt-4` to the content to create space that was previously handled by the trigger's margin. */}
               <AccordionContent className="px-4 pt-4 pb-4 md:px-6 md:pb-6">
                 {choiceQuestions.length > 0 && (
                   <div className="divide-border/50 flex flex-col divide-y">
-                    {choiceQuestions.map((question) => (
-                      <QuestionWrapper
-                        key={String(question.id)}
-                        question={question}
-                        conditionInfo={conditionInfo}
-                        onConditionUpdate={handleUpdate}
-                      />
-                    ))}
+                    {choiceQuestions.map((question) => {
+                      // ✨ [แก้ไข] เปลี่ยนไปใช้ allRequiredQuestions ในการหา index
+                      const questionIndex = allRequiredQuestions.findIndex((q) => q.id === question.id);
+                      return (
+                        <div key={String(question.id)} className="flex items-start gap-3 pt-4 first:pt-0">
+                          <div className="flex-1">
+                            <QuestionWrapper
+                              question={question}
+                              conditionInfo={conditionInfo}
+                              onConditionUpdate={handleUpdate}
+                              questionIndex={questionIndex + 1}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
                 {toggleQuestions.length > 0 && (
                   <>
                     <div className="mt-6 flex items-center gap-3">
-                      <h3 className="text-foreground text-base font-semibold md:text-lg">ปัญหาด้านการใช้งานที่พบ</h3>
-                      <span className="text-muted-foreground text-xs">(ไม่จำเป็นต้องเลือก)</span>
+                      {/* ✨ [แก้ไข] ปรับเปลี่ยนหัวข้อให้เหมาะสม */}
+                      <h3 className="text-foreground text-base font-semibold md:text-lg">ฟังก์ชันการทำงานเพิ่มเติม</h3>
+                      {/* ✨ [แก้ไข] ลบข้อความ "(ไม่จำเป็นต้องเลือก)" ออก */}
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5">
                       {toggleQuestions.map((question) => (

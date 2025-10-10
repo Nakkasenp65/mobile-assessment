@@ -9,7 +9,7 @@ import { PHONE_DATA } from "../../../../util/phone";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation"; // --- [เพิ่ม] Import useRouter ---
+import { useRouter } from "next/navigation";
 
 // Import sub-components
 import UserDeviceSelection from "./UserDeviceSelection";
@@ -87,31 +87,35 @@ const AssessStep1 = ({
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
-  const router = useRouter(); // --- [เพิ่ม] ประกาศใช้งาน router ---
+  const router = useRouter();
   const { isDesktop } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
   const [direction, setDirection] = useState(1);
   const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
-  const initialSetupDone = useRef(false);
+
+  const isInitialDesktopSetupDone = useRef(false);
 
   useEffect(() => {
-    if (initialSetupDone.current) return;
-
-    const hasUrlParams = !!(deviceInfo.brand && deviceInfo.model && deviceInfo.storage);
-
-    if (isDesktop) {
+    if (isDesktop && !isInitialDesktopSetupDone.current) {
       setUserDeviceSelection("other_device");
       onUserDeviceUpdate(false);
-
-      if (hasUrlParams) {
-        onNext();
-      } else {
-        setCurrentStep("selectBrand");
-      }
-      initialSetupDone.current = true;
+      setCurrentStep("selectBrand");
+      isInitialDesktopSetupDone.current = true;
     }
-  }, [isDesktop, onUserDeviceUpdate, deviceInfo, onNext]);
+  }, [isDesktop, onUserDeviceUpdate]);
+
+  useEffect(() => {
+    // Only navigate FORWARD from selectProduct
+    if (direction > 0 && currentStep === "selectProduct" && deviceInfo.productType) {
+      const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+      if (isDetailed) {
+        setCurrentStep("selectModelStorage");
+      } else {
+        onNext();
+      }
+    }
+  }, [deviceInfo.productType, direction, currentStep]);
 
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     const newState = { ...deviceInfo, [field]: value };
@@ -136,29 +140,12 @@ const AssessStep1 = ({
     setUserDeviceSelection(selection);
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
-
-    const hasUrlParams = !!(deviceInfo.brand && deviceInfo.model && deviceInfo.storage);
-
-    if (hasUrlParams) {
-      onNext();
-    } else {
-      setCurrentStep("selectBrand");
-    }
+    setCurrentStep("selectBrand");
   };
 
-  // --- [แก้ไข] ปรับปรุง handleProductSelectAndNext ---
   const handleProductSelectAndNext = (productId: string) => {
     onDeviceUpdate({ ...deviceInfo, productType: productId, model: "", storage: "" });
     setDirection(1);
-
-    const isDetailed = productId === "iPhone" || productId === "iPad";
-    if (isDetailed) {
-      setCurrentStep("selectModelStorage");
-    } else {
-      // ถ้าไม่ใช่ iPhone หรือ iPad ให้ redirect ไปหน้า simple assessment
-      const params = new URLSearchParams({ productType: productId });
-      router.push(`/assess/simple?${params.toString()}`);
-    }
   };
 
   const nextStep = () => {
@@ -186,6 +173,7 @@ const AssessStep1 = ({
     setDirection(-1);
     switch (currentStep) {
       case "selectBrand":
+        // For mobile, go back to device type selection. Desktop users start here, so no back action.
         if (!isDesktop) {
           setCurrentStep("selectDeviceType");
         }
@@ -195,14 +183,14 @@ const AssessStep1 = ({
         break;
       case "selectModelStorage":
         if (deviceInfo.brand === "Apple") {
+          onDeviceUpdate({ ...deviceInfo, productType: "", model: "", storage: "" });
           setCurrentStep("selectProduct");
         } else {
+          onDeviceUpdate({ ...deviceInfo, model: "", storage: "" });
           setCurrentStep("selectBrand");
         }
         break;
       case "simpleAssessment":
-        // This case might need adjustment depending on your flow for non-Apple simple assessments
-        // For now, it goes back to selectBrand for non-Apple, which seems logical.
         setCurrentStep("selectBrand");
         break;
       default:

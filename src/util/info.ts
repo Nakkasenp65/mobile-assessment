@@ -1,4 +1,5 @@
-import { ComponentType } from "react";
+// src/util/info.ts
+
 import { ConditionInfo } from "../types/device";
 import {
   Smartphone,
@@ -39,7 +40,7 @@ import {
 } from "lucide-react";
 import { IconType } from "react-icons";
 
-export type Platform = "DESKTOP" | "IOS" | "ANDROID";
+export type Platform = "DESKTOP" | "IOS" | "ANDROID" | "OTHER";
 export type QuestionType = "choice" | "toggle";
 
 export interface QuestionOption {
@@ -66,10 +67,10 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "modelType",
-        question: "1. รุ่นโมเดลเครื่อง",
+        question: "รุ่นโมเดลเครื่อง",
         icon: Smartphone,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS"],
         options: [
           { id: "model_th", label: "เครื่องไทย (TH)", icon: Smartphone },
           { id: "model_inter_new", label: "เครื่องนอก (ZP 14, 15, 16 Series)", icon: Smartphone },
@@ -78,10 +79,10 @@ export const ASSESSMENT_QUESTIONS: Array<{
       },
       {
         id: "warranty",
-        question: "2. ประกันศูนย์ Apple",
+        question: "ประกันศูนย์",
         icon: ShieldCheck,
         type: "choice",
-        platforms: ["DESKTOP", "IOS"],
+        platforms: ["DESKTOP", "IOS", "ANDROID"],
         options: [
           { id: "warranty_active_long", label: "เหลือมากกว่า 6 เดือน", icon: ShieldCheck },
           { id: "warranty_active_short", label: "เหลือน้อยกว่า 6 เดือน", icon: Clock },
@@ -90,7 +91,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       },
       {
         id: "accessories",
-        question: "3. อุปกรณ์ในกล่อง",
+        question: "อุปกรณ์ในกล่อง",
         icon: Package,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -107,7 +108,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "bodyCondition",
-        question: "4. สภาพตัวเครื่องโดยรวม",
+        question: "สภาพตัวเครื่องโดยรวม",
         icon: Smartphone,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -119,7 +120,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       },
       {
         id: "screenGlass",
-        question: "5. สภาพกระจกหน้าจอ",
+        question: "สภาพกระจกหน้าจอ",
         icon: RectangleHorizontal,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -136,7 +137,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "screenDisplay",
-        question: "6. คุณภาพการแสดงผล",
+        question: "คุณภาพการแสดงผล",
         icon: MonitorPlay,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -148,7 +149,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
       },
       {
         id: "batteryHealth",
-        question: "7. สุขภาพแบตเตอรี่",
+        question: "สุขภาพแบตเตอรี่",
         icon: BatteryFull,
         type: "choice",
         platforms: ["DESKTOP", "IOS"],
@@ -165,7 +166,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
     questions: [
       {
         id: "camera",
-        question: "9. กล้องหน้าและกล้องหลัง",
+        question: "กล้องหน้าและกล้องหลัง",
         icon: Camera,
         type: "choice",
         platforms: ["DESKTOP", "IOS", "ANDROID"],
@@ -180,7 +181,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การสัมผัสหน้าจอ",
         icon: Hand,
         type: "toggle", // เปลี่ยนเป็น toggle เพื่อให้สอดคล้องกับ UI
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "OTHER"],
         options: [
           { id: "touchscreen_ok", label: "สัมผัสปกติ", icon: Hand },
           { id: "touchscreen_failed", label: "ทัชไม่ได้/ทัชรวน", icon: Hand },
@@ -191,7 +192,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Wi-Fi / Bluetooth",
         icon: Wifi,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "OTHER"],
         options: [
           { id: "wifi_ok", label: "เชื่อมต่อปกติ", icon: Wifi },
           { id: "wifi_failed", label: "มีปัญหา", icon: WifiOff },
@@ -202,7 +203,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Face ID / Touch ID",
         icon: ScanFace,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "OTHER"],
         options: [
           { id: "biometric_ok", label: "สแกนได้ปกติ", icon: ScanFace },
           { id: "biometric_failed", label: "สแกนไม่ได้", icon: Fingerprint },
@@ -213,19 +214,18 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ลำโพงและการสั่น",
         icon: Speaker,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "OTHER"],
         options: [
           { id: "speaker_ok", label: "ปกติ", icon: Speaker },
           { id: "speaker_failed", label: "ลำโพงแตก/ไม่ดัง/ไม่สั่น", icon: Vibrate },
         ],
       },
-      // ✨ [เพิ่ม] คำถามสำหรับ Microphone
       {
         id: "mic",
         question: "ไมโครโฟน",
         icon: Mic,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "OTHER"],
         options: [
           { id: "mic_ok", label: "ใช้งานปกติ", icon: Mic },
           { id: "mic_failed", label: "มีปัญหา", icon: MicOff },
@@ -236,7 +236,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การชาร์จไฟ",
         icon: BatteryCharging,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "OTHER"],
         options: [
           { id: "charger_ok", label: "ชาร์จเข้าปกติ", icon: BatteryCharging },
           { id: "charger_failed", label: "ชาร์จไม่เข้า", icon: PowerOff },
@@ -280,7 +280,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ปุ่ม Power / Volume",
         icon: Power,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "buttons_ok", label: "กดได้ปกติ", icon: Power },
           { id: "buttons_failed", label: "กดไม่ได้/กดยาก", icon: Power },

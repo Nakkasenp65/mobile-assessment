@@ -1,9 +1,8 @@
 // src/app/assess/AssessComponent.tsx
-// NO CHANGES NEEDED - The state machine logic is correctly placed here.
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
@@ -47,10 +46,11 @@ export default function AssessComponent() {
 
   const [selectedService, setSelectedService] = useState<string>("");
   const searchParams = useSearchParams();
+  const [isInitialStepCalculated, setIsInitialStepCalculated] = useState(false);
 
-  // SECTION: Handle URL Parameters
-  // This effect correctly sets the initial state from URL params.
   useEffect(() => {
+    if (isInitialStepCalculated) return;
+
     const brand = searchParams.get("brand");
     const model = searchParams.get("model");
     const capacity = searchParams.get("capacity");
@@ -58,8 +58,15 @@ export default function AssessComponent() {
     const productType = searchParams.get("productType");
     const isFromMainPage = searchParams.get("isFromMainPage");
 
-    // Only set state if there are actual params to avoid unnecessary re-renders
-    if (brand || model || capacity || isIcloudUnlock || productType || isFromMainPage) {
+    const hasAllParams = !!(brand && model && capacity && isFromMainPage === "true");
+    const hasSimpleParams = !!(
+      brand === "Apple" &&
+      productType &&
+      !["iPhone", "iPad"].includes(productType) &&
+      isFromMainPage === "true"
+    );
+
+    if (hasAllParams || hasSimpleParams) {
       setDeviceInfo((prev) => ({
         ...prev,
         brand: brand || prev.brand,
@@ -75,14 +82,17 @@ export default function AssessComponent() {
         }));
       }
 
-      console.log("Device Info:", deviceInfo);
-      console.log("Condition Info:", conditionInfo);
+      if (hasSimpleParams) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(2);
+      }
     }
-  }, [searchParams]);
 
-  // SECTION: Navigation Handlers
+    setIsInitialStepCalculated(true);
+  }, [searchParams, isInitialStepCalculated]);
+
   const handleNext = () => {
-    // This logic handles special navigation cases, which is fine.
     if (
       currentStep === 1 &&
       deviceInfo.brand === "Apple" &&
@@ -108,20 +118,18 @@ export default function AssessComponent() {
     }
   };
 
-  // SECTION: State Update Handlers
-  // These callbacks allow child components to update the central state. Perfect.
-  const handleDeviceUpdate = (info: DeviceInfo) => {
+  const handleDeviceUpdate = useCallback((info: DeviceInfo) => {
     setDeviceInfo(info);
-  };
+  }, []);
 
-  const handleUserDeviceUpdate = (value: boolean) => {
+  const handleUserDeviceUpdate = useCallback((value: boolean) => {
     setIsUserDevice(value);
-  };
+  }, []);
 
   // SECTION: Render Component
   return (
     <Layout>
-      <div className="container mx-auto flex w-full flex-col items-center gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
+      <div className="container mx-auto flex min-h-dvh w-full flex-col items-center gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 
         <div className="flex w-full flex-col">
@@ -136,15 +144,9 @@ export default function AssessComponent() {
             />
           )}
 
-          {/* 
-          From step 1 to step 2
-            1. mobile | computer
-            2. your device | other device
-            3. Apple | other
-          */}
-
           {currentStep === 2 && (
             <AssessStep2
+              deviceInfo={deviceInfo}
               isOwnDevice={isUserDevice}
               conditionInfo={conditionInfo}
               onConditionUpdate={setConditionInfo}
@@ -153,7 +155,6 @@ export default function AssessComponent() {
             />
           )}
 
-          {/* Summary (form done) */}
           {currentStep === 3 && (
             <AssessStep3
               deviceInfo={deviceInfo}

@@ -1,7 +1,3 @@
-// src/app/(main)/components/(hero)/HeroAssessmentForm.tsx
-// [IMPROVED]: Ensured productType is passed in the URL for Apple devices.
-// [MODIFIED]: Redirect non-iPhone/iPad Apple products to the new simple assessment page.
-
 "use client";
 import { useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
@@ -33,7 +29,8 @@ const HeroAssessmentForm = () => {
   // SECTION: Event Handlers
   const handleBrandChange = (brand: string) => {
     setSelectedBrand(brand);
-    setSelectedProductType(brand === "Apple" ? "" : "Phone");
+    // [FIX] Don't auto-select productType here. Let the user choose.
+    setSelectedProductType("");
     setSelectedModel("");
     setSelectedStorage("");
   };
@@ -50,17 +47,21 @@ const HeroAssessmentForm = () => {
   };
 
   const handleNavigateToAssess = () => {
-    // --- [START MODIFICATION] ---
     // Logic for Apple products that are NOT iPhone or iPad
     if (selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType)) {
       const params = new URLSearchParams({
+        brand: "Apple", // [FIX] Explicitly add brand
         productType: selectedProductType,
+        isFromMainPage: "true",
+        isIcloudUnlock: String(canUnlockIcloud), // [FIX] Also pass iCloud status
       });
-      router.push(`/assess/simple?${params.toString()}`);
+      // [FIX] Navigate to the main assess page, not a special 'simple' page.
+      // The AssessComponent will handle the routing to the correct step.
+      router.push(`/assess?${params.toString()}`);
       return; // Stop execution here
     }
-    // --- [END MODIFICATION] ---
 
+    // Standard logic for iPhone, iPad, and other brands
     if (!selectedBrand || !selectedModel || !selectedStorage) return;
     if (selectedBrand === "Apple" && !selectedProductType) return;
 
@@ -82,27 +83,38 @@ const HeroAssessmentForm = () => {
 
   // SECTION: Derived State
   const availableBrands = PHONE_DATA.brands;
-  const availableProductTypes = selectedBrand ? PHONE_DATA.products[selectedBrand] || [] : [];
+  const availableProductTypes = selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
 
   const availableModels = (() => {
-    if (!selectedBrand) return [];
-    if (selectedBrand === "Apple") {
-      if (!selectedProductType) return [];
-      // If the product is not iPhone or iPad, there are no models to select here.
-      if (!["iPhone", "iPad"].includes(selectedProductType)) return [];
-      return PHONE_DATA.models[selectedProductType] || [];
-    } else {
+    if (selectedBrand !== "Apple") {
       return PHONE_DATA.models[selectedBrand] || [];
     }
+    // For Apple, only show models if a productType that has models is selected
+    if (["iPhone", "iPad"].includes(selectedProductType)) {
+      return PHONE_DATA.models[selectedProductType] || [];
+    }
+    return [];
   })();
 
   const availableStorage = selectedModel ? PHONE_DATA.storage[selectedModel] || [] : [];
 
-  // --- [MODIFICATION] ---
-  // Disable the main button if an Apple product (not iPhone/iPad) is selected but doesn't require model/storage
-  const isSimpleAppleProduct =
-    selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType);
-  const isNextButtonDisabled = isSimpleAppleProduct ? false : !selectedModel || !selectedStorage;
+  // Determine if the button should be disabled
+  const isNextButtonDisabled = () => {
+    if (!selectedBrand) return true;
+    if (selectedBrand === "Apple") {
+      if (!selectedProductType) return true;
+      // For simple Apple products, enable the button once productType is selected
+      if (!["iPhone", "iPad"].includes(selectedProductType)) {
+        return false;
+      }
+      // For iPhone/iPad, require model and storage
+      return !selectedModel || !selectedStorage;
+    } else {
+      // For other brands, require model and storage
+      // This assumes other brands don't have a productType selector in this form
+      return !selectedModel || !selectedStorage;
+    }
+  };
 
   // SECTION: Render Component
   return (
@@ -128,7 +140,7 @@ const HeroAssessmentForm = () => {
             </SelectContent>
           </Select>
 
-          {/* Product Type Select */}
+          {/* Product Type Select (Only for Apple) */}
           <AnimatePresence>
             {selectedBrand === "Apple" && (
               <motion.div
@@ -136,7 +148,7 @@ const HeroAssessmentForm = () => {
                 animate={{ opacity: 1, height: "auto", y: 0 }}
                 exit={{ opacity: 0, height: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden py-1"
+                className="overflow-hidden"
               >
                 <Select onValueChange={handleProductTypeChange} value={selectedProductType} disabled={!selectedBrand}>
                   <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
@@ -154,9 +166,10 @@ const HeroAssessmentForm = () => {
             )}
           </AnimatePresence>
 
-          {/* --- [MODIFICATION] --- Show Model/Storage only for iPhone/iPad */}
+          {/* Model and Storage Select (Conditional) */}
           <AnimatePresence>
-            {selectedBrand === "Apple" && ["iPhone", "iPad"].includes(selectedProductType) && (
+            {((selectedBrand === "Apple" && ["iPhone", "iPad"].includes(selectedProductType)) ||
+              (selectedBrand && selectedBrand !== "Apple")) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -164,11 +177,7 @@ const HeroAssessmentForm = () => {
                 className="flex flex-col gap-2.5 md:gap-3 lg:gap-4"
               >
                 {/* Model Select */}
-                <Select
-                  onValueChange={handleModelChange}
-                  value={selectedModel}
-                  disabled={selectedBrand === "Apple" ? !selectedProductType : !selectedBrand}
-                >
+                <Select onValueChange={handleModelChange} value={selectedModel} disabled={availableModels.length === 0}>
                   <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
                     <SelectValue placeholder="เลือกรุ่น" />
                   </SelectTrigger>
@@ -198,7 +207,7 @@ const HeroAssessmentForm = () => {
             )}
           </AnimatePresence>
 
-          {/* iCloud Toggle */}
+          {/* iCloud Toggle (Only for Apple) */}
           <AnimatePresence>
             {selectedBrand === "Apple" && (
               <motion.div
@@ -206,7 +215,7 @@ const HeroAssessmentForm = () => {
                 animate={{ opacity: 1, height: "auto", y: 0 }}
                 exit={{ opacity: 0, height: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden py-1"
+                className="overflow-hidden"
               >
                 <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                   <label
@@ -252,7 +261,7 @@ const HeroAssessmentForm = () => {
           <Button
             size="lg"
             onClick={handleNavigateToAssess}
-            disabled={isNextButtonDisabled}
+            disabled={isNextButtonDisabled()}
             className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg transition-transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:h-12 lg:text-lg"
           >
             ประเมินราคา

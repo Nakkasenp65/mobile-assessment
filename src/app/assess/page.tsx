@@ -1,10 +1,8 @@
 // src/app/assess/page.tsx
-// NO CHANGES NEEDED - This structure is solid.
 
 import { Suspense } from "react";
 import AssessComponent from "./AssessComponent";
 
-// You can create a more sophisticated loading skeleton component here
 const Loading = () => {
   return <div>Loading...</div>;
 };

@@ -1,3 +1,5 @@
+// src/hooks/useDeviceDetection.ts
+
 "use client";
 
 import { useState, useEffect } from "react";

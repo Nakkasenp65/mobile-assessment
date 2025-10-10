@@ -12,6 +12,7 @@ import { useRepairPrices } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
 import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
+import { cn } from "@/lib/utils";
 
 // ... (โค้ดส่วน getExpiryDate และ mockRecords ไม่มีการเปลี่ยนแปลง) ...
 
@@ -94,6 +95,7 @@ const AssessStep3 = ({
   setSelectedService,
   priceLockExpiresAt,
 }: AssessStep3Props) => {
+  const isIcloudLocked = !conditionInfo.canUnlockIcloud;
   const isPriceable = conditionInfo.canUnlockIcloud;
 
   const servicesRef = useRef<HTMLDivElement>(null);
@@ -145,7 +147,7 @@ const AssessStep3 = ({
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
+      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:gap-3")}>
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -159,21 +161,23 @@ const AssessStep3 = ({
           totalCost={totalRepairCost}
           isLoadingRepairPrices={isLoadingRepairPrices}
           priceLockExpiresAt={priceLockExpiresAt}
+          isIcloudLocked={isIcloudLocked}
         />
 
-        {/* ✨ 3. เพิ่ม ref และ id ให้กับ div ที่ครอบ Services */}
-        <div ref={servicesRef} id="services-section" className="top-24 flex h-fit flex-col lg:sticky">
-          <Services
-            selectedService={localSelectedService}
-            setSelectedService={setLocalSelectedService}
-            repairs={repairs}
-            totalCost={totalRepairCost}
-            isLoading={isLoadingRepairPrices}
-            deviceInfo={deviceInfo}
-            onNext={onNext}
-            finalPrice={isPriceable ? finalPrice : 0}
-          />
-        </div>
+        {!isIcloudLocked && (
+          <div ref={servicesRef} id="services-section" className="top-24 flex h-fit flex-col lg:sticky">
+            <Services
+              selectedService={localSelectedService}
+              setSelectedService={setLocalSelectedService}
+              repairs={repairs}
+              totalCost={totalRepairCost}
+              isLoading={isLoadingRepairPrices}
+              deviceInfo={deviceInfo}
+              onNext={onNext}
+              finalPrice={isPriceable ? finalPrice : 0}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
@@ -187,8 +191,7 @@ const AssessStep3 = ({
         </FramerButton>
       </div>
 
-      {/* ✨ 4. ส่ง ref ที่สร้างไว้ไปยัง ScrollDownIndicator */}
-      <ScrollDownIndicator targetRef={servicesRef} />
+      {!isIcloudLocked && <ScrollDownIndicator targetRef={servicesRef} />}
     </div>
   );
 };

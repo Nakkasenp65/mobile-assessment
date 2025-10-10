@@ -180,6 +180,7 @@ interface AssessmentLedgerProps {
   repairs: RepairItem[];
   totalCost: number;
   isLoading: boolean;
+  isIcloudLocked?: boolean;
 }
 
 // --- Main Component: AssessmentLedger ---
@@ -189,6 +190,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   repairs,
   totalCost,
   isLoading,
+  isIcloudLocked,
 }) => {
   const optionsLabelMap = useMemo(() => {
     const map: Record<string, Record<string, string>> = {};
@@ -247,7 +249,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </div>
 
           {repairs && repairs.length > 0 && (
-            <div className="hidden lg:block">
+            <div className={cn(!isIcloudLocked && "hidden lg:block")}>
               <MaintenanceService
                 deviceInfo={deviceInfo}
                 repairs={repairs}

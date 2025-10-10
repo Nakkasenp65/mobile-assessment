@@ -1,8 +1,7 @@
-// SECTION: src/app/assess/components/(step1)/UserDeviceSelection.tsx
+// src/app/assess/components/(step1)/UserDeviceSelection.tsx
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Box, Smartphone, CheckCircle2, LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -58,7 +57,7 @@ const OptionCard = ({
 );
 
 const UserDeviceSelection = ({ selectedValue, onSelect }: UserDeviceSelectionProps) => (
-  <div className="flex h-full flex-col items-center justify-center gap-8 sm:flex-row sm:items-stretch">
+  <div className="flex h-full flex-col items-center justify-center gap-8 pt-8 sm:flex-row sm:items-stretch">
     <OptionCard
       value="this_device"
       title="ที่กำลังใช้อยู่"

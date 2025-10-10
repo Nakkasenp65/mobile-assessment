@@ -1,3 +1,5 @@
+// src/app/assess/components/(step3)/AssessmentSummary.tsx
+
 import React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +23,7 @@ interface AssessmentSummaryProps {
   totalCost: number;
   isLoadingRepairPrices: boolean;
   priceLockExpiresAt?: string; // Optional for countdown
+  isIcloudLocked: boolean;
 }
 
 const AssessmentSummary = ({
@@ -36,6 +39,7 @@ const AssessmentSummary = ({
   totalCost,
   isLoadingRepairPrices,
   priceLockExpiresAt,
+  isIcloudLocked,
 }: AssessmentSummaryProps) => {
   const isPriceable = conditionInfo.canUnlockIcloud;
 
@@ -182,6 +186,7 @@ const AssessmentSummary = ({
           repairs={repairs}
           totalCost={totalCost}
           isLoading={isLoadingRepairPrices}
+          isIcloudLocked={isIcloudLocked}
         />
       </motion.div>
     </div>

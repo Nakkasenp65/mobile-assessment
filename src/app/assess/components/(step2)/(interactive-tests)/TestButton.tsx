@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/(interactive-tests)/TestButton.tsx
+
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
@@ -22,8 +24,7 @@ const TestButton = ({
 }) => {
   // ✨ [แก้ไข] เพิ่ม Logic การตรวจสอบสถานะจาก string
   const isPassed = status.includes("_ok") || status === "passed";
-  const isFailed =
-    status.includes("_failed") || status.includes("_defective") || status === "failed";
+  const isFailed = status.includes("_failed") || status.includes("_defective") || status === "failed";
   const isPending = status === "pending";
 
   return (

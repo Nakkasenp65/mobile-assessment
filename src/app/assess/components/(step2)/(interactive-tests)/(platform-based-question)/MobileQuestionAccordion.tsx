@@ -1,8 +1,10 @@
+// src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/MobileQuestionAccordion.tsx
+
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
-import { ConditionInfo } from "../../../../../../types/device";
+import { ConditionInfo, DeviceInfo } from "../../../../../../types/device";
 import { ASSESSMENT_QUESTIONS } from "../../../../../../util/info";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
@@ -12,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 interface MobileQuestionAccordionProps {
+  deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onComplete: () => void;
@@ -19,26 +22,35 @@ interface MobileQuestionAccordionProps {
 }
 
 const MobileQuestionAccordion = ({
+  deviceInfo,
   conditionInfo,
   onConditionUpdate,
   onComplete,
   onBack,
 }: MobileQuestionAccordionProps) => {
-  const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
+  const { isDesktop, isIOS } = useDeviceDetection();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // ✨ [แก้ไข] ปรับ Logic การกรองคำถามให้ขึ้นอยู่กับยี่ห้อของอุปกรณ์ที่ประเมินโดยตรง
   const relevantQuestions = useMemo(() => {
-    const currentPlatform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
+    // กำหนด platform เป้าหมายจากยี่ห้อของอุปกรณ์: ถ้าเป็น Apple ให้ใช้ IOS, ถ้าไม่ใช่ให้ใช้ ANDROID
+    const targetPlatform = deviceInfo.brand === "Apple" ? "IOS" : "ANDROID";
+
     return ASSESSMENT_QUESTIONS.map((section) => ({
       ...section,
-      questions: section.questions.filter((q) => q.platforms.includes(currentPlatform)),
-    })).filter((section) => section.questions.length > 0);
-  }, [isDesktop, isIOS, isAndroid]);
+      // กรองคำถามเฉพาะที่อยู่ใน platform เป้าหมาย
+      questions: section.questions.filter((q) => q.platforms.includes(targetPlatform)),
+    })).filter((section) => section.questions.length > 0); // ลบ section ที่ไม่มีคำถามที่เกี่ยวข้องออก
+  }, [deviceInfo.brand]);
 
-  // ✨ [แก้ไข] กรองเฉพาะคำถามประเภท "choice" เพื่อใช้ในการตรวจสอบ isComplete
   const allVisibleQuestions = useMemo(
     () => relevantQuestions.flatMap((s) => s.questions).filter((q) => q.type === "choice"),
     [relevantQuestions],
+  );
+
+  const answeredQuestionsCount = useMemo(
+    () => allVisibleQuestions.filter((q) => !!conditionInfo[q.id]).length,
+    [conditionInfo, allVisibleQuestions],
   );
 
   const findFirstUnanswered = () => {
@@ -75,7 +87,9 @@ const MobileQuestionAccordion = ({
     <div className="flex w-full flex-col gap-6">
       <div className="text-center">
         <h2 className="text-foreground text-3xl font-bold">ประเมินสภาพเครื่อง</h2>
-        <p className="text-muted-foreground">กรุณาตอบคำถามให้ครบทุกข้อ</p>
+        <p className="text-muted-foreground">
+          กรุณาตอบคำถามให้ครบทุกข้อ ({answeredQuestionsCount}/{allVisibleQuestions.length})
+        </p>
       </div>
 
       <div className="flex-grow space-y-6">
@@ -92,13 +106,12 @@ const MobileQuestionAccordion = ({
               {section.questions.map((question) => {
                 if (question.type === "toggle") return null;
 
+                const questionIndex = allVisibleQuestions.findIndex((q) => q.id === question.id);
                 const selectedValue = conditionInfo[question.id] as string;
                 const isAnswered = !!selectedValue;
-
                 const selectedLabel = isAnswered
                   ? question.options.find((opt) => opt.id === selectedValue)?.label
                   : null;
-
                 const Icon = question.icon;
 
                 return (
@@ -118,7 +131,7 @@ const MobileQuestionAccordion = ({
                     )}
                   >
                     <AccordionTrigger className="w-full p-4 text-left hover:no-underline">
-                      <div className="flex w-full items-center gap-4">
+                      <div className="flex w-full items-center gap-3">
                         <div
                           className={cn(
                             "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
@@ -142,7 +155,11 @@ const MobileQuestionAccordion = ({
                         </div>
 
                         <div className="flex-grow">
-                          <p className="text-foreground font-semibold">{question.question}</p>
+                          {/* ✨ [แก้ไข] ย้ายเลขข้อมาไว้ข้างๆ หัวข้อ */}
+                          <div className="flex items-start gap-2">
+                            <span className="text-muted-foreground pt-px font-semibold">{questionIndex + 1}.</span>
+                            <p className="text-foreground flex-1 text-left font-semibold">{question.question}</p>
+                          </div>
                           {selectedLabel && <p className="text-primary mt-0.5 text-sm font-medium">{selectedLabel}</p>}
                         </div>
                       </div>
@@ -178,7 +195,6 @@ const MobileQuestionAccordion = ({
         ))}
       </div>
 
-      {/* Footer Buttons */}
       <div className="border-border mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
         <FramerButton
           variant="ghost"

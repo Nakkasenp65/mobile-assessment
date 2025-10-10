@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/(interactive-tests)/MicrophoneDetection.tsx
+
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -126,9 +128,7 @@ const MicrophoneDetection = ({ isOpen, onConclude }: MicrophoneDetectionProps) =
           <div className="flex h-48 flex-col items-center justify-center text-center">
             <XCircle className="text-destructive mb-4 h-12 w-12" />
             <p className="text-lg font-semibold text-black">ไม่สามารถเข้าถึงไมโครโฟนได้</p>
-            <p className="text-muted-foreground mt-2 text-sm">
-              กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน
-            </p>
+            <p className="text-muted-foreground mt-2 text-sm">กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน</p>
             <FramerButton
               size="lg"
               className="bg-primary mt-6 h-14 w-full text-white"

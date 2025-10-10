@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/ChoicePanel.tsx
+
 "use client";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
@@ -9,11 +11,7 @@ interface ChoicePanelProps {
   onSelect: (value: string) => void;
 }
 
-const ChoicePanel = ({
-  options,
-  selectedValue,
-  onSelect,
-}: ChoicePanelProps) => {
+const ChoicePanel = ({ options, selectedValue, onSelect }: ChoicePanelProps) => {
   const normalStateValue = options[0]?.value;
 
   return (
@@ -33,12 +31,8 @@ const ChoicePanel = ({
           whileTap={{ scale: 0.97 }}
         >
           {/* Aria's touch: Special icon for the "normal" state */}
-          {option.value === normalStateValue && (
-            <CheckCircle2 className="text-success mb-2 h-6 w-6" />
-          )}
-          <span className="text-foreground text-sm font-medium">
-            {option.label}
-          </span>
+          {option.value === normalStateValue && <CheckCircle2 className="text-success mb-2 h-6 w-6" />}
+          <span className="text-foreground text-sm font-medium">{option.label}</span>
         </motion.button>
       ))}
     </div>

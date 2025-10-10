@@ -1,3 +1,5 @@
+// src/app/assess/components/(step2)/(interactive-tests)/(platform-based-question)/ChoiceBar.tsx
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -32,15 +34,8 @@ const ChoiceBar = ({ options, selectedValue, onSelect }: ChoiceBarProps) => {
                 : "border-border bg-accent/30 hover:border-primary/50",
             )}
           >
-            <Icon
-              className={cn("h-7 w-7", isSelected ? "text-primary" : "text-muted-foreground")}
-            />
-            <span
-              className={cn(
-                "text-xs font-semibold",
-                isSelected ? "text-primary" : "text-foreground",
-              )}
-            >
+            <Icon className={cn("h-7 w-7", isSelected ? "text-primary" : "text-muted-foreground")} />
+            <span className={cn("text-xs font-semibold", isSelected ? "text-primary" : "text-foreground")}>
               {option.label}
             </span>
           </motion.button>

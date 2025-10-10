@@ -104,11 +104,7 @@ const ProductSelector = ({ selectedProduct, onProductChange }: ProductSelectorPr
             key={product.id}
             product={product}
             isSelected={selectedProduct === product.id}
-            onClick={() => {
-              setTimeout(() => {
-                onProductChange(product.id);
-              }, 150);
-            }}
+            onClick={() => onProductChange(product.id)}
           />
         ))}
       </div>

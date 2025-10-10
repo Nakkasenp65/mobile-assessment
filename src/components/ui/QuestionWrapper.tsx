@@ -1,7 +1,8 @@
+// src/components/ui/QuestionWrapper.tsx
+
 "use client";
 
-import { useDeviceDetection } from "@/hooks/useDeviceDetection";
-import { Question, Platform } from "@/util/info"; // ตรวจสอบ Path ให้ถูกต้อง
+import { Question } from "@/util/info"; // ตรวจสอบ Path ให้ถูกต้อง
 import { ConditionInfo } from "../../types/device"; // ตรวจสอบ Path ให้ถูกต้อง
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -10,10 +11,11 @@ import { cn } from "@/lib/utils";
 interface QuestionWrapperProps {
   question: Question;
   conditionInfo: ConditionInfo;
+  questionIndex?: number;
   onConditionUpdate: (questionId: keyof ConditionInfo, value: string) => void;
 }
 
-// --- คอมโพเนนต์ย่อยสำหรับ Choice Input (ไม่มีการเปลี่ยนแปลง) ---
+// --- คอมโพเนนต์ย่อยสำหรับ Choice Input ---
 const ChoiceInput = ({ question, currentValue, onSelect }) => (
   <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
     {question.options.map((option) => {
@@ -41,9 +43,11 @@ const ChoiceInput = ({ question, currentValue, onSelect }) => (
   </div>
 );
 
-// --- ✨ [แก้ไข] คอมโพเนนต์ย่อยสำหรับ Toggle Input กลับไปใช้ดีไซน์วงกลม + สีใหม่ ---
+// --- คอมโพเนนต์ย่อยสำหรับ Toggle Input (ดีไซน์วงกลมตามรูปภาพ) ---
 const ToggleInput = ({ question, currentValue, onToggle }) => {
-  const isProblem = currentValue === question.options[1].id; // สมมติว่าตัวเลือกที่ 2 คือ "มีปัญหา"
+  // ✨ Logic นี้จะตรวจสอบว่าค่าปัจจุบันคือค่าที่แสดงถึง "ปัญหา" หรือไม่
+  // โดยทั่วไปจะตั้งสมมติฐานว่าตัวเลือกที่สอง (index 1) คือตัวเลือกที่แสดงถึงปัญหา
+  const isProblem = currentValue === question.options[1]?.id;
   const Icon = question.icon;
 
   return (
@@ -60,9 +64,9 @@ const ToggleInput = ({ question, currentValue, onToggle }) => {
         className={cn(
           "flex h-14 w-14 items-center justify-center rounded-full border transition-all duration-500",
           isProblem
-            ? // สไตล์เมื่อถูกเลือก: พื้นหลัง primary, ไม่มีเส้นขอบ
+            ? // สไตล์เมื่อถูกเลือก (เป็นปัญหา): พื้นหลัง primary, ไม่มีเส้นขอบ
               "bg-primary shadow-primary/30 border-transparent shadow-lg"
-            : // สไตล์ปกติ: พื้นหลัง card, มีเส้นขอบ
+            : // สไตล์ปกติ (ไม่เป็นปัญหา): พื้นหลัง card, มีเส้นขอบ
               "bg-card border-border",
         )}
       >
@@ -83,14 +87,16 @@ const ToggleInput = ({ question, currentValue, onToggle }) => {
   );
 };
 
-// --- คอมโพเนนต์หลัก (ไม่มีการเปลี่ยนแปลง) ---
-const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: QuestionWrapperProps) => {
-  const { isDesktop, isIOS, isAndroid } = useDeviceDetection();
-  const currentPlatform: Platform = isDesktop ? "DESKTOP" : isIOS ? "IOS" : "ANDROID";
-
-  if (!question.platforms.includes(currentPlatform)) {
-    return null;
-  }
+// --- คอมโพเนนต์หลัก ---
+export default function QuestionWrapper({
+  question,
+  conditionInfo,
+  questionIndex,
+  onConditionUpdate,
+}: QuestionWrapperProps) {
+  // [REMOVED] - ลบการตรวจสอบ platform ที่ซ้ำซ้อนออก
+  // คอมโพเนนต์แม่ (DesktopReportForm) ได้ทำการกรองมาแล้ว
+  // QuestionWrapper ควรทำหน้าที่แสดงผลเท่านั้น
 
   const handleChange = (value: string) => {
     onConditionUpdate(question.id as keyof ConditionInfo, value);
@@ -100,6 +106,7 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
     const currentValue = conditionInfo[question.id as keyof ConditionInfo] as string;
     const okValue = question.options[0].id;
     const problemValue = question.options[1].id;
+    // ถ้าค่าปัจจุบันคือ "มีปัญหา" ให้เปลี่ยนเป็น "ปกติ", ถ้าไม่ใช่ ให้เปลี่ยนเป็น "มีปัญหา"
     const newValue = currentValue === problemValue ? okValue : problemValue;
     onConditionUpdate(question.id as keyof ConditionInfo, newValue);
   };
@@ -108,7 +115,9 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
     case "choice":
       return (
         <div className="py-4 first:pt-0">
-          <h3 className="text-foreground mb-3 text-base font-semibold md:text-lg">{question.question}</h3>
+          <h3 className="text-foreground mb-3 text-base font-semibold md:text-lg">
+            {questionIndex}. {question.question}
+          </h3>
           <ChoiceInput
             question={question}
             currentValue={conditionInfo[question.id as keyof ConditionInfo] as string}
@@ -127,6 +136,4 @@ const QuestionWrapper = ({ question, conditionInfo, onConditionUpdate }: Questio
     default:
       return null;
   }
-};
-
-export default QuestionWrapper;
+}
