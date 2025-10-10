@@ -1,5 +1,6 @@
 // src/app/(main)/components/(hero)/HeroAssessmentForm.tsx
 // [IMPROVED]: Ensured productType is passed in the URL for Apple devices.
+// [MODIFIED]: Redirect non-iPhone/iPad Apple products to the new simple assessment page.
 
 "use client";
 import { useState, Fragment } from "react";
@@ -49,6 +50,17 @@ const HeroAssessmentForm = () => {
   };
 
   const handleNavigateToAssess = () => {
+    // --- [START MODIFICATION] ---
+    // Logic for Apple products that are NOT iPhone or iPad
+    if (selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType)) {
+      const params = new URLSearchParams({
+        productType: selectedProductType,
+      });
+      router.push(`/assess/simple?${params.toString()}`);
+      return; // Stop execution here
+    }
+    // --- [END MODIFICATION] ---
+
     if (!selectedBrand || !selectedModel || !selectedStorage) return;
     if (selectedBrand === "Apple" && !selectedProductType) return;
 
@@ -76,6 +88,8 @@ const HeroAssessmentForm = () => {
     if (!selectedBrand) return [];
     if (selectedBrand === "Apple") {
       if (!selectedProductType) return [];
+      // If the product is not iPhone or iPad, there are no models to select here.
+      if (!["iPhone", "iPad"].includes(selectedProductType)) return [];
       return PHONE_DATA.models[selectedProductType] || [];
     } else {
       return PHONE_DATA.models[selectedBrand] || [];
@@ -83,6 +97,12 @@ const HeroAssessmentForm = () => {
   })();
 
   const availableStorage = selectedModel ? PHONE_DATA.storage[selectedModel] || [] : [];
+
+  // --- [MODIFICATION] ---
+  // Disable the main button if an Apple product (not iPhone/iPad) is selected but doesn't require model/storage
+  const isSimpleAppleProduct =
+    selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType);
+  const isNextButtonDisabled = isSimpleAppleProduct ? false : !selectedModel || !selectedStorage;
 
   // SECTION: Render Component
   return (
@@ -134,37 +154,49 @@ const HeroAssessmentForm = () => {
             )}
           </AnimatePresence>
 
-          {/* Model Select */}
-          <Select
-            onValueChange={handleModelChange}
-            value={selectedModel}
-            disabled={selectedBrand === "Apple" ? !selectedProductType : !selectedBrand}
-          >
-            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
-              <SelectValue placeholder="เลือกรุ่น" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableModels.map((model) => (
-                <SelectItem key={model} value={model}>
-                  {model}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* --- [MODIFICATION] --- Show Model/Storage only for iPhone/iPad */}
+          <AnimatePresence>
+            {selectedBrand === "Apple" && ["iPhone", "iPad"].includes(selectedProductType) && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-2.5 md:gap-3 lg:gap-4"
+              >
+                {/* Model Select */}
+                <Select
+                  onValueChange={handleModelChange}
+                  value={selectedModel}
+                  disabled={selectedBrand === "Apple" ? !selectedProductType : !selectedBrand}
+                >
+                  <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+                    <SelectValue placeholder="เลือกรุ่น" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableModels.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-          {/* Storage Select */}
-          <Select onValueChange={setSelectedStorage} value={selectedStorage} disabled={!selectedModel}>
-            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
-              <SelectValue placeholder="เลือกความจุ" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableStorage.map((storage) => (
-                <SelectItem key={storage} value={storage}>
-                  {storage}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                {/* Storage Select */}
+                <Select onValueChange={setSelectedStorage} value={selectedStorage} disabled={!selectedModel}>
+                  <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+                    <SelectValue placeholder="เลือกความจุ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableStorage.map((storage) => (
+                      <SelectItem key={storage} value={storage}>
+                        {storage}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* iCloud Toggle */}
           <AnimatePresence>
@@ -220,7 +252,7 @@ const HeroAssessmentForm = () => {
           <Button
             size="lg"
             onClick={handleNavigateToAssess}
-            disabled={!selectedModel || !selectedStorage}
+            disabled={isNextButtonDisabled}
             className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg transition-transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:h-12 lg:text-lg"
           >
             ประเมินราคา

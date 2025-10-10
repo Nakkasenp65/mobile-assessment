@@ -9,6 +9,7 @@ import { PHONE_DATA } from "../../../../util/phone";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation"; // --- [เพิ่ม] Import useRouter ---
 
 // Import sub-components
 import UserDeviceSelection from "./UserDeviceSelection";
@@ -79,30 +80,20 @@ interface AssessStep1Props {
 }
 
 const AssessStep1 = ({
-  deviceInfo, // [เปลี่ยน] เราจะใช้ prop นี้โดยตรง
+  deviceInfo,
   conditionInfo,
   onDeviceUpdate,
   onConditionUpdate,
   onNext,
   onUserDeviceUpdate,
 }: AssessStep1Props) => {
+  const router = useRouter(); // --- [เพิ่ม] ประกาศใช้งาน router ---
   const { isDesktop } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("selectDeviceType");
   const [direction, setDirection] = useState(1);
-  // [ลบ] ไม่ใช้ localInfo state แล้ว
-  // const [localInfo, setLocalInfo] = useState<DeviceInfo>(deviceInfo);
   const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
   const initialSetupDone = useRef(false);
-
-  // [ลบ] useEffect สองตัวนี้ไม่จำเป็นแล้ว เพราะเราจะไมจัดการ state ซ้ำซ้อน
-  // useEffect(() => {
-  //   setLocalInfo(deviceInfo);
-  // }, [deviceInfo]);
-  //
-  // useEffect(() => {
-  //   onDeviceUpdate(localInfo);
-  // }, [localInfo, onDeviceUpdate]);
 
   useEffect(() => {
     if (initialSetupDone.current) return;
@@ -122,12 +113,9 @@ const AssessStep1 = ({
     }
   }, [isDesktop, onUserDeviceUpdate, deviceInfo, onNext]);
 
-  // [แก้ไข] แก้ไข handleSelectChange ให้เรียก onDeviceUpdate โดยตรง
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
-    // สร้าง state ใหม่จาก deviceInfo ที่ได้รับมา
     const newState = { ...deviceInfo, [field]: value };
 
-    // ใช้ Logic การล้างค่าเหมือนเดิม
     if (field === "brand") {
       newState.productType = "";
       newState.model = "";
@@ -141,7 +129,6 @@ const AssessStep1 = ({
       newState.storage = "";
     }
 
-    // ส่ง state ที่อัปเดตแล้วกลับไปให้ Parent Component
     onDeviceUpdate(newState);
   };
 
@@ -150,7 +137,6 @@ const AssessStep1 = ({
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
 
-    // [เปลี่ยน] ตรวจสอบจาก prop deviceInfo โดยตรง
     const hasUrlParams = !!(deviceInfo.brand && deviceInfo.model && deviceInfo.storage);
 
     if (hasUrlParams) {
@@ -160,15 +146,18 @@ const AssessStep1 = ({
     }
   };
 
+  // --- [แก้ไข] ปรับปรุง handleProductSelectAndNext ---
   const handleProductSelectAndNext = (productId: string) => {
+    onDeviceUpdate({ ...deviceInfo, productType: productId, model: "", storage: "" });
     setDirection(1);
-    handleSelectChange("productType", productId);
 
     const isDetailed = productId === "iPhone" || productId === "iPad";
     if (isDetailed) {
       setCurrentStep("selectModelStorage");
     } else {
-      setCurrentStep("simpleAssessment");
+      // ถ้าไม่ใช่ iPhone หรือ iPad ให้ redirect ไปหน้า simple assessment
+      const params = new URLSearchParams({ productType: productId });
+      router.push(`/assess/simple?${params.toString()}`);
     }
   };
 
@@ -176,7 +165,6 @@ const AssessStep1 = ({
     setDirection(1);
     switch (currentStep) {
       case "selectBrand":
-        // [เปลี่ยน] ใช้ deviceInfo.brand
         if (deviceInfo.brand === "Apple") {
           setCurrentStep("selectProduct");
         } else {
@@ -206,7 +194,6 @@ const AssessStep1 = ({
         setCurrentStep("selectBrand");
         break;
       case "selectModelStorage":
-        // [เปลี่ยน] ใช้ deviceInfo.brand
         if (deviceInfo.brand === "Apple") {
           setCurrentStep("selectProduct");
         } else {
@@ -214,7 +201,9 @@ const AssessStep1 = ({
         }
         break;
       case "simpleAssessment":
-        setCurrentStep("selectProduct");
+        // This case might need adjustment depending on your flow for non-Apple simple assessments
+        // For now, it goes back to selectBrand for non-Apple, which seems logical.
+        setCurrentStep("selectBrand");
         break;
       default:
         break;
@@ -243,7 +232,6 @@ const AssessStep1 = ({
             direction={direction}
           >
             <BrandSelector
-              // [เปลี่ยน] ใช้ deviceInfo.brand
               selectedBrand={deviceInfo.brand}
               onBrandChange={(brand) => handleSelectChange("brand", brand)}
               accordionValue="brand-selector"
@@ -252,7 +240,6 @@ const AssessStep1 = ({
             <NavigationButtons
               onBack={isDesktop ? undefined : prevStep}
               onNext={nextStep}
-              // [เปลี่ยน] ใช้ deviceInfo.brand
               isNextDisabled={!deviceInfo.brand}
             />
           </StepWrapper>
@@ -266,7 +253,6 @@ const AssessStep1 = ({
             direction={direction}
           >
             <ProductSelector
-              // [เปลี่ยน] ใช้ deviceInfo.productType
               selectedProduct={deviceInfo.productType || ""}
               onProductChange={handleProductSelectAndNext}
             />
@@ -280,7 +266,6 @@ const AssessStep1 = ({
         );
 
       case "selectModelStorage":
-        // [เปลี่ยน] ใช้ deviceInfo
         const availableModels = PHONE_DATA.models[deviceInfo.productType || deviceInfo.brand] || [];
         const availableStorage = PHONE_DATA.storage[deviceInfo.model] || [];
         return (
@@ -293,11 +278,9 @@ const AssessStep1 = ({
               <DeviceImagePreview
                 isLoading={isImageLoading}
                 imageUrl={productData?.image_url}
-                // [เปลี่ยน] ใช้ deviceInfo
                 altText={`${deviceInfo.brand} ${deviceInfo.model}`}
               />
               <ModelAndStorageSelector
-                // [เปลี่ยน] ส่ง deviceInfo เข้าไปแทน localInfo
                 localInfo={deviceInfo}
                 availableModels={availableModels}
                 availableStorage={availableStorage}
@@ -309,7 +292,6 @@ const AssessStep1 = ({
             <NavigationButtons
               onBack={prevStep}
               onNext={nextStep}
-              // [เปลี่ยน] ใช้ deviceInfo
               isNextDisabled={!deviceInfo.brand || !deviceInfo.model || !deviceInfo.storage}
             />
           </StepWrapper>
@@ -318,7 +300,6 @@ const AssessStep1 = ({
       case "simpleAssessment":
         return (
           <StepWrapper
-            // [เปลี่ยน] ใช้ deviceInfo.productType
             title="รายละเอียดเพิ่มเติม"
             description={`กรอกรายละเอียดเกี่ยวกับ ${deviceInfo.productType} ของคุณ`}
             direction={direction}
@@ -327,7 +308,6 @@ const AssessStep1 = ({
             <NavigationButtons
               onBack={prevStep}
               onNext={nextStep}
-              // [เปลี่ยน] ใช้ deviceInfo
               isNextDisabled={!deviceInfo.brand || !deviceInfo.productType}
             />
           </StepWrapper>

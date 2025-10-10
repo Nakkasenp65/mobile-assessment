@@ -8,7 +8,7 @@ import { DiagnosticsResult } from "./AutomatedDiagnostics";
 import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import QuestionReport from "./QuestionReport";
 import AutomatedDiagnostics from "./AutomatedDiagnostics";
-import InteractiveTests, { TestName, TestStatus } from "./InteractiveTests";
+import InteractiveTests from "./InteractiveTests";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
 function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
@@ -162,7 +162,7 @@ const AssessStep2 = ({ conditionInfo, onConditionUpdate, onNext, onBack, isOwnDe
           animate="center"
           exit="exit"
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="w-full"
+          className="flex w-full flex-col items-center justify-start"
         >
           {/* (ถามทุกแพลตฟอร์ม) เลือกตอบ */}
           {currentSubStep === "physical" && (
