@@ -43,7 +43,7 @@ export default function BrandSelector({
                 backgroundColor: isSelected || isHovered ? brandColor : "transparent",
               }}
               className={cn(
-                "flex aspect-square h-32 w-full flex-col items-center justify-center rounded-sm border transition-all duration-300",
+                "flex aspect-square h-32 w-full flex-col items-center justify-center rounded-sm border",
                 isSelected || isHovered
                   ? "border-transparent shadow-xl"
                   : "border-gray-200 hover:border-transparent hover:shadow-xl",
