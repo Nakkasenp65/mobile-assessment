@@ -20,6 +20,7 @@ import {
   FileText,
   Shield,
 } from "lucide-react";
+import Image from "next/image";
 
 const MobileMenu = ({
   isOpen,
@@ -243,9 +244,7 @@ const MobileMenu = ({
                   );
                 })}
               </ul>
-              <p className="text-muted-foreground mt-4 text-center text-xs">
-                © 2024 OK Mobile. All rights reserved.
-              </p>
+              <p className="text-muted-foreground mt-4 text-center text-xs">© 2024 OK Mobile. All rights reserved.</p>
             </div>
           </motion.div>
         </>
@@ -258,7 +257,6 @@ const MobileMenu = ({
 const Navbar = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
   const isActive = (path: string) => pathname === path;
 
@@ -275,16 +273,6 @@ const Navbar = () => {
     };
   }, [isMenuOpen]);
 
-  // Effect to handle scroll for navbar background
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const navItems = [
     { href: "/", label: "หน้าแรก" },
     { href: "/my-assessments", label: "ค้นหาการประเมิน" },
@@ -293,26 +281,24 @@ const Navbar = () => {
 
   return (
     <>
-      <nav
-        className={
-          "sticky top-0 z-30 w-full bg-white/75 backdrop-blur-2xl transition-all duration-300"
-        }
-      >
-        <div className="container mx-auto px-4">
+      <nav className={"sticky top-0 z-30 w-full bg-white shadow-xl"}>
+        <div className="container mx-auto">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
-              className="transition-smooth group flex items-center space-x-3 hover:scale-105"
+              className="group flex h-full items-center gap-2 py-2 duration-300 ease-in-out hover:scale-105"
             >
-              <div className="gradient-primary flex h-10 w-10 items-center justify-center rounded-xl shadow-lg transition-shadow group-hover:shadow-xl">
-                <Smartphone className="h-6 w-6 text-white" />
-              </div>
+              <Image
+                src="/assets/one-plus-logo.webp"
+                width={100}
+                height={100}
+                alt="ok-number-one-logo"
+                className="h-full w-auto"
+              />
               <div className="flex flex-col">
                 <span className="text-foreground text-lg font-bold">OK Mobile</span>
-                <span className="text-muted-foreground hidden text-xs sm:block">
-                  ซื้อ-ขายมือถือออนไลน์
-                </span>
+                <span className="text-muted-foreground hidden text-xs sm:block">ซื้อ-ขายมือถือออนไลน์</span>
               </div>
             </Link>
 
