@@ -1,4 +1,5 @@
-// HeroImageSlider.tsx
+// src\app\(main)\components\(hero)\HeroImageSlider.tsx
+
 "use client";
 
 import { useRef } from "react";
@@ -36,13 +37,7 @@ const HeroImageSlider = () => {
     <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[46%]">
       {/* Background Blob - adjusted for better proportion */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <Image
-          src={"/assets/element.webp"}
-          alt="decoration element"
-          width={2000}
-          height={2000}
-          className="scale-90"
-        />
+        <Image src={"/assets/element.webp"} alt="decoration element" width={2000} height={2000} className="scale-90" />
       </div>
 
       {/* Swiper Component with consistent aspect ratio */}
@@ -65,10 +60,7 @@ const HeroImageSlider = () => {
           className="h-full w-full"
         >
           {slides.map((slide, index) => (
-            <SwiperSlide
-              key={index}
-              className="flex items-center justify-center"
-            >
+            <SwiperSlide key={index} className="flex items-center justify-center">
               <div className="flex h-full w-full items-center justify-center">
                 <Image
                   src={slide.src}

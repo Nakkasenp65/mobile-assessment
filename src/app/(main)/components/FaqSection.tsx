@@ -49,7 +49,7 @@ const FaqSection = () => (
                 </div>
               </AccordionTrigger>
               {/* [MOD] ปรับ Padding ของ Content */}
-              <AccordionContent className="text-muted-foreground px-6 pt-0 pb-6 text-base">{faq.a}</AccordionContent>
+              <AccordionContent className="px-6 pt-0 pb-6 text-sm text-black sm:text-base">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

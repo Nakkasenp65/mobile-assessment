@@ -1,3 +1,5 @@
+// src\app\(main)\components\(hero)\HeroAssessmentForm.tsx
+
 "use client";
 import { useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
@@ -25,11 +27,12 @@ const HeroAssessmentForm = () => {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedStorage, setSelectedStorage] = useState<string>("");
   const [canUnlockIcloud, setCanUnlockIcloud] = useState<boolean>(true);
+  const availableBrands = PHONE_DATA.brands;
+  const availableProductTypes = selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
 
   // SECTION: Event Handlers
   const handleBrandChange = (brand: string) => {
     setSelectedBrand(brand);
-    // [FIX] Don't auto-select productType here. Let the user choose.
     setSelectedProductType("");
     setSelectedModel("");
     setSelectedStorage("");
@@ -47,7 +50,6 @@ const HeroAssessmentForm = () => {
   };
 
   const handleNavigateToAssess = () => {
-    // Logic for Apple products that are NOT iPhone or iPad
     if (selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType)) {
       const params = new URLSearchParams({
         brand: "Apple", // [FIX] Explicitly add brand
@@ -55,8 +57,6 @@ const HeroAssessmentForm = () => {
         isFromMainPage: "true",
         isIcloudUnlock: String(canUnlockIcloud), // [FIX] Also pass iCloud status
       });
-      // [FIX] Navigate to the main assess page, not a special 'simple' page.
-      // The AssessComponent will handle the routing to the correct step.
       router.push(`/assess?${params.toString()}`);
       return; // Stop execution here
     }
@@ -81,10 +81,6 @@ const HeroAssessmentForm = () => {
     router.push(url);
   };
 
-  // SECTION: Derived State
-  const availableBrands = PHONE_DATA.brands;
-  const availableProductTypes = selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
-
   const availableModels = (() => {
     if (selectedBrand !== "Apple") {
       return PHONE_DATA.models[selectedBrand] || [];
@@ -103,15 +99,11 @@ const HeroAssessmentForm = () => {
     if (!selectedBrand) return true;
     if (selectedBrand === "Apple") {
       if (!selectedProductType) return true;
-      // For simple Apple products, enable the button once productType is selected
       if (!["iPhone", "iPad"].includes(selectedProductType)) {
         return false;
       }
-      // For iPhone/iPad, require model and storage
       return !selectedModel || !selectedStorage;
     } else {
-      // For other brands, require model and storage
-      // This assumes other brands don't have a productType selector in this form
       return !selectedModel || !selectedStorage;
     }
   };
@@ -121,6 +113,7 @@ const HeroAssessmentForm = () => {
     <div className="flex h-max w-full flex-col md:w-[42%] lg:w-[50%] xl:w-[48%]">
       {/* Form Wrapper */}
       <div className="rounded-2xl bg-white p-4 shadow-lg md:p-5 lg:p-6">
+        {/* Form */}
         <form className="flex w-full flex-col gap-2.5 md:gap-3 lg:gap-4" onSubmit={(e) => e.preventDefault()}>
           <h3 className="text-secondary text-center text-base font-bold md:text-lg lg:text-xl">
             ประเมินราคาอุปกรณ์ของคุณ
@@ -284,19 +277,26 @@ const HeroAssessmentForm = () => {
 
       {/* Process Steps Section */}
       <div className="mt-5 rounded-2xl bg-white p-4 shadow-lg md:mt-6 md:hidden lg:mt-8 lg:block">
+        {/* ProcessSteps - Head */}
         <div className="mb-4 text-center">
           <h4 className="text-sm font-bold text-gray-800 lg:text-base">ขั้นตอนการใช้บริการ</h4>
           <div className="mx-auto mt-1.5 h-0.5 w-16 rounded-full bg-gradient-to-r from-orange-400 to-pink-500" />
         </div>
+        {/* ProcessSteps - Content */}
         <div className="flex items-center justify-between md:scale-85 lg:scale-100">
+          {/* Mapping the ProcessSteps */}
           {processSteps.map((step, index) => (
             <Fragment key={index}>
+              {/* Each step element */}
               <div className="group flex flex-col items-center text-center">
+                {/* Each step icon */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 transition-all duration-300 group-hover:bg-gray-200 md:h-14 md:w-14">
                   <step.icon className="h-6 w-6 text-pink-600 md:h-7 md:w-7" />
                 </div>
+                {/* Each step text */}
                 <p className="w-20 text-center text-xs font-semibold text-gray-700">{step.text}</p>
               </div>
+              {/* Conditional Rendering the arrow Icon */}
               {index < processSteps.length - 1 && (
                 <div className="flex-shrink-0 self-start pt-4">
                   <MoveRight className="h-4 w-4 text-gray-300 md:h-5 md:w-5" strokeWidth={2.5} />
