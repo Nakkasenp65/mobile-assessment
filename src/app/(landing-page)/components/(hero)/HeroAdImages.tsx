@@ -1,4 +1,4 @@
-// src\app\(main)\components\(hero)\HeroImageSlider.tsx
+// src/app/(main)/components/(hero)/HeroAdImages.tsx
 
 "use client";
 
@@ -29,12 +29,12 @@ const slides = [
   },
 ];
 
-const HeroImageSlider = () => {
+export default function HeroAdImages() {
   const swiperRef = useRef(null);
 
   return (
     // Responsive sizing: Mobile full width, md: slightly larger than 1/2, lg: balanced with form
-    <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[46%]">
+    <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[50%]">
       {/* Background Blob - adjusted for better proportion */}
       <div className="absolute inset-0 flex items-center justify-center">
         <Image src={"/assets/element.webp"} alt="decoration element" width={2000} height={2000} className="scale-90" />
@@ -77,6 +77,4 @@ const HeroImageSlider = () => {
       </div>
     </div>
   );
-};
-
-export default HeroImageSlider;
+}

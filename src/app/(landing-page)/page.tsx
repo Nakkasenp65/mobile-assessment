@@ -1,3 +1,5 @@
+// src/app/(main)/page.tsx
+
 "use client";
 
 import Layout from "../../components/Layout/Layout";
@@ -10,7 +12,7 @@ import HowItWorksSection from "./components/HowItWorksSection";
 import ReviewsSection from "./components/ReviewsSection";
 import AnimatedButton from "./components/AnimatedButton";
 
-const MainPage = () => {
+export default function LandingPage() {
   return (
     <Layout>
       <AnimatedButton />
@@ -25,6 +27,4 @@ const MainPage = () => {
       <Footer />
     </Layout>
   );
-};
-
-export default MainPage;
+}
