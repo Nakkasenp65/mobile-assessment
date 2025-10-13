@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LockKeyhole } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import DPOConsent from "@/components/ui/DpoConsent";
 
 export default function HeroAssessmentForm() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function HeroAssessmentForm() {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedStorage, setSelectedStorage] = useState<string>("");
   const [canUnlockIcloud, setCanUnlockIcloud] = useState<boolean>(true);
+  const [isDpoConsentVisible, setIsDpoConsentVisible] = useState(false);
 
   const availableBrands = PHONE_DATA.brands;
   const availableProductTypes = selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
@@ -42,22 +44,27 @@ export default function HeroAssessmentForm() {
     setSelectedStorage("");
   };
 
-  const handleNavigateToAssess = () => {
+  const handleAcceptConsentAndNavigate = () => {
+    // ปิด Modal ก่อนเสมอเมื่อกด "ยอมรับ"
+    setIsDpoConsentVisible(false);
+
+    // ตรวจสอบเงื่อนไขการ Redirect สำหรับสินค้า Apple ที่ไม่มีรุ่น/ความจุ
     if (selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType)) {
       const params = new URLSearchParams({
-        brand: "Apple", // [FIX] Explicitly add brand
+        brand: "Apple",
         productType: selectedProductType,
         isFromMainPage: "true",
-        isIcloudUnlock: String(canUnlockIcloud), // [FIX] Also pass iCloud status
+        isIcloudUnlock: String(canUnlockIcloud),
       });
       router.push(`/assess?${params.toString()}`);
-      return; // Stop execution here
+      return;
     }
 
-    // Standard logic for iPhone, iPad, and other brands
+    // ตรวจสอบ Validation ของฟอร์ม
     if (!selectedBrand || !selectedModel || !selectedStorage) return;
     if (selectedBrand === "Apple" && !selectedProductType) return;
 
+    // สร้าง URL และ Redirect
     const params = new URLSearchParams({
       brand: selectedBrand,
       productType: selectedProductType,
@@ -74,11 +81,18 @@ export default function HeroAssessmentForm() {
     router.push(url);
   };
 
+  const handleShowConsent = () => {
+    setIsDpoConsentVisible(true);
+  };
+
+  const handleCloseConsent = () => {
+    setIsDpoConsentVisible(false);
+  };
+
   const availableModels = (() => {
     if (selectedBrand !== "Apple") {
       return PHONE_DATA.models[selectedBrand] || [];
     }
-    // For Apple, only show models if a productType that has models is selected
     if (["iPhone", "iPad"].includes(selectedProductType)) {
       return PHONE_DATA.models[selectedProductType] || [];
     }
@@ -87,7 +101,6 @@ export default function HeroAssessmentForm() {
 
   const availableStorage = selectedModel ? PHONE_DATA.storage[selectedModel] || [] : [];
 
-  // Determine if the button should be disabled
   const isNextButtonDisabled = () => {
     if (!selectedBrand) return true;
     if (selectedBrand === "Apple") {
@@ -103,13 +116,15 @@ export default function HeroAssessmentForm() {
 
   return (
     <div className="rounded-2xl bg-white p-4 shadow-lg md:p-5 lg:p-6">
-      {/* Form */}
+      <AnimatePresence>
+        {isDpoConsentVisible && <DPOConsent onAccept={handleAcceptConsentAndNavigate} onClose={handleCloseConsent} />}
+      </AnimatePresence>
+
       <form className="flex w-full flex-col gap-2.5 md:gap-3 lg:gap-4" onSubmit={(e) => e.preventDefault()}>
         <h3 className="text-secondary text-center text-base font-bold md:text-lg lg:text-xl">
           ประเมินราคาอุปกรณ์ของคุณ
         </h3>
         <AnimatePresence mode="wait">
-          {/* Brand Select */}
           <Select onValueChange={handleBrandChange} value={selectedBrand}>
             <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
               <SelectValue placeholder="เลือกยี่ห้อ" />
@@ -123,7 +138,6 @@ export default function HeroAssessmentForm() {
             </SelectContent>
           </Select>
 
-          {/* Product Type Select (Only for Apple) */}
           {selectedBrand === "Apple" && (
             <motion.div
               key="apple-product-type"
@@ -147,9 +161,7 @@ export default function HeroAssessmentForm() {
             </motion.div>
           )}
 
-          {/* Model and Storage Select  */}
           <div className="flex flex-col gap-2.5 md:gap-3 lg:gap-4" key={"form-model-storage"}>
-            {/* Model Select */}
             <Select onValueChange={handleModelChange} value={selectedModel} disabled={availableModels.length === 0}>
               <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
                 <SelectValue placeholder="เลือกรุ่น" />
@@ -163,7 +175,6 @@ export default function HeroAssessmentForm() {
               </SelectContent>
             </Select>
 
-            {/* Storage Select */}
             <Select onValueChange={setSelectedStorage} value={selectedStorage} disabled={!selectedModel}>
               <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
                 <SelectValue placeholder="เลือกความจุ" />
@@ -178,7 +189,6 @@ export default function HeroAssessmentForm() {
             </Select>
           </div>
 
-          {/* iCloud Toggle  */}
           {selectedBrand === "Apple" && ["iPhone", "iPad"].includes(selectedProductType) && (
             <motion.div
               key="icloud-toggle"
@@ -228,10 +238,9 @@ export default function HeroAssessmentForm() {
           )}
         </AnimatePresence>
 
-        {/* Submit Button */}
         <Button
           size="lg"
-          onClick={handleNavigateToAssess}
+          onClick={handleShowConsent}
           disabled={isNextButtonDisabled()}
           className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg duration-300 ease-in-out hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:h-12 lg:text-lg"
         >
@@ -240,14 +249,9 @@ export default function HeroAssessmentForm() {
 
         <p className="mt-2 text-center text-xs text-gray-500">
           เมื่อเริ่มประเมินราคา ถือว่าท่านได้ยอมรับ{" "}
-          <a
-            href="/terms-and-conditions"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-pink-600 underline hover:text-pink-700"
-          >
+          <button type="button" onClick={handleShowConsent} className="text-pink-600 underline hover:text-pink-700">
             ข้อตกลงและเงื่อนไข
-          </a>{" "}
+          </button>{" "}
           การใช้บริการ
         </p>
       </form>

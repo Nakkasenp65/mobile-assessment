@@ -281,13 +281,13 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={"sticky top-0 z-30 w-full bg-white shadow-xl"}>
+      <nav className={"sticky top-0 z-30 w-full bg-white shadow-md"}>
         <div className="container mx-auto">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
-              className="group flex h-full items-center gap-2 py-2 duration-300 ease-in-out hover:scale-105"
+              className="group flex h-full items-center gap-2 py-2 pl-2 duration-300 ease-in-out hover:scale-105 xl:pl-0"
             >
               <Image
                 src="/assets/one-plus-logo.webp"

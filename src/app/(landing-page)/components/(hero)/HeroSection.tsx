@@ -12,7 +12,7 @@ import HeroFeature from "./HeroFeature";
 
 const HeroSection = () => {
   return (
-    <section className="gradient-bg relative h-max w-full overflow-hidden px-4 pb-24 sm:py-16">
+    <section className="gradient-bg relative h-max w-full overflow-hidden px-4 pb-16 sm:py-16 xl:pt-4">
       {/* Section - Hero */}
       <div className="relative container mx-auto flex w-full flex-col items-center gap-8">
         {/* Ad Image + CTA */}

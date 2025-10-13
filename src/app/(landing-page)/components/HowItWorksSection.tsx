@@ -1,14 +1,9 @@
 "use client";
 import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
-import {
-  Search,
-  CalendarClock,
-  HandCoins,
-} from "lucide-react";
+import { Search, CalendarClock, HandCoins } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-// --- โครงสร้างข้อมูลของ Steps (ไม่มีการเปลี่ยนแปลง) ---
 const steps = [
   {
     icon: Search,
@@ -24,8 +19,7 @@ const steps = [
   {
     icon: CalendarClock,
     title: "นัดหมายและยืนยัน",
-    description:
-      "เลือกสาขาที่สะดวกและนัดวันเวลาเพื่อนำเครื่องเข้ามาให้ทีมงานตรวจสอบสภาพจริงและยืนยันราคาสุดท้าย",
+    description: "เลือกสาขาที่สะดวกและนัดวันเวลาเพื่อนำเครื่องเข้ามาให้ทีมงานตรวจสอบสภาพจริงและยืนยันราคาสุดท้าย",
     colors: {
       bg: "bg-[#E5F9FE]",
       icon: "text-cyan-500",
@@ -35,8 +29,7 @@ const steps = [
   {
     icon: HandCoins,
     title: "รับเงินสดทันที",
-    description:
-      "เมื่อตกลงราคาเรียบร้อยแล้ว คุณสามารถรับเงินสดกลับบ้านได้ทันที ง่ายๆ สะดวกและไม่ต้องรอ",
+    description: "เมื่อตกลงราคาเรียบร้อยแล้ว คุณสามารถรับเงินสดกลับบ้านได้ทันที ง่ายๆ สะดวกและไม่ต้องรอ",
     colors: {
       bg: "bg-[#FADCDC]",
       icon: "text-pink-500",
@@ -46,10 +39,7 @@ const steps = [
 ];
 
 const HowItWorksSection = () => (
-  <section
-    aria-labelledby="how-title"
-    className="relative isolate w-full overflow-hidden"
-  >
+  <section aria-labelledby="how-title" className="relative isolate w-full overflow-hidden">
     {/* Background */}
     <div className="absolute inset-0">
       <Image
@@ -75,10 +65,7 @@ const HowItWorksSection = () => (
             Ok Mobile รับซื้อไอโฟนจำนวนมาก
           </h2>
           <div className="mx-auto my-4 h-1.5 w-24 rounded-xl bg-gradient-to-r from-orange-500 to-pink-600" />
-          <p
-            id="how-desc"
-            className="text-muted-foreground mx-auto mb-12 max-w-2xl text-base md:mb-16 md:text-lg"
-          >
+          <p id="how-desc" className="text-muted-foreground mx-auto mb-12 max-w-2xl text-base md:mb-16 md:text-lg">
             3 ขั้นตอนง่ายๆ ขายไอโฟนกับเรา
           </p>
         </div>
@@ -95,16 +82,11 @@ const HowItWorksSection = () => (
                   <div
                     className={`flex h-16 w-16 flex-shrink-0 place-items-center items-center justify-center rounded-2xl shadow-lg transition-transform duration-300 hover:-translate-y-1 md:h-20 md:w-20 ${step.colors.bg} `}
                   >
-                    <step.icon
-                      className={`h-8 w-8 md:h-10 md:w-10 ${step.colors.icon}`}
-                      strokeWidth={1.5}
-                    />
+                    <step.icon className={`h-8 w-8 md:h-10 md:w-10 ${step.colors.icon}`} strokeWidth={1.5} />
                   </div>
                   <div className="mt-3 w-full md:mt-4">
                     {/* ข้อความ */}
-                    <h3 className="text-sm font-bold text-slate-900 md:text-lg">
-                      {step.title}
-                    </h3>
+                    <h3 className="text-sm font-bold text-slate-900 md:text-lg">{step.title}</h3>
                     <p className="mt-1 hidden px-1 text-xs text-slate-600 md:mt-2 md:block md:px-0 md:text-sm">
                       {step.description}
                     </p>
@@ -132,7 +114,7 @@ const HowItWorksSection = () => (
           </div>
 
           {/* ส่วนของรูปผู้หญิง (Illustration Section) */}
-          <div className="w-full max-w-xs md:max-w-sm lg:order-first lg:w-2/5 lg:max-w-none">
+          <div className="w-full md:max-w-sm lg:order-first lg:w-2/5 lg:max-w-none">
             <Image
               width={600}
               height={800}

@@ -1,14 +1,18 @@
+// src/components/ui/DpoConsent.tsx
+
 "use client";
 
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 
 interface DPOConsentProps {
   onAccept: () => void;
+  onClose: () => void; // เพิ่ม Prop สำหรับปิด Modal
 }
 
-export default function DPOConsent({ onAccept }: DPOConsentProps) {
+export default function DPOConsent({ onAccept, onClose }: DPOConsentProps) {
   const [showScrollButton, setShowScrollButton] = useState<boolean>(true);
 
   useEffect(() => {
@@ -17,12 +21,10 @@ export default function DPOConsent({ onAccept }: DPOConsentProps) {
 
     const handleScroll = (): void => {
       const { scrollTop, scrollHeight, clientHeight } = termsBox;
-      // A buffer of 10px helps with precision issues across browsers
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
       setShowScrollButton(!isAtBottom);
     };
 
-    // Initial check
     handleScroll();
 
     termsBox.addEventListener("scroll", handleScroll);
@@ -43,12 +45,26 @@ export default function DPOConsent({ onAccept }: DPOConsentProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose} // เพิ่ม: ทำให้คลิกพื้นหลังแล้วปิดได้
     >
-      <div className="relative flex h-full max-h-[95vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+      <div
+        className="relative flex h-full max-h-[95vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()} // เพิ่ม: ป้องกันการปิดเมื่อคลิกที่ตัว Modal เอง
+      >
+        {/* เพิ่ม: ปุ่มปิด (X) */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          aria-label="ปิดหน้าต่าง"
+        >
+          <X size={24} />
+        </button>
+
         {/* Header with Logo */}
         <div className="flex flex-col items-center p-6">
           <Image
@@ -56,7 +72,7 @@ export default function DPOConsent({ onAccept }: DPOConsentProps) {
             alt="Logo"
             width={100}
             height={100}
-            style={{ width: "auto", height: "auto" }} // Maintain aspect ratio
+            style={{ width: "auto", height: "auto" }}
             className="mb-4"
           />
           <h1 className="text-center text-xl font-bold text-gray-900">
@@ -222,11 +238,9 @@ export default function DPOConsent({ onAccept }: DPOConsentProps) {
             </div>
           </section>
 
-          {/* Version */}
           <p className="mt-8 text-center text-xs text-gray-500">version 1.0.2 (10 ม.ค. 2568)</p>
         </div>
 
-        {/* Footer with Button */}
         <div className="flex-shrink-0 border-t border-gray-200 p-4 text-center">
           <button
             onClick={onAccept}
@@ -236,7 +250,6 @@ export default function DPOConsent({ onAccept }: DPOConsentProps) {
           </button>
         </div>
 
-        {/* Scroll Down Button */}
         {showScrollButton && (
           <button
             onClick={handleScrollToBottom}

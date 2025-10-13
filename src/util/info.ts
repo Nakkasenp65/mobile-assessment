@@ -82,7 +82,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ประกันศูนย์",
         icon: ShieldCheck,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "warranty_active_long", label: "เหลือมากกว่า 6 เดือน", icon: ShieldCheck },
           { id: "warranty_active_short", label: "เหลือน้อยกว่า 6 เดือน", icon: Clock },
@@ -94,7 +94,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "อุปกรณ์ในกล่อง",
         icon: Package,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "acc_full", label: "ครบกล่อง", icon: Package },
           { id: "acc_box_only", label: "มีเฉพาะกล่อง", icon: Archive },
@@ -111,7 +111,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "สภาพตัวเครื่องโดยรวม",
         icon: Smartphone,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "body_mint", label: "เหมือนใหม่ไม่มีรอย", icon: ShieldCheck },
           { id: "body_scratch_minor", label: "มีรอยเคส/สีลอก", icon: AlertTriangle },
@@ -123,7 +123,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "สภาพกระจกหน้าจอ",
         icon: RectangleHorizontal,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "glass_ok", label: "ไม่มีรอย", icon: ShieldCheck },
           { id: "glass_scratch_hairline", label: "มีรอยขนแมว", icon: Frame },
@@ -140,7 +140,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "คุณภาพการแสดงผล",
         icon: MonitorPlay,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "display_ok", label: "แสดงผลปกติ สีสวย", icon: MonitorPlay },
           { id: "display_pixel_defect", label: "มีจุด Dead/Bright, มีเส้น", icon: Grid3x3 },
@@ -169,7 +169,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "กล้องหน้าและกล้องหลัง",
         icon: Camera,
         type: "choice",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "camera_ok", label: "ทำงานปกติ", icon: Camera },
           { id: "camera_issue_minor", label: "มีปัญหา (จุดดำ, ไม่โฟกัส)", icon: AlertTriangle },
@@ -247,7 +247,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การโทร",
         icon: PhoneCall,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "call_ok", label: "โทรเข้า-ออกปกติ", icon: PhoneCall },
           { id: "call_failed", label: "มีปัญหาการโทร", icon: PhoneOff },
@@ -258,7 +258,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ปุ่ม Home",
         icon: CircleDot,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "home_button_ok", label: "ใช้งานได้ปกติ", icon: CircleDot },
           { id: "home_button_failed", label: "ใช้งานไม่ได้", icon: CircleDot },
@@ -269,7 +269,7 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Sensor",
         icon: RadioTower,
         type: "toggle",
-        platforms: ["DESKTOP", "IOS", "ANDROID"],
+        platforms: ["DESKTOP", "IOS", "ANDROID", "OTHER"],
         options: [
           { id: "sensor_ok", label: "ทำงานปกติ", icon: RadioTower },
           { id: "sensor_failed", label: "มีปัญหา", icon: RadioTower },

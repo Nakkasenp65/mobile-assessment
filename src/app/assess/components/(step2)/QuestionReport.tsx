@@ -22,7 +22,7 @@ interface QuestionReportProps {
 
 const IcloudLockWarning = ({ onAcknowledge }: { onAcknowledge: () => void }) => (
   <motion.div
-    className="flex w-full max-w-lg flex-col items-center justify-center pt-24 text-center"
+    className="flex w-full max-w-lg flex-col items-center justify-center text-center"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -68,9 +68,13 @@ export default function QuestionReport({
     return <IcloudLockWarning onAcknowledge={() => setAcknowledged(true)} />;
   }
 
+  // ✨ [MODIFIED] เปลี่ยน Logic การแสดงผล
+  // - ถ้าเป็น Desktop: ใช้ DesktopReportForm เหมือนเดิม
+  // - ถ้าเป็น Mobile: ใช้ MobileQuestionAccordion สำหรับทุกกรณี (ทั้งประเมินเครื่องตัวเองและเครื่องอื่น)
+  //   โดยส่ง prop `showFullReport` เข้าไปเพื่อให้ MobileQuestionAccordion รู้ว่าต้องแสดงคำถามชุดไหน
   return (
     <>
-      {isDesktop || showFullReport ? (
+      {isDesktop ? (
         <DesktopReportForm
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -85,6 +89,7 @@ export default function QuestionReport({
           onConditionUpdate={onConditionUpdate}
           onComplete={onComplete}
           onBack={onBack}
+          showFullReport={showFullReport}
         />
       )}
     </>

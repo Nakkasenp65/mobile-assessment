@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ConditionInfo, DeviceInfo } from "../../../../../../types/device";
-import { ASSESSMENT_QUESTIONS } from "../../../../../../util/info";
+import { ASSESSMENT_QUESTIONS, Platform } from "../../../../../../util/info";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
@@ -19,6 +19,7 @@ interface MobileQuestionAccordionProps {
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onComplete: () => void;
   onBack: () => void;
+  showFullReport: boolean;
 }
 
 const MobileQuestionAccordion = ({
@@ -27,21 +28,37 @@ const MobileQuestionAccordion = ({
   onConditionUpdate,
   onComplete,
   onBack,
+  showFullReport, // ✨ [ADDED] รับ Prop `showFullReport`
 }: MobileQuestionAccordionProps) => {
   const { isDesktop, isIOS } = useDeviceDetection();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // ✨ [แก้ไข] ปรับ Logic การกรองคำถามให้ขึ้นอยู่กับยี่ห้อของอุปกรณ์ที่ประเมินโดยตรง
+  // ✨ [MODIFIED] ปรับ Logic การกรองคำถามให้ฉลาดขึ้นตาม Prop ที่ได้รับ
   const relevantQuestions = useMemo(() => {
-    // กำหนด platform เป้าหมายจากยี่ห้อของอุปกรณ์: ถ้าเป็น Apple ให้ใช้ IOS, ถ้าไม่ใช่ให้ใช้ ANDROID
-    const targetPlatform = deviceInfo.brand === "Apple" ? "IOS" : "ANDROID";
+    const getTargetPlatforms = (): Platform[] => {
+      // กรณีที่ต้องแสดง "รายงานฉบับเต็ม" (เช่น ประเมินเครื่องอื่น หรือมาจาก Desktop)
+      // จะใช้ Logic การกรองที่ครอบคลุมเหมือนกับ DesktopReportForm
+      if (showFullReport) {
+        if (deviceInfo.brand === "Apple") {
+          return ["IOS", "DESKTOP"];
+        } else {
+          // สำหรับยี่ห้ออื่น จะรวมคำถามสำหรับ Android และคำถามทั่วไป (OTHER)
+          return ["ANDROID", "OTHER"];
+        }
+      }
+
+      // กรณีปกติ (ประเมินเครื่องตัวเองบนมือถือ) จะกรองคำถามเฉพาะของ OS นั้นๆ
+      // เพราะส่วนที่เหลือจะถูกตรวจสอบด้วย Interactive Test ในขั้นตอนถัดไป
+      return deviceInfo.brand === "Apple" ? ["IOS"] : ["ANDROID"];
+    };
+
+    const targetPlatforms = getTargetPlatforms();
 
     return ASSESSMENT_QUESTIONS.map((section) => ({
       ...section,
-      // กรองคำถามเฉพาะที่อยู่ใน platform เป้าหมาย
-      questions: section.questions.filter((q) => q.platforms.includes(targetPlatform)),
-    })).filter((section) => section.questions.length > 0); // ลบ section ที่ไม่มีคำถามที่เกี่ยวข้องออก
-  }, [deviceInfo.brand]);
+      questions: section.questions.filter((q) => q.platforms.some((platform) => targetPlatforms.includes(platform))),
+    })).filter((section) => section.questions.length > 0);
+  }, [deviceInfo.brand, showFullReport]); // ✨ เพิ่ม showFullReport ใน dependency array
 
   const allVisibleQuestions = useMemo(
     () => relevantQuestions.flatMap((s) => s.questions).filter((q) => q.type === "choice"),
@@ -155,7 +172,6 @@ const MobileQuestionAccordion = ({
                         </div>
 
                         <div className="flex-grow">
-                          {/* ✨ [แก้ไข] ย้ายเลขข้อมาไว้ข้างๆ หัวข้อ */}
                           <div className="flex items-start gap-2">
                             <span className="text-muted-foreground pt-px font-semibold">{questionIndex + 1}.</span>
                             <p className="text-foreground flex-1 text-left font-semibold">{question.question}</p>

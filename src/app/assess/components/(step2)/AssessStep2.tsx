@@ -100,10 +100,8 @@ const AssessStep2 = ({
     setCurrentSubStep("automated");
   }, []);
 
-  /** ถ้ากดยกเลิกใน modal ให้อยู่ที่ physical ต่อไป */
   const handleCancelPermissions = useCallback(() => {
     setShowPermissionPrompt(false);
-    // no-op: คงอยู่ใน physical
   }, []);
 
   const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
@@ -119,10 +117,8 @@ const AssessStep2 = ({
     [onConditionUpdate],
   );
 
-  // ✨ [แก้ไข] ปรับ Type ของ parameter `results` ให้ถูกต้อง
   const handleTestsCompletion = useCallback(
     (results: Partial<Pick<ConditionInfo, "speaker" | "mic" | "camera" | "touchScreen">>) => {
-      // ✨ [แก้ไข] Logic ภายในง่ายขึ้นมาก แค่รวม object เข้าไปเลย
       onConditionUpdate((prev) => ({
         ...prev,
         ...results,

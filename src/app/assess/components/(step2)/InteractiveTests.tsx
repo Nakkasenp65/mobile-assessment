@@ -77,12 +77,14 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
   }, []);
 
   return (
-    <div className="flex flex-col">
-      <div className="text-center">
+    <div className="flex w-full flex-col gap-8">
+      {/* Head */}
+      <div className="py-2 text-center">
         <h2 className="text-foreground text-xl font-bold">ขั้นตอนที่ 3: ทดสอบการใช้งาน</h2>
       </div>
 
-      <div className="my-8 grid min-h-[250px] grid-cols-2 content-center gap-4 md:grid-cols-4">
+      {/* Test Buttons */}
+      <div className="my-8 grid min-h-[250px] grid-cols-2 content-center gap-4 px-8 md:grid-cols-4">
         <TestButton
           icon={Volume2}
           label="ลำโพง"
@@ -121,7 +123,8 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
         />
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
+      {/* Navigation */}
+      <div className="flex w-full items-center justify-between py-2">
         <FramerButton
           variant="ghost"
           onClick={onBack}

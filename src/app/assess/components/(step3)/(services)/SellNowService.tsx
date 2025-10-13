@@ -1,10 +1,12 @@
+// src/app/assess/components/(step3)/(services)/SellNowService.tsx
+
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeviceInfo } from "../../../../../types/device";
 import type { LongdoAddressData } from "../LongdoAddressForm";
-import useLocation from "@/hooks/useLocation";
+// import useLocation from "@/hooks/useLocation"; // ✨ 1. ลบ useLocation hook ที่ไม่ได้ใช้ออก
 import { useLongdoReverseGeocode } from "@/hooks/useLongdoReverseGeocode";
 import type { LatLng } from "leaflet";
 import dynamic from "next/dynamic";
@@ -32,12 +34,6 @@ interface SellNowServiceProps {
 type ServiceStep = "filling_form" | "awaiting_deposit" | "completed";
 
 const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServiceProps) => {
-  // ✨ REMOVED isClient STATE ✨
-  // const [isClient, setIsClient] = useState(false);
-  // useEffect(() => {
-  //   setIsClient(true);
-  // }, []);
-
   const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
   void _deviceInfo;
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -60,18 +56,41 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
     time: "",
   });
 
-  const { location: initialLocation } = useLocation();
+  // ✨ 2. ย้าย Logic การขอตำแหน่งมาไว้ใน Component โดยตรง
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
   const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
 
-  useEffect(() => {
-    // This is fine, as Leaflet is also dynamically imported inside LocationDetails
-    if (initialLocation && !mapCenter) {
-      import("leaflet").then((L) => {
-        setMapCenter(new L.LatLng(initialLocation.latitude, initialLocation.longitude));
-      });
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      return;
     }
-  }, [initialLocation, mapCenter]);
+
+    setIsLocationLoading(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        import("leaflet").then((L) => {
+          setMapCenter(new L.LatLng(latitude, longitude));
+        });
+        setIsLocationLoading(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationError("Unable to retrieve your location. Please check your browser permissions.");
+        setIsLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  }, []);
 
   useEffect(() => {
     if (turnstileToken) {
@@ -90,9 +109,17 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
     }));
   }, []);
 
-  const handleLocationTypeChange = useCallback((newLocationType: "home" | "bts" | "store") => {
-    setLocationType(newLocationType);
-  }, []);
+  // ✨ 4. แก้ไข handleLocationTypeChange ให้เรียก `requestLocation` เมื่อเลือก "ที่บ้าน"
+  const handleLocationTypeChange = useCallback(
+    (newLocationType: "home" | "bts" | "store") => {
+      setLocationType(newLocationType);
+      // ถ้าเลือก "ที่บ้าน" และยังไม่มีข้อมูลตำแหน่ง (mapCenter) ให้ทำการขอตำแหน่ง
+      if (newLocationType === "home" && !mapCenter) {
+        requestLocation();
+      }
+    },
+    [mapCenter, requestLocation], // เพิ่ม dependencies ที่ถูกต้อง
+  );
 
   const handleAddressChange = useCallback((address: LongdoAddressData) => {
     setFormState((prev) => ({
@@ -157,8 +184,6 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
   useEffect(() => {
     scrollTo(0, 0);
   }, [serviceStep]);
-
-  // ✨ REMOVED the `if (!isClient)` block ✨
 
   return (
     <main className="w-full space-y-6 pt-4">

@@ -28,16 +28,7 @@ const features = [
 
 const WhyUsSection = () => {
   return (
-    <section
-      aria-labelledby="why-us-title"
-      className="relative isolate container mx-auto"
-    >
-      {/* พื้นหลัง soft gradient + pattern เบา ๆ */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 rounded-4xl bg-gradient-to-br from-pink-50 via-white to-orange-50/60" />
-        <div className="absolute inset-x-0 top-0 mx-auto h-48 max-w-5xl rounded-b-[4rem] bg-gradient-to-r from-pink-200/40 to-orange-200/40 blur-3xl" />
-      </div>
-
+    <section aria-labelledby="why-us-title" className="relative isolate container mx-auto">
       <div className="mx-auto mt-16 px-4 py-8 text-center md:px-8 lg:px-12">
         <motion.h2
           id="why-us-title"
@@ -48,14 +39,11 @@ const WhyUsSection = () => {
           className="mb-4 text-xl font-extrabold tracking-tight text-slate-900 md:text-4xl"
         >
           ขาย iPhone กับ{" "}
-          <span className="bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">
-            Ok Mobile
-          </span>{" "}
+          <span className="bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">Ok Mobile</span>{" "}
           ดียังไง?
         </motion.h2>
         <p className="text-muted-foreground mx-auto mb-10 max-w-2xl text-sm md:text-base">
-          ประสบการณ์ที่ไว้ใจได้ ขั้นตอนเรียบง่าย
-          ได้ราคายุติธรรม และบริการถึงที่
+          ประสบการณ์ที่ไว้ใจได้ ขั้นตอนเรียบง่าย ได้ราคายุติธรรม และบริการถึงที่
         </p>
 
         {/* 4 Cards  */}
@@ -84,22 +72,12 @@ const WhyUsSection = () => {
               <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/15 to-pink-500/15 blur-md" />
                 <div className="relative rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-100">
-                  <img
-                    src={feature.icon}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className="h-10 w-10 object-contain"
-                  />
+                  <img src={feature.icon} alt="" loading="lazy" decoding="async" className="h-10 w-10 object-contain" />
                 </div>
               </div>
 
-              <h3 className="mb-2 text-center text-base font-bold text-slate-900 md:text-lg">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground text-center text-xs leading-relaxed md:text-base">
-                {feature.desc}
-              </p>
+              <h3 className="mb-2 text-center text-base font-bold text-slate-900 md:text-lg">{feature.title}</h3>
+              <p className="text-muted-foreground text-center text-xs leading-relaxed md:text-base">{feature.desc}</p>
 
               {/* ปุ่มเน้นโทนแบรนด์ตอน hover (แถบด้านล่าง) */}
               <div className="pointer-events-none absolute inset-x-6 bottom-0 translate-y-1 border-t border-transparent py-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:border-pink-200/60 group-hover:opacity-100" />

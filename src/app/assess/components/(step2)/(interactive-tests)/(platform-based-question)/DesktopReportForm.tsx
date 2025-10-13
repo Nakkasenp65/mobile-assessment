@@ -45,14 +45,21 @@ export default function DesktopReportForm({
     })).filter((section) => section.questions.length > 0);
   }, [deviceInfo.brand]);
 
-  // ✨ [แก้ไข] เปลี่ยนชื่อและ Logic: รวมทั้ง choice และ toggle เป็นคำถามที่ต้องตอบทั้งหมด
-  const allRequiredQuestions = useMemo(() => relevantSections.flatMap((s) => s.questions), [relevantSections]);
+  // ✨ [แก้ไข] เปลี่ยน allRequiredQuestions ให้หมายถึงเฉพาะคำถามประเภท 'choice' ที่บังคับตอบ
+  const allRequiredQuestions = useMemo(
+    () => relevantSections.flatMap((s) => s.questions.filter((q) => q.type === "choice")),
+    [relevantSections],
+  );
 
-  // ✨ [แก้ไข] Logic: ตรวจสอบคำถาม "ทั้งหมด" ใน Section (ทั้ง choice และ toggle)
+  // ✨ [แก้ไข] Logic: ตรวจสอบเฉพาะคำถาม "choice" ใน Section
   const isSectionComplete = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
-    // ไม่ต้องกรอง type แล้ว เพราะทุกคำถามใน section ถือว่าบังคับตอบ
-    return section.questions.every((q) => !!conditionInfo[q.id]);
+    if (!section) return false;
+    // กรองเฉพาะคำถามที่ต้องตอบ (choice)
+    const requiredQuestions = section.questions.filter((q) => q.type === "choice");
+    // ถ้าไม่มีคำถามที่ต้องตอบใน section นี้เลย ให้ถือว่าสมบูรณ์
+    if (requiredQuestions.length === 0) return true;
+    return requiredQuestions.every((q) => !!conditionInfo[q.id]);
   };
 
   // ✨ [แก้ไข] Logic: ตรวจสอบว่ามีคำถามใดๆ ใน Section ถูกตอบแล้วหรือยัง
@@ -61,7 +68,7 @@ export default function DesktopReportForm({
     return section.questions.some((q) => !!conditionInfo[q.id]);
   };
 
-  // ✨ [แก้ไข] Logic: ตรวจสอบความสมบูรณ์จาก list ของคำถามที่บังคับตอบทั้งหมด
+  // ✨ [แก้ไข] Logic: isComplete จะทำงานถูกต้องโดยอัตโนมัติเนื่องจาก allRequiredQuestions ถูกแก้ไขแล้ว
   const isComplete = useMemo(() => {
     // หากไม่มีคำถามที่ต้องตอบเลย ให้ถือว่าสมบูรณ์
     if (allRequiredQuestions.length === 0) return true;
@@ -112,9 +119,9 @@ export default function DesktopReportForm({
     prevCompletionRef.current = relevantSections.map((_, index) => isSectionComplete(index));
   }, [conditionInfo, relevantSections]);
 
-  // useEffect(() => {
-  //   scrollTo(0, 0);
-  // }, []);
+  useEffect(() => {
+    scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-8">
@@ -135,9 +142,9 @@ export default function DesktopReportForm({
           const choiceQuestions = section.questions.filter((q) => q.type === "choice");
           const toggleQuestions = section.questions.filter((q) => q.type === "toggle");
 
-          // ✨ [แก้ไข] Logic การนับ: รวมจำนวนคำถามทั้งหมดใน Section
-          const totalQuestionsInSection = section.questions.length;
-          const answeredInSection = section.questions.filter((q) => !!conditionInfo[q.id]).length;
+          // ✨ [แก้ไข] Logic การนับ: นับเฉพาะคำถามประเภท 'choice'
+          const totalQuestionsInSection = choiceQuestions.length;
+          const answeredInSection = choiceQuestions.filter((q) => !!conditionInfo[q.id]).length;
 
           return (
             <AccordionItem
@@ -161,11 +168,11 @@ export default function DesktopReportForm({
                     <h2 className="text-foreground text-base font-semibold md:text-lg">{section.section}</h2>
                     {/* ✨ [แก้ไข] อัปเดตข้อความแสดงสถานะให้ถูกต้อง */}
                     <p className="text-muted-foreground text-xs md:text-sm">
-                      {isCompleted
-                        ? "เสร็จสมบูรณ์"
-                        : inProgress
-                          ? `ตอบแล้ว ${answeredInSection} จาก ${totalQuestionsInSection} ข้อ`
-                          : `${totalQuestionsInSection} คำถาม`}
+                      {totalQuestionsInSection > 0
+                        ? isCompleted
+                          ? "เสร็จสมบูรณ์"
+                          : `ตอบแล้ว ${answeredInSection} จาก ${totalQuestionsInSection} ข้อ`
+                        : "ไม่มีคำถามที่ต้องตอบ"}
                     </p>
                   </div>
                 </div>
@@ -198,7 +205,8 @@ export default function DesktopReportForm({
                     <div className="mt-6 flex items-center gap-3">
                       {/* ✨ [แก้ไข] ปรับเปลี่ยนหัวข้อให้เหมาะสม */}
                       <h3 className="text-foreground text-base font-semibold md:text-lg">ฟังก์ชันการทำงานเพิ่มเติม</h3>
-                      {/* ✨ [แก้ไข] ลบข้อความ "(ไม่จำเป็นต้องเลือก)" ออก */}
+                      {/* ✨ [แก้ไข] เพิ่มข้อความ "(ไม่จำเป็นต้องเลือก)" */}
+                      <span className="text-muted-foreground text-sm">(ไม่จำเป็นต้องเลือก)</span>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5">
                       {toggleQuestions.map((question) => (

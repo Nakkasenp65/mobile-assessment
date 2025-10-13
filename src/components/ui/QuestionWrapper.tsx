@@ -29,7 +29,7 @@ const ChoiceInput = ({ question, currentValue, onSelect }) => (
           whileTap={{ scale: 0.97 }}
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
           className={cn(
-            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium transition-all duration-200",
+            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
             isSelected
               ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
               : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
