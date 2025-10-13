@@ -11,6 +11,7 @@ import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone, Camera, TrendingUp, Bell, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
+import { useRouter } from "next/navigation";
 
 // Interface for Component Props
 interface ConsignmentServiceProps {
@@ -31,6 +32,7 @@ const THB = (n: number) =>
   });
 
 const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentServiceProps) => {
+  const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
@@ -248,7 +250,12 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
           }}
           className="space-y-4 pt-4"
         >
-          <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+          <FramerButton
+            size="lg"
+            disabled={!isFormComplete}
+            className="h-14 w-full"
+            onClick={() => router.push("/confirmed/1")}
+          >
             ยืนยันการฝากขาย
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">

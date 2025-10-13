@@ -125,7 +125,7 @@ export default function HeroAssessmentForm() {
           ประเมินราคาอุปกรณ์ของคุณ
         </h3>
         <AnimatePresence mode="wait">
-          <Select onValueChange={handleBrandChange} value={selectedBrand}>
+          <Select key={"select-brand"} onValueChange={handleBrandChange} value={selectedBrand}>
             <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
               <SelectValue placeholder="เลือกยี่ห้อ" />
             </SelectTrigger>

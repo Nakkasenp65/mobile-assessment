@@ -3,6 +3,7 @@
 
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface ConfirmationProps {
   isFormComplete: boolean;
@@ -10,18 +11,24 @@ interface ConfirmationProps {
 }
 
 const Confirmation: React.FC<ConfirmationProps> = ({ isFormComplete, handleConfirmSell }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    handleConfirmSell();
+    router.push("/confirmed/1");
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
       className="space-y-4 pt-4"
     >
-      <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full" onClick={handleConfirmSell}>
+      <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full" onClick={handleClick}>
         ยืนยันการขาย
       </FramerButton>
       <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-        การคลิก &quot;ยืนยันการขายและรับเงินทันที&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
-        และยอมรับใน{" "}
+        การคลิก &quot;ยืนยันการขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
         <a
           href="#"
           target="_blank"

@@ -1,5 +1,3 @@
-// src/app/assess/components/(step1)/AssessStep1.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -54,31 +52,35 @@ const AssessStep1 = ({
   const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
 
+  // ✨ [FIXED] แก้ไข useEffect ให้จัดการกับ Race Condition ของ isDesktop
   useEffect(() => {
-    const isLikelyDesktop = typeof window !== "undefined" && !/Mobi/i.test(navigator.userAgent);
-    if (isLikelyDesktop && !isDesktop && !deviceInfo.brand) {
+    // ถ้าผู้ใช้เริ่มดำเนินการไปแล้ว (ไม่ใช่ step เริ่มต้น) ให้หยุดการทำงานของ effect นี้
+    // เพื่อไม่ให้ไปรบกวนการย้อนกลับ (Back) ของผู้ใช้
+    if (currentStep !== "initializing" && currentStep !== "selectDeviceType") {
       return;
     }
 
-    if (deviceInfo.model && deviceInfo.storage) {
-      setCurrentStep("selectModelStorage");
-      return;
-    }
-    if (deviceInfo.brand) {
-      setCurrentStep(deviceInfo.brand === "Apple" ? "selectProduct" : "selectModelStorage");
-      return;
-    }
+    // กรณีเป็น Desktop: จะข้ามหน้า UserDeviceSelection ไปยังหน้าเลือก Brand ทันที
+    if (isDesktop) {
+      onUserDeviceUpdate(false);
+      setUserDeviceSelection("other_device");
 
-    if (currentStep === "initializing") {
-      if (isDesktop) {
-        setUserDeviceSelection("other_device");
-        onUserDeviceUpdate(false);
-        setCurrentStep("selectBrand");
+      // หากมีข้อมูลจากหน้าแรก (pre-filled) ให้ข้ามไป step ที่เหมาะสม
+      if (deviceInfo.brand) {
+        setCurrentStep(deviceInfo.brand === "Apple" ? "selectProduct" : "selectModelStorage");
       } else {
+        // หากเป็นการเข้าชมปกติ ให้ไปที่หน้าเลือก Brand
+        setCurrentStep("selectBrand");
+      }
+    }
+    // กรณีเป็น Mobile (หรือ Desktop ที่ยังตรวจไม่เสร็จ): จะแสดงหน้า UserDeviceSelection ก่อน
+    else {
+      // ตั้งค่าให้เป็นหน้าเลือกอุปกรณ์เฉพาะตอนที่ยังเป็น "initializing" เท่านั้น
+      if (currentStep === "initializing") {
         setCurrentStep("selectDeviceType");
       }
     }
-  }, [isDesktop, deviceInfo.brand, deviceInfo.model, deviceInfo.storage, onUserDeviceUpdate, currentStep]);
+  }, [isDesktop, deviceInfo.brand, onUserDeviceUpdate, currentStep]);
 
   useEffect(() => {
     if (direction > 0 && currentStep === "selectProduct" && deviceInfo.productType) {
@@ -89,7 +91,7 @@ const AssessStep1 = ({
         onNext();
       }
     }
-  }, [deviceInfo.productType, direction, currentStep]);
+  }, [deviceInfo.productType, direction, currentStep, onNext]);
 
   const handleSelectChange = (field: keyof DeviceInfo, value: string) => {
     const newState = { ...deviceInfo, [field]: value };

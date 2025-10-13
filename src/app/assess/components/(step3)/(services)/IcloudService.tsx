@@ -10,6 +10,7 @@ import { DeviceInfo } from "../../../../../types/device";
 import { AlertTriangle, Lock, Mail, User, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { useRouter } from "next/navigation";
 
 interface IcloudServiceProps {
   deviceInfo: DeviceInfo;
@@ -20,6 +21,7 @@ const INTEREST_RATE = 0.15; // 15%
 const SERVICE_FEE = 450; // 450 บาท
 
 const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
+  const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
     appleId: "",
@@ -247,7 +249,12 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
             รวมถึงความเสี่ยงที่เกี่ยวข้องทั้งหมด
           </label>
         </div>
-        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+        <FramerButton
+          size="lg"
+          disabled={!isFormComplete}
+          className="h-14 w-full"
+          onClick={() => router.push("/confirmed/1")}
+        >
           ยืนยันและรับเงินทันที
         </FramerButton>
       </motion.div>

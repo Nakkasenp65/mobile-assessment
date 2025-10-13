@@ -13,6 +13,7 @@ import { DeviceInfo } from "../../../../../types/device";
 import { cn } from "@/lib/utils";
 import { Store, User, Phone, Sparkles, Home, Train, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { useRouter } from "next/navigation";
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
@@ -28,6 +29,7 @@ interface PawnServiceProps {
 }
 
 const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
+  const router = useRouter();
   const [locationType, setLocationType] = useState<"home" | "bts" | "store">("home");
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
   const [formState, setFormState] = useState({
@@ -374,7 +376,12 @@ const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
             </a>
           </label>
         </div>
-        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+        <FramerButton
+          size="lg"
+          disabled={!isFormComplete}
+          className="h-14 w-full"
+          onClick={() => router.push("/confirmed/1")}
+        >
           ยืนยันการจำนำและรับเงินทันที
         </FramerButton>
       </motion.div>

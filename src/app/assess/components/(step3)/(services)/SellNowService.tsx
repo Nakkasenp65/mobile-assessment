@@ -6,7 +6,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeviceInfo } from "../../../../../types/device";
 import type { LongdoAddressData } from "../LongdoAddressForm";
-// import useLocation from "@/hooks/useLocation"; // ✨ 1. ลบ useLocation hook ที่ไม่ได้ใช้ออก
 import { useLongdoReverseGeocode } from "@/hooks/useLongdoReverseGeocode";
 import type { LatLng } from "leaflet";
 import dynamic from "next/dynamic";
@@ -56,11 +55,19 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
     time: "",
   });
 
-  // ✨ 2. ย้าย Logic การขอตำแหน่งมาไว้ใน Component โดยตรง
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
+  // ✨ [แก้ไข] กำหนด state เริ่มต้นเป็น null ก่อน
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
   const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
+
+  // ✨ [เพิ่ม] useEffect เพื่อกำหนดค่า default latitude, longitude ให้แผนที่เมื่อ component โหลดเสร็จ
+  useEffect(() => {
+    // Set default location on initial component mount
+    import("leaflet").then((L) => {
+      setMapCenter(new L.LatLng(13.763913011138287, 100.53931692698971));
+    });
+  }, []); // dependency array ว่างเพื่อให้ทำงานแค่ครั้งเดียว
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -109,16 +116,16 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
     }));
   }, []);
 
-  // ✨ 4. แก้ไข handleLocationTypeChange ให้เรียก `requestLocation` เมื่อเลือก "ที่บ้าน"
+  // ✨ [แก้ไข] ปรับ Logic ให้เรียก requestLocation() ทุกครั้งที่เลือก "ที่บ้าน"
   const handleLocationTypeChange = useCallback(
     (newLocationType: "home" | "bts" | "store") => {
       setLocationType(newLocationType);
-      // ถ้าเลือก "ที่บ้าน" และยังไม่มีข้อมูลตำแหน่ง (mapCenter) ให้ทำการขอตำแหน่ง
-      if (newLocationType === "home" && !mapCenter) {
+      // ถ้าผู้ใช้เลือก "ที่บ้าน" ให้เริ่มขอตำแหน่งปัจจุบันทันที
+      if (newLocationType === "home") {
         requestLocation();
       }
     },
-    [mapCenter, requestLocation], // เพิ่ม dependencies ที่ถูกต้อง
+    [requestLocation], // dependency เหลือแค่ requestLocation
   );
 
   const handleAddressChange = useCallback((address: LongdoAddressData) => {

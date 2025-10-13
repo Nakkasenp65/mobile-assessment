@@ -68,10 +68,6 @@ export default function QuestionReport({
     return <IcloudLockWarning onAcknowledge={() => setAcknowledged(true)} />;
   }
 
-  // ✨ [MODIFIED] เปลี่ยน Logic การแสดงผล
-  // - ถ้าเป็น Desktop: ใช้ DesktopReportForm เหมือนเดิม
-  // - ถ้าเป็น Mobile: ใช้ MobileQuestionAccordion สำหรับทุกกรณี (ทั้งประเมินเครื่องตัวเองและเครื่องอื่น)
-  //   โดยส่ง prop `showFullReport` เข้าไปเพื่อให้ MobileQuestionAccordion รู้ว่าต้องแสดงคำถามชุดไหน
   return (
     <>
       {isDesktop ? (

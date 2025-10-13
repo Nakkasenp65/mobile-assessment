@@ -29,12 +29,15 @@ export default function DesktopReportForm({
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const relevantSections = useMemo(() => {
+    // ✨ [REFACTORED] อัปเดต Logic การดึง Platform ให้สอดคล้องกับ info.ts ใหม่
     const getTargetPlatforms = (): Platform[] => {
+      const platforms: Platform[] = ["UNIVERSAL", "MANUAL_INPUT"];
       if (deviceInfo.brand === "Apple") {
-        return ["IOS", "DESKTOP"];
+        platforms.push("IOS");
       } else {
-        return ["ANDROID", "OTHER"];
+        platforms.push("ANDROID");
       }
+      return platforms;
     };
 
     const targetPlatforms = getTargetPlatforms();

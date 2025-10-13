@@ -55,8 +55,6 @@ export default function AssessComponent() {
   const searchParams = useSearchParams();
   const [isInitialStepCalculated, setIsInitialStepCalculated] = useState(false);
 
-  // SECTION: Handle URL Parameters
-  // This effect now ONLY pre-fills the state from URL params. It no longer changes the step.
   useEffect(() => {
     if (isInitialStepCalculated) return;
 
@@ -67,8 +65,6 @@ export default function AssessComponent() {
     const productType = searchParams.get("productType");
     const isFromMainPage = searchParams.get("isFromMainPage");
 
-    // ✨ [MODIFIED] The component now ALWAYS starts at Step 1.
-    // This block just pre-populates the data if it exists.
     if (isFromMainPage === "true" && (brand || productType)) {
       setDeviceInfo((prev) => ({
         ...prev,
@@ -89,8 +85,6 @@ export default function AssessComponent() {
     setIsInitialStepCalculated(true);
   }, [searchParams, isInitialStepCalculated]);
 
-  // SECTION: Navigation Handlers
-  // This logic is now robust enough to handle skipping from a pre-filled Step 1
   const handleNext = () => {
     if (currentStep < 4) {
       const nextStep = isSimpleDevice(deviceInfo) && currentStep === 1 ? 3 : currentStep + 1;

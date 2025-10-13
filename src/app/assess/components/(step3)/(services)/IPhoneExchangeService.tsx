@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/IPhoneExchangeService.tsx
+
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -13,6 +14,7 @@ import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp } from "l
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useBtsStations } from "@/hooks/useBtsStations";
 import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -37,6 +39,7 @@ const THB = (n: number) =>
   });
 
 export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPhoneExchangeServiceProps) {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
@@ -334,7 +337,12 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
           }}
           className="space-y-4 pt-4"
         >
-          <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+          <FramerButton
+            size="lg"
+            disabled={!isFormComplete}
+            className="h-14 w-full"
+            onClick={() => router.push("/confirmed/1")}
+          >
             ยืนยันและนัดหมาย
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">

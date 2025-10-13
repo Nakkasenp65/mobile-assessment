@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/TradeInService.tsx
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -10,6 +11,7 @@ import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select"; // ✨ 1. Import DateSelect
+import { useRouter } from "next/navigation";
 
 interface TradeInServiceProps {
   deviceInfo: DeviceInfo;
@@ -37,6 +39,7 @@ const THB = (n: number) =>
   });
 
 const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
+  const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
     phone: "",
@@ -307,7 +310,12 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
         }}
         className="space-y-4 pt-4"
       >
-        <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+        <FramerButton
+          size="lg"
+          disabled={!isFormComplete}
+          className="h-14 w-full"
+          onClick={() => router.push("/confirmed/1")}
+        >
           ยืนยันการแลกเปลี่ยนเครื่อง
         </FramerButton>
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">

@@ -1,7 +1,6 @@
 // src/app/assess/components/(step3)/AssessmentSummary.tsx
 
 import React from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageOff, XCircle, CardSim } from "lucide-react"; // ✨ [ADD] Import XCircle icon
 import AssessmentLedger from "./AssessmentLedger";
@@ -9,6 +8,7 @@ import { RepairItem } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { AssessmentRecord } from "../../../../types/assessment";
 import { PriceLockCountdown } from "../../../../components/ui/PriceLockCountdown";
+import Image from "next/image";
 
 interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
@@ -131,13 +131,20 @@ const AssessmentSummary = ({
               <div className="flex items-center justify-center gap-2">
                 <p className="text-muted-foreground text-sm font-medium">ราคาประเมิน</p>
               </div>
-              <div className="relative py-2">
+              <div className="relative flex w-full items-center justify-center py-2">
                 <motion.p
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent sm:text-6xl"
+                  className="flex bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent sm:text-6xl"
                 >
+                  <Image
+                    src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                    width={100}
+                    height={100}
+                    alt="animated-coin"
+                    className="-m-6"
+                  />
                   {finalPrice.toLocaleString("th-TH", {
                     style: "currency",
                     currency: "THB",

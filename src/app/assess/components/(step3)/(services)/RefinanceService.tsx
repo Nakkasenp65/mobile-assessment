@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/RefinanceService.tsx
+
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { useRouter } from "next/navigation";
 
 // Interface for Component Props
 interface RefinanceServiceProps {
@@ -32,6 +34,7 @@ const THB = (n: number) =>
   });
 
 const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps) => {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [formState, setFormState] = useState({
@@ -329,7 +332,12 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
           }}
           className="space-y-4 pt-4"
         >
-          <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full">
+          <FramerButton
+            size="lg"
+            disabled={!isFormComplete}
+            className="h-14 w-full"
+            onClick={() => router.push("/confirmed/1")}
+          >
             ยืนยันการรีไฟแนนซ์
           </FramerButton>
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}

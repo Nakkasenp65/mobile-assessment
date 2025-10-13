@@ -12,6 +12,7 @@ import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import QuestionWrapper from "@/components/ui/QuestionWrapper";
 
 interface MobileQuestionAccordionProps {
   deviceInfo: DeviceInfo;
@@ -28,28 +29,33 @@ const MobileQuestionAccordion = ({
   onConditionUpdate,
   onComplete,
   onBack,
-  showFullReport, // ✨ [ADDED] รับ Prop `showFullReport`
+  showFullReport,
 }: MobileQuestionAccordionProps) => {
   const { isDesktop, isIOS } = useDeviceDetection();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // ✨ [MODIFIED] ปรับ Logic การกรองคำถามให้ฉลาดขึ้นตาม Prop ที่ได้รับ
   const relevantQuestions = useMemo(() => {
+    // ✨ [REFACTORED] อัปเดต Logic การดึง Platform ให้สอดคล้องกับ info.ts ใหม่
     const getTargetPlatforms = (): Platform[] => {
-      // กรณีที่ต้องแสดง "รายงานฉบับเต็ม" (เช่น ประเมินเครื่องอื่น หรือมาจาก Desktop)
-      // จะใช้ Logic การกรองที่ครอบคลุมเหมือนกับ DesktopReportForm
+      // กรณีประเมินเครื่องอื่นบนมือถือ (เหมือน Desktop)
       if (showFullReport) {
+        const platforms: Platform[] = ["UNIVERSAL", "MANUAL_INPUT"];
         if (deviceInfo.brand === "Apple") {
-          return ["IOS", "DESKTOP"];
+          platforms.push("IOS");
         } else {
-          // สำหรับยี่ห้ออื่น จะรวมคำถามสำหรับ Android และคำถามทั่วไป (OTHER)
-          return ["ANDROID", "OTHER"];
+          platforms.push("ANDROID");
         }
+        return platforms;
       }
 
-      // กรณีปกติ (ประเมินเครื่องตัวเองบนมือถือ) จะกรองคำถามเฉพาะของ OS นั้นๆ
-      // เพราะส่วนที่เหลือจะถูกตรวจสอบด้วย Interactive Test ในขั้นตอนถัดไป
-      return deviceInfo.brand === "Apple" ? ["IOS"] : ["ANDROID"];
+      // กรณีประเมินเครื่องตัวเอง (ไม่มี MANUAL_INPUT)
+      const platforms: Platform[] = ["UNIVERSAL"];
+      if (deviceInfo.brand === "Apple") {
+        platforms.push("IOS");
+      } else {
+        platforms.push("ANDROID");
+      }
+      return platforms;
     };
 
     const targetPlatforms = getTargetPlatforms();
@@ -58,11 +64,28 @@ const MobileQuestionAccordion = ({
       ...section,
       questions: section.questions.filter((q) => q.platforms.some((platform) => targetPlatforms.includes(platform))),
     })).filter((section) => section.questions.length > 0);
-  }, [deviceInfo.brand, showFullReport]); // ✨ เพิ่ม showFullReport ใน dependency array
+  }, [deviceInfo.brand, showFullReport]);
+
+  // ✨ [NEW] แยกคำถามประเภท choice และ toggle ออกจากกัน
+  const choiceQuestionsBySection = useMemo(
+    () =>
+      relevantQuestions
+        .map((section) => ({
+          ...section,
+          questions: section.questions.filter((q) => q.type === "choice"),
+        }))
+        .filter((section) => section.questions.length > 0),
+    [relevantQuestions],
+  );
+
+  const allToggleQuestions = useMemo(
+    () => relevantQuestions.flatMap((section) => section.questions.filter((q) => q.type === "toggle")),
+    [relevantQuestions],
+  );
 
   const allVisibleQuestions = useMemo(
-    () => relevantQuestions.flatMap((s) => s.questions).filter((q) => q.type === "choice"),
-    [relevantQuestions],
+    () => choiceQuestionsBySection.flatMap((s) => s.questions),
+    [choiceQuestionsBySection],
   );
 
   const answeredQuestionsCount = useMemo(
@@ -88,12 +111,13 @@ const MobileQuestionAccordion = ({
     }
   }, [openAccordionValue]);
 
-  const handleUpdate = (questionId: keyof ConditionInfo, value: string | string[]) => {
-    const updatedConditionInfo = { ...conditionInfo, [questionId]: value };
-    onConditionUpdate(updatedConditionInfo);
-
-    const nextUnanswered = allVisibleQuestions.find((q) => !updatedConditionInfo[q.id]);
-    setOpenAccordionValue(nextUnanswered ? String(nextUnanswered.id) : "");
+  const handleUpdate = (questionId: keyof ConditionInfo, value: string) => {
+    onConditionUpdate((prev) => {
+      const updated = { ...prev, [questionId]: value };
+      const nextUnanswered = allVisibleQuestions.find((q) => !updated[q.id]);
+      setOpenAccordionValue(nextUnanswered ? String(nextUnanswered.id) : "");
+      return updated;
+    });
   };
 
   const isComplete = useMemo(() => {
@@ -110,7 +134,8 @@ const MobileQuestionAccordion = ({
       </div>
 
       <div className="flex-grow space-y-6">
-        {relevantQuestions.map((section) => (
+        {/* ✨ [MODIFIED] วนลูปเฉพาะคำถาม Choice */}
+        {choiceQuestionsBySection.map((section) => (
           <div key={section.section}>
             <h3 className="text-foreground mb-2 text-lg font-bold">{section.section}</h3>
             <Accordion
@@ -121,8 +146,6 @@ const MobileQuestionAccordion = ({
               onValueChange={setOpenAccordionValue}
             >
               {section.questions.map((question) => {
-                if (question.type === "toggle") return null;
-
                 const questionIndex = allVisibleQuestions.findIndex((q) => q.id === question.id);
                 const selectedValue = conditionInfo[question.id] as string;
                 const isAnswered = !!selectedValue;
@@ -210,6 +233,23 @@ const MobileQuestionAccordion = ({
           </div>
         ))}
       </div>
+
+      {/* ✨ [NEW] เพิ่มส่วนสำหรับคำถาม Toggle */}
+      {allToggleQuestions.length > 0 && (
+        <div className="mt-4 border-t pt-6">
+          <h3 className="text-foreground mb-4 text-lg font-bold">ฟังก์ชันการทำงานเพิ่มเติม</h3>
+          <div className="grid grid-cols-3 gap-4 sm:grid-cols-4">
+            {allToggleQuestions.map((question) => (
+              <QuestionWrapper
+                key={String(question.id)}
+                question={question}
+                conditionInfo={conditionInfo}
+                onConditionUpdate={handleUpdate}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="border-border mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
         <FramerButton
