@@ -27,13 +27,13 @@ const featuresData = [
 
 export default function HeroFeature() {
   return (
-    <section className={"w-full rounded-2xl bg-white p-6 shadow-xl"}>
+    <section className={"w-full rounded-2xl bg-white p-4 shadow-xl sm:p-6"}>
       {/* Content */}
       <div className="relative">
         {/* HeroFeature - Head */}
-        <div className="text-center sm:mb-6">
+        <div className="mb-4 text-center sm:mb-6">
           <div className="mb-2 flex items-center justify-center gap-2">
-            <h2 className="text-lg font-bold text-black sm:text-2xl">
+            <h2 className="text-xl font-bold text-black sm:text-2xl">
               ขายกับ{" "}
               <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text font-bold text-transparent">
                 OK Mobile
@@ -45,26 +45,26 @@ export default function HeroFeature() {
         </div>
 
         {/* HeroFeature - Content */}
-        <div className="grid grid-cols-2 gap-x-2 gap-y-4 sm:gap-5 lg:grid-cols-4 lg:gap-8">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4 lg:gap-8">
           {featuresData.map((feature, index) => (
             <div
               key={index}
-              className="group relative overflow-hidden rounded-2xl border-2 border-orange-100/70 bg-gradient-to-br from-orange-50/90 to-pink-50/90 p-3 px-2 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-pink-200/90 hover:bg-white hover:shadow-2xl"
+              className="group relative overflow-hidden rounded-2xl border-2 border-orange-100/70 bg-gradient-to-br from-orange-50/90 to-pink-50/90 p-3 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-pink-200/90 hover:bg-white hover:shadow-2xl"
             >
               {/* Content */}
-              <div className="relative z-10">
+              <div className="relative z-10 flex h-full flex-col items-center justify-center">
                 {/* Icon Container with glow */}
-                <div className="relative mx-auto mb-2 flex h-14 w-14 transform items-center justify-center rounded-full border-2 border-orange-100/50 bg-white shadow-lg transition group-hover:scale-110 group-hover:border-pink-200/70 group-hover:shadow-xl">
+                <div className="relative mx-auto mb-2 flex h-12 w-12 transform items-center justify-center rounded-full border-2 border-orange-100/50 bg-white shadow-lg transition group-hover:scale-110 group-hover:border-pink-200/70 group-hover:shadow-xl sm:h-14 sm:w-14">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-200/30 to-pink-200/30 blur-md transition-all group-hover:blur-lg" />
-                  <feature.icon className="relative h-8 w-8 text-orange-500 transition-colors group-hover:text-pink-500" />
+                  <feature.icon className="relative h-7 w-7 text-orange-500 transition-colors group-hover:text-pink-500 sm:h-8 sm:w-8" />
                 </div>
 
                 {/* Content - title */}
-                <h3 className="bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 bg-clip-text text-xs font-bold text-transparent sm:text-lg">
+                <h3 className="bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 bg-clip-text text-sm font-bold text-transparent sm:text-base">
                   {feature.title}
                 </h3>
                 {/* Content - description */}
-                <p className="text-[10px] leading-tight sm:text-xs sm:leading-relaxed">{feature.description}</p>
+                <p className="mt-1 text-xs leading-snug text-gray-700 sm:leading-relaxed">{feature.description}</p>
               </div>
             </div>
           ))}
