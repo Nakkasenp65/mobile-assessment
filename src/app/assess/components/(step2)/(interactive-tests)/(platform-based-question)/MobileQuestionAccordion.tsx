@@ -23,48 +23,37 @@ interface MobileQuestionAccordionProps {
   showFullReport: boolean;
 }
 
-const MobileQuestionAccordion = ({
+export default function MobileQuestionAccordion({
   deviceInfo,
   conditionInfo,
   onConditionUpdate,
   onComplete,
   onBack,
   showFullReport,
-}: MobileQuestionAccordionProps) => {
-  const { isDesktop, isIOS } = useDeviceDetection();
+}: MobileQuestionAccordionProps) {
+  const { isIOS, isAndroid } = useDeviceDetection();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  const platform = useMemo((): Platform => {
+    const isAssessingApple = deviceInfo.brand === "Apple";
+    // `showFullReport` คือ true เมื่อเป็น Desktop หรือประเมิน "เครื่องอื่น" บนมือถือ
+    if (showFullReport) {
+      return isAssessingApple ? "OTHER_IOS" : "OTHER_ANDROID";
+    }
+    // กรณีประเมินเครื่องตัวเอง
+    if (isIOS) return "SELF_IOS";
+    if (isAndroid) return "SELF_ANDROID";
+
+    // Fallback กรณีที่ไม่เข้าเงื่อนไข (ไม่น่าจะเกิดขึ้น)
+    return isAssessingApple ? "OTHER_IOS" : "OTHER_ANDROID";
+  }, [showFullReport, deviceInfo.brand, isIOS, isAndroid]);
+
   const relevantQuestions = useMemo(() => {
-    // ✨ [REFACTORED] อัปเดต Logic การดึง Platform ให้สอดคล้องกับ info.ts ใหม่
-    const getTargetPlatforms = (): Platform[] => {
-      // กรณีประเมินเครื่องอื่นบนมือถือ (เหมือน Desktop)
-      if (showFullReport) {
-        const platforms: Platform[] = ["UNIVERSAL", "MANUAL_INPUT"];
-        if (deviceInfo.brand === "Apple") {
-          platforms.push("IOS");
-        } else {
-          platforms.push("ANDROID");
-        }
-        return platforms;
-      }
-
-      // กรณีประเมินเครื่องตัวเอง (ไม่มี MANUAL_INPUT)
-      const platforms: Platform[] = ["UNIVERSAL"];
-      if (deviceInfo.brand === "Apple") {
-        platforms.push("IOS");
-      } else {
-        platforms.push("ANDROID");
-      }
-      return platforms;
-    };
-
-    const targetPlatforms = getTargetPlatforms();
-
     return ASSESSMENT_QUESTIONS.map((section) => ({
       ...section,
-      questions: section.questions.filter((q) => q.platforms.some((platform) => targetPlatforms.includes(platform))),
+      questions: section.questions.filter((q) => q.platforms.includes(platform)),
     })).filter((section) => section.questions.length > 0);
-  }, [deviceInfo.brand, showFullReport]);
+  }, [platform]);
 
   // ✨ [NEW] แยกคำถามประเภท choice และ toggle ออกจากกัน
   const choiceQuestionsBySection = useMemo(
@@ -271,6 +260,4 @@ const MobileQuestionAccordion = ({
       </div>
     </div>
   );
-};
-
-export default MobileQuestionAccordion;
+}

@@ -40,8 +40,8 @@ import {
 } from "lucide-react";
 import { IconType } from "react-icons";
 
-// ✨ [REFACTORED] เปลี่ยนชื่อ Platform ให้สื่อความหมายตามบริบทและ OS
-export type Platform = "UNIVERSAL" | "IOS" | "ANDROID" | "MANUAL_INPUT";
+// ✨ [REFACTORED] เปลี่ยนชื่อ Platform ตามบริบทการใช้งานที่ชัดเจน
+export type Platform = "SELF_IOS" | "SELF_ANDROID" | "OTHER_IOS" | "OTHER_ANDROID";
 export type QuestionType = "choice" | "toggle";
 
 export interface QuestionOption {
@@ -55,7 +55,7 @@ export interface Question {
   question: string;
   icon: LucideIcon | IconType;
   type: QuestionType;
-  // ✨ [REFACTORED] Array นี้จะเก็บ Platform ที่ออกแบบใหม่
+  // ✨ [REFACTORED] Array นี้จะเก็บ Platform ใหม่ที่ออกแบบ
   platforms: Platform[];
   options: QuestionOption[];
 }
@@ -72,8 +72,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "รุ่นโมเดลเครื่อง",
         icon: Smartphone,
         type: "choice",
-        // ✨ เป็นคำถามเฉพาะของ Apple
-        platforms: ["IOS"],
+        // ✨ ถามเฉพาะเมื่อประเมินเครื่อง Apple
+        platforms: ["SELF_IOS", "OTHER_IOS"],
         options: [
           { id: "model_th", label: "เครื่องไทย (TH)", icon: Smartphone },
           { id: "model_inter_new", label: "เครื่องนอก (ZP 14, 15, 16 Series)", icon: Smartphone },
@@ -85,8 +85,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ประกันศูนย์",
         icon: ShieldCheck,
         type: "choice",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "warranty_active_long", label: "เหลือมากกว่า 6 เดือน", icon: ShieldCheck },
           { id: "warranty_active_short", label: "เหลือน้อยกว่า 6 เดือน", icon: Clock },
@@ -98,8 +98,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "อุปกรณ์ในกล่อง",
         icon: Package,
         type: "choice",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "acc_full", label: "ครบกล่อง", icon: Package },
           { id: "acc_box_only", label: "มีเฉพาะกล่อง", icon: Archive },
@@ -116,8 +116,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "สภาพตัวเครื่องโดยรวม",
         icon: Smartphone,
         type: "choice",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "body_mint", label: "เหมือนใหม่ไม่มีรอย", icon: ShieldCheck },
           { id: "body_scratch_minor", label: "มีรอยเคส/สีลอก", icon: AlertTriangle },
@@ -129,8 +129,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "สภาพกระจกหน้าจอ",
         icon: RectangleHorizontal,
         type: "choice",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "glass_ok", label: "ไม่มีรอย", icon: ShieldCheck },
           { id: "glass_scratch_hairline", label: "มีรอยขนแมว", icon: Frame },
@@ -147,8 +147,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "คุณภาพการแสดงผล",
         icon: MonitorPlay,
         type: "choice",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "display_ok", label: "แสดงผลปกติ สีสวย", icon: MonitorPlay },
           { id: "display_pixel_defect", label: "มีจุด Dead/Bright, มีเส้น", icon: Grid3x3 },
@@ -160,8 +160,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "สุขภาพแบตเตอรี่",
         icon: BatteryFull,
         type: "choice",
-        // ✨ เป็นคำถามเฉพาะของ Apple
-        platforms: ["IOS"],
+        // ✨ ถามเฉพาะเมื่อประเมินเครื่อง Apple
+        platforms: ["SELF_IOS", "OTHER_IOS"],
         options: [
           { id: "battery_health_high", label: "มากกว่า 90%", icon: BatteryFull },
           { id: "battery_health_medium", label: "80% - 89%", icon: BatteryWarning },
@@ -178,8 +178,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "กล้องหน้าและกล้องหลัง",
         icon: Camera,
         type: "choice",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น (เครื่องอื่น)
+        platforms: ["OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "camera_ok", label: "ทำงานปกติ", icon: Camera },
           { id: "camera_issue_minor", label: "มีปัญหา (จุดดำ, ไม่โฟกัส)", icon: AlertTriangle },
@@ -191,8 +191,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การสัมผัสหน้าจอ",
         icon: Hand,
         type: "toggle",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น (เครื่องอื่น)
+        platforms: ["OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "touchscreen_ok", label: "สัมผัสปกติ", icon: Hand },
           { id: "touchscreen_failed", label: "ทัชไม่ได้/ทัชรวน", icon: Hand },
@@ -203,8 +203,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Wi-Fi / Bluetooth",
         icon: Wifi,
         type: "toggle",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ SELF_ANDROID จะทดสอบอัตโนมัติ จึงไม่ต้องถาม
+        platforms: ["SELF_IOS", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "wifi_ok", label: "เชื่อมต่อปกติ", icon: Wifi },
           { id: "wifi_failed", label: "มีปัญหา", icon: WifiOff },
@@ -215,8 +215,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Face ID / Touch ID",
         icon: ScanFace,
         type: "toggle",
-        // ✨ เป็นฟังก์ชันเฉพาะของ Apple
-        platforms: ["IOS"],
+        // ✨ ถามเฉพาะเมื่อประเมินเครื่อง Apple
+        platforms: ["SELF_IOS", "OTHER_IOS", "OTHER_ANDROID", "SELF_ANDROID"],
         options: [
           { id: "biometric_ok", label: "สแกนได้ปกติ", icon: ScanFace },
           { id: "biometric_failed", label: "สแกนไม่ได้", icon: Fingerprint },
@@ -227,8 +227,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ลำโพงและการสั่น",
         icon: Speaker,
         type: "toggle",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น (เครื่องอื่น)
+        platforms: ["OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "speaker_ok", label: "ปกติ", icon: Speaker },
           { id: "speaker_failed", label: "ลำโพงแตก/ไม่ดัง/ไม่สั่น", icon: Vibrate },
@@ -239,8 +239,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ไมโครโฟน",
         icon: Mic,
         type: "toggle",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น (เครื่องอื่น)
+        platforms: ["OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "mic_ok", label: "ใช้งานปกติ", icon: Mic },
           { id: "mic_failed", label: "มีปัญหา", icon: MicOff },
@@ -251,8 +251,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การชาร์จไฟ",
         icon: BatteryCharging,
         type: "toggle",
-        // ✨ ถามเมื่อเป็นการกรอกข้อมูลด้วยตนเองเท่านั้น
-        platforms: ["MANUAL_INPUT"],
+        // ✨ SELF_ANDROID จะทดสอบอัตโนมัติ จึงไม่ต้องถาม
+        platforms: ["SELF_IOS", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "charger_ok", label: "ชาร์จเข้าปกติ", icon: BatteryCharging },
           { id: "charger_failed", label: "ชาร์จไม่เข้า", icon: PowerOff },
@@ -263,8 +263,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "การโทร",
         icon: PhoneCall,
         type: "toggle",
-        // ✨ ถามทุกเครื่อง ทุกกรณี (แม้จะเป็น interactive ก็อาจต้องถามเผื่อ)
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี เพราะไม่มีการทดสอบอัตโนมัติ
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "call_ok", label: "โทรเข้า-ออกปกติ", icon: PhoneCall },
           { id: "call_failed", label: "มีปัญหาการโทร", icon: PhoneOff },
@@ -275,8 +275,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ปุ่ม Home",
         icon: CircleDot,
         type: "toggle",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "home_button_ok", label: "ใช้งานได้ปกติ", icon: CircleDot },
           { id: "home_button_failed", label: "ใช้งานไม่ได้", icon: CircleDot },
@@ -287,8 +287,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "Sensor",
         icon: RadioTower,
         type: "toggle",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "sensor_ok", label: "ทำงานปกติ", icon: RadioTower },
           { id: "sensor_failed", label: "มีปัญหา", icon: RadioTower },
@@ -299,8 +299,8 @@ export const ASSESSMENT_QUESTIONS: Array<{
         question: "ปุ่ม Power / Volume",
         icon: Power,
         type: "toggle",
-        // ✨ ถามทุกเครื่อง ทุกกรณี
-        platforms: ["UNIVERSAL"],
+        // ✨ ถามทุกกรณี
+        platforms: ["SELF_IOS", "SELF_ANDROID", "OTHER_IOS", "OTHER_ANDROID"],
         options: [
           { id: "buttons_ok", label: "กดได้ปกติ", icon: Power },
           { id: "buttons_failed", label: "กดไม่ได้/กดยาก", icon: Power },
