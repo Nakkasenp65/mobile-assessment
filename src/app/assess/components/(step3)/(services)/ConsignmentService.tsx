@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/ConsignmentService.tsx
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../../types/device";
-import { User, Phone, Camera, TrendingUp, Bell, Check } from "lucide-react";
+import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentServiceProps) => {
+export default function ConsignmentService({ deviceInfo, consignmentPrice }: ConsignmentServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
@@ -273,6 +274,4 @@ const ConsignmentService = ({ deviceInfo, consignmentPrice }: ConsignmentService
       </div>
     </main>
   );
-};
-
-export default ConsignmentService;
+}

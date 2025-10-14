@@ -14,7 +14,7 @@ interface CameraDetectionProps {
 
 type TestPhase = "idle" | "prompt_permission" | "testing_front" | "testing_back" | "error";
 
-const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
+export default function CameraDetection({ isOpen, onConclude }: CameraDetectionProps) {
   const [phase, setPhase] = useState<TestPhase>("idle");
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [permissionError, setPermissionError] = useState<string | null>(null);
@@ -194,6 +194,4 @@ const CameraDetection = ({ isOpen, onConclude }: CameraDetectionProps) => {
       </DialogContent>
     </Dialog>
   );
-};
-
-export default CameraDetection;
+}

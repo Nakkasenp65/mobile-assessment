@@ -1,4 +1,5 @@
 // src/app/assess/step3/(services)/PawnService.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -10,8 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../../../types/device";
-import { cn } from "@/lib/utils";
-import { Store, User, Phone, Sparkles, Home, Train, Check } from "lucide-react";
+import { Store, User, Phone, Home, Train, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 
@@ -28,7 +28,7 @@ interface PawnServiceProps {
   pawnPrice: number;
 }
 
-const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
+export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps) {
   const router = useRouter();
   const [locationType, setLocationType] = useState<"home" | "bts" | "store">("home");
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
@@ -387,6 +387,4 @@ const PawnService = ({ deviceInfo, pawnPrice }: PawnServiceProps) => {
       </motion.div>
     </main>
   );
-};
-
-export default PawnService;
+}

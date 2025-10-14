@@ -87,14 +87,14 @@ interface AssessStep3Props {
   priceLockExpiresAt?: string; // Optional for price lock countdown
 }
 
-const AssessStep3 = ({
+export default function AssessStep3({
   deviceInfo,
   conditionInfo,
   onBack,
   onNext,
   setSelectedService,
   priceLockExpiresAt,
-}: AssessStep3Props) => {
+}: AssessStep3Props) {
   const isIcloudLocked = !conditionInfo.canUnlockIcloud;
   const isPriceable = conditionInfo.canUnlockIcloud;
 
@@ -194,6 +194,4 @@ const AssessStep3 = ({
       {!isIcloudLocked && <ScrollDownIndicator targetRef={servicesRef} />}
     </div>
   );
-};
-
-export default AssessStep3;
+}

@@ -33,7 +33,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps) => {
+export default function RefinanceService({ deviceInfo, refinancePrice }: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -358,6 +358,4 @@ const RefinanceService = ({ deviceInfo, refinancePrice }: RefinanceServiceProps)
       </div>
     </main>
   );
-};
-
-export default RefinanceService;
+}

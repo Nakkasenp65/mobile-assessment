@@ -1,3 +1,5 @@
+// src\app\(landing-page)\components\Footer.tsx
+
 "use client";
 
 import * as React from "react";
@@ -9,18 +11,11 @@ import {
   TwitterLogo,
   YoutubeLogo,
 } from "@phosphor-icons/react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Link from "next/link";
 
 const Footer: React.FC = () => {
-  const onSubmit: React.FormEventHandler<
-    HTMLFormElement
-  > = (e) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const email = String(fd.get("email") || "").trim();
@@ -28,9 +23,7 @@ const Footer: React.FC = () => {
       alert("กรุณากรอกอีเมลให้ถูกต้อง");
       return;
     }
-    alert(
-      "ขอบคุณที่ติดตามเรา! เราจะส่งข่าวสารให้คุณเป็นระยะ",
-    );
+    alert("ขอบคุณที่ติดตามเรา! เราจะส่งข่าวสารให้คุณเป็นระยะ");
     e.currentTarget.reset();
   };
 
@@ -49,10 +42,7 @@ const Footer: React.FC = () => {
             - เพิ่ม `md:col-span-4` เพื่อให้ส่วนนี้กินพื้นที่เต็มความกว้าง 4 คอลัมน์บนจอ `md`
             - เพิ่ม `lg:col-span-1` เพื่อ "รีเซ็ต" ให้กลับไปกิน 1 คอลัมน์บนจอ `lg`
           */}
-          <section
-            aria-labelledby="footer-about"
-            className="md:col-span-4 lg:col-span-1"
-          >
+          <section aria-labelledby="footer-about" className="md:col-span-4 lg:col-span-1">
             <h2 id="footer-about" className="sr-only">
               เกี่ยวกับ OK Mobile
             </h2>
@@ -71,19 +61,14 @@ const Footer: React.FC = () => {
               ให้ราคาดีที่คุณต้องถูกใจ
             </h3>
             <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น
-              รู้ราคาภายใน 1 นาที
-              พร้อมประเมินราคายุติธรรมกว่าท้องตลาด รับซื้อ
-              iPhone, Samsung, OPPO และอีกมากมาย
+              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น รู้ราคาภายใน 1 นาที พร้อมประเมินราคายุติธรรมกว่าท้องตลาด
+              รับซื้อ iPhone, Samsung, OPPO และอีกมากมาย
             </p>
           </section>
 
           {/* Column 2: Subscribe & Contact (ไม่มีการเปลี่ยนแปลง) */}
           <section aria-labelledby="footer-subscribe">
-            <h3
-              id="footer-subscribe"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+            <h3 id="footer-subscribe" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               Subscribe
             </h3>
             <form
@@ -106,25 +91,16 @@ const Footer: React.FC = () => {
                 สมัคร
               </button>
             </form>
-            <ul
-              className="flex flex-col items-start gap-4 text-sm"
-              aria-label="ช่องทางการติดต่อ"
-            >
+            <ul className="flex flex-col items-start gap-4 text-sm" aria-label="ช่องทางการติดต่อ">
               <li className="text-muted-foreground flex items-center gap-2">
                 <Phone size={18} aria-hidden />
-                <a
-                  href="tel:0989509222"
-                  className="hover:text-gray-900"
-                >
+                <a href="tel:0989509222" className="hover:text-gray-900">
                   098-950-9222
                 </a>
               </li>
               <li className="text-muted-foreground flex items-center gap-2">
                 <Envelope size={18} aria-hidden />
-                <a
-                  href="mailto:OKMobile@gmail.com"
-                  className="hover:text-gray-900"
-                >
+                <a href="mailto:OKMobile@gmail.com" className="hover:text-gray-900">
                   OKMobile@gmail.com
                 </a>
               </li>
@@ -133,11 +109,7 @@ const Footer: React.FC = () => {
 
           {/* Accordion สำหรับจอมือถือ (ไม่มีการเปลี่ยนแปลง) */}
           <div className="block md:hidden">
-            <Accordion
-              type="single"
-              collapsible
-              className="w-full"
-            >
+            <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="customer-service">
                 <AccordionTrigger className="text-sm font-bold tracking-wider text-gray-900 uppercase">
                   ศูนย์ดูแลลูกค้า
@@ -145,26 +117,17 @@ const Footer: React.FC = () => {
                 <AccordionContent>
                   <ul className="space-y-2 pt-2">
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         คำถามบ่อยๆ
                       </a>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         วิธีการขายสินค้า
                       </a>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         วิธีการรับเงิน
                       </a>
                     </li>
@@ -178,26 +141,17 @@ const Footer: React.FC = () => {
                 <AccordionContent>
                   <ul className="space-y-2 pt-2">
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         เกี่ยวกับ OK Mobile
                       </a>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         ข้อกำหนดและเงื่อนไข
                       </a>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="text-muted-foreground text-sm"
-                      >
+                      <a href="#" className="text-muted-foreground text-sm">
                         นโยบายความเป็นส่วนตัว
                       </a>
                     </li>
@@ -208,76 +162,46 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Layout เดิมสำหรับจอ Desktop (ไม่มีการเปลี่ยนแปลง) */}
-          <nav
-            aria-labelledby="footer-customer"
-            className="hidden md:block"
-          >
-            <h3
-              id="footer-customer"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+          <nav aria-labelledby="footer-customer" className="hidden md:block">
+            <h3 id="footer-customer" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               ศูนย์ดูแลลูกค้า
             </h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   คำถามบ่อยๆ
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   วิธีการขายสินค้า
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   วิธีการรับเงิน
                 </a>
               </li>
             </ul>
           </nav>
 
-          <nav
-            aria-labelledby="footer-company"
-            className="hidden md:block"
-          >
-            <h3
-              id="footer-company"
-              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
-            >
+          <nav aria-labelledby="footer-company" className="hidden md:block">
+            <h3 id="footer-company" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
               OK Mobile
             </h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   เกี่ยวกับ OK Mobile
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   ข้อกำหนดและเงื่อนไข
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
-                >
+                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
                   นโยบายความเป็นส่วนตัว
                 </a>
               </li>
@@ -289,13 +213,8 @@ const Footer: React.FC = () => {
             - ลบ col-span class ที่ไม่จำเป็นออก
           */}
           <div>
-            <h3 className="mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">
-              Follow Us
-            </h3>
-            <ul
-              className="flex gap-2"
-              aria-label="โซเชียลมีเดีย"
-            >
+            <h3 className="mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">Follow Us</h3>
+            <ul className="flex gap-2" aria-label="โซเชียลมีเดีย">
               <li>
                 <a
                   href="#"
@@ -311,10 +230,7 @@ const Footer: React.FC = () => {
                   aria-label="LINE"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
-                  <ChatTeardropText
-                    size={20}
-                    weight="fill"
-                  />
+                  <ChatTeardropText size={20} weight="fill" />
                 </a>
               </li>
               <li>
@@ -344,8 +260,7 @@ const Footer: React.FC = () => {
       <div className="border-t border-white/60 bg-gray-200/90 py-4">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground text-xs md:text-sm">
-            © {new Date().getFullYear()} OK Mobile. All
-            rights reserved.
+            © {new Date().getFullYear()} OK Mobile. All rights reserved.
           </p>
         </div>
       </div>

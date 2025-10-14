@@ -17,7 +17,7 @@ type TestPhase = "idle" | "prompt_permission" | "testing" | "error";
 const VOLUME_THRESHOLD = 25;
 const TEST_TIMEOUT = 10000;
 
-const MicrophoneDetection = ({ isOpen, onConclude }: MicrophoneDetectionProps) => {
+export default function MicrophoneDetection({ isOpen, onConclude }: MicrophoneDetectionProps) {
   const [phase, setPhase] = useState<TestPhase>("idle");
   const [micVolume, setMicVolume] = useState(0);
 
@@ -195,6 +195,4 @@ const MicrophoneDetection = ({ isOpen, onConclude }: MicrophoneDetectionProps) =
       </DialogContent>
     </Dialog>
   );
-};
-
-export default MicrophoneDetection;
+}

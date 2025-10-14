@@ -1,3 +1,5 @@
+// src\app\(landing-page)\components\ReviewsSection.tsx
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -6,11 +8,7 @@ import { Quote } from "lucide-react";
 import type { EmblaCarouselType } from "embla-carousel";
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 
 // [MOD] ปรับปรุงข้อมูลรีวิวให้เข้ากับดีไซน์ใหม่
@@ -48,13 +46,7 @@ const reviews = [
 ];
 
 // [ADD] Component สำหรับปุ่ม Dot ด้านล่าง
-const DotButton = ({
-  selected,
-  onClick,
-}: {
-  selected: boolean;
-  onClick: () => void;
-}) => (
+const DotButton = ({ selected, onClick }: { selected: boolean; onClick: () => void }) => (
   <button
     className={cn(
       "h-2 rounded-full transition-all duration-300",
@@ -66,19 +58,14 @@ const DotButton = ({
 );
 
 const ReviewsSection = () => {
-  const plugin = React.useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true }),
-  );
+  const plugin = React.useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
 
   // [ADD] State สำหรับจัดการ Carousel API และ Dot Indicators
   const [api, setApi] = useState<EmblaCarouselType | undefined>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
-  const scrollTo = useCallback(
-    (index: number) => api && api.scrollTo(index),
-    [api],
-  );
+  const scrollTo = useCallback((index: number) => api && api.scrollTo(index), [api]);
 
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
     setSelectedIndex(emblaApi.selectedScrollSnap());
@@ -98,12 +85,8 @@ const ReviewsSection = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase">
-            Testimonial
-          </p>
-          <h2 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            ลูกค้าพูดถึงเรา
-          </h2>
+          <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase">Testimonial</p>
+          <h2 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">ลูกค้าพูดถึงเรา</h2>
         </div>
 
         {/* Carousel */}
@@ -117,30 +100,17 @@ const ReviewsSection = () => {
         >
           <CarouselContent className="my-4 -ml-6">
             {reviews.map((review, index) => (
-              <CarouselItem
-                key={index}
-                className="pl-6 md:basis-1/2 lg:basis-1/3"
-              >
+              <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
                 {/* [MOD] การ์ดรีวิวดีไซน์ใหม่ทั้งหมด */}
                 <Card className="from-secondary/5 via-card to-card flex h-full flex-col rounded-3xl rounded-bl-[75px] border-none bg-gradient-to-br p-8 shadow-sm">
                   <CardContent className="flex h-full flex-col p-0">
                     <Quote className="h-10 w-10 text-slate-200 dark:text-zinc-700" />
-                    <p className="text-foreground mt-6 flex-grow text-lg font-medium">
-                      {review.text}
-                    </p>
+                    <p className="text-foreground mt-6 flex-grow text-lg font-medium">{review.text}</p>
                     <div className="mt-8 flex items-center gap-4">
-                      <img
-                        src={review.img}
-                        alt={review.name}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
+                      <img src={review.img} alt={review.name} className="h-12 w-12 rounded-full object-cover" />
                       <div>
-                        <h4 className="text-foreground font-bold">
-                          {review.name}
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {review.handle}
-                        </p>
+                        <h4 className="text-foreground font-bold">{review.name}</h4>
+                        <p className="text-muted-foreground text-sm">{review.handle}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -154,11 +124,7 @@ const ReviewsSection = () => {
         {/* [ADD] Dot Indicators */}
         <div className="mt-10 flex justify-center gap-2">
           {scrollSnaps.map((_, index) => (
-            <DotButton
-              key={index}
-              selected={index === selectedIndex}
-              onClick={() => scrollTo(index)}
-            />
+            <DotButton key={index} selected={index === selectedIndex} onClick={() => scrollTo(index)} />
           ))}
         </div>
       </div>

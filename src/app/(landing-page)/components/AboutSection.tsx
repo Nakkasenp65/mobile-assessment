@@ -1,3 +1,5 @@
+// src\app\(landing-page)\components\AboutSection.tsx
+
 import { Rocket, ShieldCheck, Store } from "lucide-react";
 
 // ข้อมูล Features (ไม่มีการเปลี่ยนแปลง)

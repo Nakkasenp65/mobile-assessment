@@ -1,13 +1,9 @@
+// src\components\ui\framer\FramerButton.tsx
+
 "use client";
 
 import * as React from "react";
-import {
-  HTMLMotionProps,
-  motion,
-  MotionConfig,
-  MotionProps,
-  spring,
-} from "framer-motion";
+import { HTMLMotionProps, motion, MotionConfig, MotionProps } from "framer-motion";
 
 // ยูทิลเล็ก ๆ สำหรับรวมคลาส (กัน falsy)
 function cx(...classes: Array<string | false | undefined | null>) {
@@ -55,23 +51,21 @@ const FramerButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // โทนปุ่ม (ใช้ธีม pink/orange ได้ตาม Tailwind ของคุณ)
     const variantClass: Record<Variant, string> = {
-      solid:
-        "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md hover:shadow-lg",
+      solid: "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md hover:shadow-lg",
       outline:
         "border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-100",
       soft: "bg-pink-50 text-pink-700 hover:bg-pink-100 dark:bg-pink-500/10 dark:text-pink-300",
-      ghost:
-        "bg-transparent text-gray-700 hover:bg-gray-100 dark:text-zinc-200 dark:hover:bg-white/10",
+      ghost: "bg-transparent text-gray-700 hover:bg-gray-100 dark:text-zinc-200 dark:hover:bg-white/10",
     };
 
     // เอฟเฟกต์กด: ยุบ + ขยับลงนิด ๆ (มี fallback active:translate-y-px)
     const pressProps: MotionProps = canAnimate
       ? {
-          whileTap: { scale: 0.95, y: 0.5 },
+          whileTap: { scale: 0.95 },
           transition: {
             type: "spring",
-            stiffness: 500, // ความแข็งของสปริง (ยิ่งมากยิ่งตอบสนองเร็ว)
-            damping: 5, // ตัวหน่วงการสั่น (ยิ่งมากยิ่งหยุดเร็ว ไม่เด้งเยอะ)
+            stiffness: 200, // ความแข็งของสปริง (ยิ่งมากยิ่งตอบสนองเร็ว)
+            damping: 20, // ตัวหน่วงการสั่น (ยิ่งมากยิ่งหยุดเร็ว ไม่เด้งเยอะ)
           },
         }
       : {};

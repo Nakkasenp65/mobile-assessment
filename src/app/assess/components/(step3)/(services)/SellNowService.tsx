@@ -32,7 +32,7 @@ interface SellNowServiceProps {
 
 type ServiceStep = "filling_form" | "awaiting_deposit" | "completed";
 
-const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServiceProps) => {
+export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: SellNowServiceProps) {
   const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
   void _deviceInfo;
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -257,6 +257,4 @@ const SellNowService = ({ deviceInfo: _deviceInfo, sellPrice }: SellNowServicePr
       </AnimatePresence>
     </main>
   );
-};
-
-export default SellNowService;
+}

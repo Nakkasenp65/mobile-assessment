@@ -1,4 +1,4 @@
-// FaqSection.tsx
+// src\app\(landing-page)\components\FaqSection.tsx
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 // [ADD] Import ไอคอน Plus และ Minus

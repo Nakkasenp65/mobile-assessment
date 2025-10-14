@@ -1,4 +1,7 @@
+// src\app\(landing-page)\components\HowItWorksSection.tsx
+
 "use client";
+
 import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { Search, CalendarClock, HandCoins } from "lucide-react";
 import Image from "next/image";

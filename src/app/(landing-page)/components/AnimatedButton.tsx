@@ -1,3 +1,5 @@
+// src\app\(landing-page)\components\AnimatedButton.tsx
+
 "use client";
 
 import Image from "next/image";

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { DateSelect } from "@/components/ui/date-select"; // ✨ 1. Import DateSelect
+import { DateSelect } from "@/components/ui/date-select";
 import { useRouter } from "next/navigation";
 
 interface TradeInServiceProps {
@@ -38,7 +38,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
+export default function TradeInService({ deviceInfo, tradeInPrice }: TradeInServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
@@ -333,6 +333,4 @@ const TradeInService = ({ deviceInfo, tradeInPrice }: TradeInServiceProps) => {
       </motion.div>
     </main>
   );
-};
-
-export default TradeInService;
+}

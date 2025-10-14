@@ -1,3 +1,5 @@
+// src\app\(landing-page)\components\WhyUsSection.tsx
+
 "use client";
 
 import React from "react";

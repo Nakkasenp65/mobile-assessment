@@ -69,14 +69,14 @@ interface AssessStep2Props {
 
 type SubStep = "physical" | "automated" | "interactive";
 
-const AssessStep2 = ({
+export default function AssessStep2({
   deviceInfo,
   conditionInfo,
   onConditionUpdate,
   onNext,
   onBack,
   isOwnDevice,
-}: AssessStep2Props) => {
+}: AssessStep2Props) {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid } = useDeviceDetection();
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
@@ -201,6 +201,4 @@ const AssessStep2 = ({
       </AnimatePresence>
     </div>
   );
-};
-
-export default AssessStep2;
+}
