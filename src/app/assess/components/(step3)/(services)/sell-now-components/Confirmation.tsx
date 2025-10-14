@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/sell-now-components/Confirmation.tsx
+
 "use client";
 
 import FramerButton from "@/components/ui/framer/FramerButton";
@@ -10,7 +11,7 @@ interface ConfirmationProps {
   handleConfirmSell: () => void;
 }
 
-const Confirmation: React.FC<ConfirmationProps> = ({ isFormComplete, handleConfirmSell }) => {
+export default function Confirmation({ isFormComplete, handleConfirmSell }: ConfirmationProps) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -40,6 +41,4 @@ const Confirmation: React.FC<ConfirmationProps> = ({ isFormComplete, handleConfi
       </p>
     </motion.div>
   );
-};
-
-export default Confirmation;
+}

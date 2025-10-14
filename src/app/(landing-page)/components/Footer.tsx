@@ -14,7 +14,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Link from "next/link";
 
-const Footer: React.FC = () => {
+export default function Footer() {
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -30,18 +30,13 @@ const Footer: React.FC = () => {
   return (
     <footer className="relative isolate block">
       {/* Backgrounds (ไม่มีการเปลี่ยนแปลง) */}
-      <div className="pointer-events-none absolute inset-x-0 -top-6 mx-auto h-12 max-w-6xl rounded-full bg-gradient-to-r from-orange-400/25 via-pink-400/25 to-fuchsia-400/25 blur-2xl" />
+
       <div className="absolute inset-0 -z-10 bg-gray-100" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-pink-50/40 via-white to-orange-50/40" />
 
-      <div className="container mx-auto px-4 py-10 md:py-16">
+      <div className="container mx-auto px-4 py-8">
         {/* Grid Layout หลัก (ไม่มีการเปลี่ยนแปลง) */}
         <div className="grid grid-cols-1 gap-y-10 md:grid-cols-4 md:gap-x-8 md:gap-y-12 lg:grid-cols-[5fr_3fr_2fr_2fr]">
-          {/* 
-            --- [ปรับปรุง] Column 1: About ---
-            - เพิ่ม `md:col-span-4` เพื่อให้ส่วนนี้กินพื้นที่เต็มความกว้าง 4 คอลัมน์บนจอ `md`
-            - เพิ่ม `lg:col-span-1` เพื่อ "รีเซ็ต" ให้กลับไปกิน 1 คอลัมน์บนจอ `lg`
-          */}
           <section aria-labelledby="footer-about" className="md:col-span-4 lg:col-span-1">
             <h2 id="footer-about" className="sr-only">
               เกี่ยวกับ OK Mobile
@@ -266,6 +261,4 @@ const Footer: React.FC = () => {
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

@@ -1,3 +1,5 @@
+// src\app\my-assessments\page.tsx
+
 "use client";
 
 import React, { useState, FormEvent, KeyboardEvent } from "react";
@@ -5,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import Layout from "../../components/Layout/Layout";
 
-// --- CHIRON: Import โครงสร้างใหม่ที่แยกออกไป ---
 import InputPhoneNumber from "./components/InputPhoneNumber";
 import InputOTP from "./components/InputOTP";
 import ResultsView from "./components/ResultView";
