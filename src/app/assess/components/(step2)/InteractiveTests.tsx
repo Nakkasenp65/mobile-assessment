@@ -2,7 +2,8 @@
 
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowLeft, Mic, Volume2, Camera, PenTool } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Mic, Volume2, Camera, PenTool, Info } from "lucide-react";
 import SpeakerDetection from "./(interactive-tests)/SpeakerDetection";
 import MicrophoneDetection from "./(interactive-tests)/MicrophoneDetection";
 import CameraDetection from "./(interactive-tests)/CameraDetection";
@@ -25,6 +26,7 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
   const testSequence = useMemo<TestName[]>(() => ["speaker", "mic", "camera", "touchScreen"], []);
   const [currentTestIndex, setCurrentTestIndex] = useState(0);
   const [activeTest, setActiveTest] = useState<TestName | null>(null);
+  const [showPermBanner, setShowPermBanner] = useState(true);
   const [testResults, setTestResults] = useState<Record<TestName, TestStatus>>({
     speaker: "pending",
     mic: "pending",
@@ -82,6 +84,41 @@ const InteractiveTests = ({ onFlowComplete, onBack, onTestsConcluded }: Interact
       <div className="py-2 text-center">
         <h2 className="text-foreground text-xl font-bold">ขั้นตอนที่ 3: ทดสอบการใช้งาน</h2>
       </div>
+
+      {/* Permission Banner */}
+      <AnimatePresence>
+        {showPermBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="mx-4 mb-2 rounded-xl border border-amber-200/70 bg-amber-50 p-3 text-amber-900 shadow-sm dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-start gap-2">
+              <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="mb-1">
+                  จำเป็นต้องอนุญาตการเข้าถึง <span className="font-semibold">กล้อง</span> และ <span className="font-semibold">ไมโครโฟน</span> เพื่อดำเนินการทดสอบแบบโต้ตอบอย่างถูกต้อง
+                </p>
+                <p className="mb-1">
+                  สิทธิ์ที่ต้องขอ: การใช้งานกล้องสำหรับตรวจจับใบหน้า และการใช้งานไมโครโฟนสำหรับตรวจสอบการบันทึกเสียง
+                </p>
+                <p>
+                  ข้อมูลสิทธิ์จะใช้เฉพาะภายในหน้าทดสอบนี้เพื่อการประเมินคุณภาพเครื่อง ไม่ถูกบันทึกหรือส่งออกไปภายนอกโดยไม่ได้รับอนุญาต
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPermBanner(false)}
+                className="ml-auto rounded-lg px-2 text-xs font-semibold text-amber-900/70 hover:text-amber-900 dark:text-amber-200/80 dark:hover:text-amber-100"
+              >
+                ปิด
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Test Buttons */}
       <div className="my-8 grid min-h-[250px] grid-cols-2 content-center gap-4 px-8 md:grid-cols-4">
