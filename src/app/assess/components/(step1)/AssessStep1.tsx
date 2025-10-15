@@ -299,6 +299,10 @@ const AssessStep1 = ({
             direction={direction}
           >
             <SimpleAssessmentForm
+              deviceInfo={deviceInfo}
+              onDeviceUpdate={onDeviceUpdate}
+              conditionInfo={conditionInfo}
+              onConditionUpdate={onConditionUpdate}
               onValidityChange={(valid) => setSimpleValid(valid)}
               onDataChange={(data) => setSimpleData(data)}
             />

@@ -210,6 +210,55 @@ export const PHONE_DATA: PhoneData = {
       "iPad Gen 7 Cellular",
     ],
 
+    // Apple — additional product categories
+    Mac: [
+      // MacBook Air
+      "MacBook Air 13-inch (M3)",
+      "MacBook Air 15-inch (M3)",
+      "MacBook Air 13-inch (M2)",
+      "MacBook Air 15-inch (M2)",
+      // MacBook Pro
+      "MacBook Pro 14-inch (M3)",
+      "MacBook Pro 16-inch (M3)",
+      "MacBook Pro 14-inch (M3 Pro)",
+      "MacBook Pro 16-inch (M3 Pro)",
+      "MacBook Pro 14-inch (M2 Pro)",
+      "MacBook Pro 16-inch (M2 Pro)",
+      // iMac
+      "iMac 24-inch (M3)",
+      // Mac mini / Studio
+      "Mac mini (M2)",
+      "Mac mini (M2 Pro)",
+      "Mac Studio (M2 Max)",
+      "Mac Studio (M2 Ultra)",
+    ],
+
+    "Apple Watch": [
+      "Apple Watch Ultra 2",
+      "Apple Watch Ultra",
+      "Apple Watch Series 10",
+      "Apple Watch Series 9",
+      "Apple Watch Series 8",
+      "Apple Watch Series 7",
+      "Apple Watch SE (2nd Gen)",
+      "Apple Watch SE (1st Gen)",
+    ],
+
+    AirPods: [
+      "AirPods Pro (2nd Gen, USB‑C)",
+      "AirPods Pro (2nd Gen, Lightning)",
+      "AirPods Pro (1st Gen)",
+      "AirPods (3rd Gen)",
+      "AirPods (2nd Gen)",
+      "AirPods Max",
+    ],
+
+    "Apple Pencil": [
+      "Apple Pencil (USB‑C)",
+      "Apple Pencil (2nd Gen)",
+      "Apple Pencil (1st Gen)",
+    ],
+
     // Samsung
     Samsung: [
       "Samsung S24 Ultra",

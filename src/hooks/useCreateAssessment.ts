@@ -39,6 +39,7 @@ function ensureConditionDefaults(ci: ConditionInfo): ConditionInfo {
     canUnlockIcloud: ci.canUnlockIcloud ?? false,
     modelType: ci.modelType ?? "",
     warranty: ci.warranty ?? "",
+    openedOrRepaired: ci.openedOrRepaired ?? "",
     accessories: ci.accessories ?? "",
     bodyCondition: ci.bodyCondition ?? "",
     screenGlass: ci.screenGlass ?? "",
@@ -65,7 +66,11 @@ function validateInput(input: CreateAssessmentInput): string[] {
   else if (!/^\d{10}$/.test(phone)) errs.push("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก");
   if (!input.deviceInfo?.brand) errs.push("กรุณาเลือกยี่ห้ออุปกรณ์");
   if (!input.deviceInfo?.model) errs.push("กรุณาเลือกรุ่นอุปกรณ์");
-  if (!input.deviceInfo?.storage) errs.push("กรุณาเลือกความจุอุปกรณ์");
+  // Relax storage requirement for Apple non-iPhone/iPad
+  const isApple = input.deviceInfo?.brand === "Apple";
+  const type = input.deviceInfo?.productType;
+  const requiresStorage = !isApple || (type === "iPhone" || type === "iPad");
+  if (requiresStorage && !input.deviceInfo?.storage) errs.push("กรุณาเลือกความจุอุปกรณ์");
   // Minimal validation for conditionInfo presence
   if (!input.conditionInfo) errs.push("ข้อมูลสภาพเครื่องไม่ครบถ้วน");
   return errs;

@@ -11,6 +11,7 @@ export interface ConditionInfo {
   // ข้อมูลทั่วไป
   modelType: "model_th" | "model_inter_new" | "model_inter_old" | "";
   warranty: "warranty_active_long" | "warranty_active_short" | "warranty_inactive" | "";
+  openedOrRepaired?: "repaired_yes" | "repaired_no" | "";
   accessories: "acc_full" | "acc_box_only" | "acc_no_box" | "";
 
   // สภาพภายนอก

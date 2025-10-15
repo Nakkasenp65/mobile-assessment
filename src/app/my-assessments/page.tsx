@@ -2,13 +2,14 @@
 
 "use client";
 
-import React, { useState, FormEvent, KeyboardEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import Layout from "../../components/Layout/Layout";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 import InputPhoneNumber from "./components/InputPhoneNumber";
-import InputOTP from "./components/InputOTP";
 import ResultsView from "./components/ResultView";
 
 type AssessmentStatus = "completed" | "pending" | "in-progress";
@@ -25,131 +26,90 @@ interface AssessmentRecord {
   };
   status: AssessmentStatus;
   estimatedValue: number;
-  selectedServiceId: string;
+  selectedServiceId: string; // optional in API; keep empty string to hide service
 }
 
-const mockUserAssessments: AssessmentRecord[] = [
-  {
-    id: "rec001",
-    email: "customer@example.com",
-    phoneNumber: "0812345678",
-    assessmentDate: "25 กันยายน 2568",
-    device: {
-      brand: "Apple",
-      model: "iPhone 15 Pro",
-      storage: "256GB",
-    },
-    status: "completed",
-    estimatedValue: 28500,
-    selectedServiceId: "pawn",
-  },
-  {
-    id: "rec002",
-    email: "customer@example.com",
-    phoneNumber: "0987654321",
-    assessmentDate: "24 กันยายน 2568",
-    device: {
-      brand: "Samsung",
-      model: "Galaxy S23 Ultra",
-      storage: "512GB",
-    },
-    status: "completed",
-    estimatedValue: 19800,
-    selectedServiceId: "sell",
-  },
-  {
-    id: "rec003",
-    email: "another.user@example.com",
-    phoneNumber: "0611223344",
-    assessmentDate: "20 กันยายน 2568",
-    device: {
-      brand: "Apple",
-      model: "iPhone 13",
-      storage: "128GB",
-    },
-    status: "in-progress",
-    estimatedValue: 6000,
-    selectedServiceId: "consignment",
-  },
-  {
-    id: "rec004",
-    email: "customer@example.com",
-    phoneNumber: "0888888888",
-    assessmentDate: "15 สิงหาคม 2568",
-    device: {
-      brand: "Google",
-      model: "Pixel 8 Pro",
-      storage: "256GB",
-    },
-    status: "pending",
-    estimatedValue: 21000,
-    selectedServiceId: "tradein",
-  },
-];
+// Raw API record shape (subset)
+interface RawAssessmentRecord {
+  _id: string;
+  docId?: string;
+  phoneNumber: string;
+  status: AssessmentStatus | string;
+  estimatedValue?: number;
+  deviceInfo?: { brand: string; model: string; storage: string };
+  device?: { brand: string; model: string; storage: string };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface SearchApiResponse {
+  success: boolean;
+  data: RawAssessmentRecord[];
+}
+
+async function fetchAssessmentsByPhone(phone: string): Promise<AssessmentRecord[]> {
+  const endpoint = `https://assessments-api-ten.vercel.app/api/assessments/search?phoneNumber=${encodeURIComponent(
+    phone,
+  )}`;
+  const { data } = await axios.get<SearchApiResponse>(endpoint);
+
+  if (!data || !data.success || !Array.isArray(data.data)) {
+    throw new Error("รูปแบบข้อมูลไม่ถูกต้องจาก API");
+  }
+
+  return data.data.map((rec) => {
+    const dev = rec.deviceInfo ?? rec.device ?? { brand: "", model: "", storage: "" };
+    const created = rec.createdAt ?? rec.updatedAt ?? "";
+    const assessmentDate = created
+      ? new Date(created).toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })
+      : "";
+
+    return {
+      id: rec._id ?? rec.docId ?? Math.random().toString(36).slice(2),
+      email: "",
+      phoneNumber: rec.phoneNumber ?? "",
+      assessmentDate,
+      device: {
+        brand: dev.brand ?? "",
+        model: dev.model ?? "",
+        storage: dev.storage ?? "",
+      },
+      status: (rec.status as AssessmentStatus) ?? "pending",
+      estimatedValue: typeof rec.estimatedValue === "number" ? rec.estimatedValue : 0,
+      selectedServiceId: "", // hide service row in card
+    } as AssessmentRecord;
+  });
+}
 
 export default function MyAssessmentsPage() {
-  const [step, setStep] = useState<"enter-phone" | "enter-otp" | "show-results">("enter-phone");
+  const [step, setStep] = useState<"enter-phone" | "show-results">("enter-phone");
 
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [userAssessments, setUserAssessments] = useState<AssessmentRecord[]>([]);
+  const {
+    data: assessmentsData = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<AssessmentRecord[], Error>({
+    queryKey: ["assessmentsByPhone", phoneNumber],
+    queryFn: () => fetchAssessmentsByPhone(phoneNumber),
+    enabled: step === "show-results" && !!phoneNumber,
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
   const handlePhoneSubmit = (e?: FormEvent) => {
     if (e) e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep("enter-otp");
-    }, 1500);
-  };
-
-  const handleOtpSubmit = (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    const fullOtp = otp.join("");
-    console.log("Verifying OTP:", fullOtp, "for number:", phoneNumber);
-    setTimeout(() => {
-      setUserAssessments(mockUserAssessments);
-      setIsLoading(false);
-      setStep("show-results");
-    }, 1500);
+    setStep("show-results");
+    // useQuery will auto-run due to enabled condition; refetch optional for manual trigger
+    refetch();
   };
 
   const handleBackToPhone = () => {
     setStep("enter-phone");
-    setError(null);
-    setOtp(new Array(6).fill(""));
-    setUserAssessments([]);
-  };
-
-  const handleOtpChange = (element: HTMLInputElement, index: number) => {
-    const value = element.value;
-    if (!/^[0-9]*$/.test(value)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-
-    if (value && index < 5) {
-      const nextInput = element.nextElementSibling as HTMLInputElement;
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-  };
-
-  const handleOtpKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = e.currentTarget.previousElementSibling as HTMLInputElement;
-      if (prevInput) {
-        prevInput.focus();
-      }
-    }
+    setPhoneNumber("");
   };
 
   const renderContent = () => {
@@ -160,29 +120,22 @@ export default function MyAssessmentsPage() {
             phoneNumber={phoneNumber}
             onPhoneNumberChange={setPhoneNumber}
             onSubmit={handlePhoneSubmit}
-            isLoading={isLoading}
-          />
-        );
-      case "enter-otp":
-        return (
-          <InputOTP
-            phoneNumber={phoneNumber}
-            otp={otp}
-            onOtpChange={handleOtpChange}
-            onOtpKeyDown={handleOtpKeyDown}
-            onSubmit={handleOtpSubmit}
-            onBack={handleBackToPhone}
-            isLoading={isLoading}
-            onResend={() => console.log("Resend code!")}
+            isLoading={false}
           />
         );
       case "show-results":
-        return (
-          <ResultsView
-            assessments={userAssessments}
-            // CHIRON: Systemic Interaction - ปรับการส่ง prop ให้ตรงตามสัญญาใหม่ของ Component ลูก
-            onBack={handleBackToPhone}
-          />
+        return isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="container flex min-h-[60dvh] w-full items-center justify-center rounded-lg bg-white p-6 shadow"
+          >
+            <div className="text-muted-foreground text-sm">กำลังโหลดข้อมูลรายการประเมิน…</div>
+          </motion.div>
+        ) : (
+          <ResultsView assessments={assessmentsData} onBack={handleBackToPhone} />
         );
       default:
         return null;
@@ -196,7 +149,7 @@ export default function MyAssessmentsPage() {
         <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-start sm:pt-32">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
           <AnimatePresence>
-            {error && !isLoading && (
+            {error && step === "show-results" && !isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -204,7 +157,7 @@ export default function MyAssessmentsPage() {
                 className="mt-6 flex w-full max-w-md items-center gap-2 rounded-lg border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-sm font-medium text-[#dc2626]"
               >
                 <AlertCircle className="h-4 w-4" />
-                {error}
+                {error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลจากระบบ"}
               </motion.div>
             )}
           </AnimatePresence>
