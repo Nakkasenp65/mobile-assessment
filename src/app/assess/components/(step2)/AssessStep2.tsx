@@ -3,7 +3,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, AlertCircle } from "lucide-react";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { ASSESSMENT_QUESTIONS, Platform } from "@/util/info";
 import { DiagnosticsResult } from "./AutomatedDiagnostics";
@@ -11,7 +10,7 @@ import { useDeviceDetection } from "../../../../hooks/useDeviceDetection";
 import QuestionReport from "./QuestionReport";
 import AutomatedDiagnostics from "./AutomatedDiagnostics";
 import InteractiveTests from "./InteractiveTests";
-import AssessmentLedger from "../(step3)/AssessmentLedger";
+import ReviewSummary from "./ReviewSummary";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
 function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
@@ -71,6 +70,22 @@ interface AssessStep2Props {
 }
 
 type SubStep = "physical" | "automated" | "interactive" | "review";
+
+// Valid toggle keys in ConditionInfo
+const TOGGLE_KEYS = [
+  "wifi",
+  "charger",
+  "touchScreen",
+  "mic",
+  "speaker",
+  "call",
+  "homeButton",
+  "sensor",
+  "buttons",
+  "faceId",
+] as const;
+type ToggleKey = (typeof TOGGLE_KEYS)[number];
+const isToggleKey = (id: keyof ConditionInfo): id is ToggleKey => TOGGLE_KEYS.includes(id as ToggleKey);
 
 export default function AssessStep2({
   deviceInfo,
@@ -175,7 +190,7 @@ export default function AssessStep2({
     return choiceIds as (keyof ConditionInfo)[];
   }, [resolvePlatform]);
 
-  const TOGGLE_BEST: Partial<Record<keyof ConditionInfo, string>> = {
+  const TOGGLE_BEST: Partial<Record<ToggleKey, ConditionInfo[ToggleKey]>> = {
     wifi: "wifi_ok",
     charger: "charger_ok",
     touchScreen: "touchscreen_ok",
@@ -194,16 +209,26 @@ export default function AssessStep2({
       const relevantQuestions = ASSESSMENT_QUESTIONS.flatMap((section) =>
         section.questions.filter((q) => q.platforms.includes(platform)),
       );
-      const toggleIds = relevantQuestions.filter((q) => q.type === "toggle").map((q) => q.id as keyof ConditionInfo);
-      const next: ConditionInfo = { ...info };
+      const toggleIds = relevantQuestions
+        .filter((q) => q.type === "toggle")
+        .map((q) => q.id as keyof ConditionInfo)
+        .filter(isToggleKey);
+      // Widen the type for indexed assignment over specific toggle keys
+      let next: Record<ToggleKey, ConditionInfo[ToggleKey]> & ConditionInfo = { ...info } as Record<
+        ToggleKey,
+        ConditionInfo[ToggleKey]
+      > & ConditionInfo;
       toggleIds.forEach((id) => {
-        const v = next[id] as string;
-        if (!v || v === "") {
+        const current = info[id];
+        if (current === "") {
           const best = TOGGLE_BEST[id];
-          if (best) (next as any)[id] = best;
+          if (best) {
+            // Recreate object to avoid control-flow narrowing on indexed assignment
+            next = { ...next, [id]: best } as ConditionInfo as Record<ToggleKey, ConditionInfo[ToggleKey]> & ConditionInfo;
+          }
         }
       });
-      return next;
+      return next as ConditionInfo;
     },
     [resolvePlatform],
   );
@@ -306,50 +331,13 @@ export default function AssessStep2({
 
           {/* สรุปรายการข้อมูลอุปกรณ์และการยืนยันก่อนดำเนินการต่อ */}
           {currentSubStep === "review" && (
-            <div className="flex w-full max-w-3xl flex-col gap-6">
-              <div className="rounded-2xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
-                  <CheckCircle className="h-5 w-5 text-emerald-600" />
-                  ตรวจสอบสรุปข้อมูลอุปกรณ์ของคุณ
-                </h3>
-                <AssessmentLedger
-                  deviceInfo={deviceInfo}
-                  conditionInfo={conditionInfo}
-                  repairs={[]}
-                  totalCost={0}
-                  isLoading={false}
-                />
-              </div>
-
-              {errors.length > 0 && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                  <div className="mb-2 flex items-center gap-2 font-semibold">
-                    <AlertCircle className="h-4 w-4" /> กรุณาแก้ไขข้อมูลต่อไปนี้ก่อนดำเนินการต่อ
-                  </div>
-                  <ul className="list-inside list-disc">
-                    {errors.map((e, idx) => (
-                      <li key={idx}>{e}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={handleBackNavigation}
-                  className="rounded-xl border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                >
-                  กลับไปแก้ไข
-                </button>
-                <button
-                  onClick={handleConfirm}
-                  className="rounded-xl bg-gradient-to-r from-orange-500 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow hover:brightness-110 active:translate-y-px"
-                  aria-label="ยืนยันข้อมูลและดำเนินการต่อ"
-                >
-                  ยืนยันข้อมูลและดำเนินการต่อ
-                </button>
-              </div>
-            </div>
+            <ReviewSummary
+              deviceInfo={deviceInfo}
+              conditionInfo={conditionInfo}
+              errors={errors}
+              onBack={handleBackNavigation}
+              onConfirm={handleConfirm}
+            />
           )}
         </motion.div>
       </AnimatePresence>

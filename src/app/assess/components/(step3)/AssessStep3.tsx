@@ -61,11 +61,6 @@ const mockRecords: AssessmentRecord = {
     appointmentTime: "13:00 - 17:00",
     phone: "0812345678",
   },
-  selectedService: {
-    name: "บริการจำนำ (Pawn Service)",
-    price: 22600,
-    appointmentDate: "27 กันยายน 2568, 13:00 - 17:00 น.",
-  },
   status: "completed",
   estimatedValue: 28500,
   priceLockExpiresAt: getExpiryDate(3),

@@ -6,8 +6,9 @@ import Layout from "../../../components/Layout/Layout";
 import AssessStep3 from "../../assess/components/(step3)/AssessStep3";
 import AssessStep4 from "../../assess/components/(step4)/AssessStep4";
 import { useAssessment } from "@/hooks/useAssessment";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function AssessmentRecordPage() {
+export default function AssessmentDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const assessmentId = params.id as string;
@@ -16,11 +17,47 @@ export default function AssessmentRecordPage() {
 
   const { data, isLoading, error } = useAssessment(assessmentId);
 
+  console.log(data);
+
   if (isLoading) {
     return (
       <Layout>
-        <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white">
-          <div className="text-sm text-gray-600">กำลังโหลดข้อมูลการประเมิน...</div>
+        <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-white px-4 py-8 sm:py-16">
+          <div className="z-10 container flex w-full flex-col items-center">
+            <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Left: Summary card skeleton */}
+              <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-2">
+                  <Skeleton className="h-5 w-32 rounded-full" />
+                </div>
+                <div className="flex items-start gap-4">
+                  <Skeleton className="h-[150px] w-[150px] rounded-2xl" />
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-1/3" />
+                  </div>
+                </div>
+                <div className="mt-6 space-y-2">
+                  <Skeleton className="h-10 w-48 rounded-xl" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="mt-6 space-y-2">
+                  <Skeleton className="h-40 w-full rounded-2xl" />
+                </div>
+              </div>
+
+              {/* Right: Services panel skeleton */}
+              <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm">
+                <Skeleton className="mb-4 h-10 w-64 rounded-xl" />
+                <div className="space-y-3">
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
       </Layout>
     );

@@ -12,12 +12,7 @@ export interface AssessmentRecord {
     imageUrl: string;
   };
   conditionInfo: ConditionInfo;
-  pawnServiceInfo: PawnServiceInfo;
-  selectedService: {
-    name: string;
-    price: number;
-    appointmentDate: string;
-  };
+  pawnServiceInfo?: PawnServiceInfo;
   status: "completed" | "pending" | "in-progress";
   estimatedValue: number;
   priceLockExpiresAt: string;

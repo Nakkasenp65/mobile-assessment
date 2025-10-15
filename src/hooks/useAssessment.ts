@@ -1,8 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { ConditionInfo } from "../types/device";
 
+// Normalized shape returned by the hook
 export interface AssessmentData {
   id: string;
   device: {
@@ -13,82 +15,79 @@ export interface AssessmentData {
   };
   conditionInfo: ConditionInfo;
   estimatedValue: number;
-  priceLockExpiresAt: string;
+  priceLockExpiresAt?: string; // optional in case backend does not provide
 }
 
-const getExpiryDate = (days: number): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  date.setHours(23, 59, 59, 999);
-  return date.toISOString();
-};
+// Raw API response types
+interface RawAssessmentRecord {
+  _id: string;
+  phoneNumber: string;
+  device: {
+    brand: string;
+    model: string;
+    storage: string;
+    imageUrl?: string;
+  };
+  conditionInfo: ConditionInfo;
+  pawnServiceInfo?: {
+    customerName?: string;
+    locationType?: "home" | "bts" | "store";
+    btsLine?: string;
+    btsStation?: string;
+    appointmentDate?: string;
+    appointmentTime?: string;
+    phone?: string;
+  };
+  status: "pending" | "completed" | "in-progress" | string;
+  estimatedValue?: number;
+  assessmentDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-function mockAssessment(id: string): AssessmentData {
+interface AssessmentApiResponse {
+  success: boolean;
+  data: RawAssessmentRecord[];
+}
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://assessments-api-ten.vercel.app";
+
+const sanitizeImageUrl = (url?: string) => (url ? url.replace(/`/g, "").trim() : undefined);
+
+async function fetchAssessment(id: string): Promise<AssessmentData> {
+  const endpoint = `${BACKEND_URL}/api/assessments/${id}`;
+  const { data } = await axios.get<AssessmentApiResponse>(endpoint);
+
+  if (!data || !data.success || !Array.isArray(data.data)) {
+    throw new Error("Invalid response from assessments API");
+  }
+
+  const record = data.data.find((r) => r._id === id) ?? data.data[0];
+  if (!record) {
+    throw new Error("Assessment not found");
+  }
+
   return {
-    id,
+    id: record._id,
     device: {
-      brand: "Apple",
-      model: "iPhone 15 Pro",
-      storage: "256GB",
-      imageUrl: "https://lh3.googleusercontent.com/d/14EB_azrtiSrLtPVlIxWiU5Vg1hS8aw1A",
+      brand: record.device?.brand ?? "",
+      model: record.device?.model ?? "",
+      storage: record.device?.storage ?? "",
+      imageUrl: sanitizeImageUrl(record.device?.imageUrl),
     },
-    conditionInfo: {
-      modelType: "model_th",
-      warranty: "warranty_active_long",
-      accessories: "acc_full",
-      bodyCondition: "body_mint",
-      screenGlass: "glass_ok",
-      screenDisplay: "display_ok",
-      batteryHealth: "battery_health_high",
-      camera: "camera_ok",
-      wifi: "wifi_ok",
-      faceId: "biometric_ok",
-      speaker: "speaker_ok",
-      mic: "mic_ok",
-      touchScreen: "touchscreen_ok",
-      charger: "charger_ok",
-      call: "call_ok",
-      homeButton: "home_button_ok",
-      sensor: "sensor_ok",
-      buttons: "buttons_ok",
-      canUnlockIcloud: true,
-    },
-    estimatedValue: 28500,
-    priceLockExpiresAt: getExpiryDate(3),
+    conditionInfo: record.conditionInfo,
+    estimatedValue: typeof record.estimatedValue === "number" ? record.estimatedValue : 0,
+    // Backend does not provide priceLockExpiresAt; leave undefined
+    priceLockExpiresAt: undefined,
   };
 }
 
-async function fetchAssessment(id: string): Promise<AssessmentData> {
-  // Simulate network delay 300-500ms
-  const delay = 300 + Math.floor(Math.random() * 200);
-  await new Promise((res) => setTimeout(res, delay));
-
-  if (typeof window !== "undefined") {
-    const raw = window.localStorage.getItem(`assessment:${id}`);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        // Merge with mock to ensure structure completeness
-        const mock = mockAssessment(id);
-        return {
-          ...mock,
-          device: { ...mock.device, ...(parsed.device || {}) },
-          conditionInfo: { ...mock.conditionInfo, ...(parsed.conditionInfo || {}) },
-          estimatedValue: typeof parsed.estimatedValue === "number" ? parsed.estimatedValue : mock.estimatedValue,
-        };
-      } catch (e) {
-        // fall back to mock
-      }
-    }
-  }
-
-  return mockAssessment(id);
-}
-
 export function useAssessment(assessmentId: string | undefined) {
-  return useQuery({
+  return useQuery<AssessmentData, Error>({
     queryKey: ["assessment", assessmentId],
     queryFn: () => fetchAssessment(String(assessmentId)),
     enabled: !!assessmentId,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 }
