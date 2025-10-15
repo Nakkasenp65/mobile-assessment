@@ -1,82 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Layout from "../../../components/Layout/Layout";
-import { AssessmentRecord } from "../../../types/assessment";
 import AssessStep3 from "../../assess/components/(step3)/AssessStep3";
 import AssessStep4 from "../../assess/components/(step4)/AssessStep4";
-
-const getExpiryDate = (days: number): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  date.setHours(23, 59, 59, 999);
-  return date.toISOString();
-};
-
-const mockRecords: AssessmentRecord = {
-  id: "ASS-2568-0001",
-  phoneNumber: "0812345678",
-  assessmentDate: "25 กันยายน 2568",
-  device: {
-    brand: "Apple",
-    model: "iPhone 15 Pro",
-    storage: "256GB",
-    imageUrl:
-      "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708",
-  },
-  conditionInfo: {
-    modelType: "model_th",
-    warranty: "warranty_active_long",
-    accessories: "acc_full",
-    bodyCondition: "body_mint",
-    screenGlass: "glass_ok",
-    screenDisplay: "display_ok",
-    batteryHealth: "battery_health_high",
-    camera: "camera_ok",
-    wifi: "wifi_ok",
-    faceId: "biometric_ok",
-    speaker: "speaker_ok",
-    mic: "mic_ok",
-    touchScreen: "touchscreen_ok",
-    charger: "charger_failed",
-    call: "call_ok",
-    homeButton: "home_button_ok",
-    sensor: "sensor_ok",
-    buttons: "buttons_ok",
-    canUnlockIcloud: true,
-  },
-  pawnServiceInfo: {
-    customerName: "นางสาวสายฟ้า สมสุข",
-    locationType: "bts",
-    btsLine: "BTS - สายสุขุมวิท",
-    btsStation: "สยาม",
-    appointmentDate: "27 กันยายน 2568",
-    appointmentTime: "13:00 - 17:00",
-    phone: "0812345678",
-  },
-  selectedService: {
-    name: "บริการจำนำ (Pawn Service)",
-    price: 22600,
-    appointmentDate: "27 กันยายน 2568, 13:00 - 17:00 น.",
-  },
-  status: "completed",
-  estimatedValue: 28500,
-  priceLockExpiresAt: getExpiryDate(3),
-  nextSteps: [
-    "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
-    "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
-    "ชำระเงินและรับเอกสารการทำรายการ",
-  ],
-};
+import { useAssessment } from "@/hooks/useAssessment";
 
 export default function AssessmentRecordPage() {
   const router = useRouter();
+  const params = useParams();
+  const assessmentId = params.id as string;
   const [step, setStep] = useState(1); // 1 = Service Selection (AssessStep3), 2 = Service Form (AssessStep4)
   const [selectedService, setSelectedService] = useState<string>("");
 
-  // Extract data from mockRecords
-  const { device, conditionInfo } = mockRecords;
+  const { data, isLoading, error } = useAssessment(assessmentId);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white">
+          <div className="text-sm text-gray-600">กำลังโหลดข้อมูลการประเมิน...</div>
+        </main>
+      </Layout>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Layout>
+        <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white">
+          <div className="text-sm text-red-600">ไม่สามารถโหลดข้อมูลการประเมินได้</div>
+        </main>
+      </Layout>
+    );
+  }
+
+  const { device, conditionInfo, priceLockExpiresAt } = data;
 
   // Transform device data to match DeviceInfo type
   const deviceInfo = {
@@ -116,7 +76,7 @@ export default function AssessmentRecordPage() {
               onBack={handleBack}
               onNext={handleNext}
               setSelectedService={setSelectedService}
-              priceLockExpiresAt={mockRecords.priceLockExpiresAt}
+              priceLockExpiresAt={priceLockExpiresAt}
             />
           )}
 

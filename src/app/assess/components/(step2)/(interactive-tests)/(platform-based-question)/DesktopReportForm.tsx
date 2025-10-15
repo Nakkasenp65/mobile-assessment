@@ -68,6 +68,91 @@ export default function DesktopReportForm({
     return allRequiredQuestions.every((q) => !!conditionInfo[q.id]);
   }, [conditionInfo, allRequiredQuestions]);
 
+  // --- Validation & Defaulting for toggle-type questions ---
+  const TOGGLE_KEYS = [
+    "touchScreen",
+    "wifi",
+    "faceId",
+    "speaker",
+    "mic",
+    "charger",
+    "call",
+    "homeButton",
+    "sensor",
+    "buttons",
+  ] as const;
+  type ToggleKey = typeof TOGGLE_KEYS[number];
+
+  const isToggleKey = (key: keyof ConditionInfo): key is ToggleKey => {
+    return (TOGGLE_KEYS as readonly string[]).includes(key as string);
+  };
+
+  const TOGGLE_BEST = {
+    touchScreen: "touchscreen_ok",
+    wifi: "wifi_ok",
+    faceId: "biometric_ok",
+    speaker: "speaker_ok",
+    mic: "mic_ok",
+    charger: "charger_ok",
+    call: "call_ok",
+    homeButton: "home_button_ok",
+    sensor: "sensor_ok",
+    buttons: "buttons_ok",
+  } as const satisfies Record<ToggleKey, ConditionInfo[ToggleKey]>;
+
+  const TOGGLE_WORST = {
+    touchScreen: "touchscreen_failed",
+    wifi: "wifi_failed",
+    faceId: "biometric_failed",
+    speaker: "speaker_failed",
+    mic: "mic_failed",
+    charger: "charger_failed",
+    call: "call_failed",
+    homeButton: "home_button_failed",
+    sensor: "sensor_failed",
+    buttons: "buttons_failed",
+  } as const satisfies Record<ToggleKey, ConditionInfo[ToggleKey]>;
+
+  const getAllToggleQuestionIds = (): ToggleKey[] => {
+    const ids: ToggleKey[] = [];
+    relevantSections.forEach((section) => {
+      section.questions
+        .filter((q) => q.type === "toggle")
+        .forEach((q) => {
+          if (isToggleKey(q.id)) ids.push(q.id);
+        });
+    });
+    return ids;
+  };
+
+  const setToggle = <K extends ToggleKey>(obj: ConditionInfo, key: K, value: ConditionInfo[K]) => {
+    obj[key] = value;
+  };
+
+  const applyToggleDefaultsAndNormalization = () => {
+    const toggleIds = getAllToggleQuestionIds();
+    onConditionUpdate((prev) => {
+      const next = { ...prev };
+      toggleIds.forEach((id) => {
+        const current = String(next[id] || "");
+        // If unanswered and all required desktop choices are complete, default to best-case
+        if (!current) {
+          const best = TOGGLE_BEST[id] as ConditionInfo[typeof id];
+          if (best) {
+            setToggle(next, id, best);
+          }
+          return;
+        }
+        // If selected indicating issue, normalize to worst-case (ensure consistent worst-case value)
+        const worst = TOGGLE_WORST[id] as ConditionInfo[typeof id];
+        if (worst && current !== TOGGLE_BEST[id] && current !== worst) {
+          setToggle(next, id, worst);
+        }
+      });
+      return next;
+    });
+  };
+
   const handleUpdate = (questionId: keyof ConditionInfo, value: string) => {
     onConditionUpdate((prev) => ({
       ...prev,
@@ -229,7 +314,11 @@ export default function DesktopReportForm({
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>
         <FramerButton
-          onClick={onComplete}
+          onClick={() => {
+            if (!isComplete) return;
+            applyToggleDefaultsAndNormalization();
+            onComplete();
+          }}
           size="lg"
           disabled={!isComplete}
           className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"

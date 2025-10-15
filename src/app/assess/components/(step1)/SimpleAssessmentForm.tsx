@@ -8,13 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { UploadCloud, File, X } from "lucide-react";
 
-const SimpleAssessmentForm = () => {
+interface SimpleAssessmentFormProps {
+  onValidityChange?: (isValid: boolean) => void;
+  onDataChange?: (data: { imageFile: File; description: string }) => void;
+}
+
+const SimpleAssessmentForm = ({ onValidityChange, onDataChange }: SimpleAssessmentFormProps) => {
   const [file, setFile] = useState<File | null>(null);
+  const [details, setDetails] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);
+      const f = event.target.files[0];
+      setFile(f);
+      const isValid = !!f && details.trim().length > 0;
+      onValidityChange?.(isValid);
+      if (isValid) {
+        onDataChange?.({ imageFile: f, description: details.trim() });
+      }
     }
   };
 
@@ -22,6 +34,18 @@ const SimpleAssessmentForm = () => {
     setFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    const isValid = false;
+    onValidityChange?.(isValid);
+  };
+
+  const handleDetailsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setDetails(value);
+    const isValid = !!file && value.trim().length > 0;
+    onValidityChange?.(isValid);
+    if (isValid && file) {
+      onDataChange?.({ imageFile: file, description: value.trim() });
     }
   };
 
@@ -34,7 +58,7 @@ const SimpleAssessmentForm = () => {
     >
       <div>
         <Label htmlFor="file-upload" className="text-foreground mb-2 block font-semibold">
-          แนบรูปภาพอุปกรณ์ (ถ้ามี)
+          แนบรูปภาพอุปกรณ์ (จำเป็น)
         </Label>
         <div
           className="hover:border-primary/50 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 text-center hover:bg-gray-50"
@@ -58,17 +82,25 @@ const SimpleAssessmentForm = () => {
             </button>
           </div>
         )}
+        {!file && (
+          <p className="mt-2 text-xs font-medium text-red-600">จำเป็นต้องอัปโหลดรูปภาพอุปกรณ์</p>
+        )}
       </div>
 
       <div>
         <Label htmlFor="details" className="text-foreground mb-2 block font-semibold">
-          รายละเอียดเพิ่มเติม
+          รายละเอียดเพิ่มเติม (จำเป็น)
         </Label>
         <Textarea
           id="details"
           placeholder="ระบุรายละเอียดเพิ่มเติมเกี่ยวกับอุปกรณ์ของคุณ เช่น ตำหนิ, อุปกรณ์เสริม, หรือข้อมูลอื่นๆ ที่ต้องการแจ้งให้เราทราบ"
           className="min-h-[100px]"
+          value={details}
+          onChange={handleDetailsChange}
         />
+        {details.trim().length === 0 && (
+          <p className="mt-2 text-xs font-medium text-red-600">กรุณาระบุรายละเอียดของอุปกรณ์</p>
+        )}
       </div>
     </motion.div>
   );

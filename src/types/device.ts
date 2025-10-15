@@ -23,12 +23,12 @@ export interface ConditionInfo {
 
   // ฟังก์ชันพื้นฐาน
   camera: "camera_ok" | "camera_issue_minor" | "camera_defective" | "";
-  wifi: "wifi_ok" | "wifi_failed" | "";
+  wifi: "wifi_ok" | "wifi_failed" | "wifi_ignored" | "";
   faceId: "biometric_ok" | "biometric_failed" | "";
   speaker: "speaker_ok" | "speaker_failed" | "";
   mic: "mic_ok" | "mic_failed" | "";
   touchScreen: "touchscreen_ok" | "touchscreen_failed" | "";
-  charger: "charger_ok" | "charger_failed" | "";
+  charger: "charger_ok" | "charger_failed" | "charger_ignored" | "";
   call: "call_ok" | "call_failed" | "";
   homeButton: "home_button_ok" | "home_button_failed" | "";
   sensor: "sensor_ok" | "sensor_failed" | "";

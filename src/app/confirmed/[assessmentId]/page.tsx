@@ -98,9 +98,8 @@ export default function AssessmentConfirmationPage() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(255,200,124,0.1),transparent_50%)]" />
 
             <div className="relative mx-auto max-w-3xl px-6 py-8 sm:px-8">
-              <div className="flex items-center justify-between">
-                <div /> {/* Empty div for spacing */}
-                <div className="flex flex-col items-center">
+              <div className="flex items-center justify-center">
+                <div className="flex flex-col items-center justify-center">
                   <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
                     <CheckCircle className="h-12 w-12 text-green-600" strokeWidth={2.5} />
                   </div>
@@ -111,20 +110,12 @@ export default function AssessmentConfirmationPage() {
                     รหัสการประเมิน <span className="font-semibold text-gray-900">{assessmentId}</span>
                   </p>
                 </div>
-                {/* ✨ 6. เพิ่มปุ่มพิมพ์ */}
-                <button
-                  onClick={handlePrint}
-                  className="self-start rounded-full p-3 text-gray-500 transition hover:bg-gray-200/50 hover:text-gray-800"
-                  aria-label="พิมพ์เอกสาร"
-                >
-                  <Printer className="h-6 w-6" />
-                </button>
               </div>
             </div>
           </div>
 
-          {/* Main Content (เหมือนเดิม) */}
-          <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+          {/* Main Content */}
+          <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
             {/* Price Card - Most Important */}
             <div className="from-primary to-secondary mb-8 overflow-hidden rounded-3xl bg-gradient-to-br p-8 text-center shadow-lg">
               <p className="mb-2 text-sm font-medium tracking-wide text-white/90 uppercase">ราคาประเมินสุดท้าย</p>
@@ -257,8 +248,16 @@ export default function AssessmentConfirmationPage() {
               </div>
             </div>
 
-            {/* Back Button */}
-            <div className="mt-8 text-center">
+            {/* Action Buttons */}
+            <div className="mt-12 flex flex-col items-center justify-center gap-6 border-t border-gray-200 pt-8 sm:flex-row-reverse sm:justify-between">
+              <button
+                onClick={handlePrint}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-6 py-3 text-white shadow-lg transition hover:bg-pink-700 focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:outline-none sm:w-auto"
+                aria-label="พิมพ์เอกสาร"
+              >
+                <Printer className="h-5 w-5" />
+                <span className="font-semibold">พิมพ์เอกสาร</span>
+              </button>
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900"

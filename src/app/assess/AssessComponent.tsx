@@ -6,20 +6,17 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
-import AssessStep3 from "./components/(step3)/AssessStep3";
-import AssessStep4 from "./components/(step4)/AssessStep4";
+// Step3/Step4 are moved to AssessmentRecordPage flow
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
 import { ConditionInfo, DeviceInfo } from "../../types/device";
+import { useRouter } from "next/navigation";
 
 // Helper function to check if the device qualifies for skipping Step 2
-const isSimpleDevice = (deviceInfo: DeviceInfo): boolean => {
-  return (
-    deviceInfo.brand === "Apple" && !!deviceInfo.productType && !["iPhone", "iPad"].includes(deviceInfo.productType)
-  );
-};
+// Keep flow strict: Step1 -> Step2 -> AssessmentRecordPage
 
 export default function AssessComponent() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserDevice, setIsUserDevice] = useState<boolean>(true);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
@@ -86,16 +83,31 @@ export default function AssessComponent() {
   }, [searchParams, isInitialStepCalculated]);
 
   const handleNext = () => {
-    if (currentStep < 4) {
-      const nextStep = isSimpleDevice(deviceInfo) && currentStep === 1 ? 3 : currentStep + 1;
-      setCurrentStep(nextStep);
+    if (currentStep < 2) {
+      setCurrentStep(2);
+      return;
     }
+    // Navigate to AssessmentRecordPage and persist temp data
+    const id = `${deviceInfo.brand || "UNK"}-${deviceInfo.model || "MODEL"}-${Date.now()}`;
+    try {
+      const payload = {
+        device: {
+          brand: deviceInfo.brand,
+          model: deviceInfo.model,
+          storage: deviceInfo.storage,
+        },
+        conditionInfo,
+      };
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(`assessment:${id}`, JSON.stringify(payload));
+      }
+    } catch {}
+    router.push(`/my-assessment-details/${encodeURIComponent(id)}`);
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      const prevStep = isSimpleDevice(deviceInfo) && currentStep === 3 ? 1 : currentStep - 1;
-      setCurrentStep(prevStep);
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -116,7 +128,7 @@ export default function AssessComponent() {
   return (
     <Layout>
       <div className="container mx-auto flex w-full flex-col items-center gap-8 p-4 pb-24 sm:gap-8 sm:pt-8">
-        <ProgressBar currentStep={currentStep} totalSteps={4} />
+        <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         <div className="flex w-full flex-col">
           {currentStep === 1 && (
@@ -141,24 +153,7 @@ export default function AssessComponent() {
             />
           )}
 
-          {currentStep === 3 && (
-            <AssessStep3
-              deviceInfo={deviceInfo}
-              conditionInfo={conditionInfo}
-              onBack={handleBack}
-              onNext={handleNext}
-              setSelectedService={setSelectedService}
-            />
-          )}
-
-          {currentStep === 4 && (
-            <AssessStep4
-              deviceInfo={deviceInfo}
-              conditionInfo={conditionInfo}
-              selectedService={selectedService}
-              onBack={handleBack}
-            />
-          )}
+          {/* Step3/Step4 rendering moved to AssessmentRecordPage */}
         </div>
       </div>
     </Layout>

@@ -36,16 +36,10 @@ export default function MobileQuestionAccordion({
 
   const platform = useMemo((): Platform => {
     const isAssessingApple = deviceInfo.brand === "Apple";
-    // `showFullReport` คือ true เมื่อเป็น Desktop หรือประเมิน "เครื่องอื่น" บนมือถือ
-    if (showFullReport) {
-      return isAssessingApple ? "OTHER_IOS" : "OTHER_ANDROID";
-    }
-    // กรณีประเมินเครื่องตัวเอง
-    if (isIOS) return "SELF_IOS";
-    if (isAndroid) return "SELF_ANDROID";
-
-    // Fallback กรณีที่ไม่เข้าเงื่อนไข (ไม่น่าจะเกิดขึ้น)
-    return isAssessingApple ? "OTHER_IOS" : "OTHER_ANDROID";
+    const osMismatch = (isAndroid && isAssessingApple) || (isIOS && !isAssessingApple);
+    const isOther = showFullReport || osMismatch;
+    if (isOther) return isAssessingApple ? "OTHER_IOS" : "OTHER_ANDROID";
+    return isIOS ? "SELF_IOS" : "SELF_ANDROID";
   }, [showFullReport, deviceInfo.brand, isIOS, isAndroid]);
 
   const relevantQuestions = useMemo(() => {
@@ -88,6 +82,18 @@ export default function MobileQuestionAccordion({
   };
 
   const [openAccordionValue, setOpenAccordionValue] = useState<string>(findFirstUnanswered());
+
+  // Recompute the initially opened item when platform or visible questions change
+  useEffect(() => {
+    const next = findFirstUnanswered();
+    if (next && next !== openAccordionValue) {
+      setOpenAccordionValue(next);
+      return;
+    }
+    if (!next && openAccordionValue) {
+      setOpenAccordionValue("");
+    }
+  }, [platform, allVisibleQuestions, conditionInfo]);
 
   useEffect(() => {
     if (openAccordionValue) {
@@ -152,7 +158,7 @@ export default function MobileQuestionAccordion({
                     key={String(question.id)}
                     className={cn(
                       "bg-card rounded-xl border shadow-sm transition-all duration-300",
-                      openAccordionValue === question.id
+                      String(question.id) === openAccordionValue
                         ? "border-primary ring-primary/20 ring-1"
                         : isAnswered
                           ? "border-green-500/30"
@@ -166,7 +172,7 @@ export default function MobileQuestionAccordion({
                             "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
                             isAnswered
                               ? "bg-green-100"
-                              : openAccordionValue === question.id
+                              : String(question.id) === openAccordionValue
                                 ? "bg-orange-100"
                                 : "bg-slate-100",
                           )}
@@ -176,7 +182,7 @@ export default function MobileQuestionAccordion({
                               "h-6 w-6",
                               isAnswered
                                 ? "text-green-600"
-                                : openAccordionValue === question.id
+                                : String(question.id) === openAccordionValue
                                   ? "text-primary"
                                   : "text-slate-500",
                             )}

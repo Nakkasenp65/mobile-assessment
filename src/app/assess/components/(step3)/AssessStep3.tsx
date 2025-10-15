@@ -14,8 +14,6 @@ import { AssessmentRecord } from "../../../../types/assessment";
 import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
 import { cn } from "@/lib/utils";
 
-// ... (โค้ดส่วน getExpiryDate และ mockRecords ไม่มีการเปลี่ยนแปลง) ...
-
 const getExpiryDate = (days: number): string => {
   const date = new Date();
   date.setDate(date.getDate() + days);

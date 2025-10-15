@@ -53,6 +53,8 @@ const AssessStep1 = ({
   const [direction, setDirection] = useState(1);
   const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
+  const [simpleValid, setSimpleValid] = useState<boolean>(false);
+  const [simpleData, setSimpleData] = useState<{ imageFile: File; description: string } | null>(null);
 
   // ✨ [FIXED] แก้ไข useEffect ให้จัดการกับ Race Condition ของ isDesktop
   useEffect(() => {
@@ -90,7 +92,7 @@ const AssessStep1 = ({
       if (isDetailed) {
         setCurrentStep("selectModelStorage");
       } else {
-        onNext();
+        setCurrentStep("simpleAssessment");
       }
     }
   }, [deviceInfo.productType, direction, currentStep, onNext]);
@@ -144,8 +146,29 @@ const AssessStep1 = ({
       case "selectProduct":
         break;
       case "selectModelStorage":
-      case "simpleAssessment":
+        // Proceed to question form after model + storage selected
         onNext();
+        break;
+      case "simpleAssessment":
+        // Require valid simple assessment (image + description) before proceeding
+        if (simpleValid) {
+          // Optionally persist simple form data for downstream use
+          try {
+            if (simpleData && typeof window !== "undefined") {
+              const tempKey = "assessment:simple";
+              window.sessionStorage.setItem(
+                tempKey,
+                JSON.stringify({
+                  brand: deviceInfo.brand,
+                  productType: deviceInfo.productType,
+                  imageName: simpleData.imageFile.name,
+                  description: simpleData.description,
+                }),
+              );
+            }
+          } catch {}
+          onNext();
+        }
         break;
       default:
         break;
@@ -275,11 +298,14 @@ const AssessStep1 = ({
             description={`กรอกรายละเอียดเกี่ยวกับ ${deviceInfo.productType} ของคุณ`}
             direction={direction}
           >
-            <SimpleAssessmentForm />
+            <SimpleAssessmentForm
+              onValidityChange={(valid) => setSimpleValid(valid)}
+              onDataChange={(data) => setSimpleData(data)}
+            />
             <NavigationButtons
               onBack={prevStep}
               onNext={nextStep}
-              isNextDisabled={!deviceInfo.brand || !deviceInfo.productType}
+              isNextDisabled={!deviceInfo.brand || !deviceInfo.productType || !simpleValid}
             />
           </StepWrapper>
         );
