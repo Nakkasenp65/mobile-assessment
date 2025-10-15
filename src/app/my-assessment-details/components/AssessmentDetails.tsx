@@ -1,5 +1,4 @@
 import { CheckCircle, Clock, Cpu, HardDrive, Hash, ShieldCheck, Wrench } from "lucide-react";
-import Image from "next/image";
 import PriceLockCountdown from "./PirceLockCountdown";
 import ConditionGrid from "./ConditionGrid";
 import SupportSection from "./SupportSection";
@@ -46,7 +45,6 @@ export interface AssessmentRecord {
     brand: string;
     model: string;
     storage: string;
-    imageUrl: string;
   };
   conditionInfo: ConditionInfo;
   pawnServiceInfo: PawnServiceInfo;

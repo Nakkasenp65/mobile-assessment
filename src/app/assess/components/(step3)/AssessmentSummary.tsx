@@ -13,6 +13,7 @@ import Image from "next/image";
 interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
+  docId?: string;
   mockRecords: AssessmentRecord;
   isImageLoading: boolean;
   mobileData: { image_url?: string } | null | undefined;
@@ -27,6 +28,7 @@ interface AssessmentSummaryProps {
 }
 
 const AssessmentSummary = ({
+  docId = "AS-202510-0001",
   deviceInfo,
   conditionInfo,
   mockRecords,
@@ -51,7 +53,7 @@ const AssessmentSummary = ({
         <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 px-5 py-3 dark:from-zinc-800 dark:to-zinc-800/50">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm dark:bg-zinc-700/80 dark:text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-            <span>รหัสการประเมิน #{mockRecords.id}</span>
+            <span>รหัสการประเมิน #{docId}</span>
           </div>
         </div>
 

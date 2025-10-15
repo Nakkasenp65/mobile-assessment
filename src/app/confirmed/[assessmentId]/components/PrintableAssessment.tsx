@@ -22,7 +22,8 @@ interface PrintableAssessmentProps {
   assessmentId: string;
   data: {
     device: {
-      imageUrl: string;
+      brand: string;
+      model: string;
       name: string;
       storage: string;
     };

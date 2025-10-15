@@ -1,7 +1,6 @@
 // SECTION: src/app/assess/components/(step1)/ModelAndStorageSelector.tsx
 "use client";
 
-// ✨ [เพิ่ม] import สิ่งที่จำเป็น
 import { motion, AnimatePresence } from "framer-motion";
 import { LockKeyhole } from "lucide-react";
 import clsx from "clsx";
@@ -14,7 +13,6 @@ interface ModelAndStorageSelectorProps {
   availableModels: string[];
   availableStorage: string[];
   onSelectChange: (field: keyof DeviceInfo, value: string) => void;
-  // ✨ [เพิ่ม] รับ props สำหรับ condition
   conditionInfo: ConditionInfo;
   onConditionUpdate: (updater: (prev: ConditionInfo) => ConditionInfo) => void;
 }
@@ -24,11 +22,9 @@ const ModelAndStorageSelector = ({
   availableModels,
   availableStorage,
   onSelectChange,
-  // ✨ [เพิ่ม] รับ props ที่เพิ่มเข้ามา
   conditionInfo,
   onConditionUpdate,
 }: ModelAndStorageSelectorProps) => {
-  // ✨ [เพิ่ม] Handler สำหรับอัปเดตสถานะ iCloud
   const handleIcloudToggle = () => {
     onConditionUpdate((prev) => ({
       ...prev,

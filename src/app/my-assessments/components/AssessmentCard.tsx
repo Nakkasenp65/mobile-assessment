@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Banknote,
   CheckCircle,
@@ -14,6 +16,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import clsx from "clsx";
 import { ComponentType } from "react";
+import { useMobile } from "@/hooks/useMobile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
@@ -74,7 +78,6 @@ interface AssessmentRecord {
     brand: string;
     model: string;
     storage: string;
-    imageUrl: string;
   };
   status: AssessmentStatus;
   estimatedValue: number;
@@ -124,6 +127,7 @@ export default function AssessmentCard({
   assessment: AssessmentRecord;
   index: number;
 }) {
+  const { data: productData, isLoading } = useMobile(assessment.device.brand, assessment.device.model);
   const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
   const ServiceIcon = service?.icon;
   return (
@@ -135,13 +139,19 @@ export default function AssessmentCard({
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
-              <Image
-                src={assessment.device.imageUrl}
-                alt={`${assessment.device.brand} ${assessment.device.model}`}
-                width={56}
-                height={56}
-                className="h-12 w-12 object-contain"
-              />
+              {isLoading ? (
+                <Skeleton className="h-12 w-12 rounded-md" />
+              ) : productData?.image_url ? (
+                <Image
+                  src={productData.image_url}
+                  alt={`${assessment.device.brand} ${assessment.device.model}`}
+                  width={56}
+                  height={56}
+                  className="h-12 w-12 object-contain"
+                />
+              ) : (
+                <div className="text-xs text-slate-500">ไม่มีรูป</div>
+              )}
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">

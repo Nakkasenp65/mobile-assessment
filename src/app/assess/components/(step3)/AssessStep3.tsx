@@ -24,12 +24,12 @@ const getExpiryDate = (days: number): string => {
 const mockRecords: AssessmentRecord = {
   id: "ASS-2568-0001",
   phoneNumber: "0812345678",
+  customerName: "นางสาวสายฟ้า สมสุข",
   assessmentDate: "25 กันยายน 2568",
-  device: {
+  deviceInfo: {
     brand: "Apple",
     model: "iPhone 15 Pro",
     storage: "256GB",
-    imageUrl: "https://lh3.googleusercontent.com/d/14EB_azrtiSrLtPVlIxWiU5Vg1hS8aw1A",
   },
   conditionInfo: {
     modelType: "model_th",
@@ -74,6 +74,7 @@ const mockRecords: AssessmentRecord = {
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
+  docId?: string;
   onBack: () => void;
   onNext: () => void;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
@@ -81,6 +82,7 @@ interface AssessStep3Props {
 }
 
 export default function AssessStep3({
+  docId,
   deviceInfo,
   conditionInfo,
   onBack,
@@ -155,6 +157,7 @@ export default function AssessStep3({
           isLoadingRepairPrices={isLoadingRepairPrices}
           priceLockExpiresAt={priceLockExpiresAt}
           isIcloudLocked={isIcloudLocked}
+          docId={docId}
         />
 
         {!isIcloudLocked && (

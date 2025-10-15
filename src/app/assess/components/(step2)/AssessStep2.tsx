@@ -11,6 +11,7 @@ import QuestionReport from "./QuestionReport";
 import AutomatedDiagnostics from "./AutomatedDiagnostics";
 import InteractiveTests from "./InteractiveTests";
 import ReviewSummary from "./ReviewSummary";
+import { useCreateAssessment } from "../../../../hooks/useCreateAssessment";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
 function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
@@ -179,6 +180,8 @@ export default function AssessStep2({
   }, [currentSubStep, isAndroid, isOwnDevice, isDesktop, onBack]);
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { mutate: createAssessment, isPending } = useCreateAssessment();
 
   // Build platform-relevant required choice questions
   const getPlatformRelevantChoiceIds = useCallback((): (keyof ConditionInfo)[] => {
@@ -217,14 +220,16 @@ export default function AssessStep2({
       let next: Record<ToggleKey, ConditionInfo[ToggleKey]> & ConditionInfo = { ...info } as Record<
         ToggleKey,
         ConditionInfo[ToggleKey]
-      > & ConditionInfo;
+      > &
+        ConditionInfo;
       toggleIds.forEach((id) => {
         const current = info[id];
         if (current === "") {
           const best = TOGGLE_BEST[id];
           if (best) {
             // Recreate object to avoid control-flow narrowing on indexed assignment
-            next = { ...next, [id]: best } as ConditionInfo as Record<ToggleKey, ConditionInfo[ToggleKey]> & ConditionInfo;
+            next = { ...next, [id]: best } as ConditionInfo as Record<ToggleKey, ConditionInfo[ToggleKey]> &
+              ConditionInfo;
           }
         }
       });
@@ -251,19 +256,30 @@ export default function AssessStep2({
     [deviceInfo, getPlatformRelevantChoiceIds],
   );
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback((phoneNumber: string) => {
     // Default toggles for unanswered items relevant to platform
     const defaulted = applyPlatformToggleDefaults(conditionInfo);
     const msgs = validateSelections(defaulted);
     if (msgs.length > 0) {
       setErrors(msgs);
+      setServerError(null);
       return;
     }
     setErrors([]);
+    setServerError(null);
     // Persist any defaults before proceeding
     onConditionUpdate(defaulted);
-    onNext();
-  }, [applyPlatformToggleDefaults, conditionInfo, validateSelections, onConditionUpdate, onNext]);
+    // Submit to backend
+    createAssessment(
+      { phoneNumber, deviceInfo, conditionInfo: defaulted },
+      {
+        onError: (err) => {
+          // Surface server-side validation or network errors
+          setServerError(err.message || "เกิดข้อผิดพลาดในการส่งข้อมูล");
+        },
+      },
+    );
+  }, [applyPlatformToggleDefaults, conditionInfo, validateSelections, onConditionUpdate, createAssessment, deviceInfo]);
 
   // Initialize defaults when entering review state
   useEffect(() => {
@@ -337,6 +353,8 @@ export default function AssessStep2({
               errors={errors}
               onBack={handleBackNavigation}
               onConfirm={handleConfirm}
+              isSubmitting={isPending}
+              serverError={serverError ?? undefined}
             />
           )}
         </motion.div>

@@ -7,6 +7,7 @@ import AssessStep3 from "../../assess/components/(step3)/AssessStep3";
 import AssessStep4 from "../../assess/components/(step4)/AssessStep4";
 import { useAssessment } from "@/hooks/useAssessment";
 import { Skeleton } from "@/components/ui/skeleton";
+// Removed useMobile call here to keep Hooks order consistent across renders
 
 export default function AssessmentDetailsPage() {
   const router = useRouter();
@@ -81,8 +82,10 @@ export default function AssessmentDetailsPage() {
     model: device.model,
     storage: device.storage,
     productType: device.brand === "Apple" ? "iPhone" : "Android", // Simplified logic
-    imageUrl: device.imageUrl,
   };
+
+  // Note: Avoid calling additional hooks after conditional returns
+  // If image data is needed, fetch it inside child components that always mount
 
   // Handler to advance to service form
   const handleNext = () => {
@@ -108,6 +111,7 @@ export default function AssessmentDetailsPage() {
         <div className="z-10 container flex w-full flex-col items-center">
           {step === 1 && (
             <AssessStep3
+              docId={data.docId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               onBack={handleBack}

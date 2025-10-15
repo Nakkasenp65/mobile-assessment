@@ -7,26 +7,43 @@ import { ConditionInfo } from "../types/device";
 // Normalized shape returned by the hook
 export interface AssessmentData {
   id: string;
+  docId?: string;
+  phoneNumber?: string;
   device: {
     brand: string;
     model: string;
     storage: string;
-    imageUrl?: string;
   };
   conditionInfo: ConditionInfo;
+  pawnServiceInfo?: {
+    customerName?: string;
+    locationType?: "home" | "bts" | "store";
+    btsLine?: string;
+    btsStation?: string;
+    appointmentDate?: string;
+    appointmentTime?: string;
+    phone?: string;
+  };
+  status?: "pending" | "completed" | "in-progress" | string;
   estimatedValue: number;
+  assessmentDate?: string;
   priceLockExpiresAt?: string; // optional in case backend does not provide
 }
 
 // Raw API response types
 interface RawAssessmentRecord {
   _id: string;
+  docId?: string;
   phoneNumber: string;
-  device: {
+  device?: {
     brand: string;
     model: string;
     storage: string;
-    imageUrl?: string;
+  };
+  deviceInfo?: {
+    brand: string;
+    model: string;
+    storage: string;
   };
   conditionInfo: ConditionInfo;
   pawnServiceInfo?: {
@@ -47,36 +64,40 @@ interface RawAssessmentRecord {
 
 interface AssessmentApiResponse {
   success: boolean;
-  data: RawAssessmentRecord[];
+  data: RawAssessmentRecord; // API returns a single record for GET /assessments/:id
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://assessments-api-ten.vercel.app";
-
-const sanitizeImageUrl = (url?: string) => (url ? url.replace(/`/g, "").trim() : undefined);
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function fetchAssessment(id: string): Promise<AssessmentData> {
   const endpoint = `${BACKEND_URL}/api/assessments/${id}`;
   const { data } = await axios.get<AssessmentApiResponse>(endpoint);
 
-  if (!data || !data.success || !Array.isArray(data.data)) {
+  console.log(data);
+
+  if (!data || !data.success || !data.data || typeof data.data !== "object") {
     throw new Error("Invalid response from assessments API");
   }
 
-  const record = data.data.find((r) => r._id === id) ?? data.data[0];
-  if (!record) {
-    throw new Error("Assessment not found");
-  }
+  const record = data.data;
 
   return {
     id: record._id,
-    device: {
-      brand: record.device?.brand ?? "",
-      model: record.device?.model ?? "",
-      storage: record.device?.storage ?? "",
-      imageUrl: sanitizeImageUrl(record.device?.imageUrl),
-    },
+    docId: record.docId,
+    phoneNumber: record.phoneNumber,
+    device: (() => {
+      const dev = record.device ?? record.deviceInfo;
+      return {
+        brand: dev?.brand ?? "",
+        model: dev?.model ?? "",
+        storage: dev?.storage ?? "",
+      };
+    })(),
     conditionInfo: record.conditionInfo,
+    pawnServiceInfo: record.pawnServiceInfo,
+    status: record.status,
     estimatedValue: typeof record.estimatedValue === "number" ? record.estimatedValue : 0,
+    assessmentDate: record.assessmentDate ?? record.createdAt,
     // Backend does not provide priceLockExpiresAt; leave undefined
     priceLockExpiresAt: undefined,
   };

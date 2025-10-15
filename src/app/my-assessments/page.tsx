@@ -22,7 +22,6 @@ interface AssessmentRecord {
     brand: string;
     model: string;
     storage: string;
-    imageUrl: string;
   };
   status: AssessmentStatus;
   estimatedValue: number;
@@ -39,7 +38,6 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Apple",
       model: "iPhone 15 Pro",
       storage: "256GB",
-      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "completed",
     estimatedValue: 28500,
@@ -54,7 +52,6 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Samsung",
       model: "Galaxy S23 Ultra",
       storage: "512GB",
-      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "completed",
     estimatedValue: 19800,
@@ -69,7 +66,6 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Apple",
       model: "iPhone 13",
       storage: "128GB",
-      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "in-progress",
     estimatedValue: 6000,
@@ -84,7 +80,6 @@ const mockUserAssessments: AssessmentRecord[] = [
       brand: "Google",
       model: "Pixel 8 Pro",
       storage: "256GB",
-      imageUrl: "https://lh3.googleusercontent.com/d/1rbMNIqDEUFbrVwTsuHAjk5VijnFXvns6",
     },
     status: "pending",
     estimatedValue: 21000,

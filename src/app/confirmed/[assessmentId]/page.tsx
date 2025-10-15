@@ -24,10 +24,12 @@ import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import PrintableAssessment from "./components/PrintableAssessment";
 import Footer from "@/app/(landing-page)/components/Footer";
+import { useMobile } from "@/hooks/useMobile";
 
 const mockData = {
   device: {
-    imageUrl: "https://lh3.googleusercontent.com/d/14EB_azrtiSrLtPVlIxWiU5Vg1hS8aw1A",
+    brand: "Apple",
+    model: "iPhone 15 Pro",
     name: "Apple iPhone 15 Pro",
     storage: "256GB",
   },
@@ -82,6 +84,12 @@ export default function AssessmentConfirmationPage() {
     documentTitle: `Assessment-Confirmation-${assessmentId}`,
   });
 
+  // ดึงรูปภาพอุปกรณ์จาก Supabase ผ่าน useMobile
+  const { data: productData, isLoading: isImageLoading } = useMobile(
+    mockData.device.brand,
+    mockData.device.model
+  );
+
   return (
     <>
       {/* ส่วนนี้คือ Component ที่ซ่อนไว้สำหรับพิมพ์ จะไม่แสดงบนหน้าจอปกติ */}
@@ -130,13 +138,21 @@ export default function AssessmentConfirmationPage() {
             <div className="mb-8 rounded-2xl bg-gray-50 p-6 sm:p-8">
               <div className="flex flex-col items-center gap-6 sm:flex-row">
                 <div className="flex-shrink-0">
-                  <Image
-                    src={mockData.device.imageUrl}
-                    alt={mockData.device.name}
-                    width={100}
-                    height={100}
-                    className="rounded-xl bg-white object-contain p-2 shadow-sm"
-                  />
+                  {isImageLoading ? (
+                    <div className="h-[100px] w-[100px] rounded-xl bg-white p-2 shadow-sm" />
+                  ) : productData?.image_url ? (
+                    <Image
+                      src={productData.image_url}
+                      alt={mockData.device.name}
+                      width={100}
+                      height={100}
+                      className="rounded-xl bg-white object-contain p-2 shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex h-[100px] w-[100px] items-center justify-center rounded-xl bg-white p-2 text-xs text-slate-500 shadow-sm">
+                      ไม่มีรูป
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 text-center sm:text-left">
                   <h3 className="mb-1 text-xl font-bold text-gray-900">{mockData.device.name}</h3>
