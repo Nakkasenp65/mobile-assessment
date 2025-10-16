@@ -1,24 +1,37 @@
-import React, { FormEvent } from "react";
-import { Phone, Search } from "lucide-react";
+import React from "react";
+import { Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Turnstile from "@/components/Turnstile";
+import { AlertTriangle } from "lucide-react"; // Import AlertTriangle icon
 
 interface InputPhoneNumberProps {
   phoneNumber: string;
-  onPhoneNumberChange: (value: string) => void;
-  onSubmit: (e: FormEvent) => void;
+  onPhoneNumberChange: (phoneNumber: string) => void;
+  onPhoneSubmit: (phoneNumber: string) => void;
+  onTurnstileVerify: (token: string | null) => void;
   isLoading: boolean;
+  showTurnstileWarning: boolean; // Add showTurnstileWarning prop
+  isDevEnv: boolean; // Add isDevEnv prop
 }
 
 const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
   phoneNumber,
   onPhoneNumberChange,
-  onSubmit,
+  onPhoneSubmit,
+  onTurnstileVerify,
   isLoading,
+  showTurnstileWarning, // Destructure showTurnstileWarning
+  isDevEnv, // Destructure isDevEnv
 }) => {
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onPhoneSubmit(phoneNumber);
+  };
+
   return (
-    <div className="flex w-full items-center justify-center py-16 md:px-4">
-      <div className="w-full max-w-3xl">
+    <div className="flex h-max w-full max-w-xl items-center justify-center rounded-2xl bg-white p-8 shadow-xl">
+      <div className="w-full">
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <div className="from-primary to-secondary relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br shadow-xl">
@@ -26,71 +39,54 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
             </div>
           </div>
 
-          <h1 className="text-center text-2xl font-bold tracking-tight text-gray-900 md:text-4xl">
-            ตรวจสอบรายการประเมินของคุณ
-          </h1>
+          <h1 className="text-center text-2xl font-bold tracking-tight text-gray-900">ตรวจสอบรายการประเมินของคุณ</h1>
 
-          <p className="text-center text-sm text-gray-600 md:text-lg">
-            OK Mobile : บริษัท โอเค นัมเบอร์ วัน จำกัด
-          </p>
+          <p className="text-center text-sm text-gray-600 md:text-lg">OK Mobile : บริษัท โอเค นัมเบอร์ วัน จำกัด</p>
         </div>
 
-        <form
-          onSubmit={onSubmit}
-          className="mt-10 rounded-2xl border-gray-100 bg-white p-8 shadow-2xl"
-        >
+        <form onSubmit={onSubmit} className="mt-10 rounded-2xl border border-gray-300 bg-white p-8">
           <div className="flex flex-col gap-6">
+            {showTurnstileWarning && (
+              <p className="flex items-center justify-center gap-2 text-center font-semibold text-red-500">
+                <AlertTriangle className="h-5 w-5" /> {/* Decorative icon */}
+                กรุณาตรวจสอบ Cloudflare ก่อนดำเนินการต่อ
+              </p>
+            )}
             <div className="flex flex-col gap-2">
               <label className="text-base font-bold text-gray-700">เบอร์โทรศัพท์</label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
                 <Input
                   type="tel"
-                  inputMode="numeric"
+                  id="phoneNumber"
+                  placeholder="กรอกเบอร์โทรศัพท์มือถือ"
                   value={phoneNumber}
                   onChange={(e) => onPhoneNumberChange(e.target.value)}
-                  className="focus:border-primary focus:ring-primary/20 h-12 w-full rounded-lg border-gray-200 bg-gray-50 pr-4 pl-12 text-base transition-all focus:bg-white focus:ring-2"
-                  placeholder="098-765-4321"
-                  disabled={isLoading}
-                  maxLength={10}
+                  className="focus:border-primary focus:ring-primary/15 h-12 w-full rounded-full border-2 border-slate-300 bg-white pr-5 pl-12 text-base shadow transition"
+                  required
                 />
+                <span className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-slate-400">
+                  <Phone className="h-5 w-5" />
+                </span>
               </div>
-              <p className="text-sm font-light text-stone-500">กรุณากรอกเบอร์โทรศัพท์ 10 หลัก</p>
             </div>
-
             <Button
               type="submit"
+              className="from-primary to-secondary h-12 w-full rounded-full bg-gradient-to-r text-lg font-bold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50"
               disabled={isLoading}
-              className="hover:shadow-primary/40 shadow-primary/30 h-12 w-full rounded-lg font-medium text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  กำลังค้นหา...
-                </span>
-              ) : (
-                "ดำเนินการค้นหา"
-              )}
+              {isLoading ? "กำลังค้นหา..." : "ค้นหารายการประเมิน"}
             </Button>
           </div>
         </form>
+        {isDevEnv && (
+          <div className="text-border mt-6 flex items-center justify-center gap-2 rounded-lg p-2 text-sm font-medium">
+            <AlertTriangle className="h-4 w-4" />
+            <span>DEV MODE: Verification Disabled</span>
+          </div>
+        )}
+        <div className="mt-6 flex justify-center rounded-lg bg-white p-2 text-white">
+          <Turnstile onVerify={onTurnstileVerify} language="th" /> {/* Moved outside form and added language */}
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import Layout from "../../components/Layout/Layout";
@@ -83,8 +83,22 @@ async function fetchAssessmentsByPhone(phone: string): Promise<AssessmentRecord[
 
 export default function MyAssessmentsPage() {
   const [step, setStep] = useState<"enter-phone" | "show-results">("enter-phone");
-
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberInput, setPhoneNumberInput] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstileWarning, setShowTurnstileWarning] = useState(false); // Add state for Turnstile warning
+
+  const env = (process.env.NODE_ENV ?? "").toLowerCase();
+  const isDevEnv = env === "development" || env === "dev";
+
+  useEffect(() => {
+    console.log(`[Env] NODE_ENV=${env}`);
+    if (isDevEnv) {
+      console.warn("[Turnstile] Development bypass ACTIVE — submissions allowed without token.");
+    } else {
+      console.log("[Turnstile] Production mode — Turnstile verification REQUIRED.");
+    }
+  }, [env, isDevEnv]);
 
   const {
     data: assessmentsData = [],
@@ -94,22 +108,31 @@ export default function MyAssessmentsPage() {
   } = useQuery<AssessmentRecord[], Error>({
     queryKey: ["assessmentsByPhone", phoneNumber],
     queryFn: () => fetchAssessmentsByPhone(phoneNumber),
-    enabled: step === "show-results" && !!phoneNumber,
+    enabled: step === "show-results" && !!phoneNumber && (isDevEnv || !!turnstileToken), // Enable only if token is present or in dev mode
     staleTime: 2 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
   });
 
-  const handlePhoneSubmit = (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    setStep("show-results");
-    // useQuery will auto-run due to enabled condition; refetch optional for manual trigger
-    refetch();
+  const handlePhoneSubmit = (phone: string) => {
+    if (!turnstileToken && !isDevEnv) {
+      setShowTurnstileWarning(true); // Set warning to true if token is missing and not in dev env
+      console.error("[Turnstile] No token present in production — blocking submit.");
+      return;
+    } else if (!turnstileToken && isDevEnv) {
+      console.warn("[Turnstile] Bypassing Turnstile verification in development mode.");
+    }
+    setShowTurnstileWarning(false); // Clear warning if token is present or in dev env
+    setPhoneNumber(phone);
+    setStep("show-results"); // Set step to show-results after successful submission
+    refetch(); // Refetch data
   };
 
-  const handleBackToPhone = () => {
-    setStep("enter-phone");
+  const handleBack = () => {
     setPhoneNumber("");
+    setTurnstileToken(null); // Clear turnstile token on back navigation
+    setShowTurnstileWarning(false); // Clear warning on back navigation
+    setStep("enter-phone"); // Set step back to enter-phone
   };
 
   const renderContent = () => {
@@ -117,10 +140,13 @@ export default function MyAssessmentsPage() {
       case "enter-phone":
         return (
           <InputPhoneNumber
-            phoneNumber={phoneNumber}
-            onPhoneNumberChange={setPhoneNumber}
-            onSubmit={handlePhoneSubmit}
-            isLoading={false}
+            onPhoneNumberChange={setPhoneNumberInput}
+            onPhoneSubmit={handlePhoneSubmit}
+            phoneNumber={phoneNumberInput}
+            onTurnstileVerify={setTurnstileToken}
+            isLoading={isLoading}
+            showTurnstileWarning={showTurnstileWarning}
+            isDevEnv={isDevEnv} // Pass isDevEnv prop
           />
         );
       case "show-results":
@@ -135,7 +161,7 @@ export default function MyAssessmentsPage() {
             <div className="text-muted-foreground text-sm">กำลังโหลดข้อมูลรายการประเมิน…</div>
           </motion.div>
         ) : (
-          <ResultsView assessments={assessmentsData} onBack={handleBackToPhone} />
+          <ResultsView assessments={assessmentsData} onBack={handleBack} />
         );
       default:
         return null;
@@ -143,7 +169,6 @@ export default function MyAssessmentsPage() {
   };
 
   return (
-    // bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5]
     <Layout>
       <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] px-4 py-16 sm:px-6 lg:px-8">
         <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-start sm:pt-32">

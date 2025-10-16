@@ -28,9 +28,10 @@ interface TurnstileProps {
   onVerify: (token: string | null) => void;
   className?: string;
   theme?: "light" | "dark";
+  language?: string; // Add language prop
 }
 
-export default function Turnstile({ onVerify, className, theme = "light" }: TurnstileProps) {
+export default function Turnstile({ onVerify, className, theme = "light", language }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
 
@@ -63,7 +64,7 @@ export default function Turnstile({ onVerify, className, theme = "light" }: Turn
       window.turnstileOnLoadCallback = renderWidget;
       if (!document.querySelector('script[src^="https://challenges.cloudflare.com"]')) {
         const script = document.createElement("script");
-        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=turnstileOnLoadCallback";
+        script.src = `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=turnstileOnLoadCallback${language ? `&hl=${language}` : ""}`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
@@ -76,7 +77,7 @@ export default function Turnstile({ onVerify, className, theme = "light" }: Turn
         widgetIdRef.current = null;
       }
     };
-  }, [siteKey, onVerify, theme]);
+  }, [siteKey, onVerify, theme, language]); // Add language to dependency array
 
   return <div ref={containerRef} className={className ?? "cf-turnstile"} />;
 }
