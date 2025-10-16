@@ -2,7 +2,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft, Apple, Wrench } from "lucide-react";
+import {
+  CheckCircle,
+  AlertCircle,
+  Phone,
+  ShieldCheck,
+  ArrowLeft,
+  Apple,
+  Wrench,
+  HardDrive,
+  Shield,
+} from "lucide-react";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import {
   Dialog,
@@ -86,57 +96,81 @@ export default function SimpleReviewSummary({
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
-      <div className="rounded-2xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <h3 className="mb-3 flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
-          <CheckCircle className="h-5 w-5 text-emerald-600" />
+      <div className="rounded-2xl border bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        <h3 className="mb-4 flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
+          <CheckCircle className="h-6 w-6 text-emerald-600" />
           ตรวจสอบข้อมูลสรุปสำหรับอุปกรณ์ Apple เฉพาะทาง
         </h3>
 
         {/* Device Overview */}
-        <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border bg-card p-3 dark:border-zinc-700">
-            <div className="mb-2 flex items-center gap-2 font-semibold">
-              <Apple className="h-4 w-4" /> ข้อมูลอุปกรณ์
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="bg-card rounded-xl border p-4 shadow-sm dark:border-zinc-700">
+            <div className="mb-3 flex items-center gap-2 font-semibold text-slate-800 dark:text-white">
+              <Apple className="h-5 w-5 text-blue-600" /> ข้อมูลอุปกรณ์
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="font-medium">ยี่ห้อ</span>
-                <span>{deviceInfo.brand || "-"}</span>
+                <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 p-1 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                    <Apple className="h-3 w-3" />
+                  </span>
+                  ยี่ห้อ
+                </span>
+                <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.brand || "-"}</span>
               </div>
               {deviceInfo.productType && (
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">ประเภท</span>
-                  <span>{deviceInfo.productType}</span>
+                  <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 p-1 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                      <Wrench className="h-3 w-3" />
+                    </span>
+                    ประเภท
+                  </span>
+                  <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.productType}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="font-medium">รุ่น</span>
-                <span>{deviceInfo.model || "-"}</span>
+                <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 p-1 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    <ShieldCheck className="h-3 w-3" />
+                  </span>
+                  รุ่น
+                </span>
+                <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.model || "-"}</span>
               </div>
               {deviceInfo.storage && (
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">ความจุ</span>
-                  <span>{deviceInfo.storage}</span>
+                  <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 p-1 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                      <HardDrive className="h-3 w-3" />
+                    </span>
+                    ความจุ
+                  </span>
+                  <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.storage}</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* General Info */}
-          <div className="rounded-xl border bg-card p-3 dark:border-zinc-700">
-            <div className="mb-2 flex items-center gap-2 font-semibold">
-              <ShieldCheck className="h-4 w-4" /> รายละเอียดทั่วไป
+          <div className="bg-card rounded-xl border p-4 shadow-sm dark:border-zinc-700">
+            <div className="mb-3 flex items-center gap-2 font-semibold text-slate-800 dark:text-white">
+              <ShieldCheck className="h-5 w-5 text-indigo-600" /> รายละเอียดทั่วไป
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="font-medium">ประกันศูนย์</span>
-                <span>{warrantyLabel || "-"}</span>
+                <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                  <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  ประกันศูนย์
+                </span>
+                <span className="font-medium text-slate-900 dark:text-white">{warrantyLabel || "-"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium">เคยแกะหรือซ่อมมา</span>
-                <span className="inline-flex items-center gap-1">
-                  <Wrench className="h-3.5 w-3.5" /> {repairedLabel || "-"}
+                <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
+                  <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  เคยแกะหรือซ่อมมา
                 </span>
+                <span className="font-medium text-slate-900 dark:text-white">{repairedLabel || "-"}</span>
               </div>
             </div>
           </div>
@@ -144,21 +178,21 @@ export default function SimpleReviewSummary({
 
         {/* Extra details from simple form */}
         {extraDetails && (
-          <div className="rounded-xl border bg-card p-3 text-sm text-muted-foreground dark:border-zinc-700">
-            <div className="mb-2 flex items-center gap-2 font-semibold">
-              <AlertCircle className="h-4 w-4" /> รายละเอียดเพิ่มเติมจากผู้ใช้
+          <div className="bg-card text-muted-foreground rounded-xl border p-4 text-sm shadow-sm dark:border-zinc-700">
+            <div className="mb-3 flex items-center gap-2 font-semibold text-slate-800 dark:text-white">
+              <AlertCircle className="h-5 w-5 text-amber-600" /> รายละเอียดเพิ่มเติมจากผู้ใช้
             </div>
-            <p className="whitespace-pre-line">{extraDetails}</p>
+            <p className="whitespace-pre-line text-slate-700 dark:text-zinc-300">{extraDetails}</p>
           </div>
         )}
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-          <div className="mb-2 flex items-center gap-2 font-semibold">
-            <AlertCircle className="h-4 w-4" /> กรุณาแก้ไขข้อมูลต่อไปนี้ก่อนดำเนินการต่อ
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+          <div className="mb-3 flex items-center gap-2 font-semibold text-red-800 dark:text-red-300">
+            <AlertCircle className="h-5 w-5" /> กรุณาแก้ไขข้อมูลต่อไปนี้ก่อนดำเนินการต่อ
           </div>
-          <ul className="list-inside list-disc">
+          <ul className="list-inside list-disc space-y-1">
             {errors.map((e, idx) => (
               <li key={idx}>{e}</li>
             ))}
@@ -167,19 +201,19 @@ export default function SimpleReviewSummary({
       )}
 
       {serverError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-          <div className="mb-1 flex items-center gap-2 font-semibold">
-            <AlertCircle className="h-4 w-4" /> เกิดข้อผิดพลาดจากเซิร์ฟเวอร์
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+          <div className="mb-2 flex items-center gap-2 font-semibold text-red-800 dark:text-red-300">
+            <AlertCircle className="h-5 w-5" /> เกิดข้อผิดพลาดจากเซิร์ฟเวอร์
           </div>
           <p>{serverError}</p>
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <FramerButton
           variant="ghost"
           onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors shadow-sm dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           กลับไปแก้ไข

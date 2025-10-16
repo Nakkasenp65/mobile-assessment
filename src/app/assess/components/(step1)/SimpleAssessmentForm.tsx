@@ -65,7 +65,6 @@ export default function SimpleAssessmentForm({
   ) => {
     const isValid =
       !!nextFile &&
-      nextDetails.trim().length > 0 &&
       !!nextDevice.model &&
       !!nextCondition.warranty &&
       !!nextCondition.openedOrRepaired;
@@ -268,7 +267,7 @@ export default function SimpleAssessmentForm({
       {/* Overall device condition */}
       <div>
         <Label htmlFor="details" className="text-foreground mb-2 block font-semibold">
-          สภาพเครื่องโดยรวม (จำเป็น)
+          สภาพเครื่องโดยรวม
         </Label>
         <Textarea
           id="details"
