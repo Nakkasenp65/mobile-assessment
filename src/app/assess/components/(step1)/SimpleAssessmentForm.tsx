@@ -63,11 +63,7 @@ export default function SimpleAssessmentForm({
     nextDevice: DeviceInfo,
     nextCondition: ConditionInfo,
   ) => {
-    const isValid =
-      !!nextFile &&
-      !!nextDevice.model &&
-      !!nextCondition.warranty &&
-      !!nextCondition.openedOrRepaired;
+    const isValid = !!nextFile && !!nextDevice.model && !!nextCondition.warranty && !!nextCondition.openedOrRepaired;
     onValidityChange?.(isValid);
     if (isValid && nextFile) {
       onDataChange?.({ imageFile: nextFile, description: nextDetails.trim() });
@@ -205,14 +201,23 @@ export default function SimpleAssessmentForm({
 
   return (
     <motion.div
-      className="space-y-6 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-6"
+      className="space-y-10 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-6"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
     >
       {/* Model selection */}
       <div>
-        <Label htmlFor="model-select" className="text-foreground mb-2 block font-semibold">
+        {/* Product Type Placeholder Image */}
+        <div className="mb-4 flex h-48 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-zinc-800">
+          {/* TODO: Implement conditional image display based on deviceInfo.productType */}
+          <img
+            src="/assets/holding-phone.gif" // Generic placeholder
+            alt="Product Placeholder"
+            className="h-full w-auto object-contain"
+          />
+        </div>
+        <Label htmlFor="model-select" className="text-foreground mb-3 block font-semibold">
           รุ่น (จำเป็น)
         </Label>
         <Select onValueChange={handleModelSelect} value={deviceInfo.model}>
@@ -235,7 +240,7 @@ export default function SimpleAssessmentForm({
 
       {/* Warranty radio buttons */}
       <div>
-        <Label className="text-foreground mb-2 block font-semibold">ประกัน (จำเป็น)</Label>
+        <Label className="text-foreground mb-3 block font-semibold">ประกัน (จำเป็น)</Label>
         <RadioGroup
           value={conditionInfo.warranty}
           onValueChange={handleWarrantyChange}
@@ -243,59 +248,6 @@ export default function SimpleAssessmentForm({
         >
           {warrantyOptions.map((opt) => {
             const selected = conditionInfo.warranty === opt.id;
-            return (
-              <motion.label
-                key={opt.id}
-                className={cn(
-                  "flex h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
-                  selected
-                    ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
-                    : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
-                )}
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              >
-                <RadioGroupItem value={opt.id} className="sr-only" />
-                <span className="font-semibold">{opt.label}</span>
-              </motion.label>
-            );
-          })}
-        </RadioGroup>
-      </div>
-
-      {/* Overall device condition */}
-      <div>
-        <Label htmlFor="details" className="text-foreground mb-2 block font-semibold">
-          สภาพเครื่องโดยรวม
-        </Label>
-        <Textarea
-          id="details"
-          placeholder="ระบุรายละเอียดเพิ่มเติมเกี่ยวกับอุปกรณ์ของคุณ เช่น ตำหนิ, อุปกรณ์เสริม, หรือข้อมูลอื่นๆ ที่ต้องการแจ้งให้เราทราบ"
-          className="min-h-[100px] bg-white"
-          value={details}
-          onChange={handleDetailsChange}
-        />
-        <div className="mt-1 flex items-center justify-between">
-          <p className="text-muted-foreground text-xs">
-            {details.length}/{MAX_DETAILS_LEN} ตัวอักษร
-          </p>
-        </div>
-      </div>
-
-      {/* Previously opened/repaired toggle */}
-      <div>
-        <Label className="text-foreground mb-2 block font-semibold">เคยแกะหรือซ่อมมา (จำเป็น)</Label>
-        <RadioGroup
-          value={conditionInfo.openedOrRepaired}
-          onValueChange={(v) => handleRepairedToggle(v as "repaired_yes" | "repaired_no")}
-          className="grid grid-cols-2 gap-3"
-        >
-          {[
-            { id: "repaired_yes", label: "ใช่" },
-            { id: "repaired_no", label: "ไม่ใช่" },
-          ].map((opt) => {
-            const selected = conditionInfo.openedOrRepaired === opt.id;
             return (
               <motion.label
                 key={opt.id}
@@ -317,9 +269,62 @@ export default function SimpleAssessmentForm({
         </RadioGroup>
       </div>
 
+      {/* Previously opened/repaired toggle */}
+      <div>
+        <Label className="text-foreground mb-3 block font-semibold">เคยแกะหรือซ่อมมา (จำเป็น)</Label>
+        <RadioGroup
+          value={conditionInfo.openedOrRepaired}
+          onValueChange={(v) => handleRepairedToggle(v as "repaired_yes" | "repaired_no")}
+          className="grid grid-cols-2 gap-3"
+        >
+          {[
+            { id: "repaired_yes", label: "ใช่" },
+            { id: "repaired_no", label: "ไม่ใช่" },
+          ].map((opt) => {
+            const selected = conditionInfo.openedOrRepaired === opt.id;
+            return (
+              <motion.label
+                key={opt.id}
+                className={cn(
+                  "flex h-16 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+                  selected
+                    ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+                    : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
+                )}
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              >
+                <RadioGroupItem value={opt.id} className="sr-only" />
+                <span className="font-semibold">{opt.label}</span>
+              </motion.label>
+            );
+          })}
+        </RadioGroup>
+      </div>
+
+      {/* Overall device condition */}
+      <div>
+        <Label htmlFor="details" className="text-foreground mb-3 block font-semibold">
+          สภาพเครื่องโดยรวม
+        </Label>
+        <Textarea
+          id="details"
+          placeholder="ระบุรายละเอียดเพิ่มเติมเกี่ยวกับอุปกรณ์ของคุณ เช่น ตำหนิ, อุปกรณ์เสริม, หรือข้อมูลอื่นๆ ที่ต้องการแจ้งให้เราทราบ"
+          className="min-h-[100px] bg-white"
+          value={details}
+          onChange={handleDetailsChange}
+        />
+        <div className="mt-1 flex items-center justify-between">
+          <p className="text-muted-foreground text-xs">
+            {details.length}/{MAX_DETAILS_LEN} ตัวอักษร
+          </p>
+        </div>
+      </div>
+
       {/* === MODIFIED IMAGE UPLOAD SECTION START === */}
       <div>
-        <Label htmlFor="file-upload" className="text-foreground mb-2 block font-semibold">
+        <Label htmlFor="file-upload" className="text-foreground mb-3 block font-semibold">
           แนบรูปภาพอุปกรณ์ (จำเป็น)
         </Label>
         <div className="mt-2">

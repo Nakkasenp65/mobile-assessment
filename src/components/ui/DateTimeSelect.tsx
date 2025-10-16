@@ -5,7 +5,13 @@ import React from "react";
 import { DateSelect } from "@/components/ui/date-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCheckAvailability } from "@/hooks/useCheckAvailability";
-import { toApiServiceType, inferApiLocationFromService, generateTimeSlots } from "@/util/availability";
+import {
+  toApiServiceType,
+  inferApiLocationFromService,
+  generateTimeSlots,
+  todayStringTZ,
+  currentHourTZ,
+} from "@/util/availability";
 import { AnimatePresence, motion } from "framer-motion";
 
 export interface DateTimeSelectProps {
@@ -50,13 +56,23 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
     // Onsite: show only API-available times within policy (10:00–19:00)
     const STORE_OPEN = 10;
     const LAST_AVAILABLE = 19;
-    return Array.from(availableSet.values())
+    const base = Array.from(availableSet.values())
       .filter((slot) => {
         const hour = Number(slot.slice(0, 2));
         return hour >= STORE_OPEN && hour <= LAST_AVAILABLE;
       })
       .sort();
-  }, [availableSet]);
+
+    // If selected date is today, filter out past hours so times start from next hour
+    try {
+      if (dateValue && dateValue === todayStringTZ("Asia/Bangkok")) {
+        const nowHour = currentHourTZ("Asia/Bangkok");
+        return base.filter((slot) => Number(slot.slice(0, 2)) > nowHour);
+      }
+    } catch {}
+
+    return base;
+  }, [availableSet, dateValue]);
 
   const dayUnavailable = React.useMemo(() => {
     if (!dateReady) return false; // no date means no status
@@ -72,20 +88,34 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
 
   const timeOptions = React.useMemo(() => {
     if (!dateReady) return [] as string[];
+
+    const isToday = (() => {
+      try {
+        return Boolean(dateValue) && dateValue === todayStringTZ("Asia/Bangkok");
+      } catch {
+        return false;
+      }
+    })();
+    const nowHour = isToday ? currentHourTZ("Asia/Bangkok") : null;
+
     if (isOffsite) {
       // Offsite policy: when daily quota exists, show 10:00–20:00 directly
-      if (isDaily && dailyQuota > 0) return offsiteDailyTimes;
+      if (isDaily && dailyQuota > 0) {
+        const base = offsiteDailyTimes;
+        return isToday ? base.filter((slot) => Number(slot.slice(0, 2)) > (nowHour as number)) : base;
+      }
       // If non-daily offsite returns explicit times, show them (filter to 10:00–20:00)
-      return Array.from(availableSet.values())
+      const base = Array.from(availableSet.values())
         .filter((slot) => {
           const hour = Number(slot.slice(0, 2));
           return hour >= 10 && hour <= 20;
         })
         .sort();
+      return isToday ? base.filter((slot) => Number(slot.slice(0, 2)) > (nowHour as number)) : base;
     }
     // Onsite
     return onsiteAvailableTimes;
-  }, [dateReady, isOffsite, isDaily, dailyQuota, offsiteDailyTimes, availableSet, onsiteAvailableTimes]);
+  }, [dateReady, isOffsite, isDaily, dailyQuota, offsiteDailyTimes, availableSet, onsiteAvailableTimes, dateValue]);
 
   const selectionDisabled = !dateReady || isLoading;
 

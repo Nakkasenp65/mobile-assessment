@@ -98,14 +98,14 @@ export default function ReviewSummary({
         <FramerButton
           variant="ghost"
           onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-1 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           กลับไปแก้ไข
         </FramerButton>
         <FramerButton
           onClick={openPhoneModal}
-          className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-2 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           aria-label="ยืนยันข้อมูลและดำเนินการต่อ"
           disabled={isSubmitting || errors.length > 0}
         >

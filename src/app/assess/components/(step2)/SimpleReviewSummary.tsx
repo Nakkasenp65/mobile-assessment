@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
+import { motion } from "framer-motion";
 
 interface SimpleReviewSummaryProps {
   deviceInfo: DeviceInfo;
@@ -38,7 +39,7 @@ interface SimpleReviewSummaryProps {
 
 // Minimal label maps for simple assessment fields
 const WARRANTY_LABELS: Record<ConditionInfo["warranty"], string> = {
-  warranty_active_long: "เหลือมากกว่า 6 เดือน",
+  warranty_active_long: "เหลือกกว่า 6 เดือน",
   warranty_active_short: "เหลือน้อยกว่า 6 เดือน",
   warranty_inactive: "หมดประกันแล้ว",
   "": "",
@@ -96,7 +97,16 @@ export default function SimpleReviewSummary({
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
-      <div className="rounded-2xl border bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      {/* Product Preview Image */}
+      <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gray-100 shadow-lg">
+        <img src="/assets/holding-phone.gif" alt="Product Preview" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div className="absolute bottom-4 left-4 text-2xl font-bold text-white">
+          {deviceInfo.model || "Unknown Model"}
+        </div>
+      </div>
+
+      <motion.div className="rounded-2xl border bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <h3 className="mb-4 flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
           <CheckCircle className="h-6 w-6 text-emerald-600" />
           ตรวจสอบข้อมูลสรุปสำหรับอุปกรณ์ Apple เฉพาะทาง
@@ -185,7 +195,7 @@ export default function SimpleReviewSummary({
             <p className="whitespace-pre-line text-slate-700 dark:text-zinc-300">{extraDetails}</p>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {errors.length > 0 && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
@@ -213,7 +223,7 @@ export default function SimpleReviewSummary({
         <FramerButton
           variant="ghost"
           onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors shadow-sm dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 shadow-sm transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           กลับไปแก้ไข

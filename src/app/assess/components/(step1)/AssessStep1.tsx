@@ -79,9 +79,23 @@ const AssessStep1 = ({
     }
     // กรณีเป็น Mobile (หรือ Desktop ที่ยังตรวจไม่เสร็จ): จะแสดงหน้า UserDeviceSelection ก่อน
     else {
-      // ตั้งค่าให้เป็นหน้าเลือกอุปกรณ์เฉพาะตอนที่ยังเป็น "initializing" เท่านั้น
+      // ตั้งค่าเริ่มต้นบน Mobile โดยคำนึงถึงข้อมูลที่มีอยู่แล้ว เพื่อไม่ให้ข้ามขั้นตอนโดยไม่ตั้งใจ
       if (currentStep === "initializing") {
-        setCurrentStep("selectDeviceType");
+        if (deviceInfo.brand) {
+          if (deviceInfo.brand === "Apple") {
+            // หากระบุ productType แล้ว เลือก step ที่เหมาะสม
+            if (deviceInfo.productType) {
+              const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+              setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
+            } else {
+              setCurrentStep("selectProduct");
+            }
+          } else {
+            setCurrentStep("selectModelStorage");
+          }
+        } else {
+          setCurrentStep("selectDeviceType");
+        }
       }
     }
   }, [isDesktop, deviceInfo.brand, onUserDeviceUpdate, currentStep]);
@@ -121,8 +135,19 @@ const AssessStep1 = ({
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
 
-    if (deviceInfo.model) {
-      onNext();
+    // ไม่ข้ามไป Step2 แม้จะมีข้อมูล model อยู่แล้ว เพื่อให้ผู้ใช้ยืนยัน Model/Storage อีกครั้ง
+    if (deviceInfo.brand) {
+      if (deviceInfo.brand === "Apple") {
+        // ถ้ามี productType แล้ว ให้ไปเลือก Model/Storage ของ iPhone/iPad
+        if (deviceInfo.productType) {
+          const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+          setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
+        } else {
+          setCurrentStep("selectProduct");
+        }
+      } else {
+        setCurrentStep("selectModelStorage");
+      }
     } else {
       setCurrentStep("selectBrand");
     }

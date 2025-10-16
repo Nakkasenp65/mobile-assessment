@@ -91,12 +91,19 @@ export function mapAvailabilityToSlots(slots: AvailabilityResponse[], timeZone =
       if (!s || s.availableQuota <= 0) continue;
       // Only normalize entries that include startTime (time-based slots)
       if (hasStartTime(s)) {
+        const iso = s.startTime;
+
+        // Many upstreams encode local Thai hours as ISO with trailing 'Z'.
+        // If we format those in Asia/Bangkok, they shift by +7h (e.g., 10:00Z -> 17:00).
+        // To preserve intended local hour labels (10:00–20:00), detect 'Z' and format in UTC.
+        const tz = typeof iso === "string" && /Z$/.test(iso) ? "UTC" : timeZone;
+
         const hhmm = new Intl.DateTimeFormat("th-TH", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
-          timeZone,
-        }).format(new Date(s.startTime));
+          timeZone: tz,
+        }).format(new Date(iso));
         set.add(hhmm);
       }
     } catch {

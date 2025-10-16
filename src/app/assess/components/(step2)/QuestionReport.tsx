@@ -20,28 +20,45 @@ interface QuestionReportProps {
   showFullReport: boolean;
 }
 
-const IcloudLockWarning = ({ onAcknowledge }: { onAcknowledge: () => void }) => (
+const IcloudLockWarning = ({ onAcknowledge, onBack }: { onAcknowledge: () => void; onBack: () => void }) => (
   <motion.div
-    className="flex w-full max-w-lg flex-col items-center justify-center text-center"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, ease: "easeInOut" }}
+    className="flex w-full max-w-xl flex-col items-center justify-center text-center"
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
   >
-    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-8 shadow-lg">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20">
-        <ShieldAlert className="h-8 w-8 text-amber-500" />
+    <div className="relative mt-16 overflow-hidden rounded-3xl border border-amber-400/40 bg-gradient-to-br from-amber-400/20 to-amber-500/10 p-10 shadow-xl backdrop-blur-sm">
+      {/* floating sparkle accents */}
+      <div className="pointer-events-none absolute -top-4 -left-4 h-24 w-24 animate-pulse rounded-full bg-amber-300/20 blur-2xl" />
+      <div className="pointer-events-none absolute -right-4 -bottom-4 h-24 w-24 animate-pulse rounded-full bg-amber-300/20 blur-2xl" />
+
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-400/20 ring-8 ring-amber-400/10">
+        <ShieldAlert className="h-10 w-10 text-amber-400 drop-shadow-lg" />
       </div>
-      <h2 className="mt-4 text-2xl font-bold text-amber-900 dark:text-amber-200">ข้อควรทราบ: เครื่องติด iCloud</h2>
-      <p className="text-md text-muted-foreground mt-2">
-        ทางร้าน <span className="font-semibold">ไม่รับซื้อเครื่องที่ติดล็อค iCloud</span> ทุกกรณี อย่างไรก็ตาม
-        ท่านยังสามารถประเมินสภาพเครื่องเพื่อรับบริการซ่อมได้
+
+      <h2 className="mt-6 bg-gradient-to-r from-amber-900 to-amber-600 bg-clip-text text-xl font-extrabold text-transparent dark:from-amber-200 dark:to-amber-400">
+        แจ้งเตือนสำคัญ: เจอ iCloud Lock!
+      </h2>
+
+      <p className="text-md mt-3 leading-relaxed text-amber-800/90 dark:text-amber-200/90">
+        เรา<span className="font-bold text-amber-900 dark:text-amber-100">ไม่รับซื้อ</span>เครื่องที่ล็อค iCloud
+        <span className="font-bold">ทุกกรณี</span> แต่คุณยังสามารถประเมินเพื่อใช้บริการซ่อมได้นะ✨
       </p>
+
       <FramerButton
         onClick={onAcknowledge}
         size="lg"
-        className="mt-6 h-12 transform-gpu rounded-full bg-amber-500 px-8 text-base font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-amber-600 disabled:transform-none"
+        className="mt-8 h-14 transform-gpu rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-10 text-lg font-bold text-white shadow-xl transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl"
       >
-        ประเมินเพื่อรับบริการซ่อม
+        ไปประเมินกันเลย
+      </FramerButton>
+      <FramerButton
+        onClick={onBack}
+        size="lg"
+        variant="ghost"
+        className="mt-4 h-14 transform-gpu rounded-full px-10 text-lg font-bold text-gray-600 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md dark:text-gray-400"
+      >
+        ย้อนกลับ
       </FramerButton>
     </div>
   </motion.div>
@@ -65,7 +82,7 @@ export default function QuestionReport({
   const isIcloudLockedAppleDevice = deviceInfo.brand === "Apple" && !conditionInfo.canUnlockIcloud;
 
   if (isIcloudLockedAppleDevice && !acknowledged) {
-    return <IcloudLockWarning onAcknowledge={() => setAcknowledged(true)} />;
+    return <IcloudLockWarning onAcknowledge={() => setAcknowledged(true)} onBack={onBack} />;
   }
 
   return (

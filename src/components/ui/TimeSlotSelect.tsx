@@ -3,7 +3,13 @@
 
 import React from "react";
 import { useCheckAvailability } from "@/hooks/useCheckAvailability";
-import { toApiServiceType, inferApiLocationFromService, computeFallbackDisabled } from "@/util/availability";
+import {
+  toApiServiceType,
+  inferApiLocationFromService,
+  computeFallbackDisabled,
+  todayStringTZ,
+  currentHourTZ,
+} from "@/util/availability";
 
 export interface TimeSlotSelectProps {
   serviceType: string; // internal key or Thai name
@@ -44,13 +50,23 @@ export const TimeSlotSelect: React.FC<TimeSlotSelectProps> = ({
     // Store policy: show only 10:00–19:00, as provided by the API
     const STORE_OPEN_HOUR = 10;
     const LAST_AVAILABLE_HOUR = 19;
-    return Array.from(availableSet.values())
+    const base = Array.from(availableSet.values())
       .filter((slot) => {
         const hour = Number(slot.slice(0, 2));
         return hour >= STORE_OPEN_HOUR && hour <= LAST_AVAILABLE_HOUR;
       })
       .sort();
-  }, [availableSet, isDaily]);
+
+    // If selected date is today, filter out past hours so times start from next hour
+    try {
+      if (selectedDate && selectedDate === todayStringTZ("Asia/Bangkok")) {
+        const nowHour = currentHourTZ("Asia/Bangkok");
+        return base.filter((slot) => Number(slot.slice(0, 2)) > nowHour);
+      }
+    } catch {}
+
+    return base;
+  }, [availableSet, isDaily, selectedDate]);
 
   const disabledByFallback = React.useMemo(() => computeFallbackDisabled(selectedDate, slots), [selectedDate, slots]);
 
@@ -80,12 +96,14 @@ export const TimeSlotSelect: React.FC<TimeSlotSelectProps> = ({
             {!dateReady ? "โปรดเลือกวันที่ก่อน" : isLoading ? "กำลังตรวจสอบเวลาว่าง..." : "เลือกเวลา"}
           </option>
           {isError || !apiReady ? (
-            // Fallback: show baseline slots, disable past times
-            slots.map((slot) => (
-              <option key={slot} value={slot} disabled={disabledByFallback.has(slot)}>
-                {slot} {disabledByFallback.has(slot) ? "(ไม่ว่าง)" : ""}
-              </option>
-            ))
+            // Fallback: show baseline slots, starting from current time if today
+            slots
+              .filter((slot) => !disabledByFallback.has(slot))
+              .map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))
           ) : availableList.length > 0 ? (
             availableList.map((slot) => (
               <option key={slot} value={slot}>
