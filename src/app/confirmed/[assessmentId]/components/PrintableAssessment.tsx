@@ -24,7 +24,7 @@ const SectionHeader = ({ title }: { title: string }) => (
   </h2>
 );
 
-const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
+const DetailRow = ({ label, value }: { label: string; value: string | number | React.ReactNode }) => (
   <div className="flex border-b border-gray-100 py-1.5 text-xs">
     <span className="w-2/5 font-medium text-gray-600">{label}</span>
     <span className="w-3/5 font-semibold text-gray-800">{value}</span>
@@ -33,12 +33,12 @@ const DetailRow = ({ label, value }: { label: string; value: string | number }) 
 
 // --- Service Type Configuration ---
 const SERVICE_CONFIG = {
-  sellNowServiceInfo: { title: "บริการขายทันที" },
-  pawnServiceInfo: { title: "บริการจำนำ" },
-  consignmentServiceInfo: { title: "บริการขายฝาก" },
-  refinanceServiceInfo: { title: "บริการรีไฟแนนซ์" },
-  iphoneExchangeServiceInfo: { title: "บริการแลกเปลี่ยน iPhone" },
-  tradeInServiceInfo: { title: "บริการเทรดอิน" },
+  sellNowServiceInfo: { title: "บริการขายทันที", icon: "💰" },
+  pawnServiceInfo: { title: "บริการจำนำ", icon: "🏦" },
+  consignmentServiceInfo: { title: "บริการขายฝาก", icon: "📦" },
+  refinanceServiceInfo: { title: "บริการรีไฟแนนซ์", icon: "🔄" },
+  iphoneExchangeServiceInfo: { title: "บริการแลกเปลี่ยน iPhone", icon: "📱" },
+  tradeInServiceInfo: { title: "บริการเทรดอิน", icon: "🔄" },
 };
 
 // --- Main Printable Assessment Component ---
@@ -131,7 +131,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
   const deviceName = deviceInfo ? `${deviceInfo.brand} ${deviceInfo.model} ${deviceInfo.storage}` : "ไม่ระบุ";
   const finalPrice = assessment.estimatedValue ?? 0;
 
-  // Condition details - ย่อเหลือเฉพาะที่สำคัญ
+  // Condition details - แสดงข้อมูลทั้งหมดที่สำคัญ
   const conditionDetails = React.useMemo(() => {
     const ci = assessment.conditionInfo;
     if (!ci) return [];
@@ -163,11 +163,55 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
                 ? "ไม่มีกล่อง"
                 : "ไม่ระบุ",
       },
-      { label: "การแสดงผลหน้าจอ", value: ci.screenDisplay === "display_ok" ? "ปกติ" : "มีปัญหา" },
+      {
+        label: "การแสดงผลหน้าจอ",
+        value:
+          ci.screenDisplay === "display_ok"
+            ? "ปกติ"
+            : ci.screenDisplay === "display_pixel_defect"
+              ? "พิกเซลเสีย"
+              : ci.screenDisplay === "display_burn_in"
+                ? "จอเบิร์น"
+                : "มีปัญหา",
+      },
+      { label: "Face ID / Touch ID", value: ci.faceId === "biometric_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "การเชื่อมต่อ Wi-Fi", value: ci.wifi === "wifi_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "กล้อง", value: ci.camera === "camera_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "ลำโพง", value: ci.speaker === "speaker_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "ไมโครโฟน", value: ci.mic === "mic_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "การสัมผัส", value: ci.touchScreen === "touchscreen_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "การชาร์จไฟ", value: ci.charger === "charger_ok" ? "ปกติ" : "มีปัญหา" },
+      { label: "ปุ่ม", value: ci.buttons === "buttons_ok" ? "ปกติ" : "มีปัญหา" },
     ];
   }, [assessment.conditionInfo]);
 
-  console.log(assessment);
+  // Get warranty text
+  const getWarrantyText = (warranty: string) => {
+    switch (warranty) {
+      case "warranty_active_long":
+        return "ประกันเหลือมากกว่า 3 เดือน";
+      case "warranty_active_short":
+        return "ประกันเหลือน้อยกว่า 3 เดือน";
+      case "warranty_expired":
+        return "ประกันหมดอายุ";
+      default:
+        return "ไม่ระบุ";
+    }
+  };
+
+  // Get repair status text
+  const getRepairText = (repair: string) => {
+    switch (repair) {
+      case "repaired_no":
+        return "ไม่เคยเปิดซ่อม";
+      case "repaired_authorized":
+        return "เปิดซ่อมกับศูนย์บริการ";
+      case "repaired_third_party":
+        return "เปิดซ่อมกับร้านนอก";
+      default:
+        return "ไม่ระบุ";
+    }
+  };
 
   if (!activeService || !serviceType) {
     return (
@@ -186,14 +230,14 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
       style={{ fontFamily: '"Sarabun", "LINESeedSansTH", sans-serif' }}
     >
       {/* Header */}
-      <header className="mb-4 border-b-2 border-orange-500 pb-3">
+      <header className="mb-3 border-b-2 border-orange-500 pb-3">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold text-orange-600">NO.1 Money</h1>
-            <p className="mt-0.5 text-xs text-gray-500">ใบยืนยันการทำรายการสำเร็จ</p>
+            <p className="mt-0.5 text-xs text-gray-500">ใบสรุปการประเมินราคาและนัดหมาย</p>
           </div>
           <div className="text-right">
-            <div className="inline-block rounded border border-gray-300 bg-white p-1">
+            <div className="inline-block bg-white">
               {qrError || !qrValue ? (
                 <div className="flex h-12 w-12 items-center justify-center bg-gray-100 text-[10px] text-gray-500">
                   QR N/A
@@ -202,14 +246,16 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
                 <QRCode value={qrValue} size={48} level="M" />
               )}
             </div>
-            <p className="mt-0.5 text-[10px] text-gray-500">ID: {assessment.id?.slice(0, 8)}</p>
+            <p className="mt-0.5 text-[10px] text-gray-500">ID: {assessment.id}</p>
           </div>
         </div>
       </header>
 
       {/* Status Badge */}
-      <div className="mb-4 flex justify-center">
-        <div className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold text-pink-800">✅ ทำรายการสำเร็จ</div>
+      <div className="mb-3 flex justify-center">
+        <div className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+          ✅ การประเมินราคาสำเร็จ
+        </div>
       </div>
 
       {/* Main Content - Compact Layout */}
@@ -218,7 +264,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         <div className="grid grid-cols-2 gap-3">
           {/* Service Information */}
           <section>
-            <SectionHeader title="ข้อมูลบริการ" />
+            <SectionHeader title={`${SERVICE_CONFIG[serviceType].icon} ข้อมูลบริการ`} />
             <div className="space-y-1">
               <DetailRow
                 label="บริการ"
@@ -227,60 +273,118 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
               <DetailRow label="ชื่อลูกค้า" value={activeService.customerName || "-"} />
               <DetailRow label="เบอร์โทร" value={activeService.phone || "-"} />
               <DetailRow label="สถานที่" value={getLocationText(activeService)} />
+              <DetailRow
+                label="วันนัดหมาย"
+                value={
+                  <div>
+                    <div>{activeService.appointmentDate}</div>
+                    <div className="text-pink-600">{activeService.appointmentTime}</div>
+                  </div>
+                }
+              />
             </div>
           </section>
 
           {/* Device Information */}
           <section>
-            <SectionHeader title="ข้อมูลอุปกรณ์" />
+            <SectionHeader title="📱 ข้อมูลอุปกรณ์" />
             <div className="space-y-1">
               <DetailRow label="อุปกรณ์" value={deviceName} />
+              <DetailRow label="สถานะประกัน" value={getWarrantyText(assessment.conditionInfo?.warranty || "")} />
               <DetailRow
-                label="วันนัดหมาย"
-                value={
-                  activeService.appointmentDate
-                    ? `${activeService.appointmentDate}\n${activeService.appointmentTime || ""}`
-                    : "-"
-                }
+                label="ประวัติการซ่อม"
+                value={getRepairText(assessment.conditionInfo?.openedOrRepaired || "")}
+              />
+              <DetailRow
+                label="สามารถปลดล็อค iCloud"
+                value={assessment.conditionInfo?.canUnlockIcloud ? "✅ ได้" : "❌ ไม่ได้"}
               />
             </div>
           </section>
         </div>
 
-        {/* Price Summary - Compact */}
+        {/* Price Summary */}
         <section>
-          <SectionHeader title="สรุปราคา" />
-          <div className="rounded border border-pink-200 bg-pink-50 p-3 text-center">
-            <p className="mb-1 text-xs text-gray-600">ราคาสุดท้าย</p>
-            <p className="text-xl font-bold text-pink-600">{finalPrice.toLocaleString("th-TH")} บาท</p>
+          <SectionHeader title="💰 สรุปราคา" />
+          <div className="rounded border-2 border-pink-300 bg-pink-50 p-3 text-center">
+            <p className="mb-1 text-xs text-gray-600">ราคาประเมินสูงสุด</p>
+            <p className="text-2xl font-bold text-pink-600">{finalPrice.toLocaleString("th-TH")} บาท</p>
+            <p className="mt-1 text-[10px] text-gray-500">
+              ราคานี้เป็นราคาประเมินเบื้องต้น ราคาสุดท้ายอาจเปลี่ยนแปลงหลังตรวจสอบสภาพเครื่องจริง
+            </p>
           </div>
         </section>
 
-        {/* Condition Summary - Compact */}
+        {/* Condition Summary - 2 columns */}
         <section>
-          <SectionHeader title="สรุปสภาพเครื่อง" />
+          <SectionHeader title="🔍 สรุปสภาพเครื่อง" />
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             {conditionDetails.map((item, index) => (
               <div key={index} className="flex justify-between border-b border-gray-100 py-1">
                 <span className="text-gray-600">{item.label}</span>
-                <span className="font-semibold text-gray-800">{item.value}</span>
+                <span
+                  className={`font-semibold ${
+                    item.value === "ปกติ" ||
+                    item.value === "เหมือนใหม่" ||
+                    item.value === "ครบกล่อง" ||
+                    item.value === "มากกว่า 90%"
+                      ? "text-green-600"
+                      : item.value === "มีปัญหา" || item.value === "มีรอย/บุบ"
+                        ? "text-orange-600"
+                        : "text-gray-800"
+                  }`}
+                >
+                  {item.value}
+                </span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Payment Confirmation - Compact */}
+        {/* Next Steps */}
         <section>
-          <SectionHeader title="การยืนยัน" />
+          <SectionHeader title="📝 ขั้นตอนต่อไป" />
+          <div className="space-y-2 text-xs text-gray-700">
+            {assessment.nextSteps?.map((step, index) => (
+              <div key={index} className="flex items-start space-x-2">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                  {index + 1}
+                </span>
+                <span>{step}</span>
+              </div>
+            )) || (
+              <>
+                <div className="flex items-start space-x-2">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                    1
+                  </span>
+                  <span>เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม</span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                    2
+                  </span>
+                  <span>ไปพบทีมงานตามวัน-เวลานัด และสถานที่ที่เลือก</span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                    3
+                  </span>
+                  <span>ชำระเงินและรับเอกสารการทำรายการ</span>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Important Notes */}
+        <section>
+          <SectionHeader title="⚠️ ข้อควรทราบ" />
           <div className="rounded border border-orange-200 bg-orange-50 p-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500">
-                <span className="text-xs text-white">✓</span>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-orange-800">ยืนยันการชำระเงินแล้ว</p>
-                <p className="text-[10px] text-orange-600">รายการเสร็จสมบูรณ์</p>
-              </div>
+            <div className="space-y-1 text-xs text-orange-800">
+              <p>• ราคานี้เป็นราคาประเมินเบื้องต้น ราคาสุดท้ายอาจเปลี่ยนแปลงหลังตรวจสอบสภาพเครื่องจริง</p>
+              <p>• กรุณานำบัตรประชาชนตัวจริงและอุปกรณ์ทั้งหมดไปด้วยในวันนัดหมาย</p>
+              <p>• เอกสารนี้ใช้สำหรับการนัดหมายและอ้างอิงราคาเบื้องต้น</p>
             </div>
           </div>
         </section>
@@ -290,7 +394,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
       <footer className="mt-4 border-t border-orange-300 pt-3">
         <div className="text-center">
           <p className="text-xs font-semibold text-orange-700">ขอบคุณที่ใช้บริการ NO.1 Money</p>
-          <p className="mt-0.5 text-[10px] text-gray-500">ออกเอกสารเมื่อ {currentDate} | โทร: 098-950-9222</p>
+          <p className="mt-0.5 text-[10px] text-gray-500">
+            ออกเอกสารเมื่อ {currentDate} | โทร: 098-950-9222 | 123 ถนนสุขุมวิท กรุงเทพมหานคร 10110
+          </p>
         </div>
       </footer>
 

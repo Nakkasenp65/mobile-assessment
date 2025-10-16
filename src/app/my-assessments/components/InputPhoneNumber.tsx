@@ -59,6 +59,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
                   type="tel"
                   id="phoneNumber"
                   placeholder="กรอกเบอร์โทรศัพท์มือถือ"
+                  maxLength={10}
                   value={phoneNumber}
                   onChange={(e) => onPhoneNumberChange(e.target.value)}
                   className="focus:border-primary focus:ring-primary/15 h-12 w-full rounded-full border-2 border-slate-300 bg-white pr-5 pl-12 text-base shadow transition"

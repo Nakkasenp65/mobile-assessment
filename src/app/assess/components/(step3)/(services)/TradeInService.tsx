@@ -7,10 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { DateSelect } from "@/components/ui/date-select";
+// DateSelect is now handled inside DateTimeSelect
 import { useRouter } from "next/navigation";
 
 interface TradeInServiceProps {
@@ -263,39 +264,19 @@ export default function TradeInService({ deviceInfo, tradeInPrice }: TradeInServ
               </SelectContent>
             </Select>
           </div>
-          {/* ✨ 3. แก้ไขส่วนเลือกวันและเวลาทั้งหมด */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date-tradein">วัน</Label>
-              <DateSelect
-                value={formState.appointmentDate}
-                onValueChange={(value) => handleInputChange("appointmentDate", value)}
-                className="h-12 w-full"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time-tradein">เวลา</Label>
-              <Select
-                value={formState.appointmentTime}
-                onValueChange={(value) => handleInputChange("appointmentTime", value)}
-              >
-                <SelectTrigger id="time-tradein" className="h-12 w-full">
-                  <SelectValue placeholder="เลือกเวลา" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="11:00">11:00</SelectItem>
-                  <SelectItem value="12:00">12:00</SelectItem>
-                  <SelectItem value="13:00">13:00</SelectItem>
-                  <SelectItem value="14:00">14:00</SelectItem>
-                  <SelectItem value="15:00">15:00</SelectItem>
-                  <SelectItem value="16:00">16:00</SelectItem>
-                  <SelectItem value="17:00">17:00</SelectItem>
-                  <SelectItem value="18:00">18:00</SelectItem>
-                  <SelectItem value="19:00">19:00</SelectItem>
-                  <SelectItem value="20:00">20:00</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* ✨ ใช้คอมโพเนนต์ DateTimeSelect แบบรวม วัน+เวลา และบังคับเลือกวันก่อน */}
+          <div className="grid grid-cols-1 gap-4">
+            <DateTimeSelect
+              serviceType="บริการขายทันที"
+              serviceData={formState}
+              dateValue={formState.appointmentDate}
+              onDateChange={(value) => handleInputChange("appointmentDate", value)}
+              timeValue={formState.appointmentTime}
+              onTimeChange={(value) => handleInputChange("appointmentTime", value)}
+              className="w-full"
+              labelDate="วัน"
+              labelTime="เวลา"
+            />
           </div>
         </motion.div>
       </motion.div>

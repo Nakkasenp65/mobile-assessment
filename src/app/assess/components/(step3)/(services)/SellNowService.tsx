@@ -57,6 +57,8 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
 
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const [hasUserLocation, setHasUserLocation] = useState(false);
+  const [geoPermission, setGeoPermission] = useState<"prompt" | "granted" | "denied" | null>(null);
   // ✨ [แก้ไข] กำหนด state เริ่มต้นเป็น null ก่อน
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
   const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
@@ -84,11 +86,13 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
         import("leaflet").then((L) => {
           setMapCenter(new L.LatLng(latitude, longitude));
         });
+        setHasUserLocation(true);
         setIsLocationLoading(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
         setLocationError("Unable to retrieve your location. Please check your browser permissions.");
+        setHasUserLocation(false);
         setIsLocationLoading(false);
       },
       {
@@ -98,6 +102,24 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
       },
     );
   }, []);
+
+  // ขอสิทธิ์การเข้าถึง Location ให้เสร็จสิ้นก่อน แล้วค่อยดึง Lat-Long
+  const ensurePermissionThenLocate = useCallback(async () => {
+    try {
+      const permAPI = (navigator as unknown as { permissions?: { query: (q: { name: string }) => Promise<{ state: "granted" | "prompt" | "denied" }> } }).permissions;
+      if (permAPI && permAPI.query) {
+        const status = await permAPI.query({ name: "geolocation" });
+        setGeoPermission(status.state);
+        if (status.state === "denied") {
+          setLocationError("กรุณาอนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์");
+          return; // ไม่ดึง Lat-Long ถ้า deny
+        }
+      }
+    } catch {
+      // บราว์เซอร์บางตัวอาจไม่รองรับ Permissions API — ข้ามไปเรียก geolocation โดยตรง
+    }
+    requestLocation();
+  }, [requestLocation]);
 
   useEffect(() => {
     if (turnstileToken) {
@@ -122,10 +144,14 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
       setLocationType(newLocationType);
       // ถ้าผู้ใช้เลือก "ที่บ้าน" ให้เริ่มขอตำแหน่งปัจจุบันทันที
       if (newLocationType === "home") {
-        requestLocation();
+        // รีเซ็ตสถานะก่อนเริ่มขอสิทธิ์และดึงพิกัดจริง
+        setHasUserLocation(false);
+        setMapCenter(null);
+        setLocationError(null);
+        ensurePermissionThenLocate();
       }
     },
-    [requestLocation], // dependency เหลือแค่ requestLocation
+    [ensurePermissionThenLocate], // เรียก function ที่ขอ permission ก่อน
   );
 
   const handleAddressChange = useCallback((address: LongdoAddressData) => {
@@ -222,6 +248,10 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
                 setSelectedBtsLine={setSelectedBtsLine}
                 mapCenter={mapCenter}
                 setMapCenter={setMapCenter}
+                isLocationLoading={isLocationLoading}
+                locationError={locationError}
+                hasUserLocation={hasUserLocation}
+                onRetryLocate={ensurePermissionThenLocate}
                 geocodeData={geocodeData}
                 handleAddressChange={handleAddressChange}
                 formVariants={formVariants}

@@ -2,6 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../../LongdoAddressForm";
 import type { LatLng } from "leaflet";
 import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 1. Import Hook ใหม่
+import { Button } from "@/components/ui/button";
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
   ssr: false,
@@ -36,9 +38,13 @@ interface LocationDetailsProps {
   setSelectedBtsLine: (line: string) => void;
   mapCenter: LatLng | null;
   setMapCenter: (center: LatLng) => void;
+  isLocationLoading: boolean;
+  locationError: string | null;
+  hasUserLocation: boolean;
+  onRetryLocate: () => void;
   geocodeData: LongdoAddressData | null | undefined;
   handleAddressChange: (address: LongdoAddressData) => void;
-  formVariants: any;
+  formVariants: Variants;
 }
 
 const LocationDetails: React.FC<LocationDetailsProps> = ({
@@ -49,6 +55,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   setSelectedBtsLine,
   mapCenter,
   setMapCenter,
+  isLocationLoading,
+  locationError,
+  hasUserLocation,
+  onRetryLocate,
   geocodeData,
   handleAddressChange,
   formVariants,
@@ -70,8 +80,30 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
           {locationType === "home" && (
             <motion.div key="home-form" variants={formVariants} className="flex flex-col gap-4">
               <Label className="block text-base font-semibold">ปักหมุดตำแหน่งของคุณ</Label>
-              <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
-              <LongdoAddressForm initialData={geocodeData} onAddressChange={handleAddressChange} />
+              {isLocationLoading && (
+                <div className="flex min-h-[300px] w-full items-center justify-center rounded border border-gray-300 bg-gray-100">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              )}
+              {!isLocationLoading && locationError && (
+                <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+                  <p className="mb-2">ไม่สามารถเข้าถึงตำแหน่งได้: {locationError}</p>
+                  <Button variant="outline" size="sm" onClick={onRetryLocate}>
+                    ขอใช้ตำแหน่งอีกครั้ง
+                  </Button>
+                </div>
+              )}
+              {!isLocationLoading && !locationError && hasUserLocation && mapCenter && (
+                <>
+                  <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
+                  <LongdoAddressForm initialData={geocodeData} onAddressChange={handleAddressChange} />
+                </>
+              )}
+              {!isLocationLoading && !locationError && !hasUserLocation && (
+                <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+                  กดปุ่ม &quot;รับซื้อถึงบ้าน&quot; เพื่ออนุญาตการเข้าถึงตำแหน่ง และรอระบบดึงค่าพิกัดจริง
+                </div>
+              )}
             </motion.div>
           )}
 

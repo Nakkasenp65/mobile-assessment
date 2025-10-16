@@ -14,6 +14,7 @@ import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Home, Train, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
+import DateTimeSelect from "@/components/ui/DateTimeSelect";
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
@@ -45,8 +46,16 @@ export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps)
     termsAccepted: false,
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: keyof typeof formState,
+    value: string | Date | boolean | undefined
+  ) => {
+    if (field === "phone") {
+      const numericValue = (value as string).replace(/[^0-9]/g, "");
+      setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const isFormComplete =
@@ -317,34 +326,21 @@ export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps)
           </motion.div>
         </AnimatePresence>
 
-        {/* Step 4: Date & Time */}
+        {/* Step 4: Date & Time (combined) */}
         <motion.div variants={formVariants} className="space-y-4">
           <Label className="block text-lg font-semibold">4. เลือกวันและเวลา</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date-pawn">วัน</Label>
-              <Select onValueChange={(value) => handleInputChange("date", value)}>
-                <SelectTrigger id="date-pawn" className="w-full">
-                  <SelectValue placeholder="เลือกวัน" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">วันนี้</SelectItem>
-                  <SelectItem value="tomorrow">พรุ่งนี้</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time-pawn">เวลา</Label>
-              <Select onValueChange={(value) => handleInputChange("time", value)}>
-                <SelectTrigger id="time-pawn" className="w-full">
-                  <SelectValue placeholder="เลือกเวลา" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="9-12">09:00 - 12:00</SelectItem>
-                  <SelectItem value="13-17">13:00 - 17:00</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+            <DateTimeSelect
+              serviceType="บริการจำนำ"
+              serviceData={{ ...formState, locationType }}
+              dateValue={formState.date}
+              onDateChange={(value) => handleInputChange("date", value)}
+              timeValue={formState.time}
+              onTimeChange={(value) => handleInputChange("time", value)}
+              className="w-full"
+              labelDate="วัน"
+              labelTime="เวลา"
+            />
           </div>
         </motion.div>
       </motion.div>

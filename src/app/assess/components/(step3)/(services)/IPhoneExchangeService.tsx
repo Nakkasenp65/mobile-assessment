@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateSelect } from "@/components/ui/date-select";
+import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
 import { DeviceInfo } from "../../../../../types/device";
 import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
@@ -56,7 +57,7 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
     documentFile: null as File | null,
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
+  const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
     if (field === "phone") {
       const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
@@ -253,6 +254,133 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
                 ))}
               </div>
             </div>
+
+            {/* เลือกสถานที่นัดหมาย */}
+            <motion.div variants={formVariants} className="space-y-4">
+              <Label className="block text-lg font-semibold">เลือกสถานที่นัดหมาย</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {/* BTS/MRT option */}
+                <motion.button
+                  type="button"
+                  onClick={() => handleLocationTypeChange("bts")}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  aria-pressed={locationType === "bts"}
+                  className={`flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium ${
+                    locationType === "bts"
+                      ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+                      : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"
+                  }`}
+                >
+                  <Train className="h-6 w-6" />
+                  <span className="font-semibold">BTS/MRT</span>
+                </motion.button>
+
+                {/* Store option */}
+                <motion.button
+                  type="button"
+                  onClick={() => handleLocationTypeChange("store")}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  aria-pressed={locationType === "store"}
+                  className={`flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium ${
+                    locationType === "store"
+                      ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+                      : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"
+                  }`}
+                >
+                  <Store className="h-6 w-6" />
+                  <span className="font-semibold">รับบริการที่สาขา</span>
+                </motion.button>
+              </div>
+
+              {/* รายละเอียดสถานที่ */}
+              {locationType === "bts" && (
+                <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bts-line-exchange">สายรถไฟ</Label>
+                    <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
+                      <SelectTrigger id="bts-line-exchange" className="w-full">
+                        <SelectValue
+                          placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {btsData?.lines.map((line) => (
+                          <SelectItem key={line.LineId} value={line.LineName_TH}>
+                            {line.LineName_TH}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bts-station-exchange">ระบุสถานี</Label>
+                    <Select disabled={!selectedBtsLine} onValueChange={(value) => handleInputChange("btsStation", value)}>
+                      <SelectTrigger id="bts-station-exchange" className="w-full">
+                        <SelectValue placeholder="เลือกสถานี" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(btsData?.stationsByLine[selectedBtsLine] || []).map((station) => (
+                          <SelectItem key={station.StationId} value={station.StationNameTH}>
+                            {station.StationNameTH}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </motion.div>
+              )}
+
+              {locationType === "store" && (
+                <motion.div key="store-form" variants={formVariants} className="space-y-2">
+                  <Label htmlFor="store-branch-exchange">สาขา</Label>
+                  <Select
+                    value={formState.storeLocation}
+                    onValueChange={(value) => handleInputChange("storeLocation", value)}
+                  >
+                    <SelectTrigger id="store-branch-exchange" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {storeLocations.map((loc) => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* เลือกวันและเวลา */}
+            <motion.div variants={formVariants} className="space-y-4">
+              <Label className="block text-lg font-semibold">เลือกวันและเวลา</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date-exchange">วัน</Label>
+                  <DateSelect
+                    value={formState.date}
+                    onValueChange={(value) => handleInputChange("date", value)}
+                    className="h-12 w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="time-exchange">เวลา</Label>
+                  <TimeSlotSelect
+                    serviceType="บริการแลกเปลี่ยน iPhone"
+                    serviceData={{ ...formState, locationType }}
+                    selectedDate={formState.date}
+                    value={formState.time}
+                    onChange={(value) => handleInputChange("time", value)}
+                    className="h-12 w-full"
+                  />
+                </div>
+              </div>
+            </motion.div>
 
             {documentUploadDetails && (
               <motion.div

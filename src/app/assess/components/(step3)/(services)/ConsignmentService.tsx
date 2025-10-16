@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone } from "lucide-react";
@@ -217,26 +218,14 @@ export default function ConsignmentService({ deviceInfo, consignmentPrice }: Con
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`time-consignment`}>เวลา</Label>
-                <Select
+                <TimeSlotSelect
+                  serviceType="บริการขายฝาก"
+                  serviceData={formState}
+                  selectedDate={formState.dropoffDate}
                   value={formState.dropoffTime}
-                  onValueChange={(value) => handleInputChange("dropoffTime", value)}
-                >
-                  <SelectTrigger id={`time-consignment`} className="h-12 w-full">
-                    <SelectValue placeholder="เลือกเวลา" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="11:00">11:00</SelectItem>
-                    <SelectItem value="12:00">12:00</SelectItem>
-                    <SelectItem value="13:00">13:00</SelectItem>
-                    <SelectItem value="14:00">14:00</SelectItem>
-                    <SelectItem value="15:00">15:00</SelectItem>
-                    <SelectItem value="16:00">16:00</SelectItem>
-                    <SelectItem value="17:00">17:00</SelectItem>
-                    <SelectItem value="18:00">18:00</SelectItem>
-                    <SelectItem value="19:00">19:00</SelectItem>
-                    <SelectItem value="20:00">20:00</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(value) => handleInputChange("dropoffTime", value)}
+                  className="h-12 w-full"
+                />
               </div>
             </div>
           </motion.div>
