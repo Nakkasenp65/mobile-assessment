@@ -1,17 +1,17 @@
 // src/app/assess/components/(step3)/(services)/sell-now-components/LocationSelector.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Home, Train, Store } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type LocationType = "home" | "bts" | "store";
 
 interface LocationSelectorProps {
   locationType: LocationType | null;
   handleLocationTypeChange: (type: LocationType) => void;
-  formVariants: any;
+  formVariants: Variants;
 }
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
@@ -22,31 +22,63 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   return (
     <motion.div variants={formVariants} className="flex flex-col gap-4">
       <Label className="block text-lg font-semibold">เลือกสถานที่รับซื้อ</Label>
-      <div className="grid grid-cols-3 gap-3">
-        <Button
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3">
+        {/* Home option */}
+        <motion.button
           type="button"
-          variant={locationType === "home" ? "default" : "outline"}
           onClick={() => handleLocationTypeChange("home")}
-          className="flex h-auto flex-col items-center gap-2 py-4"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          aria-pressed={locationType === "home"}
+          className={cn(
+            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            locationType === "home"
+              ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+              : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
+          )}
         >
-          <Home className="h-6 w-6" /> <span className="text-xs">รับซื้อถึงบ้าน</span>
-        </Button>
-        <Button
+          <Home className="h-6 w-6" />
+          <span className="font-semibold">รับซื้อถึงบ้าน</span>
+        </motion.button>
+
+        {/* BTS/MRT option */}
+        <motion.button
           type="button"
-          variant={locationType === "bts" ? "default" : "outline"}
           onClick={() => handleLocationTypeChange("bts")}
-          className="flex h-auto flex-col items-center gap-2 py-4"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          aria-pressed={locationType === "bts"}
+          className={cn(
+            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            locationType === "bts"
+              ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+              : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
+          )}
         >
-          <Train className="h-6 w-6" /> <span className="text-xs">BTS/MRT</span>
-        </Button>
-        <Button
+          <Train className="h-6 w-6" />
+          <span className="font-semibold">BTS/MRT</span>
+        </motion.button>
+
+        {/* Store option */}
+        <motion.button
           type="button"
-          variant={locationType === "store" ? "default" : "outline"}
           onClick={() => handleLocationTypeChange("store")}
-          className="flex h-auto flex-col items-center gap-2 py-4"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          aria-pressed={locationType === "store"}
+          className={cn(
+            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            locationType === "store"
+              ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
+              : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
+          )}
         >
-          <Store className="h-6 w-6" /> <span className="text-xs">รับซื้อที่ร้าน</span>
-        </Button>
+          <Store className="h-6 w-6" />
+          <span className="font-semibold">รับซื้อที่ร้าน</span>
+        </motion.button>
       </div>
     </motion.div>
   );

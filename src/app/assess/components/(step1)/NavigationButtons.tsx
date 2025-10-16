@@ -13,7 +13,11 @@ export default function NavigationButtons({ onBack, onNext, isNextDisabled }: Na
   return (
     <div className={`flex w-full ${onBack ? "justify-between" : "justify-end"} mt-auto items-center pt-6`}>
       {onBack && (
-        <FramerButton variant="ghost" onClick={onBack} className="flex h-12 items-center rounded-full px-6">
+        <FramerButton
+          variant="ghost"
+          onClick={onBack}
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>
@@ -22,9 +26,9 @@ export default function NavigationButtons({ onBack, onNext, isNextDisabled }: Na
         onClick={onNext}
         disabled={isNextDisabled}
         size="lg"
-        className="h-14 transform-gpu rounded-xl px-8 text-base font-semibold shadow-lg transition-all duration-300 hover:-translate-y-1 disabled:transform-none"
+        className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
       >
-        ถัดไป
+        ดำเนินการต่อ
       </FramerButton>
     </div>
   );

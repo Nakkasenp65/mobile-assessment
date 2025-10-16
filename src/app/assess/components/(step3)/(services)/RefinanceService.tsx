@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useRef, useEffect, useCallback, memo } from "react";
+import { motion, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,14 @@ import { DeviceInfo } from "../../../../../types/device";
 import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+// Dynamically import Turnstile (SSR-safe)
+const Turnstile = dynamic(() => import("@/components/Turnstile"), {
+  ssr: false,
+  loading: () => <div className="h-[65px] w-[300px] animate-pulse rounded-md bg-gray-200" />,
+});
+const StableTurnstile = memo(Turnstile);
 
 // Interface for Component Props
 interface RefinanceServiceProps {
@@ -18,7 +26,7 @@ interface RefinanceServiceProps {
   refinancePrice: number;
 }
 
-const REFINANCE_MONTHS = 6;
+const PERIOD_OPTIONS = [3, 6, 10] as const;
 
 const OCCUPATION_TYPES = {
   SALARIED: "salaried",
@@ -36,6 +44,7 @@ const THB = (n: number) =>
 export default function RefinanceService({ deviceInfo, refinancePrice }: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
 
   const [formState, setFormState] = useState({
     customerName: "",
@@ -45,6 +54,10 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
     occupation: "",
     documentFile: null as File | null,
   });
+
+  const [selectedMonths, setSelectedMonths] = useState<(typeof PERIOD_OPTIONS)[number]>(6);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstileError, setShowTurnstileError] = useState(false);
 
   const handleInputChange = (field: keyof typeof formState, value: string) => {
     // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
@@ -86,8 +99,8 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
   };
 
   const monthlyPayment = useMemo(() => {
-    return refinancePrice / REFINANCE_MONTHS;
-  }, [refinancePrice]);
+    return refinancePrice / selectedMonths;
+  }, [refinancePrice, selectedMonths]);
 
   // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   // โดยนำเงื่อนไขการยอมรับข้อตกลงออก และเพิ่มการตรวจสอบความยาวเบอร์โทร
@@ -110,10 +123,43 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
     return null;
   }, [formState.occupation]);
 
-  const formVariants = {
+  const formVariants: Variants = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
+  };
+
+  const handleTurnstileVerify = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const handleConfirmRefinance = async () => {
+    if (!turnstileToken) {
+      turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setShowTurnstileError(true);
+      setTimeout(() => setShowTurnstileError(false), 3000);
+      return;
+    }
+    setShowTurnstileError(false);
+
+    try {
+      const res = await fetch("/api/verify-turnstile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Turnstile verification failed. โปรดลองใหม่");
+        return;
+      }
+    } catch (err) {
+      console.warn("Turnstile verification request failed", err);
+      alert("ไม่สามารถยืนยัน Turnstile ได้ โปรดลองอีกครั้ง");
+      return;
+    }
+
+    router.push("/confirmed/1");
   };
 
   useEffect(() => {
@@ -147,6 +193,62 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
           </div>
         </motion.div>
 
+        {/* ระยะเวลาการผ่อนชำระ */}
+        <motion.div
+          initial="initial"
+          animate="animate"
+          variants={{ animate: { transition: { staggerChildren: 0.08 } } }}
+          className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 dark:border-purple-400/30 dark:bg-purple-400/10"
+        >
+          <Label className="mb-3 block text-sm font-semibold text-purple-900 dark:text-purple-100">
+            เลือกระยะเวลาการผ่อนชำระ
+          </Label>
+          <div className="grid grid-cols-3 gap-3">
+            {PERIOD_OPTIONS.map((months) => {
+              const isSelected = selectedMonths === months;
+              const calcMonthly = refinancePrice / months;
+              const total = calcMonthly * months;
+              return (
+                <motion.button
+                  key={months}
+                  type="button"
+                  onClick={() => setSelectedMonths(months)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  aria-pressed={isSelected}
+                  className={`group relative flex h-28 flex-col items-center justify-center gap-1 rounded-xl border p-2 text-center text-sm font-medium transition ${
+                    isSelected
+                      ? "border-violet-500 bg-violet-50/50 text-violet-900 shadow-lg"
+                      : "border-zinc-200 bg-white/40 text-violet-900 hover:border-violet-400 hover:bg-violet-50"
+                  }`}
+                >
+                  <span className="text-base font-semibold">{months} เดือน</span>
+                  {isSelected && <Check className="absolute top-2 right-2 h-4 w-4 text-violet-600" />}
+                  <div className="mt-1 w-full px-2">
+                    <div
+                      className={`min-h-[32px] text-xs transition-all duration-200 ease-out ${
+                        isSelected
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-violet-800">ค่างวดต่อเดือน</span>
+                        <span className="font-semibold text-violet-700">{THB(calcMonthly)}</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span className="text-violet-800">รวมชำระทั้งหมด</span>
+                        <span className="font-semibold text-violet-700">{THB(total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,7 +268,7 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
               <CalendarDays className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-purple-800 dark:text-purple-200">ระยะเวลา</span>
             </div>
-            <span className="font-semibold text-purple-800 dark:text-purple-200">{REFINANCE_MONTHS} เดือน</span>
+            <span className="font-semibold text-purple-800 dark:text-purple-200">{selectedMonths} เดือน</span>
           </div>
         </motion.div>
 
@@ -190,7 +292,7 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
                   placeholder="กรอกชื่อ-นามสกุล"
                   value={formState.customerName}
                   onChange={(e) => handleInputChange("customerName", e.target.value)}
-                  className="pl-10"
+                  className="h-12 pl-10"
                 />
               </div>
             </div>
@@ -209,7 +311,7 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
                   inputMode="numeric" // บังคับใช้แป้นพิมพ์ตัวเลขบนมือถือ
                   pattern="[0-9]{10}" // กำหนดรูปแบบที่เข้มงวดสำหรับ HTML5 validation
                   maxLength={10} // จำกัดความยาวสูงสุด
-                  className="pl-10"
+                  className="h-12 pl-10"
                 />
               </div>
             </div>
@@ -295,7 +397,7 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
                   {formState.documentFile ? (
                     <div className="mt-2 flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
                       <Check className="h-4 w-4" />
-                      <span>{formState.documentFile.name}</span>
+                      <span aria-live="polite">{formState.documentFile.name}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -332,11 +434,23 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
           }}
           className="space-y-4 pt-4"
         >
+          <div ref={turnstileRef}>
+            {showTurnstileError && (
+              <motion.p
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-2 text-sm font-medium text-red-600"
+              >
+                กรุณายืนยันว่าคุณไม่ใช่บอทก่อนส่งฟอร์ม
+              </motion.p>
+            )}
+            <StableTurnstile onVerify={handleTurnstileVerify} />
+          </div>
           <FramerButton
             size="lg"
             disabled={!isFormComplete}
             className="h-14 w-full"
-            onClick={() => router.push("/confirmed/1")}
+            onClick={handleConfirmRefinance}
           >
             ยืนยันการรีไฟแนนซ์
           </FramerButton>

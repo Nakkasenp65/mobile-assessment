@@ -48,7 +48,6 @@ export default function AssessComponent() {
     buttons: "",
   });
 
-  const [selectedService, setSelectedService] = useState<string>("");
   const searchParams = useSearchParams();
   const [isInitialStepCalculated, setIsInitialStepCalculated] = useState(false);
 

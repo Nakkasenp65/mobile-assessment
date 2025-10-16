@@ -161,7 +161,7 @@ export default function AssessStep3({
         />
 
         {!isIcloudLocked && (
-          <div ref={servicesRef} id="services-section" className="top-24 flex h-fit flex-col lg:sticky">
+          <div ref={servicesRef} id="services-section" className="sticky top-0 flex h-fit flex-col">
             <Services
               selectedService={localSelectedService}
               setSelectedService={setLocalSelectedService}

@@ -202,7 +202,7 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
               initial="initial"
               animate="animate"
               variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-              className="mt-6 space-y-6"
+              className="mt-16 flex flex-col gap-6"
             >
               <CustomerInfoForm
                 formState={formState}

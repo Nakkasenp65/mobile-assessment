@@ -4,6 +4,7 @@ import { Input } from "../../../components/ui/input";
 import { AnimatePresence, motion } from "framer-motion";
 import AssessmentCard from "./AssessmentCard";
 import clsx from "clsx";
+import FramerButton from "../../../components/ui/framer/FramerButton";
 
 export default function ResultsView({ assessments, onBack }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,20 +45,12 @@ export default function ResultsView({ assessments, onBack }) {
 
   return (
     <>
-      {/* --- Custom Back Button --- */}
-      <div
-        className="mb-4 flex w-max max-w-3xl cursor-pointer items-center gap-1 self-start rounded-md bg-white p-2 shadow-md"
-        onClick={onBack}
-      >
-        <ArrowLeft className="h-4 w-4 text-stone-500" />
-        <span className="text-sm font-semibold text-stone-500">กลับ</span>
-      </div>
       <motion.div
         key="show-results"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="container flex min-h-[80dvh] w-full flex-col gap-8 rounded-lg bg-white p-4 py-8 shadow-lg"
+        className="container flex min-h-[500px] w-full flex-col gap-8 rounded-lg bg-white p-4 py-8 shadow-lg"
       >
         <div className="text-center">
           <h1 className="text-2xl font-bold">รายการประเมินของคุณ</h1>
@@ -118,6 +111,15 @@ export default function ResultsView({ assessments, onBack }) {
             )}
           </AnimatePresence>
         </div>
+
+        <FramerButton
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 w-max items-center rounded-full border bg-white px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-4 w-4 text-stone-500" />
+          <span className="text-sm font-semibold text-stone-500">กลับ</span>
+        </FramerButton>
       </motion.div>
     </>
   );

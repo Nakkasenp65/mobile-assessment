@@ -2,12 +2,20 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, AlertCircle, Phone, ShieldCheck } from "lucide-react";
+import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
 import AssessmentLedger from "../(step3)/AssessmentLedger";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import FramerButton from "../../../../components/ui/framer/FramerButton";
 
 interface ReviewSummaryProps {
   deviceInfo: DeviceInfo;
@@ -19,7 +27,15 @@ interface ReviewSummaryProps {
   serverError?: string;
 }
 
-export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBack, onConfirm, isSubmitting = false, serverError }: ReviewSummaryProps) {
+export default function ReviewSummary({
+  deviceInfo,
+  conditionInfo,
+  errors,
+  onBack,
+  onConfirm,
+  isSubmitting = false,
+  serverError,
+}: ReviewSummaryProps) {
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
   const sanitized = phoneInput.replace(/\D/g, "").slice(0, 10);
@@ -43,7 +59,7 @@ export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBac
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
       <div className="rounded-2xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+        <h3 className="mb-3 flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
           <CheckCircle className="h-5 w-5 text-emerald-600" />
           ตรวจสอบสรุปข้อมูลอุปกรณ์ของคุณ
         </h3>
@@ -79,15 +95,17 @@ export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBac
       )}
 
       <div className="flex items-center justify-between">
-        <button
+        <FramerButton
+          variant="ghost"
           onClick={onBack}
-          className="rounded-xl border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
         >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           กลับไปแก้ไข
-        </button>
-        <button
+        </FramerButton>
+        <FramerButton
           onClick={openPhoneModal}
-          className="rounded-xl bg-gradient-to-r from-orange-500 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow hover:brightness-110 active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
+          className="gradient-primary text-primary-foreground shadow-primary/30 hover:shadow-secondary/30 h-12 transform-gpu rounded-full px-8 text-base font-bold shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           aria-label="ยืนยันข้อมูลและดำเนินการต่อ"
           disabled={isSubmitting || errors.length > 0}
         >
@@ -99,7 +117,7 @@ export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBac
           ) : (
             "ยืนยันข้อมูลและดำเนินการต่อ"
           )}
-        </button>
+        </FramerButton>
       </div>
 
       {/* Phone Number Modal */}
@@ -128,7 +146,7 @@ export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBac
                 inputMode="numeric"
                 value={sanitized ? sanitized : phoneInput}
                 onChange={(e) => setPhoneInput(e.target.value)}
-                className="h-11 w-full rounded-lg border-gray-200 bg-gray-50 pr-4 pl-10 text-base transition-all focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:border-zinc-700 dark:bg-zinc-900"
+                className="h-11 w-full rounded-lg border-gray-200 bg-gray-50 pr-4 pl-10 text-base transition-all focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-900"
                 placeholder="0987654321"
                 maxLength={10}
                 disabled={isSubmitting}
@@ -140,26 +158,17 @@ export default function ReviewSummary({ deviceInfo, conditionInfo, errors, onBac
                 {isValidPhone ? "รูปแบบเบอร์ถูกต้อง" : "ต้องเป็นตัวเลข 10 หลัก"}
               </p>
             </div>
-            {phoneError && (
-              <p className="text-sm text-red-600">{phoneError}</p>
-            )}
-            {serverError && (
-              <p className="text-sm text-red-600">{serverError}</p>
-            )}
+            {phoneError && <p className="text-sm text-red-600">{phoneError}</p>}
+            {serverError && <p className="text-sm text-red-600">{serverError}</p>}
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={closePhoneModal}
-              className="rounded-lg"
-              disabled={isSubmitting}
-            >
+            <Button variant="outline" onClick={closePhoneModal} className="rounded-lg" disabled={isSubmitting}>
               ยกเลิก
             </Button>
             <Button
               onClick={handleConfirmClick}
-              className="rounded-lg bg-gradient-to-r from-orange-500 to-pink-600 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+              className="rounded-lg bg-gradient-to-r from-orange-500 to-pink-600 text-white disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!isValidPhone || isSubmitting}
             >
               {isSubmitting ? (

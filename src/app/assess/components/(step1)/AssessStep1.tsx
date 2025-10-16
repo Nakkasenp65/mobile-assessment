@@ -251,7 +251,11 @@ const AssessStep1 = ({
               onProductChange={handleProductSelectAndNext}
             />
             <div className="mt-auto flex w-full justify-start pt-6">
-              <FramerButton variant="ghost" onClick={prevStep} className="flex h-12 items-center rounded-full px-6">
+              <FramerButton
+                variant="ghost"
+                onClick={prevStep}
+                className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="font-semibold">ย้อนกลับ</span>
               </FramerButton>
@@ -320,7 +324,7 @@ const AssessStep1 = ({
 
   return (
     <motion.div
-      className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl p-2 md:p-6"
+      className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
