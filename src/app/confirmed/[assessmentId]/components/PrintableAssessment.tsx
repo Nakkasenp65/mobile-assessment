@@ -4,264 +4,342 @@
 
 import React from "react";
 import QRCode from "react-qr-code";
-import {
-  Banknote,
-  Calendar,
-  ClipboardCheck,
-  LucideIcon,
-  MapPin,
-  Package,
-  Phone,
-  Shield,
-  User,
-  UserCheck,
-} from "lucide-react";
-import { IconType } from "react-icons";
+import { AssessmentRecord } from "@/types/assessment";
+import type {
+  PawnServiceInfo,
+  SellNowServiceInfo,
+  ConsignmentServiceInfo,
+  RefinanceServiceInfo,
+  IPhoneExchangeServiceInfo,
+} from "@/types/service";
 
 interface PrintableAssessmentProps {
-  assessmentId: string;
-  data: {
-    device: {
-      brand: string;
-      model: string;
-      name: string;
-      storage: string;
-    };
-    finalPrice: number;
-    conditionGrade: string;
-    selectedService: string;
-    appointment: {
-      customerName: string;
-      phone: string;
-      location: string;
-      date: string;
-      time: string;
-    };
-    conditionDetails: Array<{ label: string; value: string }>;
-  };
+  assessment: AssessmentRecord;
 }
 
-const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessmentProps>(
-  ({ assessmentId, data }, ref) => {
-    const [qrError, setQrError] = React.useState(false);
-    const qrValue = React.useMemo(() => {
-      try {
-        const val = String(assessmentId ?? "");
-        if (!val) throw new Error("Missing assessmentId");
-        return val;
-      } catch (e) {
-        setQrError(true);
-        return "";
-      }
-    }, [assessmentId]);
+// --- Helper Components ---
+const SectionHeader = ({ title }: { title: string }) => (
+  <h2 className="mb-2 rounded border-l-3 border-orange-500 bg-orange-50 px-3 py-1.5 text-sm font-bold text-orange-700">
+    {title}
+  </h2>
+);
 
-    const currentDate = new Date().toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
+  <div className="flex border-b border-gray-100 py-1.5 text-xs">
+    <span className="w-2/5 font-medium text-gray-600">{label}</span>
+    <span className="w-3/5 font-semibold text-gray-800">{value}</span>
+  </div>
+);
 
+// --- Service Type Configuration ---
+const SERVICE_CONFIG = {
+  sellNowServiceInfo: { title: "บริการขายทันที" },
+  pawnServiceInfo: { title: "บริการจำนำ" },
+  consignmentServiceInfo: { title: "บริการขายฝาก" },
+  refinanceServiceInfo: { title: "บริการรีไฟแนนซ์" },
+  iphoneExchangeServiceInfo: { title: "บริการแลกเปลี่ยน iPhone" },
+  tradeInServiceInfo: { title: "บริการเทรดอิน" },
+};
+
+// --- Main Printable Assessment Component ---
+const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessmentProps>(({ assessment }, ref) => {
+  const [qrError, setQrError] = React.useState(false);
+
+  // Get QR Value
+  const qrValue = typeof assessment?.id === "string" && assessment.id ? String(assessment.id) : "";
+  React.useEffect(() => {
+    setQrError(!qrValue);
+  }, [qrValue]);
+
+  // Get current date
+  const currentDate = new Date().toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Get completed service info
+  type ServiceKey =
+    | "sellNowServiceInfo"
+    | "pawnServiceInfo"
+    | "consignmentServiceInfo"
+    | "refinanceServiceInfo"
+    | "iphoneExchangeServiceInfo";
+
+  type AnyServiceInfo =
+    | PawnServiceInfo
+    | SellNowServiceInfo
+    | ConsignmentServiceInfo
+    | RefinanceServiceInfo
+    | IPhoneExchangeServiceInfo;
+
+  const isServiceInfo = (val: unknown): val is AnyServiceInfo => {
+    if (!val || typeof val !== "object") return false;
+    const obj = val as Record<string, unknown>;
     return (
-      <div
-        ref={ref}
-        // ปรับ padding ให้เหมาะสมกับ A4
-        className="relative min-h-[297mm] w-[210mm] bg-white p-[15mm] text-gray-800 selection:bg-transparent selection:text-gray-800"
-        style={{ fontFamily: '"LINESeedSansTH", sans-serif' }}
-      >
-        {/* Header Layout ใหม่: ใช้ Flexbox แบ่งซ้าย-ขวา ไม่ใช้ absolute positioning */}
-        <header className="mb-8 flex items-start justify-between border-b-2 border-gray-200 pb-6">
-          {/* Left Side: Company & Document Info */}
-          <div className="flex flex-col gap-4">
-            <div>
-              {/* Brand Name: เพิ่ม fallback color สำหรับ print mode */}
-              <p className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-3xl font-bold text-transparent print:text-orange-600">
-                NO.1 Money
-              </p>
-              <div className="mt-1 text-sm text-gray-600">
-                <p>123 ถนนสุขุมวิท, กรุงเทพมหานคร 10110</p>
-                <p>โทร: 098-950-9222</p>
-              </div>
-            </div>
+      typeof obj.customerName === "string" &&
+      typeof obj.phone === "string" &&
+      typeof obj.appointmentDate === "string" &&
+      typeof obj.appointmentTime === "string"
+    );
+  };
 
-            <div className="border-l-4 border-orange-200 pl-3">
-              <h1 className="text-2xl font-bold text-gray-900">ใบยืนยันการประเมิน</h1>
-              <div className="mt-1 text-sm text-gray-500">
-                <p>
-                  รหัสเอกสาร: <span className="font-mono font-semibold text-gray-900">{assessmentId}</span>
-                </p>
-                <p>วันที่ออก: {currentDate}</p>
-              </div>
-            </div>
+  const { activeService, serviceType } = React.useMemo(() => {
+    const candidates: Array<[ServiceKey, unknown]> = [
+      ["sellNowServiceInfo", assessment.sellNowServiceInfo],
+      ["pawnServiceInfo", assessment.pawnServiceInfo],
+      ["consignmentServiceInfo", assessment.consignmentServiceInfo],
+      ["refinanceServiceInfo", assessment.refinanceServiceInfo],
+      ["iphoneExchangeServiceInfo", assessment.iphoneExchangeServiceInfo],
+    ];
+
+    for (const [key, value] of candidates) {
+      if (isServiceInfo(value)) {
+        return { activeService: value, serviceType: key };
+      }
+    }
+
+    return { activeService: null, serviceType: null };
+  }, [
+    assessment.sellNowServiceInfo,
+    assessment.pawnServiceInfo,
+    assessment.consignmentServiceInfo,
+    assessment.refinanceServiceInfo,
+    assessment.iphoneExchangeServiceInfo,
+  ]);
+
+  // Get location text with safe property guards across service variants
+  const getLocationText = (service: AnyServiceInfo | null) => {
+    if (!service) return "-";
+    const rec = service as unknown as Record<string, unknown>;
+    const storeLocation = typeof rec.storeLocation === "string" ? rec.storeLocation : undefined;
+    const btsStation = typeof rec.btsStation === "string" ? rec.btsStation : undefined;
+    const address = typeof rec.address === "string" ? rec.address : undefined;
+    const addressDetails = typeof rec.addressDetails === "string" ? rec.addressDetails : undefined;
+    const subdistrict = typeof rec.subdistrict === "string" ? rec.subdistrict : undefined;
+    const district = typeof rec.district === "string" ? rec.district : undefined;
+    const province = typeof rec.province === "string" ? rec.province : undefined;
+
+    if (storeLocation) return storeLocation;
+    if (btsStation) return `สถานี BTS: ${btsStation}`;
+    const addrLine = addressDetails ?? address ?? [subdistrict, district, province].filter(Boolean).join(" ");
+    return addrLine || "-";
+  };
+
+  // Device info
+  const deviceInfo = assessment.deviceInfo;
+  const deviceName = deviceInfo ? `${deviceInfo.brand} ${deviceInfo.model} ${deviceInfo.storage}` : "ไม่ระบุ";
+  const finalPrice = assessment.estimatedValue ?? 0;
+
+  // Condition details - ย่อเหลือเฉพาะที่สำคัญ
+  const conditionDetails = React.useMemo(() => {
+    const ci = assessment.conditionInfo;
+    if (!ci) return [];
+
+    return [
+      {
+        label: "สภาพตัวเครื่อง",
+        value: ci.bodyCondition === "body_mint" ? "เหมือนใหม่" : ci.bodyCondition ? "มีรอย/บุบ" : "ไม่ระบุ",
+      },
+      {
+        label: "สุขภาพแบตเตอรี่",
+        value:
+          ci.batteryHealth === "battery_health_high"
+            ? "มากกว่า 90%"
+            : ci.batteryHealth === "battery_health_medium"
+              ? "70% - 90%"
+              : ci.batteryHealth === "battery_health_low"
+                ? "ต่ำกว่า 70%"
+                : "ไม่ระบุ",
+      },
+      {
+        label: "อุปกรณ์ในกล่อง",
+        value:
+          ci.accessories === "acc_full"
+            ? "ครบกล่อง"
+            : ci.accessories === "acc_box_only"
+              ? "เฉพาะกล่อง"
+              : ci.accessories === "acc_no_box"
+                ? "ไม่มีกล่อง"
+                : "ไม่ระบุ",
+      },
+      { label: "การแสดงผลหน้าจอ", value: ci.screenDisplay === "display_ok" ? "ปกติ" : "มีปัญหา" },
+    ];
+  }, [assessment.conditionInfo]);
+
+  console.log(assessment);
+
+  if (!activeService || !serviceType) {
+    return (
+      <div ref={ref} className="flex min-h-[297mm] w-[210mm] flex-col bg-white p-6 text-gray-800">
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-gray-500">ไม่พบข้อมูลบริการที่สมบูรณ์</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="flex min-h-[297mm] w-[210mm] flex-col bg-white p-6 text-gray-800"
+      style={{ fontFamily: '"Sarabun", "LINESeedSansTH", sans-serif' }}
+    >
+      {/* Header */}
+      <header className="mb-4 border-b-2 border-orange-500 pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-orange-600">NO.1 Money</h1>
+            <p className="mt-0.5 text-xs text-gray-500">ใบยืนยันการทำรายการสำเร็จ</p>
           </div>
-
-          {/* Right Side: QR Code ใน Flow ปกติ */}
-          <div className="gap-1pt-1 flex flex-col items-end">
-            <div className="rounded-md border border-gray-200 bg-white p-2 shadow-sm print:border-gray-300 print:shadow-none">
+          <div className="text-right">
+            <div className="inline-block rounded border border-gray-300 bg-white p-1">
               {qrError || !qrValue ? (
-                <div className="flex h-[100px] w-[100px] items-center justify-center border border-red-100 bg-red-50 text-xs text-red-500">
+                <div className="flex h-12 w-12 items-center justify-center bg-gray-100 text-[10px] text-gray-500">
                   QR N/A
                 </div>
               ) : (
-                <QRCode value={qrValue} size={100} bgColor="#FFFFFF" fgColor="#000000" level="M" />
+                <QRCode value={qrValue} size={48} level="M" />
               )}
             </div>
-            <p className="w-full text-center text-[10px] text-gray-400">Scan for details</p>
+            <p className="mt-0.5 text-[10px] text-gray-500">ID: {assessment.id?.slice(0, 8)}</p>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="grid grid-cols-2 gap-x-12">
+      {/* Status Badge */}
+      <div className="mb-4 flex justify-center">
+        <div className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold text-pink-800">✅ ทำรายการสำเร็จ</div>
+      </div>
+
+      {/* Main Content - Compact Layout */}
+      <main className="flex-1 space-y-4">
+        {/* Service & Device Info in one row */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Service Information */}
           <section>
-            <h2 className="border-b border-gray-200 pb-2 text-lg font-bold text-pink-600 print:text-pink-700">
-              ข้อมูลนัดหมาย
-            </h2>
-            <div className="mt-3 space-y-3">
-              <InfoRow icon={User} label="ชื่อลูกค้า" value={data.appointment.customerName} />
-              <InfoRow icon={Phone} label="เบอร์โทรศัพท์" value={data.appointment.phone} />
-              <InfoRow
-                icon={Calendar}
-                label="วันและเวลา"
-                value={`${data.appointment.date}, ${data.appointment.time}`}
+            <SectionHeader title="ข้อมูลบริการ" />
+            <div className="space-y-1">
+              <DetailRow
+                label="บริการ"
+                value={SERVICE_CONFIG[serviceType as keyof typeof SERVICE_CONFIG]?.title || "-"}
               />
-              <InfoRow icon={MapPin} label="สถานที่" value={data.appointment.location} />
+              <DetailRow label="ชื่อลูกค้า" value={activeService.customerName || "-"} />
+              <DetailRow label="เบอร์โทร" value={activeService.phone || "-"} />
+              <DetailRow label="สถานที่" value={getLocationText(activeService)} />
             </div>
           </section>
 
+          {/* Device Information */}
           <section>
-            <h2 className="border-b border-gray-200 pb-2 text-lg font-bold text-orange-600 print:text-orange-700">
-              ข้อมูลอุปกรณ์
-            </h2>
-            <div className="mt-3 space-y-3">
-              <InfoRow icon={Package} label="อุปกรณ์" value={`${data.device.name} ${data.device.storage}`} />
-              <InfoRow icon={Shield} label="สภาพเครื่อง" value={`เกรด ${data.conditionGrade}`} />
-              <InfoRow icon={Banknote} label="บริการที่เลือก" value={data.selectedService} />
-
-              {/* Final Price Box */}
-              <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 print:border-gray-300 print:bg-transparent">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">ราคาประเมินสุทธิ</span>
-                  <span className="text-2xl font-bold text-green-700 print:text-black">
-                    ฿{data.finalPrice.toLocaleString()}
-                  </span>
-                </div>
-              </div>
+            <SectionHeader title="ข้อมูลอุปกรณ์" />
+            <div className="space-y-1">
+              <DetailRow label="อุปกรณ์" value={deviceName} />
+              <DetailRow
+                label="วันนัดหมาย"
+                value={
+                  activeService.appointmentDate
+                    ? `${activeService.appointmentDate}\n${activeService.appointmentTime || ""}`
+                    : "-"
+                }
+              />
             </div>
           </section>
-        </main>
+        </div>
 
-        <section className="mt-8">
-          <h2 className="text-md font-bold text-gray-800">รายละเอียดสภาพเครื่อง</h2>
-          <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-1 border-t border-gray-200 py-2 text-sm">
-            {data.conditionDetails.map((item, index) => (
-              <div key={index} className="flex justify-between py-1">
-                <span className="text-gray-500">{item.label}</span>
-                <span className="font-medium text-gray-900">{item.value}</span>
+        {/* Price Summary - Compact */}
+        <section>
+          <SectionHeader title="สรุปราคา" />
+          <div className="rounded border border-pink-200 bg-pink-50 p-3 text-center">
+            <p className="mb-1 text-xs text-gray-600">ราคาสุดท้าย</p>
+            <p className="text-xl font-bold text-pink-600">{finalPrice.toLocaleString("th-TH")} บาท</p>
+          </div>
+        </section>
+
+        {/* Condition Summary - Compact */}
+        <section>
+          <SectionHeader title="สรุปสภาพเครื่อง" />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            {conditionDetails.map((item, index) => (
+              <div key={index} className="flex justify-between border-b border-gray-100 py-1">
+                <span className="text-gray-600">{item.label}</span>
+                <span className="font-semibold text-gray-800">{item.value}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-8 mb-auto">
-          <h2 className="text-md mb-3 font-bold text-gray-800">สิ่งที่ต้องเตรียมในวันนัดหมาย</h2>
-          <div className="grid grid-cols-3 gap-4 border-t border-gray-200 pt-4">
-            <StepItem
-              icon={UserCheck}
-              number="1"
-              title="บัตรประชาชน"
-              desc="เตรียมบัตรประชาชนตัวจริงของท่านเพื่อยืนยันตัวตน"
-            />
-            <StepItem
-              icon={Package}
-              number="2"
-              title="อุปกรณ์"
-              desc="นำเครื่องและอุปกรณ์เสริม (ถ้ามี) ไปที่จุดนัดหมาย"
-            />
-            <StepItem
-              icon={ClipboardCheck}
-              number="3"
-              title="การตรวจสอบ"
-              desc="เจ้าหน้าที่จะทำการตรวจสอบสภาพเครื่องครั้งสุดท้าย"
-            />
+        {/* Payment Confirmation - Compact */}
+        <section>
+          <SectionHeader title="การยืนยัน" />
+          <div className="rounded border border-orange-200 bg-orange-50 p-2">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500">
+                <span className="text-xs text-white">✓</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-orange-800">ยืนยันการชำระเงินแล้ว</p>
+                <p className="text-[10px] text-orange-600">รายการเสร็จสมบูรณ์</p>
+              </div>
+            </div>
           </div>
         </section>
+      </main>
 
-        {/* Footer ดันลงด้านล่างสุด */}
-        <footer className="absolute right-[15mm] bottom-[15mm] left-[15mm] border-t border-gray-200 pt-4 text-center">
-          <p className="text-sm font-medium text-gray-800">ขอบคุณที่ใช้บริการ NO.1 Money</p>
-          <p className="mt-1 text-xs text-gray-500">
-            เอกสารฉบับนี้สร้างโดยระบบอัตโนมัติ | เงื่อนไขเป็นไปตามที่บริษัทกำหนด
-          </p>
-        </footer>
+      {/* Footer */}
+      <footer className="mt-4 border-t border-orange-300 pt-3">
+        <div className="text-center">
+          <p className="text-xs font-semibold text-orange-700">ขอบคุณที่ใช้บริการ NO.1 Money</p>
+          <p className="mt-0.5 text-[10px] text-gray-500">ออกเอกสารเมื่อ {currentDate} | โทร: 098-950-9222</p>
+        </div>
+      </footer>
 
-        {/* Global font-face declarations embedded for Printing */}
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: A4;
-              margin: 0;
-            }
-            body {
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
+      {/* Print Styles */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 10mm;
           }
-          @font-face {
-            font-family: "LINESeedSansTH";
-            src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff") format("woff");
-            font-weight: 400;
-            font-style: normal;
-            font-display: swap;
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            margin: 0;
+            padding: 0;
           }
-          @font-face {
-            font-family: "LINESeedSansTH";
-            src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff") format("woff");
-            font-weight: 700;
-            font-style: normal;
-            font-display: swap;
-          }
-        `}</style>
-      </div>
-    );
-  },
-);
+        }
+        @font-face {
+          font-family: "Sarabun";
+          src:
+            local("Sarabun"),
+            url("/fonts/Sarabun-Regular.ttf") format("truetype");
+          font-weight: 400;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: "Sarabun";
+          src:
+            local("Sarabun"),
+            url("/fonts/Sarabun-Bold.ttf") format("truetype");
+          font-weight: 700;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: "LINESeedSansTH";
+          src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Rg.woff") format("woff");
+          font-weight: 400;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: "LINESeedSansTH";
+          src: url("https://cdn.jsdelivr.net/gh/ok1developer/NO1Money/LINESeedSansTH_W_Bd.woff") format("woff");
+          font-weight: 700;
+          font-style: normal;
+        }
+      `}</style>
+    </div>
+  );
+});
 
 PrintableAssessment.displayName = "PrintableAssessment";
-
-// Helper Components for cleaner layout
-const InfoRow = ({ icon: Icon, label, value }: { icon: LucideIcon | IconType; label: string; value: string }) => (
-  <div className="flex items-start gap-3">
-    <div className="mt-0.5 text-gray-400">
-      <Icon className="h-4 w-4" />
-    </div>
-    <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm leading-tight font-semibold text-gray-900">{value}</p>
-    </div>
-  </div>
-);
-
-const StepItem = ({
-  icon: Icon,
-  number,
-  title,
-  desc,
-}: {
-  icon: LucideIcon;
-  number: string;
-  title: string;
-  desc: string;
-}) => (
-  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 print:border-gray-200 print:bg-white">
-    <div className="mb-2 flex items-center gap-2">
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-700 print:border print:border-gray-300 print:bg-white">
-        {number}
-      </div>
-      <p className="text-sm font-bold text-gray-800">{title}</p>
-    </div>
-    <div className="flex gap-2">
-      <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-      <p className="text-xs leading-snug text-gray-600">{desc}</p>
-    </div>
-  </div>
-);
-
 export default PrintableAssessment;

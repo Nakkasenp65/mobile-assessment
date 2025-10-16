@@ -26,6 +26,7 @@ import {
   CircleDot,
   RadioTower,
   LucideIcon,
+  Wrench,
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   homeButton: CircleDot,
   sensor: RadioTower,
   buttons: Power,
+  openedOrRepaired: Wrench,
 };
 
 const LABEL_MAP: Record<string, string> = {
@@ -81,6 +83,7 @@ const LABEL_MAP: Record<string, string> = {
   homeButton: "ปุ่ม Home",
   sensor: "Sensor",
   buttons: "ปุ่ม Power / Volume",
+  openedOrRepaired: "เคยแกะหรือซ่อมมา",
 };
 
 const isConsideredPassed = (key: string, value: string): boolean => {
@@ -204,12 +207,17 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
         });
       });
     });
+    // Add custom option labels for fields not in ASSESSMENT_QUESTIONS
+    map["openedOrRepaired"] = {
+      repaired_yes: "เคยซ่อม/แกะ",
+      repaired_no: "ไม่เคยซ่อม/แกะ",
+    };
     return map;
   }, []);
 
   const allInfo = { ...deviceInfo, ...conditionInfo };
 
-  const generalInfoKeys = ["modelType", "warranty", "accessories"];
+  const generalInfoKeys = ["modelType", "warranty", "accessories", "openedOrRepaired"];
   const conditionKeys = Object.keys(allInfo).filter(
     (key) => allInfo[key as keyof typeof allInfo] && !["brand", "model", "storage", ...generalInfoKeys].includes(key),
   );

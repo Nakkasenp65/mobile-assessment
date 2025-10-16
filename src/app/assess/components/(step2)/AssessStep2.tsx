@@ -11,6 +11,7 @@ import QuestionReport from "./QuestionReport";
 import AutomatedDiagnostics from "./AutomatedDiagnostics";
 import InteractiveTests from "./InteractiveTests";
 import ReviewSummary from "./ReviewSummary";
+import SimpleReviewSummary from "./SimpleReviewSummary";
 import { useCreateAssessment } from "../../../../hooks/useCreateAssessment";
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
@@ -88,6 +89,10 @@ const TOGGLE_KEYS = [
 type ToggleKey = (typeof TOGGLE_KEYS)[number];
 const isToggleKey = (id: keyof ConditionInfo): id is ToggleKey => TOGGLE_KEYS.includes(id as ToggleKey);
 
+// Required device fields per flow
+const REQUIRED_DEVICE_APPLE_SIMPLE = ["brand", "model"] as const;
+const REQUIRED_DEVICE_DEFAULT = ["brand", "model", "storage"] as const;
+
 export default function AssessStep2({
   deviceInfo,
   conditionInfo,
@@ -102,6 +107,17 @@ export default function AssessStep2({
 
   console.log(conditionInfo);
 
+  // Apple-specific simple flow: Mac, Apple Watch, AirPods, Apple Pencil
+  const isAppleSpecialDevice =
+    deviceInfo.brand === "Apple" && !!deviceInfo.productType && deviceInfo.productType !== "iPhone" && deviceInfo.productType !== "iPad";
+
+  // For Apple-specific devices, jump directly to review summary
+  useEffect(() => {
+    if (isAppleSpecialDevice) {
+      setCurrentSubStep("review");
+    }
+  }, [isAppleSpecialDevice]);
+
   // Resolve effective platform considering brand vs current device OS mismatch
   const resolvePlatform = useCallback((): Platform => {
     const targetIsApple = deviceInfo.brand === "Apple";
@@ -112,6 +128,11 @@ export default function AssessStep2({
   }, [deviceInfo.brand, isOwnDevice, isDesktop, isAndroid, isIOS]);
 
   const determineNextStep = useCallback(() => {
+    // Apple-specific devices skip diagnostics and go straight to review
+    if (isAppleSpecialDevice) {
+      setCurrentSubStep("review");
+      return;
+    }
     const platform = resolvePlatform();
     // For any OTHER platform or desktop, go straight to review
     if (isDesktop || platform === "OTHER_IOS" || platform === "OTHER_ANDROID") {
@@ -162,6 +183,11 @@ export default function AssessStep2({
   );
 
   const handleBackNavigation = useCallback(() => {
+    // Apple-specific devices: back from review returns to Step 1
+    if (isAppleSpecialDevice && currentSubStep === "review") {
+      onBack();
+      return;
+    }
     if (currentSubStep === "review") {
       setCurrentSubStep(isDesktop || !isOwnDevice ? "physical" : "interactive");
       return;
@@ -185,13 +211,17 @@ export default function AssessStep2({
 
   // Build platform-relevant required choice questions
   const getPlatformRelevantChoiceIds = useCallback((): (keyof ConditionInfo)[] => {
+    // Apple-specific devices only require minimal fields from SimpleAssessmentForm
+    if (isAppleSpecialDevice) {
+      return ["warranty", "openedOrRepaired"] as (keyof ConditionInfo)[];
+    }
     const platform = resolvePlatform();
     const relevantQuestions = ASSESSMENT_QUESTIONS.flatMap((section) =>
       section.questions.filter((q) => q.platforms.includes(platform)),
     );
     const choiceIds = relevantQuestions.filter((q) => q.type === "choice").map((q) => q.id);
     return choiceIds as (keyof ConditionInfo)[];
-  }, [resolvePlatform]);
+  }, [resolvePlatform, isAppleSpecialDevice]);
 
   const TOGGLE_BEST: Partial<Record<ToggleKey, ConditionInfo[ToggleKey]>> = {
     wifi: "wifi_ok",
@@ -208,6 +238,8 @@ export default function AssessStep2({
 
   const applyPlatformToggleDefaults = useCallback(
     (info: ConditionInfo): ConditionInfo => {
+      // Do not auto-default toggles for Apple-specific simple flow
+      if (isAppleSpecialDevice) return info;
       const platform = resolvePlatform();
       const relevantQuestions = ASSESSMENT_QUESTIONS.flatMap((section) =>
         section.questions.filter((q) => q.platforms.includes(platform)),
@@ -235,13 +267,15 @@ export default function AssessStep2({
       });
       return next as ConditionInfo;
     },
-    [resolvePlatform],
+    [resolvePlatform, isAppleSpecialDevice],
   );
 
   const validateSelections = useCallback(
     (info: ConditionInfo) => {
       const msgs: string[] = [];
-      const requiredDevice = ["brand", "model", "storage"] as const;
+      const requiredDevice = isAppleSpecialDevice
+        ? REQUIRED_DEVICE_APPLE_SIMPLE
+        : REQUIRED_DEVICE_DEFAULT;
       requiredDevice.forEach((key) => {
         if (!deviceInfo[key]) msgs.push(`กรุณาระบุ ${key}`);
       });
@@ -253,7 +287,7 @@ export default function AssessStep2({
       });
       return msgs;
     },
-    [deviceInfo, getPlatformRelevantChoiceIds],
+    [deviceInfo, getPlatformRelevantChoiceIds, isAppleSpecialDevice],
   );
 
   const handleConfirm = useCallback((phoneNumber: string) => {
@@ -347,15 +381,27 @@ export default function AssessStep2({
 
           {/* สรุปรายการข้อมูลอุปกรณ์และการยืนยันก่อนดำเนินการต่อ */}
           {currentSubStep === "review" && (
-            <ReviewSummary
-              deviceInfo={deviceInfo}
-              conditionInfo={conditionInfo}
-              errors={errors}
-              onBack={handleBackNavigation}
-              onConfirm={handleConfirm}
-              isSubmitting={isPending}
-              serverError={serverError ?? undefined}
-            />
+            isAppleSpecialDevice ? (
+              <SimpleReviewSummary
+                deviceInfo={deviceInfo}
+                conditionInfo={conditionInfo}
+                errors={errors}
+                onBack={handleBackNavigation}
+                onConfirm={handleConfirm}
+                isSubmitting={isPending}
+                serverError={serverError ?? undefined}
+              />
+            ) : (
+              <ReviewSummary
+                deviceInfo={deviceInfo}
+                conditionInfo={conditionInfo}
+                errors={errors}
+                onBack={handleBackNavigation}
+                onConfirm={handleConfirm}
+                isSubmitting={isPending}
+                serverError={serverError ?? undefined}
+              />
+            )
           )}
         </motion.div>
       </AnimatePresence>

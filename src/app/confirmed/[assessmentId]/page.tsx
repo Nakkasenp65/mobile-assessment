@@ -23,36 +23,14 @@ import Layout from "../../../components/Layout/Layout";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import PrintableAssessment from "./components/PrintableAssessment";
+import { AssessmentRecord } from "@/types/assessment";
 import Footer from "@/app/(landing-page)/components/Footer";
 import { useMobile } from "@/hooks/useMobile";
 
-const mockData = {
-  device: {
-    brand: "Apple",
-    model: "iPhone 15 Pro",
-    name: "Apple iPhone 15 Pro",
-    storage: "256GB",
-  },
-  finalPrice: 28500,
-  conditionGrade: "A",
-  selectedService: "บริการขายทันที",
-  appointment: {
-    customerName: "คุณสมชาย ใจดี",
-    phone: "081-234-5678",
-    location: "BTS สถานีสยาม",
-    date: "25 ตุลาคม 2568",
-    time: "14:00 - 15:00 น.",
-  },
-  conditionDetails: [
-    { label: "สภาพตัวเครื่อง", value: "เหมือนใหม่" },
-    { label: "สุขภาพแบตเตอรี่", value: "มากกว่า 90%" },
-    { label: "อุปกรณ์ในกล่อง", value: "ครบกล่อง" },
-    { label: "การแสดงผลหน้าจอ", value: "ปกติ" },
-  ],
-  support: {
-    phone: "098-950-9222",
-    lineUrl: "https://line.me/ti/p/~@no1money",
-  },
+// Support contact info (static)
+const support = {
+  phone: "098-950-9222",
+  lineUrl: "https://line.me/ti/p/~@no1money",
 };
 
 const nextSteps = [
@@ -84,17 +62,81 @@ export default function AssessmentConfirmationPage() {
     documentTitle: `Assessment-Confirmation-${assessmentId}`,
   });
 
+  // Mock record aligned to global AssessmentRecord type
+  const mockRecord: AssessmentRecord = {
+    id: assessmentId,
+    phoneNumber: "0812345678",
+    customerName: "คุณสมชาย ใจดี",
+    assessmentDate: "25 ตุลาคม 2568",
+    deviceInfo: {
+      brand: "Apple",
+      model: "iPhone 15 Pro",
+      storage: "256GB",
+    },
+    conditionInfo: {
+      canUnlockIcloud: true,
+      modelType: "model_th",
+      warranty: "warranty_active_long",
+      openedOrRepaired: "repaired_no",
+      accessories: "acc_full",
+      bodyCondition: "body_mint",
+      screenGlass: "glass_ok",
+      screenDisplay: "display_ok",
+      batteryHealth: "battery_health_high",
+      camera: "camera_ok",
+      wifi: "wifi_ok",
+      faceId: "biometric_ok",
+      speaker: "speaker_ok",
+      mic: "mic_ok",
+      touchScreen: "touchscreen_ok",
+      charger: "charger_ok",
+      call: "call_ok",
+      homeButton: "home_button_ok",
+      sensor: "sensor_ok",
+      buttons: "buttons_ok",
+    },
+    sellNowServiceInfo: {
+      customerName: "คุณสมชาย ใจดี",
+      phone: "0812345678",
+      locationType: "bts",
+      btsStation: "BTS สถานีสยาม",
+      appointmentDate: "25 ตุลาคม 2568",
+      appointmentTime: "14:00 - 15:00 น.",
+    },
+    status: "completed",
+    estimatedValue: 28500,
+    priceLockExpiresAt: new Date().toISOString(),
+    nextSteps: [
+      "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
+      "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
+      "ชำระเงินและรับเอกสารการทำรายการ",
+    ],
+  };
+
+  // Derive selected service label for UI display
+  const selectedServiceLabel = mockRecord.sellNowServiceInfo
+    ? "บริการขายทันที"
+    : mockRecord.pawnServiceInfo
+      ? "บริการจำนำ"
+      : mockRecord.consignmentServiceInfo
+        ? "บริการฝากขาย"
+        : mockRecord.refinanceServiceInfo
+          ? "บริการรีไฟแนนซ์"
+          : mockRecord.iphoneExchangeServiceInfo
+            ? "ไอโฟนแลกเงิน"
+            : "บริการไม่ระบุ";
+
   // ดึงรูปภาพอุปกรณ์จาก Supabase ผ่าน useMobile
   const { data: productData, isLoading: isImageLoading } = useMobile(
-    mockData.device.brand,
-    mockData.device.model
+    mockRecord.deviceInfo.brand,
+    mockRecord.deviceInfo.model,
   );
 
   return (
     <>
       {/* ส่วนนี้คือ Component ที่ซ่อนไว้สำหรับพิมพ์ จะไม่แสดงบนหน้าจอปกติ */}
       <div className="hidden">
-        <PrintableAssessment ref={componentRef} assessmentId={assessmentId} data={mockData} />
+        <PrintableAssessment ref={componentRef} assessment={mockRecord} />
       </div>
 
       <Layout>
@@ -108,12 +150,10 @@ export default function AssessmentConfirmationPage() {
             <div className="relative mx-auto max-w-3xl px-6 py-8 sm:px-8">
               <div className="flex items-center justify-center">
                 <div className="flex flex-col items-center justify-center">
-                  <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                    <CheckCircle className="h-12 w-12 text-green-600" strokeWidth={2.5} />
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                    <CheckCircle className="h-10 w-10 text-green-600" strokeWidth={2.5} />
                   </div>
-                  <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                    ยืนยันนัดหมายสำเร็จ
-                  </h1>
+                  <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">ยืนยันนัดหมายสำเร็จ</h1>
                   <p className="mt-2 text-lg text-gray-600">
                     รหัสการประเมิน <span className="font-semibold text-gray-900">{assessmentId}</span>
                   </p>
@@ -127,10 +167,10 @@ export default function AssessmentConfirmationPage() {
             {/* Price Card - Most Important */}
             <div className="from-primary to-secondary mb-8 overflow-hidden rounded-3xl bg-gradient-to-br p-8 text-center shadow-lg">
               <p className="mb-2 text-sm font-medium tracking-wide text-white/90 uppercase">ราคาประเมินสุดท้าย</p>
-              <p className="text-6xl font-bold text-white">฿{mockData.finalPrice.toLocaleString()}</p>
+              <p className="text-6xl font-bold text-white">฿{mockRecord.estimatedValue.toLocaleString()}</p>
               <div className="mt-6 flex items-center justify-center gap-2 text-white/90">
                 <Banknote className="h-5 w-5" />
-                <span className="text-sm font-medium">{mockData.selectedService}</span>
+                <span className="text-sm font-medium">{selectedServiceLabel}</span>
               </div>
             </div>
 
@@ -143,7 +183,7 @@ export default function AssessmentConfirmationPage() {
                   ) : productData?.image_url ? (
                     <Image
                       src={productData.image_url}
-                      alt={mockData.device.name}
+                      alt={`${mockRecord.deviceInfo.brand} ${mockRecord.deviceInfo.model}`}
                       width={100}
                       height={100}
                       className="rounded-xl bg-white object-contain p-2 shadow-sm"
@@ -155,17 +195,49 @@ export default function AssessmentConfirmationPage() {
                   )}
                 </div>
                 <div className="flex-1 text-center sm:text-left">
-                  <h3 className="mb-1 text-xl font-bold text-gray-900">{mockData.device.name}</h3>
-                  <p className="mb-3 text-gray-600">{mockData.device.storage}</p>
+                  <h3 className="mb-1 text-xl font-bold text-gray-900">{`${mockRecord.deviceInfo.brand} ${mockRecord.deviceInfo.model}`}</h3>
+                  <p className="mb-3 text-gray-600">{mockRecord.deviceInfo.storage}</p>
                   <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1">
                     <Shield className="h-4 w-4 text-green-700" />
-                    <span className="text-sm font-semibold text-green-700">เกรด {mockData.conditionGrade}</span>
+                    <span className="text-sm font-semibold text-green-700">เกรด -</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-6 space-y-4 border-t border-gray-200 pt-6">
-                {mockData.conditionDetails.map((item, index) => (
+                {[
+                  {
+                    label: "สภาพตัวเครื่อง",
+                    value: mockRecord.conditionInfo.bodyCondition === "body_mint" ? "เหมือนใหม่" : "มีรอย/บุบ",
+                  },
+                  {
+                    label: "สุขภาพแบตเตอรี่",
+                    value:
+                      mockRecord.conditionInfo.batteryHealth === "battery_health_high"
+                        ? "มากกว่า 90%"
+                        : mockRecord.conditionInfo.batteryHealth === "battery_health_medium"
+                          ? "70% - 90%"
+                          : "ต่ำกว่า 70%",
+                  },
+                  {
+                    label: "อุปกรณ์ในกล่อง",
+                    value:
+                      mockRecord.conditionInfo.accessories === "acc_full"
+                        ? "ครบกล่อง"
+                        : mockRecord.conditionInfo.accessories === "acc_box_only"
+                          ? "เฉพาะกล่อง"
+                          : "ไม่มีกล่อง",
+                  },
+                  {
+                    label: "การแสดงผลหน้าจอ",
+                    value:
+                      mockRecord.conditionInfo.screenDisplay === "display_ok"
+                        ? "ปกติ"
+                        : mockRecord.conditionInfo.screenDisplay === "display_pixel_defect"
+                          ? "พิกเซลเสีย"
+                          : "จอเบิร์น",
+                  },
+                ].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-500" />
                     <div className="flex-1">
@@ -188,7 +260,7 @@ export default function AssessmentConfirmationPage() {
                   <div>
                     <p className="text-sm text-gray-500">วันที่และเวลา</p>
                     <p className="mt-1 font-semibold text-gray-900">
-                      {mockData.appointment.date}, {mockData.appointment.time}
+                      {mockRecord.sellNowServiceInfo?.appointmentDate}, {mockRecord.sellNowServiceInfo?.appointmentTime}
                     </p>
                   </div>
                 </div>
@@ -198,7 +270,7 @@ export default function AssessmentConfirmationPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">สถานที่</p>
-                    <p className="mt-1 font-semibold text-gray-900">{mockData.appointment.location}</p>
+                    <p className="mt-1 font-semibold text-gray-900">{mockRecord.sellNowServiceInfo?.btsStation}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -207,7 +279,7 @@ export default function AssessmentConfirmationPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">ชื่อผู้นัดหมาย</p>
-                    <p className="mt-1 font-semibold text-gray-900">{mockData.appointment.customerName}</p>
+                    <p className="mt-1 font-semibold text-gray-900">{mockRecord.sellNowServiceInfo?.customerName}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -216,7 +288,7 @@ export default function AssessmentConfirmationPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">เบอร์โทรศัพท์</p>
-                    <p className="mt-1 font-semibold text-gray-900">{mockData.appointment.phone}</p>
+                    <p className="mt-1 font-semibold text-gray-900">{mockRecord.sellNowServiceInfo?.phone}</p>
                   </div>
                 </div>
               </div>
@@ -246,7 +318,7 @@ export default function AssessmentConfirmationPage() {
               <p className="mb-6 text-sm text-gray-600">หากมีข้อสงสัยหรือต้องการเปลี่ยนแปลงนัดหมาย</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <a
-                  href={mockData.support.lineUrl}
+                  href={support.lineUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-semibold text-white shadow-sm transition-transform hover:scale-105"
@@ -255,11 +327,11 @@ export default function AssessmentConfirmationPage() {
                   <span>ติดต่อทาง LINE</span>
                 </a>
                 <a
-                  href={`tel:${mockData.support.phone}`}
+                  href={`tel:${support.phone}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-transform hover:scale-105"
                 >
                   <Phone className="h-5 w-5" />
-                  <span>{mockData.support.phone}</span>
+                  <span>{support.phone}</span>
                 </a>
               </div>
             </div>

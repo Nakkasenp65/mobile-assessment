@@ -3,6 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ConditionInfo } from "../types/device";
+import {
+  ConsignmentServiceInfo,
+  IPhoneExchangeServiceInfo,
+  PawnServiceInfo,
+  RefinanceServiceInfo,
+  SellNowServiceInfo,
+} from "../types/service";
 
 // Normalized shape returned by the hook
 export interface AssessmentData {
@@ -15,15 +22,11 @@ export interface AssessmentData {
     storage: string;
   };
   conditionInfo: ConditionInfo;
-  pawnServiceInfo?: {
-    customerName?: string;
-    locationType?: "home" | "bts" | "store";
-    btsLine?: string;
-    btsStation?: string;
-    appointmentDate?: string;
-    appointmentTime?: string;
-    phone?: string;
-  };
+  pawnServiceInfo?: PawnServiceInfo;
+  sellNowServiceInfo?: SellNowServiceInfo;
+  consignmentServiceInfo?: ConsignmentServiceInfo;
+  refinanceServiceInfo?: RefinanceServiceInfo;
+  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
   status?: "pending" | "completed" | "in-progress" | string;
   estimatedValue: number;
   assessmentDate?: string;
@@ -46,15 +49,11 @@ interface RawAssessmentRecord {
     storage: string;
   };
   conditionInfo: ConditionInfo;
-  pawnServiceInfo?: {
-    customerName?: string;
-    locationType?: "home" | "bts" | "store";
-    btsLine?: string;
-    btsStation?: string;
-    appointmentDate?: string;
-    appointmentTime?: string;
-    phone?: string;
-  };
+  pawnServiceInfo?: PawnServiceInfo;
+  sellNowServiceInfo?: SellNowServiceInfo;
+  consignmentServiceInfo?: ConsignmentServiceInfo;
+  refinanceServiceInfo?: RefinanceServiceInfo;
+  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
   status: "pending" | "completed" | "in-progress" | string;
   estimatedValue?: number;
   assessmentDate?: string;
