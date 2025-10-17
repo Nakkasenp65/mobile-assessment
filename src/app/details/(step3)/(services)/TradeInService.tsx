@@ -55,6 +55,7 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
     color: "",
     appointmentDate: "",
     appointmentTime: "",
+    phoneCondition: "", // Add this line
   });
 
   // ✨ 2. อัปเดต Type ของ value ให้รองรับ Date ได้
