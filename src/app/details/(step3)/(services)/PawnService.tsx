@@ -18,12 +18,8 @@ import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { PawnServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
-
-const btsMrtData = {
-  "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
-  "BTS - สายสีลม": ["สยาม", "ศาลาแดง", "ช่องนนทรี", "สุรศักดิ์", "สะพานตากสิน"],
-  "MRT - สายสีน้ำเงิน": ["สุขุมวิท", "เพชรบุรี", "พระราม 9", "ศูนย์วัฒนธรรมฯ", "สีลม"],
-};
+import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ Fetch BTS API
+import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge with static MRT/SRT
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
@@ -50,6 +46,9 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
     time: "",
     termsAccepted: false,
   });
+
+  const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
+  const merged = mergeTrainDataWithApi(btsData);
 
   const handleInputChange = (field: keyof typeof formState, value: string | Date | boolean | undefined) => {
     if (field === "phone") {
@@ -300,14 +299,14 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="bts-line-pawn">สายรถไฟ BTS/MRT</Label>
-                    <Select onValueChange={setSelectedBtsLine}>
+                    <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                       <SelectTrigger id="bts-line-pawn" className="w-full">
-                        <SelectValue placeholder="เลือกสายรถไฟ" />
+                        <SelectValue placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.keys(btsMrtData).map((line) => (
-                          <SelectItem key={line} value={line}>
-                            {line}
+                        {merged.lines.map((line) => (
+                          <SelectItem key={line.LineId} value={line.LineName_TH}>
+                            {line.LineName_TH}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -323,9 +322,9 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
                         <SelectValue placeholder="เลือกสถานี" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(btsMrtData[selectedBtsLine as keyof typeof btsMrtData] || []).map((station) => (
-                          <SelectItem key={station} value={station}>
-                            {station}
+                        {(merged.stationsByLine[selectedBtsLine] || []).map((station) => (
+                          <SelectItem key={station.StationId} value={station.StationNameTH}>
+                            {station.StationNameTH}
                           </SelectItem>
                         ))}
                       </SelectContent>

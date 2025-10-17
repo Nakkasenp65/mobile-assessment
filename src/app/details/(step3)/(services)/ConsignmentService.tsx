@@ -38,7 +38,12 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function ConsignmentService({ assessmentId, deviceInfo, consignmentPrice, onSuccess }: ConsignmentServiceProps) {
+export default function ConsignmentService({
+  assessmentId,
+  deviceInfo,
+  consignmentPrice,
+  onSuccess,
+}: ConsignmentServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",

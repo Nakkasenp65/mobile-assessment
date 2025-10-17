@@ -5,13 +5,17 @@ import {
   PawnServiceInfo,
   RefinanceServiceInfo,
   SellNowServiceInfo,
+  TradeInServiceInfo,
 } from "./service";
 
 export interface AssessmentRecord {
   id: string;
+  docId: string;
   phoneNumber: string;
-  customerName: string;
+  status: "completed" | "pending" | "in-progress";
+  estimatedValue: number;
   assessmentDate: string;
+  priceLockExpiresAt: string;
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   pawnServiceInfo?: PawnServiceInfo;
@@ -19,10 +23,9 @@ export interface AssessmentRecord {
   consignmentServiceInfo?: ConsignmentServiceInfo;
   refinanceServiceInfo?: RefinanceServiceInfo;
   iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
-  status: "completed" | "pending" | "in-progress";
-  estimatedValue: number;
-  priceLockExpiresAt: string;
-  nextSteps: string[];
+  tradeInServiceInfo?: TradeInServiceInfo;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // New payload structure for POST /assessments
@@ -48,6 +51,7 @@ export interface AssessmentCreatePayload {
   consignmentServiceInfo?: ConsignmentServiceInfo;
   refinanceServiceInfo?: RefinanceServiceInfo;
   iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
+  tradeInServiceInfo?: TradeInServiceInfo;
   status: "completed" | "pending" | "in-progress" | string;
   estimatedValue: number;
 }

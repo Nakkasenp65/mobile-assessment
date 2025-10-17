@@ -16,7 +16,7 @@ const HeroSection = () => {
       {/* Section - Hero */}
       <div className="relative container mx-auto flex w-full flex-col items-center gap-8">
         {/* Ad Image + CTA */}
-        <div className={"flex w-full flex-col md:flex-row md:items-center md:justify-between"}>
+        <div className={"flex w-full flex-col md:flex-row md:items-center md:justify-evenly"}>
           {/* Ad Image */}
           <HeroAdImages />
 

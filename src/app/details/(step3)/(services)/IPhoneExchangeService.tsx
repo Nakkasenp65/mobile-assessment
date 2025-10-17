@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { IPhoneExchangeServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
+import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -50,6 +51,7 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
   const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
   const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
+  const merged = mergeTrainDataWithApi(btsData);
 
   const [formState, setFormState] = useState({
     customerName: "",
@@ -345,7 +347,7 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {btsData?.lines.map((line) => (
+                        {merged.lines.map((line) => (
                           <SelectItem key={line.LineId} value={line.LineName_TH}>
                             {line.LineName_TH}
                           </SelectItem>
@@ -363,7 +365,7 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
                         <SelectValue placeholder="เลือกสถานี" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(btsData?.stationsByLine[selectedBtsLine] || []).map((station) => (
+                        {(merged.stationsByLine[selectedBtsLine] || []).map((station) => (
                           <SelectItem key={station.StationId} value={station.StationNameTH}>
                             {station.StationNameTH}
                           </SelectItem>

@@ -236,17 +236,37 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
 
         <AccordionContent className="flex flex-col gap-6 p-4">
           <div className="bg-white">
-            <div className="mb-3 flex items-center gap-2">
-              <Info className="h-5 w-5 text-slate-500" />
-              <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
-            </div>
-            <div className="space-y-2 border-t border-slate-100 pt-3">
-              {generalInfoKeys.map((key) => {
-                const value = allInfo[key as keyof typeof allInfo];
-                const label = optionsLabelMap[key]?.[String(value)] || value;
-                return <GeneralInfoItem key={key} itemKey={key} label={String(label)} />;
-              })}
-            </div>
+            {(() => {
+              const filteredGeneralInfoItems = generalInfoKeys
+                .filter((key) => {
+                  const value = allInfo[key as keyof typeof allInfo];
+                  if (key === "openedOrRepaired") {
+                    return value && value !== "repaired_no";
+                  }
+                  return !!value;
+                })
+                .map((key) => {
+                  const value = allInfo[key as keyof typeof allInfo];
+                  const label = optionsLabelMap[key]?.[String(value)] || value;
+                  return <GeneralInfoItem key={key} itemKey={key} label={String(label)} />;
+                });
+
+              if (filteredGeneralInfoItems.length === 0) {
+                return null;
+              }
+
+              return (
+                <>
+                  <div className="mb-3 flex items-center gap-2">
+                    <Info className="h-5 w-5 text-slate-500" />
+                    <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
+                  </div>
+                  <div className="space-y-2 border-t border-slate-100 pt-3">
+                    {filteredGeneralInfoItems}
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className={`flex flex-col gap-4 border-t pt-4 lg:border-b lg:pb-4`}>
             <div className="grid grid-cols-2 gap-3">

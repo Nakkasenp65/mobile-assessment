@@ -17,7 +17,6 @@ interface PrintableAssessmentProps {
   assessment: AssessmentRecord;
 }
 
-// --- Helper Components ---
 const SectionHeader = ({ title }: { title: string }) => (
   <h2 className="mb-2 rounded border-l-3 border-orange-500 bg-orange-50 px-3 py-1.5 text-sm font-bold text-orange-700">
     {title}
@@ -227,10 +226,10 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
     <div
       ref={ref}
       className="flex min-h-[297mm] w-[210mm] flex-col bg-white p-6 text-gray-800"
-      style={{ fontFamily: '"Sarabun", "LINESeedSansTH", sans-serif' }}
+      style={{ fontFamily: '"LINESeedSansTH", sans-serif' }}
     >
       {/* Header */}
-      <header className="mb-3 border-b-2 border-orange-500 pb-3">
+      <header className="mb-3">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold text-orange-600">NO.1 Money</h1>
@@ -239,7 +238,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           <div className="text-right">
             <div className="inline-block bg-white">
               {qrError || !qrValue ? (
-                <div className="flex h-12 w-12 items-center justify-center bg-gray-100 text-[10px] text-gray-500">
+                <div className="flex h-16 w-16 items-center justify-center bg-gray-100 text-[10px] text-gray-500">
                   QR N/A
                 </div>
               ) : (
@@ -250,13 +249,6 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           </div>
         </div>
       </header>
-
-      {/* Status Badge */}
-      <div className="mb-3 flex justify-center">
-        <div className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-          ✅ การประเมินราคาสำเร็จ
-        </div>
-      </div>
 
       {/* Main Content - Compact Layout */}
       <main className="flex-1 space-y-4">
@@ -276,7 +268,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
               <DetailRow
                 label="วันนัดหมาย"
                 value={
-                  <div>
+                  <div className="flex gap-1">
                     <div>{activeService.appointmentDate}</div>
                     <div className="text-pink-600">{activeService.appointmentTime}</div>
                   </div>
@@ -292,7 +284,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
               <DetailRow label="อุปกรณ์" value={deviceName} />
               <DetailRow label="สถานะประกัน" value={getWarrantyText(assessment.conditionInfo?.warranty || "")} />
               <DetailRow
-                label="ประวัติการซ่อม"
+                label="ประวัตการซ่อม"
                 value={getRepairText(assessment.conditionInfo?.openedOrRepaired || "")}
               />
               <DetailRow
@@ -306,12 +298,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         {/* Price Summary */}
         <section>
           <SectionHeader title="💰 สรุปราคา" />
-          <div className="rounded border-2 border-pink-300 bg-pink-50 p-3 text-center">
+          <div className="rounded border-1 border-pink-300 bg-pink-50 p-2 text-center">
             <p className="mb-1 text-xs text-gray-600">ราคาประเมินสูงสุด</p>
             <p className="text-2xl font-bold text-pink-600">{finalPrice.toLocaleString("th-TH")} บาท</p>
-            <p className="mt-1 text-[10px] text-gray-500">
-              ราคานี้เป็นราคาประเมินเบื้องต้น ราคาสุดท้ายอาจเปลี่ยนแปลงหลังตรวจสอบสภาพเครื่องจริง
-            </p>
           </div>
         </section>
 
@@ -342,40 +331,29 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         </section>
 
         {/* Next Steps */}
-        <section>
-          <SectionHeader title="📝 ขั้นตอนต่อไป" />
-          <div className="space-y-2 text-xs text-gray-700">
-            {assessment.nextSteps?.map((step, index) => (
-              <div key={index} className="flex items-start space-x-2">
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
-                  {index + 1}
-                </span>
-                <span>{step}</span>
-              </div>
-            )) || (
-              <>
-                <div className="flex items-start space-x-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
-                    1
+        <div className="mb-12">
+          <h2 className="mb-4 text-2xl font-bold text-gray-900">ขั้นตอนต่อไป</h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            {(() => {
+              const currentNextSteps =
+                assessment.sellNowServiceInfo?.nextSteps ||
+                assessment.tradeInServiceInfo?.nextSteps ||
+                assessment.consignmentServiceInfo?.nextSteps ||
+                assessment.refinanceServiceInfo?.nextSteps ||
+                assessment.iphoneExchangeServiceInfo?.nextSteps ||
+                assessment.pawnServiceInfo?.nextSteps;
+
+              return currentNextSteps?.map((step, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                    {index + 1}
                   </span>
-                  <span>เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม</span>
+                  <span>{step}</span>
                 </div>
-                <div className="flex items-start space-x-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
-                    2
-                  </span>
-                  <span>ไปพบทีมงานตามวัน-เวลานัด และสถานที่ที่เลือก</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
-                    3
-                  </span>
-                  <span>ชำระเงินและรับเอกสารการทำรายการ</span>
-                </div>
-              </>
-            )}
+              ));
+            })()}
           </div>
-        </section>
+        </div>
 
         {/* Important Notes */}
         <section>
@@ -413,22 +391,6 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
             margin: 0;
             padding: 0;
           }
-        }
-        @font-face {
-          font-family: "Sarabun";
-          src:
-            local("Sarabun"),
-            url("/fonts/Sarabun-Regular.ttf") format("truetype");
-          font-weight: 400;
-          font-style: normal;
-        }
-        @font-face {
-          font-family: "Sarabun";
-          src:
-            local("Sarabun"),
-            url("/fonts/Sarabun-Bold.ttf") format("truetype");
-          font-weight: 700;
-          font-style: normal;
         }
         @font-face {
           font-family: "LINESeedSansTH";

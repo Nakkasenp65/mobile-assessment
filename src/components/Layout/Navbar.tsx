@@ -43,7 +43,7 @@ const MobileMenu = ({
     { href: "/", label: "หน้าแรก", icon: Home },
     {
       href: "/my-assessments",
-      label: "ค้นหาการประเมิน",
+      label: "การประเมินของฉัน",
       icon: Search,
     },
     {
@@ -275,7 +275,7 @@ const Navbar = () => {
 
   const navItems = [
     { href: "/", label: "หน้าแรก" },
-    { href: "/my-assessments", label: "ค้นหาการประเมิน" },
+    { href: "/my-assessments", label: "การประเมินของฉัน" },
     { href: "/assess", label: "ประเมินราคา" },
   ];
 

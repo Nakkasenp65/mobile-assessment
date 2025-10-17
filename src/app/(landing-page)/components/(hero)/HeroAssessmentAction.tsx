@@ -11,7 +11,7 @@ import HeroAssessmentForm from "./HeroAssessmentForm";
 
 export default function HeroAssessmentAction() {
   return (
-    <div className="flex h-full w-full flex-col justify-between gap-8 md:w-[45%] lg:w-[40%] xl:w-[45%]">
+    <div className="flex h-full w-full flex-col justify-between gap-8 md:w-[45%] lg:w-[40%] xl:w-[30%]">
       {/* Form */}
       <HeroAssessmentForm />
       {/* Process Steps Section */}

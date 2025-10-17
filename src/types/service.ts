@@ -27,6 +27,7 @@ export interface SellNowServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+  nextSteps?: string[];
 }
 
 /**
@@ -50,6 +51,7 @@ export interface TradeInServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+  nextSteps?: string[];
 }
 
 /**
@@ -66,6 +68,7 @@ export interface ConsignmentServiceInfo {
   // วันและเวลาส่งมอบเครื่อง (ปรับชื่อให้เป็นมาตรฐาน)
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+  nextSteps?: string[];
 }
 
 /**
@@ -82,6 +85,7 @@ export interface RefinanceServiceInfo {
   // วันและเวลานัดหมาย (เพิ่มเข้ามา)
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+  nextSteps?: string[];
 }
 
 /**
@@ -107,6 +111,7 @@ export interface IPhoneExchangeServiceInfo {
   // ข้อมูลอาชีพและเอกสาร
   occupation: "salaried" | "freelance" | "";
   documentFile: File | null; // เช่นเดียวกัน ควรเปลี่ยนเป็น URL ของไฟล์
+  nextSteps?: string[];
 }
 
 /**
@@ -134,6 +139,8 @@ export interface PawnServiceInfo {
   // วันและเวลานัดหมาย (ปรับชื่อให้เป็นมาตรฐาน)
   appointmentDate: string;
   appointmentTime: string;
+
+  nextSteps?: string[];
 }
 
 /**
@@ -150,6 +157,7 @@ export interface IcloudServiceInfo {
   // วันและเวลานัดหมาย (เพิ่มเข้ามา)
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+  nextSteps?: string[];
 }
 
 /**

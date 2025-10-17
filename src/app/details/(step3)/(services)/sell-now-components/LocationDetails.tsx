@@ -11,6 +11,7 @@ import type { LongdoAddressData } from "../../LongdoAddressForm";
 import type { LatLng } from "leaflet";
 import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 1. Import Hook ใหม่
 import { Button } from "@/components/ui/button";
+import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
   ssr: false,
@@ -65,6 +66,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
 }) => {
   // ✨ 3. เรียกใช้ Hook เพื่อดึงข้อมูล BTS
   const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
+  const merged = mergeTrainDataWithApi(btsData);
 
   return (
     <AnimatePresence mode="wait">
@@ -111,7 +113,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
             <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="bts-line-sell">สายรถไฟ</Label>
-                {/* ✨ 4. ใช้ข้อมูลจาก API มาแสดงใน Select */}
+                {/* ✨ 4. ใช้ข้อมูลจาก API+Static มาแสดงใน Select */}
                 <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                   <SelectTrigger id="bts-line-sell" className="w-full">
                     <SelectValue
@@ -119,7 +121,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {btsData?.lines.map((line) => (
+                    {merged.lines.map((line) => (
                       <SelectItem key={line.LineId} value={line.LineName_TH}>
                         {line.LineName_TH}
                       </SelectItem>
@@ -134,8 +136,8 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                     <SelectValue placeholder="เลือกสถานี" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* ✨ 5. ใช้ข้อมูลสถานีจาก API ตามสายที่เลือก */}
-                    {(btsData?.stationsByLine[selectedBtsLine] || []).map((station) => (
+                    {/* ✨ 5. ใช้ข้อมูลสถานีจากชุดรวมตามสายที่เลือก */}
+                    {(merged.stationsByLine[selectedBtsLine] || []).map((station) => (
                       <SelectItem key={station.StationId} value={station.StationNameTH}>
                         {station.StationNameTH}
                       </SelectItem>

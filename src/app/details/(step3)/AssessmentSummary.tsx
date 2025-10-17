@@ -6,7 +6,6 @@ import { ImageOff, XCircle, CardSim } from "lucide-react"; // ✨ [ADD] Import X
 import AssessmentLedger from "./AssessmentLedger";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../types/device";
-import { AssessmentRecord } from "../../../types/assessment";
 import { PriceLockCountdown } from "../../../components/ui/PriceLockCountdown";
 import Image from "next/image";
 
@@ -14,7 +13,6 @@ interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   docId?: string;
-  mockRecords: AssessmentRecord;
   isImageLoading: boolean;
   mobileData: { image_url?: string } | null | undefined;
   grade: string;
@@ -31,7 +29,6 @@ const AssessmentSummary = ({
   docId = "AS-202510-0001",
   deviceInfo,
   conditionInfo,
-  mockRecords,
   isImageLoading,
   mobileData,
   grade,
@@ -61,7 +58,7 @@ const AssessmentSummary = ({
         <div className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             {/* Left: Device Info */}
-            <div className="flex flex-1 items-start gap-4">
+            <div className="flex flex-1 items-center gap-4">
               {/* Device Image */}
               <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200/50 shadow-sm dark:from-zinc-800 dark:to-zinc-700/50">
                 <AnimatePresence mode="wait">
@@ -95,7 +92,7 @@ const AssessmentSummary = ({
 
               {/* Device Details */}
               <div className="flex flex-col gap-2">
-                <h3 className="text-foreground text-lg leading-tight font-bold sm:text-xl">
+                <h3 className="text-foreground text-md leading-tight font-bold sm:text-xl">
                   {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
                 </h3>
                 {deviceInfo.storage && (
@@ -118,9 +115,9 @@ const AssessmentSummary = ({
                   damping: 15,
                   delay: 0.2,
                 }}
-                className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm dark:from-green-900/20 dark:to-emerald-900/20"
+                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm sm:h-20 sm:w-20 dark:from-green-900/20 dark:to-emerald-900/20"
               >
-                <span className="text-5xl font-black text-green-600 dark:text-green-400">{grade}</span>
+                <span className="text-3xl font-black text-green-600 sm:text-5xl dark:text-green-400">{grade}</span>
               </motion.div>
             )}
           </div>

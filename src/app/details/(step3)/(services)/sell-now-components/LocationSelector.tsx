@@ -22,7 +22,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   return (
     <motion.div variants={formVariants} className="flex flex-col gap-4">
       <Label className="block text-lg font-semibold">เลือกสถานที่รับซื้อ</Label>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2">
         {/* Home option */}
         <motion.button
           type="button"
@@ -32,13 +32,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
           aria-pressed={locationType === "home"}
           className={cn(
-            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            "flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-xs font-medium",
             locationType === "home"
               ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
               : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
           )}
         >
-          <Home className="h-6 w-6" />
+          <Home className="h-5 w-5" />
           <span className="font-semibold">รับซื้อถึงบ้าน</span>
         </motion.button>
 
@@ -51,13 +51,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
           aria-pressed={locationType === "bts"}
           className={cn(
-            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            "flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-xs font-medium",
             locationType === "bts"
               ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
               : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
           )}
         >
-          <Train className="h-6 w-6" />
+          <Train className="h-5 w-5" />
           <span className="font-semibold">BTS/MRT</span>
         </motion.button>
 
@@ -70,13 +70,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
           aria-pressed={locationType === "store"}
           className={cn(
-            "flex h-24 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-sm font-medium",
+            "flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center text-xs font-medium",
             locationType === "store"
               ? "bg-primary text-primary-foreground shadow-primary/30 border-transparent shadow-lg"
               : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50",
           )}
         >
-          <Store className="h-6 w-6" />
+          <Store className="h-5 w-5" />
           <span className="font-semibold">รับซื้อที่ร้าน</span>
         </motion.button>
       </div>

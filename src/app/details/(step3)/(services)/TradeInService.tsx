@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone } from "lucide-react";
+import { User, Phone, RefreshCcw, Sparkles } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 // DateSelect is now handled inside DateTimeSelect
 import { useRouter } from "next/navigation";
@@ -192,12 +192,57 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
         }}
         className="space-y-6"
       >
-        <motion.div variants={formVariants} className="space-y-4">
-          <Label className="block text-lg font-semibold">1. เลือกเครื่องใหม่ที่ต้องการ</Label>
-          <div className="space-y-2">
+        <motion.div variants={formVariants} className="space-y-6">
+          {/* sparkle icon + bigger title */}
+          <div className="flex w-full items-center justify-center gap-3">
+            <Label className="text-lg font-bold text-black">เลือกเครื่องใหม่ที่ใช่สำหรับคุณ</Label>
+          </div>
+
+          {/* 2. เลือกเครื่องมือ 1 มือ 2 */}
+          <div className="space-y-3">
+            <Label>สภาพเครื่องที่คุณต้องการ</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                onClick={() => handleInputChange("phoneCondition", "first_hand")}
+                className={`h-14 rounded-xl border text-base font-semibold ${
+                  formState.phoneCondition === "first_hand"
+                    ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  มือหนึ่ง (เครื่องใหม่)
+                </div>
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                onClick={() => handleInputChange("phoneCondition", "second_hand")}
+                className={`h-14 rounded-xl border text-base font-semibold ${
+                  formState.phoneCondition === "second_hand"
+                    ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <RefreshCcw className="h-5 w-5" />
+                  มือสอง (สภาพดี)
+                </div>
+              </motion.button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
             <Label htmlFor="newDevice-tradein">รุ่นเครื่อง</Label>
             <Select value={formState.newDevice} onValueChange={(value) => handleInputChange("newDevice", value)}>
-              <SelectTrigger id="newDevice-tradein" className="h-12 w-full">
+              <SelectTrigger id="newDevice-tradein" className="h-14 w-full">
                 <SelectValue placeholder="เลือกเครื่องที่ต้องการ" />
               </SelectTrigger>
               <SelectContent>
@@ -212,11 +257,13 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
               </SelectContent>
             </Select>
           </div>
+
+          {/* 1. เลือกความจุและสีของเครื่องใหม่ */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="storage-tradein">ความจุ</Label>
               <Select value={formState.storage} onValueChange={(value) => handleInputChange("storage", value)}>
-                <SelectTrigger id="storage-tradein" className="h-12 w-full">
+                <SelectTrigger id="storage-tradein" className="h-14 w-full">
                   <SelectValue placeholder="เลือกความจุ" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,10 +275,10 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="color-tradein">สี</Label>
               <Select value={formState.color} onValueChange={(value) => handleInputChange("color", value)}>
-                <SelectTrigger id="color-tradein" className="h-12 w-full">
+                <SelectTrigger id="color-tradein" className="h-14 w-full">
                   <SelectValue placeholder="เลือกสี" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,26 +291,10 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
               </Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneCondition-tradein">เงื่อนไขเครื่องที่ต้องการ</Label>
-            <Select
-              value={formState.phoneCondition}
-              onValueChange={(value) => handleInputChange("phoneCondition", value)}
-            >
-              <SelectTrigger id="phoneCondition-tradein" className="h-12 w-full">
-                <SelectValue placeholder="เลือกเงื่อนไขเครื่อง" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="first_hand">มือหนึ่ง (เครื่องใหม่)</SelectItem>
-                <SelectItem value="second_hand">มือสอง (สภาพดี)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-muted-foreground text-xs">เลือกสภาพเครื่องใหม่ที่คุณต้องการ</p>
-          </div>
         </motion.div>
 
         <motion.div variants={formVariants} className="space-y-4">
-          <Label className="block text-lg font-semibold">2. กรอกข้อมูลส่วนตัว</Label>
+          <Label className="block text-lg font-semibold">กรอกข้อมูลส่วนตัว</Label>
           <div className="space-y-2">
             <Label htmlFor="customerName-tradein">ชื่อ-นามสกุล</Label>
             <div className="relative">
@@ -297,7 +328,7 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
         </motion.div>
 
         <motion.div variants={formVariants} className="space-y-4">
-          <Label className="block text-lg font-semibold">3. เลือกสาขาและเวลานัดรับเครื่อง</Label>
+          <Label className="block text-lg font-semibold">เลือกสาขาและเวลานัดรับเครื่อง</Label>
           <div className="space-y-2">
             <Label htmlFor="store-branch-tradein">สาขา</Label>
             <Select

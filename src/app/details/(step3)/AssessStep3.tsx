@@ -21,56 +21,6 @@ const getExpiryDate = (days: number): string => {
   return date.toISOString();
 };
 
-const mockRecords: AssessmentRecord = {
-  id: "ASS-2568-0001",
-  phoneNumber: "0812345678",
-  customerName: "นางสาวสายฟ้า สมสุข",
-  assessmentDate: "25 กันยายน 2568",
-  deviceInfo: {
-    brand: "Apple",
-    model: "iPhone 15 Pro",
-    storage: "256GB",
-  },
-  conditionInfo: {
-    modelType: "model_th",
-    warranty: "warranty_active_long",
-    accessories: "acc_full",
-    bodyCondition: "body_mint",
-    screenGlass: "glass_ok",
-    screenDisplay: "display_ok",
-    batteryHealth: "battery_health_high",
-    camera: "camera_ok",
-    wifi: "wifi_ok",
-    faceId: "biometric_ok",
-    speaker: "speaker_ok",
-    mic: "mic_ok",
-    touchScreen: "touchscreen_ok",
-    charger: "charger_failed",
-    call: "call_ok",
-    homeButton: "home_button_ok",
-    sensor: "sensor_ok",
-    buttons: "buttons_ok",
-    canUnlockIcloud: true,
-  },
-  pawnServiceInfo: {
-    customerName: "นางสาวสายฟ้า สมสุข",
-    locationType: "bts",
-    btsLine: "BTS - สายสุขุมวิท",
-    btsStation: "สยาม",
-    appointmentDate: "27 กันยายน 2568",
-    appointmentTime: "13:00 - 17:00",
-    phone: "0812345678",
-  },
-  status: "completed",
-  estimatedValue: 28500,
-  priceLockExpiresAt: getExpiryDate(3),
-  nextSteps: [
-    "เตรียมบัตรประชาชนและอุปกรณ์ให้พร้อม",
-    "ไปพบทีมงานตามวัน-เวลานัด และสถานีที่เลือก",
-    "ชำระเงินและรับเอกสารการทำรายการ",
-  ],
-};
-
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
@@ -137,16 +87,15 @@ export default function AssessStep3({
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-4 sm:gap-8">
+    <div className="grid w-full gap-4 pb-24 sm:gap-8">
       <div className="flex w-full flex-col items-center justify-center gap-2">
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:gap-3")}>
+      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
-          mockRecords={mockRecords}
           isImageLoading={isImageLoading}
           mobileData={mobileData}
           grade={grade}
@@ -161,7 +110,7 @@ export default function AssessStep3({
         />
 
         {!isIcloudLocked && (
-          <div ref={servicesRef} id="services-section" className="sticky top-0 flex h-fit flex-col">
+          <div ref={servicesRef} id="services-section" className="lg:sticky lg:top-0">
             <Services
               selectedService={localSelectedService}
               setSelectedService={setLocalSelectedService}

@@ -240,7 +240,7 @@ export default function Services({
   }, [selectedService]);
 
   return (
-    <div className="flex w-full flex-1 flex-col">
+    <div className="w-full">
       <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">เลือกบริการที่ต้องการ</h2>
       <div className="flex w-full flex-col gap-4">
         {services.map((service) => {

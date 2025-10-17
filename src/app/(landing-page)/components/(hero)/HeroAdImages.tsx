@@ -34,12 +34,17 @@ export default function HeroAdImages() {
 
   return (
     // Responsive sizing: Mobile full width, md: slightly larger than 1/2, lg: balanced with form
-    <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[50%]">
+    <div className="relative w-full md:w-[50%] lg:w-[55%] xl:w-[40%]">
       {/* Background Blob - adjusted for better proportion */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <Image src={"/assets/element.webp"} alt="decoration element" width={2000} height={2000} className="scale-90" />
+        <Image
+          src={"/assets/element.webp"}
+          alt="decoration element"
+          width={2000}
+          height={2000}
+          className="scale-90 drop-shadow-[0_0_80px_rgba(255,192,203,0.7)]"
+        />
       </div>
-
       {/* Swiper Component with consistent aspect ratio */}
       <div className="aspect-square w-full">
         <Swiper

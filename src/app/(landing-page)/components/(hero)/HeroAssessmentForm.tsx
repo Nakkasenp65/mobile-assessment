@@ -126,7 +126,7 @@ export default function HeroAssessmentForm() {
         </h3>
         <AnimatePresence mode="wait">
           <Select key={"select-brand"} onValueChange={handleBrandChange} value={selectedBrand}>
-            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
               <SelectValue placeholder="เลือกยี่ห้อ" />
             </SelectTrigger>
             <SelectContent>
@@ -147,7 +147,7 @@ export default function HeroAssessmentForm() {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <Select onValueChange={handleProductTypeChange} value={selectedProductType} disabled={!selectedBrand}>
-                <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+                <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
                   <SelectValue placeholder="เลือกประเภทสินค้า" />
                 </SelectTrigger>
                 <SelectContent>
@@ -163,7 +163,7 @@ export default function HeroAssessmentForm() {
 
           <div className="flex flex-col gap-2.5 md:gap-3 lg:gap-4" key={"form-model-storage"}>
             <Select onValueChange={handleModelChange} value={selectedModel} disabled={availableModels.length === 0}>
-              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
                 <SelectValue placeholder="เลือกรุ่น" />
               </SelectTrigger>
               <SelectContent>
@@ -176,7 +176,7 @@ export default function HeroAssessmentForm() {
             </Select>
 
             <Select onValueChange={setSelectedStorage} value={selectedStorage} disabled={!selectedModel}>
-              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:h-12 lg:text-base">
+              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
                 <SelectValue placeholder="เลือกความจุ" />
               </SelectTrigger>
               <SelectContent>
@@ -242,7 +242,7 @@ export default function HeroAssessmentForm() {
           size="lg"
           onClick={handleShowConsent}
           disabled={isNextButtonDisabled()}
-          className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg duration-300 ease-in-out hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:h-12 lg:text-lg"
+          className="text-primary-foreground mt-1 h-10 w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-sm font-semibold shadow-lg duration-300 ease-in-out hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50 md:h-11 md:text-base lg:text-lg"
         >
           ประเมินราคา
         </Button>
