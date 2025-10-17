@@ -46,7 +46,6 @@ const LongdoAddressForm = ({ onAddressChange, initialData }: LongdoAddressFormPr
             },
           });
           isFormInitialized.current = true;
-          console.log("✅ Longdo Address Form Initialized.");
         } catch (error) {
           console.error("❌ Longdo Address Form initialization failed:", error);
         }

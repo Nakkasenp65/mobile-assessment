@@ -10,17 +10,19 @@ import ConsignmentService from "../(step3)/(services)/ConsignmentService";
 import RefinanceService from "../(step3)/(services)/RefinanceService";
 import IPhoneExchangeService from "../(step3)/(services)/IPhoneExchangeService";
 import PawnService from "../(step3)/(services)/PawnService";
-import FramerButton from "../../../../components/ui/framer/FramerButton";
+import FramerButton from "../../../components/ui/framer/FramerButton";
 import { ArrowLeft } from "lucide-react";
 
 interface AssessStep4Props {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   selectedService: string;
   onBack: () => void;
+  onSuccess?: () => void;
 }
 
-const AssessStep4 = ({ deviceInfo, conditionInfo, selectedService, onBack }: AssessStep4Props) => {
+const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService, onBack, onSuccess }: AssessStep4Props) => {
   const { finalPrice } = usePriceCalculation(deviceInfo, conditionInfo);
 
   // คำนวณราคาสำหรับแต่ละบริการ (อาจจะต้องปรับ logic ตามจริง)
@@ -38,17 +40,59 @@ const AssessStep4 = ({ deviceInfo, conditionInfo, selectedService, onBack }: Ass
 
     switch (selectedService) {
       case "sell":
-        return <SellNowService deviceInfo={deviceInfo} sellPrice={servicePrice} />;
+        return (
+          <SellNowService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            sellPrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       case "tradein":
-        return <TradeInService deviceInfo={deviceInfo} tradeInPrice={servicePrice} />;
+        return (
+          <TradeInService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            tradeInPrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       case "consignment":
-        return <ConsignmentService deviceInfo={deviceInfo} consignmentPrice={servicePrice} />;
+        return (
+          <ConsignmentService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            consignmentPrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       case "refinance":
-        return <RefinanceService deviceInfo={deviceInfo} refinancePrice={servicePrice} />;
+        return (
+          <RefinanceService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            refinancePrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       case "iphone-exchange":
-        return <IPhoneExchangeService deviceInfo={deviceInfo} exchangePrice={servicePrice} />;
+        return (
+          <IPhoneExchangeService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            exchangePrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       case "pawn":
-        return <PawnService deviceInfo={deviceInfo} pawnPrice={servicePrice} />;
+        return (
+          <PawnService
+            assessmentId={assessmentId}
+            deviceInfo={deviceInfo}
+            pawnPrice={servicePrice}
+            onSuccess={onSuccess}
+          />
+        );
       default:
         return <div className="text-muted-foreground text-center">ขออภัย, ไม่พบฟอร์มสำหรับบริการที่เลือก</div>;
     }

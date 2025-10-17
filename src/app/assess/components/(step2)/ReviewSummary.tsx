@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
-import AssessmentLedger from "../(step3)/AssessmentLedger";
+import AssessmentLedger from "../../../details/(step3)/AssessmentLedger";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import {
   Dialog,

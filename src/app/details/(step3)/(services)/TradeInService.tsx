@@ -8,15 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 // DateSelect is now handled inside DateTimeSelect
 import { useRouter } from "next/navigation";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { TradeInServiceInfo } from "@/types/service";
+import Swal from "sweetalert2";
 
 interface TradeInServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   tradeInPrice: number;
+  onSuccess?: () => void;
 }
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
@@ -39,7 +44,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function TradeInService({ deviceInfo, tradeInPrice }: TradeInServiceProps) {
+export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice, onSuccess }: TradeInServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
@@ -92,6 +97,34 @@ export default function TradeInService({ deviceInfo, tradeInPrice }: TradeInServ
   useEffect(() => {
     scrollTo(0, 0);
   }, []);
+
+  const updateAssessment = useUpdateAssessment(assessmentId);
+
+  const handleConfirmTradeIn = () => {
+    const payload: TradeInServiceInfo = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      storeLocation: formState.storeLocation,
+      newDevice: formState.newDevice,
+      storage: formState.storage,
+      color: formState.color,
+      appointmentDate: String(formState.appointmentDate),
+      appointmentTime: String(formState.appointmentTime),
+    };
+
+    updateAssessment.mutate(
+      { tradeInServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
+  };
 
   return (
     <main className="w-full space-y-6">
@@ -293,11 +326,11 @@ export default function TradeInService({ deviceInfo, tradeInPrice }: TradeInServ
       >
         <FramerButton
           size="lg"
-          disabled={!isFormComplete}
+          disabled={!isFormComplete || updateAssessment.isPending}
           className="h-14 w-full"
-          onClick={() => router.push("/confirmed/1")}
+          onClick={handleConfirmTradeIn}
         >
-          ยืนยันการแลกเปลี่ยนเครื่อง
+          {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการแลกเปลี่ยนเครื่อง"}
         </FramerButton>
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
           การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ

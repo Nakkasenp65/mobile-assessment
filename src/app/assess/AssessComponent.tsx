@@ -101,7 +101,7 @@ export default function AssessComponent() {
         window.localStorage.setItem(`assessment:${id}`, JSON.stringify(payload));
       }
     } catch {}
-    router.push(`/my-assessment-details/${encodeURIComponent(id)}`);
+    router.push(`/details/${encodeURIComponent(id)}`);
   };
 
   const handleBack = () => {

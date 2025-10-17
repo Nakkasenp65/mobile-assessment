@@ -10,17 +10,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateSelect } from "@/components/ui/date-select";
 import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useBtsStations } from "@/hooks/useBtsStations";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { IPhoneExchangeServiceInfo } from "@/types/service";
+import Swal from "sweetalert2";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   exchangePrice: number;
+  onSuccess?: () => void;
 }
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
@@ -39,7 +44,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPhoneExchangeServiceProps) {
+export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchangePrice, onSuccess }: IPhoneExchangeServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
@@ -141,6 +146,38 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
   useEffect(() => {
     scrollTo(0, 0);
   }, []);
+
+  const updateAssessment = useUpdateAssessment(assessmentId);
+
+  const handleConfirmExchange = () => {
+    const base = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      locationType: (locationType as "store" | "bts") ?? "store",
+      appointmentDate: String(formState.date),
+      appointmentTime: String(formState.time),
+      occupation: formState.occupation as "salaried" | "freelance" | "",
+      documentFile: formState.documentFile,
+    };
+
+    const payload: IPhoneExchangeServiceInfo =
+      locationType === "bts"
+        ? { ...base, btsStation: formState.btsStation }
+        : { ...base, storeLocation: formState.storeLocation };
+
+    updateAssessment.mutate(
+      { iphoneExchangeServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
+  };
 
   return (
     <main className="w-full space-y-6">
@@ -318,7 +355,10 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bts-station-exchange">ระบุสถานี</Label>
-                    <Select disabled={!selectedBtsLine} onValueChange={(value) => handleInputChange("btsStation", value)}>
+                    <Select
+                      disabled={!selectedBtsLine}
+                      onValueChange={(value) => handleInputChange("btsStation", value)}
+                    >
                       <SelectTrigger id="bts-station-exchange" className="w-full">
                         <SelectValue placeholder="เลือกสถานี" />
                       </SelectTrigger>
@@ -467,11 +507,11 @@ export default function IPhoneExchangeService({ deviceInfo, exchangePrice }: IPh
         >
           <FramerButton
             size="lg"
-            disabled={!isFormComplete}
+            disabled={!isFormComplete || updateAssessment.isPending}
             className="h-14 w-full"
-            onClick={() => router.push("/confirmed/1")}
+            onClick={handleConfirmExchange}
           >
-            ยืนยันและนัดหมาย
+            {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันและนัดหมาย"}
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
             การคลิก &quot;ยืนยันและนัดหมาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}

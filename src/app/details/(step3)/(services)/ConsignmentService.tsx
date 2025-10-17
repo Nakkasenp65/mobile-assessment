@@ -9,16 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
 import { Textarea } from "@/components/ui/textarea";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { User, Phone } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
 import { useRouter } from "next/navigation";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { ConsignmentServiceInfo } from "@/types/service";
+import Swal from "sweetalert2";
 
 // Interface for Component Props
 interface ConsignmentServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   consignmentPrice: number;
+  onSuccess?: () => void;
 }
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
@@ -33,7 +38,7 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function ConsignmentService({ deviceInfo, consignmentPrice }: ConsignmentServiceProps) {
+export default function ConsignmentService({ assessmentId, deviceInfo, consignmentPrice, onSuccess }: ConsignmentServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
@@ -74,6 +79,32 @@ export default function ConsignmentService({ deviceInfo, consignmentPrice }: Con
   useEffect(() => {
     scrollTo(0, 0);
   }, []);
+
+  const updateAssessment = useUpdateAssessment(assessmentId);
+
+  const handleConfirmConsignment = () => {
+    const payload: ConsignmentServiceInfo = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      storeLocation: formState.storeLocation,
+      additionalNotes: formState.additionalNotes,
+      appointmentDate: String(formState.dropoffDate),
+      appointmentTime: String(formState.dropoffTime),
+    };
+
+    updateAssessment.mutate(
+      { consignmentServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
+  };
 
   return (
     <main className="w-full space-y-6">
@@ -242,11 +273,11 @@ export default function ConsignmentService({ deviceInfo, consignmentPrice }: Con
         >
           <FramerButton
             size="lg"
-            disabled={!isFormComplete}
+            disabled={!isFormComplete || updateAssessment.isPending}
             className="h-14 w-full"
-            onClick={() => router.push("/confirmed/1")}
+            onClick={handleConfirmConsignment}
           >
-            ยืนยันการฝากขาย
+            {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการฝากขาย"}
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
             การคลิก &quot;ยืนยันการฝากขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}

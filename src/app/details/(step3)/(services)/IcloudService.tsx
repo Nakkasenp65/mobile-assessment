@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { AlertTriangle, Lock, Mail, User, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";

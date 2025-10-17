@@ -29,7 +29,6 @@ const LongdoScriptLoader = () => {
           src="https://api.longdo.com/address-form/js/addressform.js"
           strategy="afterInteractive"
           onLoad={() => {
-            console.log("✅ Longdo Address Form script loaded successfully.");
             // [แก้ไข] สร้าง Event ใหม่ที่เฉพาะเจาะจงกว่าเดิม เมื่อทุกอย่างพร้อมจริงๆ
             // เพื่อให้ Component ที่รอใช้งาน (LongdoAddressForm.tsx) ทำงานได้อย่างแม่นยำ
             window.dispatchEvent(new Event("longdo-all-scripts-ready"));

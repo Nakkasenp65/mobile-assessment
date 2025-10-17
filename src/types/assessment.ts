@@ -44,6 +44,10 @@ export interface AssessmentCreatePayload {
   };
   conditionInfo: ConditionInfo;
   pawnServiceInfo?: PawnServiceInfo;
+  sellNowServiceInfo?: SellNowServiceInfo;
+  consignmentServiceInfo?: ConsignmentServiceInfo;
+  refinanceServiceInfo?: RefinanceServiceInfo;
+  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
   status: "completed" | "pending" | "in-progress" | string;
   estimatedValue: number;
 }

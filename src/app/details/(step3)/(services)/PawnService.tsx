@@ -10,11 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { Store, User, Phone, Home, Train, Check } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { PawnServiceInfo } from "@/types/service";
+import Swal from "sweetalert2";
 
 const btsMrtData = {
   "BTS - สายสุขุมวิท": ["สยาม", "ชิดลม", "เพลินจิต", "นานา", "อโศก", "พร้อมพงษ์"],
@@ -25,11 +28,13 @@ const btsMrtData = {
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 interface PawnServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   pawnPrice: number;
+  onSuccess?: () => void;
 }
 
-export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps) {
+export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuccess }: PawnServiceProps) {
   const router = useRouter();
   const [locationType, setLocationType] = useState<"home" | "bts" | "store">("home");
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
@@ -46,10 +51,7 @@ export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps)
     termsAccepted: false,
   });
 
-  const handleInputChange = (
-    field: keyof typeof formState,
-    value: string | Date | boolean | undefined
-  ) => {
+  const handleInputChange = (field: keyof typeof formState, value: string | Date | boolean | undefined) => {
     if (field === "phone") {
       const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
@@ -77,6 +79,38 @@ export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps)
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
+  };
+
+  const updateAssessment = useUpdateAssessment(assessmentId);
+
+  const handleConfirmPawn = () => {
+    const base = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      locationType,
+      appointmentDate: String(formState.date),
+      appointmentTime: String(formState.time),
+    };
+
+    const payload: PawnServiceInfo =
+      locationType === "home"
+        ? { ...base, address: formState.address, province: formState.province, district: formState.district }
+        : locationType === "bts"
+          ? { ...base, btsStation: formState.btsStation, btsLine: selectedBtsLine }
+          : { ...base, storeLocation: formState.storeLocation };
+
+    updateAssessment.mutate(
+      { pawnServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
   };
 
   return (
@@ -374,11 +408,11 @@ export default function PawnService({ deviceInfo, pawnPrice }: PawnServiceProps)
         </div>
         <FramerButton
           size="lg"
-          disabled={!isFormComplete}
+          disabled={!isFormComplete || updateAssessment.isPending}
           className="h-14 w-full"
-          onClick={() => router.push("/confirmed/1")}
+          onClick={handleConfirmPawn}
         >
-          ยืนยันการจำนำและรับเงินทันที
+          {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการจำนำและรับเงินทันที"}
         </FramerButton>
       </motion.div>
     </main>

@@ -7,11 +7,15 @@ import { motion, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { RefinanceServiceInfo } from "@/types/service";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 // Dynamically import Turnstile (SSR-safe)
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
@@ -22,8 +26,10 @@ const StableTurnstile = memo(Turnstile);
 
 // Interface for Component Props
 interface RefinanceServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   refinancePrice: number;
+  onSuccess?: () => void;
 }
 
 const PERIOD_OPTIONS = [3, 6, 10] as const;
@@ -41,10 +47,17 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function RefinanceService({ deviceInfo, refinancePrice }: RefinanceServiceProps) {
+export default function RefinanceService({
+  assessmentId,
+  deviceInfo,
+  refinancePrice,
+  onSuccess,
+}: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
+  const updateAssessment = useUpdateAssessment(assessmentId);
+  const isDev = process.env.NODE_ENV !== "production";
 
   const [formState, setFormState] = useState({
     customerName: "",
@@ -134,32 +147,53 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
   }, []);
 
   const handleConfirmRefinance = async () => {
-    if (!turnstileToken) {
-      turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setShowTurnstileError(true);
-      setTimeout(() => setShowTurnstileError(false), 3000);
-      return;
-    }
-    setShowTurnstileError(false);
-
-    try {
-      const res = await fetch("/api/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: turnstileToken }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert("Turnstile verification failed. โปรดลองใหม่");
+    if (!isDev) {
+      if (!turnstileToken) {
+        turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setShowTurnstileError(true);
+        setTimeout(() => setShowTurnstileError(false), 3000);
+        await Swal.fire({ icon: "error", title: "กรุณายืนยันความปลอดภัย", text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ" });
         return;
       }
-    } catch (err) {
-      console.warn("Turnstile verification request failed", err);
-      alert("ไม่สามารถยืนยัน Turnstile ได้ โปรดลองอีกครั้ง");
-      return;
+      setShowTurnstileError(false);
+
+      try {
+        const { data } = await axios.post("/api/verify-turnstile", { token: turnstileToken });
+        if (!data?.success) {
+          await Swal.fire({ icon: "error", title: "การยืนยันไม่สำเร็จ", text: "โปรดลองใหม่อีกครั้ง" });
+          return;
+        }
+      } catch (err) {
+        console.warn("Turnstile verification request failed", err);
+        await Swal.fire({ icon: "error", title: "ไม่สามารถยืนยัน Turnstile ได้", text: "โปรดลองอีกครั้ง" });
+        return;
+      }
+    } else {
+      // Development mode bypass: proceed without turnstile verification
+      setShowTurnstileError(false);
     }
 
-    router.push("/confirmed/1");
+    const payload: RefinanceServiceInfo = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      occupation: (formState.occupation as "salaried" | "freelance" | "") ?? "",
+      documentFile: formState.documentFile,
+      appointmentDate: "",
+      appointmentTime: "",
+    };
+
+    updateAssessment.mutate(
+      { refinanceServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -229,8 +263,8 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
                     <div
                       className={`min-h-[32px] text-xs transition-all duration-200 ease-out ${
                         isSelected
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+                          ? "translate-y-0 opacity-100"
+                          : "translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -448,11 +482,11 @@ export default function RefinanceService({ deviceInfo, refinancePrice }: Refinan
           </div>
           <FramerButton
             size="lg"
-            disabled={!isFormComplete}
+            disabled={!isFormComplete || updateAssessment.isPending}
             className="h-14 w-full"
             onClick={handleConfirmRefinance}
           >
-            ยืนยันการรีไฟแนนซ์
+            {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการรีไฟแนนซ์"}
           </FramerButton>
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}

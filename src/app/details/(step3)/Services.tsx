@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import { ArrowUpDown, Banknote, CircleDot, CreditCard, Handshake, LucideIcon, ShoppingBag, Wrench } from "lucide-react";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { RepairItem } from "@/hooks/useRepairPrices";
-import { Button } from "../../../../components/ui/button";
-import { DeviceInfo } from "../../../../types/device";
-import { ServiceOption } from "../../../../types/service";
+import { Button } from "../../../components/ui/button";
+import { DeviceInfo } from "../../../types/device";
+import { ServiceOption } from "../../../types/service";
 
 interface ServicesProps {
   selectedService: string;

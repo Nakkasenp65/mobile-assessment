@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ImageOff, XCircle, CardSim } from "lucide-react"; // ✨ [ADD] Import XCircle icon
 import AssessmentLedger from "./AssessmentLedger";
 import { RepairItem } from "@/hooks/useRepairPrices";
-import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import { AssessmentRecord } from "../../../../types/assessment";
-import { PriceLockCountdown } from "../../../../components/ui/PriceLockCountdown";
+import { ConditionInfo, DeviceInfo } from "../../../types/device";
+import { AssessmentRecord } from "../../../types/assessment";
+import { PriceLockCountdown } from "../../../components/ui/PriceLockCountdown";
 import Image from "next/image";
 
 interface AssessmentSummaryProps {

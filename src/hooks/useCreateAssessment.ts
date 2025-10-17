@@ -69,7 +69,7 @@ function validateInput(input: CreateAssessmentInput): string[] {
   // Relax storage requirement for Apple non-iPhone/iPad
   const isApple = input.deviceInfo?.brand === "Apple";
   const type = input.deviceInfo?.productType;
-  const requiresStorage = !isApple || (type === "iPhone" || type === "iPad");
+  const requiresStorage = !isApple || type === "iPhone" || type === "iPad";
   if (requiresStorage && !input.deviceInfo?.storage) errs.push("กรุณาเลือกความจุอุปกรณ์");
   // Minimal validation for conditionInfo presence
   if (!input.conditionInfo) errs.push("ข้อมูลสภาพเครื่องไม่ครบถ้วน");
@@ -103,11 +103,9 @@ export function useCreateAssessment() {
       };
 
       try {
-        const { data } = await axios.post<AssessmentApiResponse>(
-          `${BACKEND_URL}/api/assessments`,
-          payload,
-          { headers: { "Content-Type": "application/json" } }
-        );
+        const { data } = await axios.post<AssessmentApiResponse>(`${BACKEND_URL}/api/assessments`, payload, {
+          headers: { "Content-Type": "application/json" },
+        });
 
         if (!data?.success || !data.data?._id) {
           throw new Error("การตอบกลับจาก API ไม่ถูกต้อง");
@@ -122,7 +120,7 @@ export function useCreateAssessment() {
     },
     onSuccess: (res) => {
       const id = res.data._id;
-      router.push(`/my-assessment-details/${id}`);
+      router.push(`/details/${id}`);
     },
   });
 }

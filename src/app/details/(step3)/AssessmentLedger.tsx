@@ -32,7 +32,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { cn } from "@/lib/utils";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { ASSESSMENT_QUESTIONS } from "@/util/info";
-import { ConditionInfo, DeviceInfo } from "../../../../types/device";
+import { ConditionInfo, DeviceInfo } from "../../../types/device";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   brand: Smartphone,

@@ -9,15 +9,13 @@ import { useRouter } from "next/navigation";
 interface ConfirmationProps {
   isFormComplete: boolean;
   handleConfirmSell: () => void;
+  disabled?: boolean;
+  isLoading?: boolean;
 }
 
-export default function Confirmation({ isFormComplete, handleConfirmSell }: ConfirmationProps) {
+export default function Confirmation({ isFormComplete, handleConfirmSell, disabled = false, isLoading = false }: ConfirmationProps) {
   const router = useRouter();
-
-  const handleClick = () => {
-    handleConfirmSell();
-    router.push("/confirmed/1");
-  };
+  void router;
 
   return (
     <motion.div
@@ -25,8 +23,13 @@ export default function Confirmation({ isFormComplete, handleConfirmSell }: Conf
       animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
       className="space-y-4 pt-4"
     >
-      <FramerButton size="lg" disabled={!isFormComplete} className="h-14 w-full" onClick={handleClick}>
-        ยืนยันการขาย
+      <FramerButton
+        size="lg"
+        disabled={!isFormComplete || disabled || isLoading}
+        className="h-14 w-full"
+        onClick={handleConfirmSell}
+      >
+        {isLoading ? "กำลังบันทึก..." : "ยืนยันการขาย"}
       </FramerButton>
       <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
         การคลิก &quot;ยืนยันการขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}

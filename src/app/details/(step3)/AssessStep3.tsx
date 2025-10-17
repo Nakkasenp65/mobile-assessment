@@ -6,12 +6,12 @@ import { ArrowLeft } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
 import Services from "./Services";
-import FramerButton from "../../../../components/ui/framer/FramerButton";
+import FramerButton from "../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
-import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import { AssessmentRecord } from "../../../../types/assessment";
-import ScrollDownIndicator from "../../../../components/ui/ScrollDownIndicator";
+import { ConditionInfo, DeviceInfo } from "../../../types/device";
+import { AssessmentRecord } from "../../../types/assessment";
+import ScrollDownIndicator from "../../../components/ui/ScrollDownIndicator";
 import { cn } from "@/lib/utils";
 
 const getExpiryDate = (days: number): string => {

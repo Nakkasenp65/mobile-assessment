@@ -4,11 +4,15 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DeviceInfo } from "../../../../../types/device";
+import { DeviceInfo } from "../../../../types/device";
 import type { LongdoAddressData } from "../LongdoAddressForm";
 import { useLongdoReverseGeocode } from "@/hooks/useLongdoReverseGeocode";
 import type { LatLng } from "leaflet";
 import dynamic from "next/dynamic";
+import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
+import type { SellNowServiceInfo } from "@/types/service";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 // Import sub-components
 import PriceDisplay from "./sell-now-components/PriceDisplay";
@@ -26,18 +30,27 @@ const Turnstile = dynamic(() => import("@/components/Turnstile"), {
 });
 
 interface SellNowServiceProps {
+  assessmentId: string;
   deviceInfo: DeviceInfo;
   sellPrice: number;
+  onSuccess?: () => void;
 }
 
 type ServiceStep = "filling_form" | "awaiting_deposit" | "completed";
 
-export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: SellNowServiceProps) {
+export default function SellNowService({
+  assessmentId,
+  deviceInfo: _deviceInfo,
+  sellPrice,
+  onSuccess,
+}: SellNowServiceProps) {
   const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
   void _deviceInfo;
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstileError, setShowTurnstileError] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
+  const updateAssessment = useUpdateAssessment(assessmentId);
+  const isDev = process.env.NODE_ENV !== "production";
 
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
@@ -54,6 +67,8 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
     date: "",
     time: "",
   });
+
+  console.log("formState", formState);
 
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
@@ -106,7 +121,11 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
   // ขอสิทธิ์การเข้าถึง Location ให้เสร็จสิ้นก่อน แล้วค่อยดึง Lat-Long
   const ensurePermissionThenLocate = useCallback(async () => {
     try {
-      const permAPI = (navigator as unknown as { permissions?: { query: (q: { name: string }) => Promise<{ state: "granted" | "prompt" | "denied" }> } }).permissions;
+      const permAPI = (
+        navigator as unknown as {
+          permissions?: { query: (q: { name: string }) => Promise<{ state: "granted" | "prompt" | "denied" }> };
+        }
+      ).permissions;
       if (permAPI && permAPI.query) {
         const status = await permAPI.query({ name: "geolocation" });
         setGeoPermission(status.state);
@@ -166,37 +185,72 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
   }, []);
 
   const handleConfirmSell = async () => {
-    if (!turnstileToken) {
-      turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setShowTurnstileError(true);
-      setTimeout(() => setShowTurnstileError(false), 3000);
-      return;
-    }
-    setShowTurnstileError(false);
-
-    try {
-      const res = await fetch("/api/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: turnstileToken }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert("Turnstile verification failed. โปรดลองใหม่");
+    if (!isDev) {
+      if (!turnstileToken) {
+        turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setShowTurnstileError(true);
+        setTimeout(() => setShowTurnstileError(false), 3000);
+        await Swal.fire({ icon: "error", title: "กรุณายืนยันความปลอดภัย", text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ" });
         return;
       }
-    } catch (err) {
-      console.warn("Turnstile verification request failed", err);
-      alert("ไม่สามารถยืนยัน Turnstile ได้ โปรดลองอีกครั้ง");
-      return;
+      setShowTurnstileError(false);
+
+      try {
+        const { data } = await axios.post("/api/verify-turnstile", { token: turnstileToken });
+        if (!data?.success) {
+          await Swal.fire({ icon: "error", title: "การยืนยันไม่สำเร็จ", text: "โปรดลองใหม่อีกครั้ง" });
+          return;
+        }
+      } catch (err) {
+        console.warn("Turnstile verification request failed", err);
+        await Swal.fire({ icon: "error", title: "ไม่สามารถยืนยัน Turnstile ได้", text: "โปรดลองอีกครั้ง" });
+        return;
+      }
+    } else {
+      // Development mode bypass: proceed without turnstile verification
+      setShowTurnstileError(false);
     }
 
-    if (locationType === "home" || locationType === "bts") {
-      setServiceStep("awaiting_deposit");
-    } else {
-      alert("นัดหมายสำเร็จ! กรุณาเดินทางไปที่สาขาตามวันและเวลาที่เลือก");
-      setServiceStep("completed");
-    }
+    const base: {
+      customerName: string;
+      phone: string;
+      locationType: "home" | "bts" | "store";
+      appointmentDate: string;
+      appointmentTime: string;
+    } = {
+      customerName: formState.customerName,
+      phone: formState.phone,
+      locationType: (locationType as "home" | "bts" | "store") ?? "store",
+      appointmentDate: String(formState.date),
+      appointmentTime: String(formState.time),
+    };
+
+    const payload: SellNowServiceInfo =
+      locationType === "home"
+        ? {
+            ...base,
+            addressDetails: formState.addressDetails,
+            province: formState.province,
+            district: formState.district,
+            subdistrict: formState.subdistrict,
+            postcode: formState.postcode,
+          }
+        : locationType === "bts"
+          ? { ...base, btsStation: formState.btsStation }
+          : { ...base, storeLocation: formState.storeLocation };
+
+    updateAssessment.mutate(
+      { sellNowServiceInfo: payload },
+      {
+        onSuccess: () => {
+          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          onSuccess?.();
+        },
+        onError: () => {
+          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        },
+      },
+    );
   };
 
   const isFormComplete = !!(
@@ -277,7 +331,12 @@ export default function SellNowService({ deviceInfo: _deviceInfo, sellPrice }: S
               <Turnstile onVerify={handleTurnstileVerify} />
             </div>
 
-            <Confirmation isFormComplete={isFormComplete} handleConfirmSell={handleConfirmSell} />
+            <Confirmation
+              isFormComplete={isFormComplete}
+              handleConfirmSell={handleConfirmSell}
+              disabled={updateAssessment.isPending}
+              isLoading={updateAssessment.isPending}
+            />
           </motion.div>
         ) : serviceStep === "awaiting_deposit" ? (
           <motion.div key="awaiting_deposit">

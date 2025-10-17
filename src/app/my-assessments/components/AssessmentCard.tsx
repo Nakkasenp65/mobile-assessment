@@ -120,20 +120,14 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   );
 };
 
-export default function AssessmentCard({
-  assessment,
-  index,
-}: {
-  assessment: AssessmentRecord;
-  index: number;
-}) {
+export default function AssessmentCard({ assessment, index }: { assessment: AssessmentRecord; index: number }) {
   const { data: productData, isLoading } = useMobile(assessment.device.brand, assessment.device.model);
   const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
   const ServiceIcon = service?.icon;
   return (
     <motion.div className="w-full">
       <Link
-        href={`/my-assessment-details/${assessment.id}`}
+        href={`/details/${assessment.id}`}
         className="group block h-full rounded-lg border border-slate-200 bg-white/80 p-5 shadow-sm transition-all duration-300 hover:border-orange-300"
       >
         <div className="flex items-start justify-between">
@@ -171,9 +165,7 @@ export default function AssessmentCard({
           <div className="flex items-center justify-between">
             <span className="text-slate-500">บริการ:</span>
             {service && ServiceIcon && (
-              <div
-                className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}
-              >
+              <div className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}>
                 <ServiceIcon className="h-4 w-4 flex-shrink-0" />
                 <span>{service.title}</span>
               </div>

@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Banknote, UploadCloud, File, X, CheckCircle, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import FramerButton from "../../../../../../components/ui/framer/FramerButton";
+import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 const DEPOSIT_AMOUNT = 300;
 

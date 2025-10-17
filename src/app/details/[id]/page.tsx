@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Layout from "../../../components/Layout/Layout";
-import AssessStep3 from "../../assess/components/(step3)/AssessStep3";
-import AssessStep4 from "../../assess/components/(step4)/AssessStep4";
+import AssessStep3 from "../(step3)/AssessStep3";
+import AssessStep4 from "../(step4)/AssessStep4";
 import { useAssessment } from "@/hooks/useAssessment";
 import { Skeleton } from "@/components/ui/skeleton";
 // Removed useMobile call here to keep Hooks order consistent across renders
@@ -123,10 +123,16 @@ export default function AssessmentDetailsPage() {
 
           {step === 2 && (
             <AssessStep4
+              assessmentId={assessmentId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               selectedService={selectedService}
               onBack={handleBack}
+              onSuccess={() => {
+                // หลังบันทึกสำเร็จ กลับไปหน้าก่อนฟอร์ม (เลือกบริการ)
+                setStep(1);
+                window.scrollTo(0, 0);
+              }}
             />
           )}
         </div>
