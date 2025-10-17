@@ -44,6 +44,9 @@ export interface TradeInServiceInfo {
   storage: string;
   color: string;
 
+  // ความต้องการสภาพเครื่อง: มือหนึ่งหรือมือสอง
+  phoneCondition: "first_hand" | "second_hand";
+
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;

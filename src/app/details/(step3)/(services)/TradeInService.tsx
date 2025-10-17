@@ -53,9 +53,9 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
     newDevice: "",
     storage: "",
     color: "",
+    phoneCondition: "",
     appointmentDate: "",
     appointmentTime: "",
-    phoneCondition: "", // Add this line
   });
 
   // ✨ 2. อัปเดต Type ของ value ให้รองรับ Date ได้
@@ -86,6 +86,7 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
     formState.newDevice &&
     formState.storage &&
     formState.color &&
+    formState.phoneCondition &&
     formState.appointmentDate &&
     formState.appointmentTime;
 
@@ -109,6 +110,7 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
       newDevice: formState.newDevice,
       storage: formState.storage,
       color: formState.color,
+      phoneCondition: formState.phoneCondition as "first_hand" | "second_hand",
       appointmentDate: String(formState.appointmentDate),
       appointmentTime: String(formState.appointmentTime),
     };
@@ -241,6 +243,22 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phoneCondition-tradein">เงื่อนไขเครื่องที่ต้องการ</Label>
+            <Select
+              value={formState.phoneCondition}
+              onValueChange={(value) => handleInputChange("phoneCondition", value)}
+            >
+              <SelectTrigger id="phoneCondition-tradein" className="h-12 w-full">
+                <SelectValue placeholder="เลือกเงื่อนไขเครื่อง" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="first_hand">มือหนึ่ง (เครื่องใหม่)</SelectItem>
+                <SelectItem value="second_hand">มือสอง (สภาพดี)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">เลือกสภาพเครื่องใหม่ที่คุณต้องการ</p>
           </div>
         </motion.div>
 
