@@ -1,7 +1,7 @@
 // src/app/assess/components/(step3)/AssessStep3.tsx
 
 "use client";
-import { useEffect, useState, useRef } from "react"; // ✨ 1. import useRef
+import { useEffect, useState, useRef, useMemo } from "react"; // ✨ include useMemo
 import { ArrowLeft } from "lucide-react";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMobile } from "@/hooks/useMobile";
@@ -10,7 +10,6 @@ import FramerButton from "../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../types/device";
-import { AssessmentRecord } from "../../../types/assessment";
 import ScrollDownIndicator from "../../../components/ui/ScrollDownIndicator";
 import { cn } from "@/lib/utils";
 
@@ -45,18 +44,11 @@ export default function AssessStep3({
 
   const servicesRef = useRef<HTMLDivElement>(null);
 
-  const {
-    totalRepairCost,
-    repairs,
-    isLoading: isLoadingRepairPrices,
-  } = useRepairPrices(deviceInfo.model, conditionInfo);
+  const { totalRepairCost, repairs, isLoading: isLoadingRepairPrices } = useRepairPrices(deviceInfo.model, conditionInfo);
 
   const [localSelectedService, setLocalSelectedService] = useState<string>("");
 
   const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
-
-  console.log("Final Price:", finalPrice);
-  console.log("Grade:", grade);
 
   const { data: mobileData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
 
@@ -69,6 +61,13 @@ export default function AssessStep3({
       minute: "2-digit",
       hour12: false,
     }) + " น.";
+
+  // ✨ Determine expiration status from priceLockExpiresAt
+  const isExpired = useMemo(() => {
+    if (!priceLockExpiresAt) return false;
+    const ts = new Date(priceLockExpiresAt).getTime();
+    return Number.isFinite(ts) && ts <= Date.now();
+  }, [priceLockExpiresAt]);
 
   const handleConfirm = () => {
     if (localSelectedService && localSelectedService !== "maintenance") {
@@ -92,7 +91,7 @@ export default function AssessStep3({
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>
+      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>        
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -109,18 +108,26 @@ export default function AssessStep3({
           docId={docId}
         />
 
+        {/* ✨ Block services when expired */}
         {!isIcloudLocked && (
           <div ref={servicesRef} id="services-section" className="lg:sticky lg:top-0">
-            <Services
-              selectedService={localSelectedService}
-              setSelectedService={setLocalSelectedService}
-              repairs={repairs}
-              totalCost={totalRepairCost}
-              isLoading={isLoadingRepairPrices}
-              deviceInfo={deviceInfo}
-              onNext={onNext}
-              finalPrice={isPriceable ? finalPrice : 0}
-            />
+            {isExpired ? (
+              <div className="border-border bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-200 border rounded-xl p-4">
+                <p className="text-sm font-semibold">ราคาล็อคหมดอายุแล้ว</p>
+                <p className="text-xs mt-1">กรุณาทำการประเมินใหม่เพื่อดำเนินการบริการต่อไป</p>
+              </div>
+            ) : (
+              <Services
+                selectedService={localSelectedService}
+                setSelectedService={setLocalSelectedService}
+                repairs={repairs}
+                totalCost={totalRepairCost}
+                isLoading={isLoadingRepairPrices}
+                deviceInfo={deviceInfo}
+                onNext={onNext}
+                finalPrice={isPriceable ? finalPrice : 0}
+              />
+            )}
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays } from "lucide-react";
+import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -29,7 +29,9 @@ interface RefinanceServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   refinancePrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
+  customerNameAuto?: string;
 }
 
 const PERIOD_OPTIONS = [3, 6, 10] as const;
@@ -51,7 +53,9 @@ export default function RefinanceService({
   assessmentId,
   deviceInfo,
   refinancePrice,
+  phoneNumber,
   onSuccess,
+  customerNameAuto,
 }: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -60,8 +64,8 @@ export default function RefinanceService({
   const isDev = process.env.NODE_ENV !== "production";
 
   const [formState, setFormState] = useState({
-    customerName: "",
-    phone: "",
+    customerName: customerNameAuto ?? "",
+    phone: phoneNumber,
     // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
     // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง
     occupation: "",
@@ -89,6 +93,36 @@ export default function RefinanceService({
         }
         return newState;
       });
+    }
+  };
+
+  const handleEditPhoneClick = async () => {
+    const result = await Swal.fire({
+      title: "แก้ไขเบอร์โทรศัพท์",
+      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
+      input: "tel",
+      inputValue: formState.phone,
+      inputAttributes: {
+        maxlength: "10",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      preConfirm: (value) => {
+        const sanitized = (value || "").replace(/[^0-9]/g, "");
+        if (!/^\d{10}$/.test(sanitized)) {
+          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
+          return;
+        }
+        return sanitized;
+      },
+    });
+    if (result.value) {
+      handleInputChange("phone", result.value);
     }
   };
 
@@ -216,14 +250,12 @@ export default function RefinanceService({
           <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-violet-100/50 blur-2xl dark:bg-violet-400/20" />
           <div className="relative z-10">
             <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-              วงเงินรีไฟแนนซ์ที่คุณจะได้รับ
+              สรุปบริการรีไฟแนนซ์
             </h3>
             <p className="mt-2 bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-purple-400 dark:to-violet-400">
               {THB(refinancePrice)}
             </p>
-            <p className="mt-2 text-sm text-purple-800/80 dark:text-purple-200/80">
-              รับเงินสดทันที และแบ่งชำระคืนสบายๆ
-            </p>
+            <p className="mt-2 text-sm text-purple-800/80 dark:text-purple-200/80">ผ่อนจ่ายสบาย ไม่ต้องใช้บัตรเครดิต</p>
           </div>
         </motion.div>
 
@@ -232,16 +264,15 @@ export default function RefinanceService({
           initial="initial"
           animate="animate"
           variants={{ animate: { transition: { staggerChildren: 0.08 } } }}
-          className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 dark:border-purple-400/30 dark:bg-purple-400/10"
+          className="rounded-xl sm:border sm:border-purple-100 sm:bg-purple-50/50 sm:p-4 dark:border-purple-400/30 dark:bg-purple-400/10"
         >
           <Label className="mb-3 block text-sm font-semibold text-purple-900 dark:text-purple-100">
             เลือกระยะเวลาการผ่อนชำระ
           </Label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 justify-around gap-2 sm:gap-3">
             {PERIOD_OPTIONS.map((months) => {
               const isSelected = selectedMonths === months;
               const calcMonthly = refinancePrice / months;
-              const total = calcMonthly * months;
               return (
                 <motion.button
                   key={months}
@@ -251,29 +282,21 @@ export default function RefinanceService({
                   whileTap={{ scale: 0.97 }}
                   transition={{ type: "spring", stiffness: 400, damping: 15 }}
                   aria-pressed={isSelected}
-                  className={`group relative flex h-28 flex-col items-center justify-center gap-1 rounded-xl border p-2 text-center text-sm font-medium transition ${
+                  className={`group relative flex h-28 flex-col items-center justify-center gap-1 rounded-xl border text-center text-sm font-medium ${
                     isSelected
                       ? "border-violet-500 bg-violet-50/50 text-violet-900 shadow-lg"
                       : "border-zinc-200 bg-white/40 text-violet-900 hover:border-violet-400 hover:bg-violet-50"
-                  }`}
+                  } p-0 sm:p-2`}
                 >
                   <span className="text-base font-semibold">{months} เดือน</span>
                   {isSelected && <Check className="absolute top-2 right-2 h-4 w-4 text-violet-600" />}
-                  <div className="mt-1 w-full px-2">
+                  <div className="mt-1 w-full px-0 sm:px-2">
                     <div
-                      className={`min-h-[32px] text-xs transition-all duration-200 ease-out ${
-                        isSelected
-                          ? "translate-y-0 opacity-100"
-                          : "translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-                      }`}
+                      className={`text-[10px] sm:text-xs ${isSelected ? "translate-y-0 opacity-100" : "translate-y-1"}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-violet-800">ค่างวดต่อเดือน</span>
+                      <div className="flex items-center justify-evenly">
+                        <span className="text-violet-800">ต่อเดือน</span>
                         <span className="font-semibold text-violet-700">{THB(calcMonthly)}</span>
-                      </div>
-                      <div className="mt-1 flex items-center justify-between">
-                        <span className="text-violet-800">รวมชำระทั้งหมด</span>
-                        <span className="font-semibold text-violet-700">{THB(total)}</span>
                       </div>
                     </div>
                   </div>
@@ -341,12 +364,20 @@ export default function RefinanceService({
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  readOnly
                   inputMode="numeric" // บังคับใช้แป้นพิมพ์ตัวเลขบนมือถือ
                   pattern="[0-9]{10}" // กำหนดรูปแบบที่เข้มงวดสำหรับ HTML5 validation
                   maxLength={10} // จำกัดความยาวสูงสุด
-                  className="h-12 pl-10"
+                  className="h-12 pr-12 pl-10"
                 />
+                <button
+                  type="button"
+                  onClick={handleEditPhoneClick}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                  aria-label="แก้ไขเบอร์โทรศัพท์"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
               </div>
             </div>
 

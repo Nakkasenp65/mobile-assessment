@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../../types/device";
-import { Store, User, Phone, Home, Train, Check } from "lucide-react";
+import { Store, User, Phone, Home, Train, Check, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
@@ -27,16 +27,17 @@ interface PawnServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   pawnPrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
 }
 
-export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuccess }: PawnServiceProps) {
+export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phoneNumber, onSuccess }: PawnServiceProps) {
   const router = useRouter();
   const [locationType, setLocationType] = useState<"home" | "bts" | "store">("home");
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
   const [formState, setFormState] = useState({
     customerName: "",
-    phone: "",
+    phone: phoneNumber,
     address: "",
     province: "BKK",
     district: "PHN",
@@ -56,6 +57,36 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleEditPhoneClick = async () => {
+    const result = await Swal.fire({
+      title: "แก้ไขเบอร์โทรศัพท์",
+      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
+      input: "tel",
+      inputValue: formState.phone,
+      inputAttributes: {
+        maxlength: "10",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      preConfirm: (value) => {
+        const sanitized = (value || "").replace(/[^0-9]/g, "");
+        if (!/^\d{10}$/.test(sanitized)) {
+          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
+          return;
+        }
+        return sanitized;
+      },
+    });
+    if (result.value) {
+      handleInputChange("phone", result.value);
     }
   };
 
@@ -233,9 +264,17 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                className="pl-10"
+                readOnly
+                className="pl-10 pr-12"
               />
+              <button
+                type="button"
+                onClick={handleEditPhoneClick}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                aria-label="แก้ไขเบอร์โทรศัพท์"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </motion.div>
@@ -301,7 +340,9 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, onSuc
                     <Label htmlFor="bts-line-pawn">สายรถไฟ BTS/MRT</Label>
                     <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                       <SelectTrigger id="bts-line-pawn" className="w-full">
-                        <SelectValue placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"} />
+                        <SelectValue
+                          placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {merged.lines.map((line) => (

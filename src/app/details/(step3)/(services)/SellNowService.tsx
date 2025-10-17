@@ -33,6 +33,7 @@ interface SellNowServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   sellPrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
 }
 
@@ -42,6 +43,7 @@ export default function SellNowService({
   assessmentId,
   deviceInfo: _deviceInfo,
   sellPrice,
+  phoneNumber,
   onSuccess,
 }: SellNowServiceProps) {
   const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
@@ -56,7 +58,7 @@ export default function SellNowService({
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
   const [formState, setFormState] = useState({
     customerName: "",
-    phone: "",
+    phone: phoneNumber,
     addressDetails: "",
     province: "",
     district: "",

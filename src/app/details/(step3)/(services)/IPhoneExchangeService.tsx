@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateSelect } from "@/components/ui/date-select";
 import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
 import { DeviceInfo } from "../../../../types/device";
-import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp } from "lucide-react";
+import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useBtsStations } from "@/hooks/useBtsStations";
 import { Card } from "@/components/ui/card";
@@ -26,6 +26,7 @@ interface IPhoneExchangeServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   exchangePrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
 }
 
@@ -45,7 +46,13 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchangePrice, onSuccess }: IPhoneExchangeServiceProps) {
+export default function IPhoneExchangeService({
+  assessmentId,
+  deviceInfo,
+  exchangePrice,
+  phoneNumber,
+  onSuccess,
+}: IPhoneExchangeServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
@@ -55,7 +62,7 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
 
   const [formState, setFormState] = useState({
     customerName: "",
-    phone: "",
+    phone: phoneNumber,
     btsStation: "",
     storeLocation: storeLocations[0],
     date: "",
@@ -63,6 +70,11 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
     occupation: "",
     documentFile: null as File | null,
   });
+
+  // Keep phone in sync if prop changes
+  useEffect(() => {
+    setFormState((prev) => ({ ...prev, phone: phoneNumber || "" }));
+  }, [phoneNumber]);
 
   const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
     if (field === "phone") {
@@ -105,6 +117,36 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
       btsStation: "",
     }));
     setSelectedBtsLine("");
+  };
+
+  const handleEditPhoneClick = async () => {
+    const result = await Swal.fire({
+      title: "แก้ไขเบอร์โทรศัพท์",
+      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
+      input: "tel",
+      inputValue: formState.phone,
+      inputAttributes: {
+        maxlength: "10",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      preConfirm: (value) => {
+        const sanitized = (value || "").replace(/[^0-9]/g, "");
+        if (!/^\d{10}$/.test(sanitized)) {
+          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
+          return;
+        }
+        return sanitized;
+      },
+    });
+    if (result.value) {
+      handleInputChange("phone", result.value);
+    }
   };
 
   const { feeAmount, netAmount } = useMemo(() => {
@@ -251,12 +293,20 @@ export default function IPhoneExchangeService({ assessmentId, deviceInfo, exchan
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  readOnly
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength={10}
-                  className="h-12 pl-10"
+                  className="h-12 pl-10 pr-12"
                 />
+                <button
+                  type="button"
+                  onClick={handleEditPhoneClick}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                  aria-label="แก้ไขเบอร์โทรศัพท์"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
               </div>
             </div>
             <div className="flex flex-col gap-2">

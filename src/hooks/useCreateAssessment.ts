@@ -9,6 +9,8 @@ interface CreateAssessmentInput {
   phoneNumber: string;
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
+  // Optional: allow caller to provide a specific expiry; server will validate/default
+  expiredAt?: string;
 }
 
 interface RawAssessmentRecord {
@@ -60,20 +62,11 @@ function ensureConditionDefaults(ci: ConditionInfo): ConditionInfo {
 }
 
 function validateInput(input: CreateAssessmentInput): string[] {
-  const errs: string[] = [];
-  const phone = (input.phoneNumber || "").replace(/\D/g, "");
-  if (!phone) errs.push("กรุณากรอกเบอร์โทรศัพท์");
-  else if (!/^\d{10}$/.test(phone)) errs.push("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก");
-  if (!input.deviceInfo?.brand) errs.push("กรุณาเลือกยี่ห้ออุปกรณ์");
-  if (!input.deviceInfo?.model) errs.push("กรุณาเลือกรุ่นอุปกรณ์");
-  // Relax storage requirement for Apple non-iPhone/iPad
-  const isApple = input.deviceInfo?.brand === "Apple";
-  const type = input.deviceInfo?.productType;
-  const requiresStorage = !isApple || type === "iPhone" || type === "iPad";
-  if (requiresStorage && !input.deviceInfo?.storage) errs.push("กรุณาเลือกความจุอุปกรณ์");
-  // Minimal validation for conditionInfo presence
-  if (!input.conditionInfo) errs.push("ข้อมูลสภาพเครื่องไม่ครบถ้วน");
-  return errs;
+  const errors: string[] = [];
+  if (!input.phoneNumber) errors.push("กรุณากรอกหมายเลขโทรศัพท์");
+  if (!input.deviceInfo?.model) errors.push("กรุณาเลือกชื่อรุ่น");
+  if (!input.conditionInfo) errors.push("ข้อมูลสภาพเครื่องไม่ครบถ้วน");
+  return errors;
 }
 
 export function useCreateAssessment() {
@@ -81,10 +74,6 @@ export function useCreateAssessment() {
 
   return useMutation<AssessmentApiResponse, Error, CreateAssessmentInput>({
     mutationFn: async (input) => {
-      if (!BACKEND_URL) {
-        throw new Error("ค่า BACKEND_URL ไม่ถูกตั้งค่าใน Environment");
-      }
-
       const validationErrors = validateInput(input);
       if (validationErrors.length) {
         throw new Error(validationErrors.join("; "));
@@ -100,10 +89,13 @@ export function useCreateAssessment() {
           storage: input.deviceInfo.storage,
         },
         conditionInfo: ensureConditionDefaults(input.conditionInfo),
+        // include expiredAt if provided; server will default if absent
+        ...(input.expiredAt ? { expiredAt: input.expiredAt } : {}),
       };
 
       try {
-        const { data } = await axios.post<AssessmentApiResponse>(`${BACKEND_URL}/api/assessments`, payload, {
+        // Call our local API route to enforce expiredAt validation and defaulting
+        const { data } = await axios.post<AssessmentApiResponse>(`/api/assessments`, payload, {
           headers: { "Content-Type": "application/json" },
         });
 
@@ -112,9 +104,9 @@ export function useCreateAssessment() {
         }
         return data;
       } catch (err) {
-        const axErr = err as AxiosError<{ message?: string }>;
-        const msg = axErr.response?.data?.message || axErr.message || "ไม่สามารถสร้างรายการประเมินได้";
-        console.error("POST /assessments failed:", axErr);
+        const axErr = err as AxiosError<{ message?: string } & { error?: { message?: string } }>;
+        const msg = axErr.response?.data?.error?.message || axErr.response?.data?.message || axErr.message || "ไม่สามารถสร้างรายการประเมินได้";
+        console.error("POST /api/assessments failed:", axErr);
         throw new Error(msg);
       }
     },

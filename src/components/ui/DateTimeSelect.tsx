@@ -155,9 +155,9 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
     <div className={className ?? "w-full"}>
       <div className="mb-2 flex items-center justify-between">
         <label className="text-sm font-medium text-gray-700">เลือกวันและเวลา</label>
-        <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
+        {/* <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
           {apiServiceName} · {inferredLocation ?? "-"}
-        </span>
+        </span> */}
       </div>
 
       {/* Date Select */}

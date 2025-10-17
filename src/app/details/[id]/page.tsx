@@ -86,6 +86,7 @@ export default function AssessmentDetailsPage() {
 
           {step === 2 && (
             <AssessStep4
+              phoneNumber={data?.phoneNumber}
               assessmentId={assessmentId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}

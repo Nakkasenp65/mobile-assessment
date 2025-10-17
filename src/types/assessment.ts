@@ -54,4 +54,6 @@ export interface AssessmentCreatePayload {
   tradeInServiceInfo?: TradeInServiceInfo;
   status: "completed" | "pending" | "in-progress" | string;
   estimatedValue: number;
+  // Added: price lock expiration control (ISO 8601 string, required server-side)
+  expiredAt: string;
 }

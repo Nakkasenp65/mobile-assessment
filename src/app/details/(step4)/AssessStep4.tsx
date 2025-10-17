@@ -18,11 +18,20 @@ interface AssessStep4Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   selectedService: string;
+  phoneNumber: string;
   onBack: () => void;
   onSuccess?: () => void;
 }
 
-const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService, onBack, onSuccess }: AssessStep4Props) => {
+const AssessStep4 = ({
+  assessmentId,
+  deviceInfo,
+  conditionInfo,
+  selectedService,
+  phoneNumber,
+  onBack,
+  onSuccess,
+}: AssessStep4Props) => {
   const { finalPrice } = usePriceCalculation(deviceInfo, conditionInfo);
 
   // คำนวณราคาสำหรับแต่ละบริการ (อาจจะต้องปรับ logic ตามจริง)
@@ -42,6 +51,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "sell":
         return (
           <SellNowService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             sellPrice={servicePrice}
@@ -51,6 +61,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "tradein":
         return (
           <TradeInService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             tradeInPrice={servicePrice}
@@ -60,6 +71,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "consignment":
         return (
           <ConsignmentService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             consignmentPrice={servicePrice}
@@ -69,6 +81,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "refinance":
         return (
           <RefinanceService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             refinancePrice={servicePrice}
@@ -78,6 +91,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "iphone-exchange":
         return (
           <IPhoneExchangeService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             exchangePrice={servicePrice}
@@ -87,6 +101,7 @@ const AssessStep4 = ({ assessmentId, deviceInfo, conditionInfo, selectedService,
       case "pawn":
         return (
           <PawnService
+            phoneNumber={phoneNumber}
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             pawnPrice={servicePrice}

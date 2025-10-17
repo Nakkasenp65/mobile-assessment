@@ -59,6 +59,7 @@ interface RawAssessmentRecord {
   assessmentDate?: string;
   createdAt?: string;
   updatedAt?: string;
+  priceLockExpiresAt?: string;
 }
 
 interface AssessmentApiResponse {
@@ -66,13 +67,9 @@ interface AssessmentApiResponse {
   data: RawAssessmentRecord; // API returns a single record for GET /assessments/:id
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
 async function fetchAssessment(id: string): Promise<AssessmentData> {
-  const endpoint = `${BACKEND_URL}/api/assessments/${id}`;
+  const endpoint = `/api/assessments/${id}`;
   const { data } = await axios.get<AssessmentApiResponse>(endpoint);
-
-  console.log(data);
 
   if (!data || !data.success || !data.data || typeof data.data !== "object") {
     throw new Error("Invalid response from assessments API");
@@ -94,11 +91,14 @@ async function fetchAssessment(id: string): Promise<AssessmentData> {
     })(),
     conditionInfo: record.conditionInfo,
     pawnServiceInfo: record.pawnServiceInfo,
+    sellNowServiceInfo: record.sellNowServiceInfo,
+    consignmentServiceInfo: record.consignmentServiceInfo,
+    refinanceServiceInfo: record.refinanceServiceInfo,
+    iphoneExchangeServiceInfo: record.iphoneExchangeServiceInfo,
     status: record.status,
     estimatedValue: typeof record.estimatedValue === "number" ? record.estimatedValue : 0,
     assessmentDate: record.assessmentDate ?? record.createdAt,
-    // Backend does not provide priceLockExpiresAt; leave undefined
-    priceLockExpiresAt: undefined,
+    priceLockExpiresAt: record.priceLockExpiresAt,
   };
 }
 

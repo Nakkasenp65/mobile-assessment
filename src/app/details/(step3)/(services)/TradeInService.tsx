@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone, RefreshCcw, Sparkles } from "lucide-react";
+import { User, Phone, RefreshCcw, Sparkles, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 // DateSelect is now handled inside DateTimeSelect
 import { useRouter } from "next/navigation";
@@ -21,6 +21,7 @@ interface TradeInServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   tradeInPrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
 }
 
@@ -44,11 +45,17 @@ const THB = (n: number) =>
     minimumFractionDigits: 0,
   });
 
-export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice, onSuccess }: TradeInServiceProps) {
+export default function TradeInService({
+  assessmentId,
+  deviceInfo,
+  tradeInPrice,
+  phoneNumber,
+  onSuccess,
+}: TradeInServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
-    phone: "",
+    phone: phoneNumber,
     storeLocation: storeLocations[0],
     newDevice: "",
     storage: "",
@@ -65,6 +72,36 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleEditPhoneClick = async () => {
+    const result = await Swal.fire({
+      title: "แก้ไขเบอร์โทรศัพท์",
+      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
+      input: "tel",
+      inputValue: formState.phone,
+      inputAttributes: {
+        maxlength: "10",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      preConfirm: (value) => {
+        const sanitized = (value || "").replace(/[^0-9]/g, "");
+        if (!/^\d{10}$/.test(sanitized)) {
+          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
+          return;
+        }
+        return sanitized;
+      },
+    });
+    if (result.value) {
+      handleInputChange("phone", result.value);
     }
   };
 
@@ -317,12 +354,20 @@ export default function TradeInService({ assessmentId, deviceInfo, tradeInPrice,
                 type="tel"
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
+                readOnly
                 inputMode="numeric"
                 pattern="[0-9]{10}"
                 maxLength={10}
-                className="h-12 pl-10"
+                className="h-12 pl-10 pr-12"
               />
+              <button
+                type="button"
+                onClick={handleEditPhoneClick}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                aria-label="แก้ไขเบอร์โทรศัพท์"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </motion.div>

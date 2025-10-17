@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone } from "lucide-react";
+import { User, Phone, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,7 @@ interface ConsignmentServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   consignmentPrice: number;
+  phoneNumber: string;
   onSuccess?: () => void;
 }
 
@@ -42,12 +43,13 @@ export default function ConsignmentService({
   assessmentId,
   deviceInfo,
   consignmentPrice,
+  phoneNumber,
   onSuccess,
 }: ConsignmentServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
-    phone: "",
+    phone: phoneNumber,
     storeLocation: storeLocations[0],
     additionalNotes: "",
     dropoffDate: "",
@@ -60,6 +62,36 @@ export default function ConsignmentService({
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else {
       setFormState((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleEditPhoneClick = async () => {
+    const result = await Swal.fire({
+      title: "แก้ไขเบอร์โทรศัพท์",
+      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
+      input: "tel",
+      inputValue: formState.phone,
+      inputAttributes: {
+        maxlength: "10",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      preConfirm: (value) => {
+        const sanitized = (value || "").replace(/[^0-9]/g, "");
+        if (!/^\d{10}$/.test(sanitized)) {
+          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
+          return;
+        }
+        return sanitized;
+      },
+    });
+    if (result.value) {
+      handleInputChange("phone", result.value);
     }
   };
 
@@ -168,12 +200,20 @@ export default function ConsignmentService({
                   type="tel"
                   placeholder="0xx-xxx-xxxx"
                   value={formState.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  readOnly
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength={10}
-                  className="pl-10"
+                  className="pr-12 pl-10"
                 />
+                <button
+                  type="button"
+                  onClick={handleEditPhoneClick}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                  aria-label="แก้ไขเบอร์โทรศัพท์"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </motion.div>
