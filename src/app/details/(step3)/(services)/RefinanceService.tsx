@@ -31,7 +31,6 @@ interface RefinanceServiceProps {
   refinancePrice: number;
   phoneNumber: string;
   onSuccess?: () => void;
-  customerNameAuto?: string;
 }
 
 const PERIOD_OPTIONS = [3, 6, 10] as const;
@@ -55,7 +54,6 @@ export default function RefinanceService({
   refinancePrice,
   phoneNumber,
   onSuccess,
-  customerNameAuto,
 }: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -64,7 +62,7 @@ export default function RefinanceService({
   const isDev = process.env.NODE_ENV !== "production";
 
   const [formState, setFormState] = useState({
-    customerName: customerNameAuto ?? "",
+    customerName: "",
     phone: phoneNumber,
     // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
     // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง
@@ -250,12 +248,14 @@ export default function RefinanceService({
           <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-violet-100/50 blur-2xl dark:bg-violet-400/20" />
           <div className="relative z-10">
             <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-              สรุปบริการรีไฟแนนซ์
+              วงเงินรีไฟแนนซ์ที่คุณจะได้รับ
             </h3>
             <p className="mt-2 bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-purple-400 dark:to-violet-400">
               {THB(refinancePrice)}
             </p>
-            <p className="mt-2 text-sm text-purple-800/80 dark:text-purple-200/80">ผ่อนจ่ายสบาย ไม่ต้องใช้บัตรเครดิต</p>
+            <p className="mt-2 text-sm text-purple-800/80 dark:text-purple-200/80">
+              รับเงินสดทันที และแบ่งชำระคืนสบายๆ
+            </p>
           </div>
         </motion.div>
 
