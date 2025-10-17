@@ -44,7 +44,11 @@ export default function AssessStep3({
 
   const servicesRef = useRef<HTMLDivElement>(null);
 
-  const { totalRepairCost, repairs, isLoading: isLoadingRepairPrices } = useRepairPrices(deviceInfo.model, conditionInfo);
+  const {
+    totalRepairCost,
+    repairs,
+    isLoading: isLoadingRepairPrices,
+  } = useRepairPrices(deviceInfo.model, conditionInfo);
 
   const [localSelectedService, setLocalSelectedService] = useState<string>("");
 
@@ -91,7 +95,7 @@ export default function AssessStep3({
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>        
+      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -112,9 +116,9 @@ export default function AssessStep3({
         {!isIcloudLocked && (
           <div ref={servicesRef} id="services-section" className="lg:sticky lg:top-0">
             {isExpired ? (
-              <div className="border-border bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-200 border rounded-xl p-4">
+              <div className="border-border rounded-xl border bg-rose-50/80 p-4 text-rose-700 dark:bg-rose-950/30 dark:text-rose-200">
                 <p className="text-sm font-semibold">ราคาล็อคหมดอายุแล้ว</p>
-                <p className="text-xs mt-1">กรุณาทำการประเมินใหม่เพื่อดำเนินการบริการต่อไป</p>
+                <p className="mt-1 text-xs">กรุณาทำการประเมินใหม่เพื่อดำเนินการบริการต่อไป</p>
               </div>
             ) : (
               <Services

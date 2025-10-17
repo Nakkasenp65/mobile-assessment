@@ -184,7 +184,7 @@ const AssessmentSummary = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="border-border rounded-2xl border"
+        className="border-border rounded-2xl border p-4"
       >
         <AssessmentLedger
           deviceInfo={deviceInfo}

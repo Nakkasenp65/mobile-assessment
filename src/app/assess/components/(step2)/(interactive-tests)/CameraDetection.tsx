@@ -310,7 +310,7 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
               // Auto-close after brief success popup
               setTimeout(() => {
                 handleConclude("camera_ok");
-              }, 1000);
+              }, 3000);
             }
           }
         } catch (e) {
@@ -453,7 +453,7 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
                 disabled={!detectValid}
                 className={
                   detectValid
-                    ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                    ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-emerald-700 hover:shadow-xl"
                     : "bg-muted text-muted-foreground cursor-not-allowed opacity-70"
                 }
               >
@@ -467,7 +467,7 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
                 disabled={!detectValid}
                 className={
                   detectValid
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-indigo-700 hover:shadow-xl"
                     : "bg-muted text-muted-foreground cursor-not-allowed opacity-70"
                 }
               >
@@ -509,9 +509,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
                 <Check className="h-12 w-12 rounded-full bg-emerald-100 p-2 text-emerald-600 shadow-inner" />
                 <p className="text-lg font-semibold text-emerald-800">ยอดเยี่ยม! 🎉</p>
                 <p className="text-center text-sm text-emerald-600">กล้องหน้าทำงานได้สมบูรณ์แบบ</p>
-                <FramerButton 
-                  onClick={switchToBackCamera} 
-                  className="gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white"
+                <FramerButton
+                  onClick={switchToBackCamera}
+                  className="gap-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700"
                 >
                   📸 ไปทดสอบกล้องหลังกันต่อ!
                 </FramerButton>
@@ -519,15 +519,15 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
             ) : (
               <div
                 className={`flex flex-col items-center gap-4 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-8 text-black shadow-xl transition-all duration-200 ease-out ${
-                  popupReady ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  popupReady ? "scale-100 opacity-100" : "scale-95 opacity-0"
                 }`}
               >
                 <Check className="h-12 w-12 rounded-full bg-emerald-100 p-2 text-emerald-600 shadow-inner" />
                 <p className="text-lg font-semibold text-emerald-800">ยอดเยี่ยม! 🎉</p>
                 <p className="text-center text-sm text-emerald-600">กล้องหน้าทำงานได้สมบูรณ์แบบ</p>
-                <FramerButton 
-                  onClick={switchToBackCamera} 
-                  className="gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white"
+                <FramerButton
+                  onClick={switchToBackCamera}
+                  className="gap-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700"
                 >
                   📸 ไปทดสอบกล้องหลังกันต่อ!
                 </FramerButton>
@@ -568,9 +568,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
                 <Check className="h-12 w-12 rounded-full bg-blue-100 p-2 text-blue-600 shadow-inner" />
                 <p className="text-lg font-semibold text-blue-800">สำเร็จแล้ว! 🎊</p>
                 <p className="text-center text-sm text-blue-600">กล้องหลังก็ทำงานได้ดีเยี่ยม</p>
-                <FramerButton 
-                  onClick={() => handleConclude("camera_ok")} 
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg"
+                <FramerButton
+                  onClick={() => handleConclude("camera_ok")}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg hover:from-green-600 hover:to-emerald-700"
                 >
                   🚀 ดำเนินการต่อ!
                 </FramerButton>
@@ -578,15 +578,15 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
             ) : (
               <div
                 className={`flex flex-col items-center gap-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-8 text-black shadow-xl transition-all duration-200 ease-out ${
-                  popupReady ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  popupReady ? "scale-100 opacity-100" : "scale-95 opacity-0"
                 }`}
               >
                 <Check className="h-12 w-12 rounded-full bg-blue-100 p-2 text-blue-600 shadow-inner" />
                 <p className="text-lg font-semibold text-blue-800">สำเร็จแล้ว! 🎊</p>
                 <p className="text-center text-sm text-blue-600">กล้องหลังก็ทำงานได้ดีเยี่ยม</p>
-                <FramerButton 
-                  onClick={() => handleConclude("camera_ok")} 
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg"
+                <FramerButton
+                  onClick={() => handleConclude("camera_ok")}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg hover:from-green-600 hover:to-emerald-700"
                 >
                   🚀 ดำเนินการต่อ!
                 </FramerButton>
@@ -601,7 +601,11 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
       <div className="flex h-64 w-full flex-col items-center justify-center text-center">
         <Camera className="text-muted-foreground mb-2 h-8 w-8" />
         <p className="text-muted-foreground text-sm">จำเป็นต้องอนุญาตการเข้าถึงกล้องสำหรับการทดสอบนี้</p>
-        <FramerButton size="lg" className="mt-4 h-12 px-6 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300" onClick={startTest}>
+        <FramerButton
+          size="lg"
+          className="mt-4 h-12 bg-gradient-to-r from-purple-500 to-pink-600 px-6 text-white shadow-lg transition-all duration-300 hover:from-purple-600 hover:to-pink-700 hover:shadow-xl"
+          onClick={startTest}
+        >
           📷 อนุญาตการเข้าถึงกล้อง
         </FramerButton>
       </div>

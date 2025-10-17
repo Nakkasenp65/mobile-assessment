@@ -184,12 +184,12 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
             </SelectTrigger>
             <SelectContent>
               {isError && (
-                <SelectItem value="" disabled>
+                <SelectItem value="__error" disabled>
                   ไม่สามารถเช็คเวลาว่างได้
                 </SelectItem>
               )}
               {dateReady && dayUnavailable && !isLoading && !isError && (
-                <SelectItem value="" disabled>
+                <SelectItem value="__unavailable" disabled>
                   วันนี้ไม่มีคิวว่าง
                 </SelectItem>
               )}

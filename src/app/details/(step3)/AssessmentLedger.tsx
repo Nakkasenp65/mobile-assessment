@@ -225,7 +225,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
   return (
     <Accordion type="single" collapsible className="w-full overflow-hidden rounded-2xl" defaultValue="details">
       <AccordionItem value="details">
-        <AccordionTrigger className="flex w-full items-center p-4 text-left hover:no-underline">
+        <AccordionTrigger className="flex w-full items-center text-left hover:no-underline">
           <div className="flex w-full flex-col items-start">
             <h2 className="flex items-center gap-1 text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
               รายละเอียดสภาพเครื่อง
@@ -234,7 +234,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
           </div>
         </AccordionTrigger>
 
-        <AccordionContent className="flex flex-col gap-6 p-4">
+        <AccordionContent className="flex flex-col gap-6">
           <div className="bg-white">
             {(() => {
               const filteredGeneralInfoItems = generalInfoKeys
@@ -261,9 +261,7 @@ const AssessmentLedger: React.FC<AssessmentLedgerProps> = ({
                     <Info className="h-5 w-5 text-slate-500" />
                     <h3 className="font-bold text-slate-800">ข้อมูลทั่วไปของเครื่อง</h3>
                   </div>
-                  <div className="space-y-2 border-t border-slate-100 pt-3">
-                    {filteredGeneralInfoItems}
-                  </div>
+                  <div className="space-y-2 border-t border-slate-100 pt-3">{filteredGeneralInfoItems}</div>
                 </>
               );
             })()}

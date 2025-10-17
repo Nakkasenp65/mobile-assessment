@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import TimeSlotSelect from "@/components/ui/TimeSlotSelect";
+import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, Pencil } from "lucide-react";
@@ -283,26 +283,19 @@ export default function ConsignmentService({
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor={`date-consignment`}>วัน</Label>
-                <DateSelect
-                  value={formState.dropoffDate}
-                  onValueChange={(value) => handleInputChange("dropoffDate", value)}
-                  className="h-12 w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`time-consignment`}>เวลา</Label>
-                <TimeSlotSelect
-                  serviceType="บริการขายฝาก"
-                  serviceData={formState}
-                  selectedDate={formState.dropoffDate}
-                  value={formState.dropoffTime}
-                  onChange={(value) => handleInputChange("dropoffTime", value)}
-                  className="h-12 w-full"
-                />
-              </div>
+            {/* Unified Date & Time selection to mirror SellNowService */}
+            <div className="grid grid-cols-1 gap-4">
+              <DateTimeSelect
+                serviceType="บริการขายฝาก"
+                serviceData={formState}
+                dateValue={formState.dropoffDate}
+                onDateChange={(value) => handleInputChange("dropoffDate", value)}
+                timeValue={formState.dropoffTime}
+                onTimeChange={(value) => handleInputChange("dropoffTime", value)}
+                className="w-full"
+                labelDate="วัน"
+                labelTime="เวลา"
+              />
             </div>
           </motion.div>
         </motion.div>

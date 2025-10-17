@@ -14,7 +14,7 @@ import {
   ClipboardCheck,
   ChevronDown,
   Printer,
-  CardSim, // ✨ 1. Import Printer icon
+  HardDrive,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -182,9 +182,9 @@ export default function AssessmentConfirmationPage() {
             {/* Device Info */}
             <div className="mb-8 rounded-2xl bg-gray-50 p-6 sm:p-8">
               {/* Device Info Container */}
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-6">
                 {/* Image + Details wrapper */}
-                <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+                <div className="flex w-full flex-row items-center gap-4">
                   {/* Device Image */}
                   <div className="flex-shrink-0">
                     {isImageLoading ? (
@@ -195,7 +195,7 @@ export default function AssessmentConfirmationPage() {
                         alt={`${mockRecord.deviceInfo.brand} ${mockRecord.deviceInfo.model}`}
                         width={100}
                         height={100}
-                        className="rounded-xl bg-white object-contain p-2 shadow-sm"
+                        className="h-[64px] w-[64px] rounded-xl bg-white object-contain p-1 shadow-sm"
                       />
                     ) : (
                       <div className="flex h-[100px] w-[100px] items-center justify-center rounded-xl bg-white p-2 text-xs text-slate-500 shadow-sm">
@@ -205,12 +205,12 @@ export default function AssessmentConfirmationPage() {
                   </div>
                   {/* Device Details */}
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-foreground text-md leading-tight font-bold sm:text-xl">
+                    <h3 className="text-foreground text-base leading-tight font-bold sm:text-xl">
                       {mockRecord.deviceInfo.brand} {mockRecord.deviceInfo.model || mockRecord.deviceInfo.productType}
                     </h3>
                     {mockRecord.deviceInfo.storage && (
                       <div className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                        <CardSim className="h-3.5 w-3.5" />
+                        <HardDrive className="h-3.5 w-3.5" />
                         <span>{mockRecord.deviceInfo.storage}</span>
                       </div>
                     )}
@@ -227,7 +227,7 @@ export default function AssessmentConfirmationPage() {
                     damping: 15,
                     delay: 0.2,
                   }}
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center self-center rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm sm:h-20 sm:w-20 sm:self-auto dark:from-green-900/20 dark:to-emerald-900/20"
+                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center self-end rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm sm:h-20 sm:w-20 sm:self-auto dark:from-green-900/20 dark:to-emerald-900/20"
                 >
                   <span className="text-3xl font-black text-green-600 sm:text-5xl dark:text-green-400">A</span>
                 </motion.div>

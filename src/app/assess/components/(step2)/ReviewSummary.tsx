@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
+import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft, CardSim } from "lucide-react";
 import AssessmentLedger from "../../../details/(step3)/AssessmentLedger";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import {
@@ -63,6 +63,19 @@ export default function ReviewSummary({
           <CheckCircle className="h-5 w-5 text-emerald-600" />
           ตรวจสอบสรุปข้อมูลอุปกรณ์ของคุณ
         </h3>
+        {/* Device Info Summary */}
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-foreground text-base font-semibold">
+            {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
+          </div>
+          {deviceInfo.storage && (
+            <div className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              <CardSim className="h-3.5 w-3.5" />
+              <span>{deviceInfo.storage}</span>
+            </div>
+          )}
+        </div>
+        {/* Ledger */}
         <AssessmentLedger
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
