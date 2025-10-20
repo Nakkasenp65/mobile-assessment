@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface PriceLockCountdownProps {
   expiresAt: string; // ISO string format
@@ -18,7 +20,11 @@ interface TimeRemaining {
   isExpired: boolean;
 }
 
-export function PriceLockCountdown({ expiresAt, compact = false, className = "" }: PriceLockCountdownProps) {
+export function PriceLockCountdown({
+  expiresAt,
+  compact = false,
+  className = "",
+}: PriceLockCountdownProps) {
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
@@ -78,6 +84,7 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        aria-live="polite"
         className={`flex items-center justify-center gap-2 text-xs text-red-600 dark:text-red-400 ${className}`}
       >
         <Clock className="h-3.5 w-3.5" />
@@ -93,14 +100,23 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className={`flex items-center justify-center gap-2 ${className}`}
+        aria-live="polite"
+        className={`flex items-center justify-center gap-1 ${className}`}
       >
-        <Clock className={`h-3.5 w-3.5 ${isUrgent ? "text-orange-500" : "text-muted-foreground"}`} />
-        <div className="flex items-center gap-1.5 text-xs">
+        <Clock
+          className={cn(
+            "h-3.5 w-3.5",
+            isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground",
+          )}
+        />
+        <div className="flex items-center gap-1 text-xs">
           <span
-            className={`font-medium ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground"}`}
+            className={cn(
+              "font-medium",
+              isUrgent ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground",
+            )}
           >
-            ล็อกราคา
+            จนถึง
           </span>
           <div className="flex items-baseline gap-0.5">
             {timeRemaining.days > 0 && (
@@ -109,18 +125,24 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
                   key={`d-${timeRemaining.days}`}
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`font-semibold tabular-nums ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-foreground"}`}
+                  className={cn(
+                    "font-semibold tabular-nums",
+                    isUrgent ? "text-amber-700 dark:text-amber-300" : "text-foreground",
+                  )}
                 >
                   {timeRemaining.days}
                 </motion.span>
-                <span className="text-muted-foreground text-[10px]">ว</span>
+                <span className="text-muted-foreground">ว</span>
               </>
             )}
             <motion.span
               key={`h-${timeRemaining.hours}`}
               initial={{ opacity: 0, y: -3 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`font-semibold tabular-nums ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-foreground"}`}
+              className={cn(
+                "font-semibold tabular-nums",
+                isUrgent ? "text-amber-700 dark:text-amber-300" : "text-foreground",
+              )}
             >
               {String(timeRemaining.hours).padStart(2, "0")}
             </motion.span>
@@ -129,7 +151,10 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
               key={`m-${timeRemaining.minutes}`}
               initial={{ opacity: 0, y: -3 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`font-semibold tabular-nums ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-foreground"}`}
+              className={cn(
+                "font-semibold tabular-nums",
+                isUrgent ? "text-amber-700 dark:text-amber-300" : "text-foreground",
+              )}
             >
               {String(timeRemaining.minutes).padStart(2, "0")}
             </motion.span>
@@ -138,7 +163,10 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
               key={`s-${timeRemaining.seconds}`}
               initial={{ opacity: 0, y: -3 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`font-semibold tabular-nums ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-foreground"}`}
+              className={cn(
+                "font-semibold tabular-nums",
+                isUrgent ? "text-amber-700 dark:text-amber-300" : "text-foreground",
+              )}
             >
               {String(timeRemaining.seconds).padStart(2, "0")}
             </motion.span>
@@ -153,49 +181,43 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative overflow-hidden rounded-xl border ${
-        isUrgent
-          ? "border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50 dark:border-orange-800 dark:from-orange-950 dark:to-yellow-950"
-          : "border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-950 dark:to-indigo-950"
-      } p-4 shadow-sm ${className}`}
+      aria-live="polite"
+      className={className}
     >
-      <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-2xl" />
+      <Card
+        className={cn("relative overflow-hidden", isUrgent ? "ring-1 ring-amber-200" : undefined)}
+      >
+        <div className="relative">
+          <div className="mb-3 flex items-center gap-2">
+            <Clock
+              className={cn(
+                "h-5 w-5",
+                isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground",
+              )}
+            />
+            <p className="text-foreground text-sm font-semibold">⏰ ล็อกราคาหมดอายุใน</p>
+          </div>
 
-      <div className="relative">
-        <div className="mb-3 flex items-center gap-2">
-          <Clock
-            className={`h-5 w-5 ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-blue-600 dark:text-blue-400"}`}
-          />
-          <p
-            className={`text-sm font-semibold ${isUrgent ? "text-orange-900 dark:text-orange-100" : "text-blue-900 dark:text-blue-100"}`}
-          >
-            ⏰ ล็อกราคาหมดอายุใน
-          </p>
+          <div className="mb-3 grid grid-cols-4 gap-2">
+            <TimeUnit value={timeRemaining.days} label="วัน" isUrgent={isUrgent} />
+            <TimeUnit value={timeRemaining.hours} label="ชม." isUrgent={isUrgent} />
+            <TimeUnit value={timeRemaining.minutes} label="นาที" isUrgent={isUrgent} />
+            <TimeUnit value={timeRemaining.seconds} label="วินาที" isUrgent={isUrgent} />
+          </div>
+
+          <p className="text-muted-foreground text-xs">หมดอายุ: {expiryDate} น.</p>
+
+          {isUrgent && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300"
+            >
+              ⚠️ เหลือเวลาไม่มาก! กรุณาทำรายการโดยเร็ว
+            </motion.p>
+          )}
         </div>
-
-        <div className="mb-3 grid grid-cols-4 gap-2">
-          <TimeUnit value={timeRemaining.days} label="วัน" isUrgent={isUrgent} />
-          <TimeUnit value={timeRemaining.hours} label="ชม." isUrgent={isUrgent} />
-          <TimeUnit value={timeRemaining.minutes} label="นาที" isUrgent={isUrgent} />
-          <TimeUnit value={timeRemaining.seconds} label="วินาที" isUrgent={isUrgent} />
-        </div>
-
-        <p
-          className={`text-xs ${isUrgent ? "text-orange-700 dark:text-orange-300" : "text-blue-700 dark:text-blue-300"}`}
-        >
-          หมดอายุ: {expiryDate} น.
-        </p>
-
-        {isUrgent && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-2 text-xs font-semibold text-orange-800 dark:text-orange-200"
-          >
-            ⚠️ เหลือเวลาไม่มาก! กรุณาทำรายการโดยเร็ว
-          </motion.p>
-        )}
-      </div>
+      </Card>
     </motion.div>
   );
 }
@@ -209,26 +231,26 @@ interface TimeUnitProps {
 function TimeUnit({ value, label, isUrgent }: TimeUnitProps) {
   return (
     <div
-      className={`flex flex-col items-center rounded-lg ${
-        isUrgent ? "bg-orange-100 dark:bg-orange-900/50" : "bg-blue-100 dark:bg-blue-900/50"
-      } px-2 py-3`}
+      className={cn(
+        "flex flex-col items-center rounded-lg border px-2 py-3",
+        isUrgent
+          ? "bg-muted/50 dark:bg-muted/30 border-amber-200"
+          : "border-border bg-muted/50 dark:bg-muted/30",
+      )}
     >
       <motion.span
         key={value}
         initial={{ scale: 1.2, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className={`text-xl font-bold tabular-nums ${
-          isUrgent ? "text-orange-900 dark:text-orange-100" : "text-blue-900 dark:text-blue-100"
-        }`}
+        className={cn(
+          "text-xl font-bold tabular-nums",
+          isUrgent ? "text-amber-800 dark:text-amber-200" : "text-foreground",
+        )}
       >
         {String(value).padStart(2, "0")}
       </motion.span>
-      <span
-        className={`text-xs ${isUrgent ? "text-orange-700 dark:text-orange-300" : "text-blue-700 dark:text-blue-300"}`}
-      >
-        {label}
-      </span>
+      <span className="text-muted-foreground text-xs">{label}</span>
     </div>
   );
 }

@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Phone, Pencil } from "lucide-react";
 import { motion, Variants } from "framer-motion";
-import Swal from "sweetalert2";
+import { useState } from "react";
+import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 
 interface CustomerInfoFormProps {
   formState: {
@@ -17,34 +18,10 @@ interface CustomerInfoFormProps {
 }
 
 const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ formState, handleInputChange, formVariants }) => {
-  const handleEditPhoneClick = async () => {
-    const result = await Swal.fire({
-      title: "แก้ไขเบอร์โทรศัพท์",
-      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
-      input: "tel",
-      inputValue: formState.phone,
-      inputAttributes: {
-        maxlength: "10",
-        inputmode: "numeric",
-        pattern: "[0-9]*",
-        autocapitalize: "off",
-        autocorrect: "off",
-      },
-      showCancelButton: true,
-      confirmButtonText: "ยืนยัน",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: (value) => {
-        const sanitized = (value || "").replace(/[^0-9]/g, "");
-        if (!/^\d{10}$/.test(sanitized)) {
-          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
-          return;
-        }
-        return sanitized;
-      },
-    });
-    if (result.value) {
-      handleInputChange("phone", result.value);
-    }
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+
+  const handleEditPhoneClick = () => {
+    setIsPhoneModalOpen(true);
   };
   return (
     <motion.div variants={formVariants} className="border-border flex flex-col gap-4 border-b pb-8">
@@ -87,6 +64,16 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ formState, handleIn
           </button>
         </div>
       </div>
+
+      <PhoneNumberEditModal
+        open={isPhoneModalOpen}
+        initialPhone={formState.phone}
+        onCancel={() => setIsPhoneModalOpen(false)}
+        onSave={(newPhone) => {
+          handleInputChange("phone", newPhone);
+          setIsPhoneModalOpen(false);
+        }}
+      />
     </motion.div>
   );
 };

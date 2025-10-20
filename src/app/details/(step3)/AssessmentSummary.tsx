@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ImageOff, XCircle, CardSim } from "lucide-react"; // ✨ [ADD] Import XCircle icon
+import { ImageOff, XCircle, CardSim, Calendar, Clock } from "lucide-react"; // ✨ [ADD] Icons for meta row
 import AssessmentLedger from "./AssessmentLedger";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../types/device";
@@ -63,7 +63,12 @@ const AssessmentSummary = ({
               <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200/50 shadow-sm dark:from-zinc-800 dark:to-zinc-700/50">
                 <AnimatePresence mode="wait">
                   {isImageLoading ? (
-                    <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div
+                      key="loader"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
                       <div className="h-7 w-7 animate-spin rounded-full border-3 border-gray-300 border-t-blue-500 dark:border-zinc-600 dark:border-t-blue-400" />
                     </motion.div>
                   ) : mobileData?.image_url ? (
@@ -83,7 +88,12 @@ const AssessmentSummary = ({
                       />
                     </motion.div>
                   ) : (
-                    <motion.div key="no-image" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div
+                      key="no-image"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
                       <ImageOff className="h-10 w-10 text-gray-300 dark:text-zinc-600" />
                     </motion.div>
                   )}
@@ -117,7 +127,9 @@ const AssessmentSummary = ({
                 }}
                 className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm sm:h-20 sm:w-20 dark:from-green-900/20 dark:to-emerald-900/20"
               >
-                <span className="text-3xl font-black text-green-600 sm:text-5xl dark:text-green-400">{grade}</span>
+                <span className="text-3xl font-black text-green-600 sm:text-5xl dark:text-green-400">
+                  {grade}
+                </span>
               </motion.div>
             )}
           </div>
@@ -152,12 +164,20 @@ const AssessmentSummary = ({
                   })}
                 </motion.p>
               </div>
-              {priceLockExpiresAt && (
-                <div className="flex justify-center">
-                  <PriceLockCountdown expiresAt={priceLockExpiresAt} compact />
-                </div>
-              )}
-              <p className="text-muted-foreground text-center text-xs font-medium">{assessmentDate}</p>
+              {/* Meta row: single compact chip with countdown + date */}
+              <div className="flex justify-center">
+                <span
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-[11px] font-medium whitespace-nowrap text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  aria-label="รายละเอียดการล็อคราคาและวันที่ประเมิน"
+                >
+                  {priceLockExpiresAt && (
+                    <>
+                      <PriceLockCountdown expiresAt={priceLockExpiresAt} compact />
+                    </>
+                  )}
+                  <span className="max-w-[60vw] truncate sm:max-w-none">{assessmentDate}</span>
+                </span>
+              </div>
             </div>
           ) : (
             // iCloud Locked Message (Visible when not priceable)
@@ -169,7 +189,9 @@ const AssessmentSummary = ({
             >
               <XCircle className="h-10 w-10 flex-shrink-0 text-red-500 dark:text-red-400" />
               <div>
-                <h4 className="font-bold text-red-800 dark:text-red-300">ไม่สามารถประเมินราคาได้</h4>
+                <h4 className="font-bold text-red-800 dark:text-red-300">
+                  ไม่สามารถประเมินราคาได้
+                </h4>
                 <p className="text-sm text-red-700/90 dark:text-red-300/80">
                   ขออภัย เราไม่รับซื้ออุปกรณ์ที่ติดล็อค iCloud
                 </p>

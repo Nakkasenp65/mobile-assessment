@@ -16,6 +16,7 @@ import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { RefinanceServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 
 // Dynamically import Turnstile (SSR-safe)
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
@@ -73,6 +74,7 @@ export default function RefinanceService({
   const [selectedMonths, setSelectedMonths] = useState<(typeof PERIOD_OPTIONS)[number]>(6);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstileError, setShowTurnstileError] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const handleInputChange = (field: keyof typeof formState, value: string) => {
     // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
@@ -94,34 +96,8 @@ export default function RefinanceService({
     }
   };
 
-  const handleEditPhoneClick = async () => {
-    const result = await Swal.fire({
-      title: "แก้ไขเบอร์โทรศัพท์",
-      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
-      input: "tel",
-      inputValue: formState.phone,
-      inputAttributes: {
-        maxlength: "10",
-        inputmode: "numeric",
-        pattern: "[0-9]*",
-        autocapitalize: "off",
-        autocorrect: "off",
-      },
-      showCancelButton: true,
-      confirmButtonText: "ยืนยัน",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: (value) => {
-        const sanitized = (value || "").replace(/[^0-9]/g, "");
-        if (!/^\d{10}$/.test(sanitized)) {
-          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
-          return;
-        }
-        return sanitized;
-      },
-    });
-    if (result.value) {
-      handleInputChange("phone", result.value);
-    }
+  const handleEditPhoneClick = () => {
+    setIsPhoneModalOpen(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,6 +356,16 @@ export default function RefinanceService({
                 </button>
               </div>
             </div>
+
+            <PhoneNumberEditModal
+              open={isPhoneModalOpen}
+              initialPhone={formState.phone}
+              onCancel={() => setIsPhoneModalOpen(false)}
+              onSave={(newPhone) => {
+                handleInputChange("phone", newPhone);
+                setIsPhoneModalOpen(false);
+              }}
+            />
 
             <div className="flex flex-col gap-2">
               <Label className="mb-2">อาชีพของคุณ</Label>

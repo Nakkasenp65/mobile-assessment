@@ -32,7 +32,6 @@ export class OTPError extends Error {
   }
 }
 
-// Cloud Functions response shapes
 interface CloudFnRequestOTPResponse {
   code: string;
   status: string;
@@ -72,6 +71,11 @@ export async function requestOTP(phoneNumber: string): Promise<OTPRequestRespons
   try {
     const msisdn = toMsisdn(phoneNumber);
     const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
+
+    if (!otpBaseUrl) {
+      throw new OTPError("OTP_BASE_URL environment variable is not set");
+    }
+
     const response = await axios.post(
       otpBaseUrl + "/requestOTP",
       { to: msisdn },
@@ -119,6 +123,10 @@ export async function requestOTP(phoneNumber: string): Promise<OTPRequestRespons
 export async function verifyOTP(token: string, pin: string): Promise<OTPVerifyResponse> {
   const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
   try {
+    if (!otpBaseUrl) {
+      throw new OTPError("OTP_BASE_URL environment variable is not set");
+    }
+
     const response = await axios.post(
       otpBaseUrl + "/verifyOTP",
       { token, pin },

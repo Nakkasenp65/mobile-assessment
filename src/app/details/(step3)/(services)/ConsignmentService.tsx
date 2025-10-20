@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { ConsignmentServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
+import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 
 // Interface for Component Props
 interface ConsignmentServiceProps {
@@ -65,34 +66,10 @@ export default function ConsignmentService({
     }
   };
 
-  const handleEditPhoneClick = async () => {
-    const result = await Swal.fire({
-      title: "แก้ไขเบอร์โทรศัพท์",
-      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
-      input: "tel",
-      inputValue: formState.phone,
-      inputAttributes: {
-        maxlength: "10",
-        inputmode: "numeric",
-        pattern: "[0-9]*",
-        autocapitalize: "off",
-        autocorrect: "off",
-      },
-      showCancelButton: true,
-      confirmButtonText: "ยืนยัน",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: (value) => {
-        const sanitized = (value || "").replace(/[^0-9]/g, "");
-        if (!/^\d{10}$/.test(sanitized)) {
-          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
-          return;
-        }
-        return sanitized;
-      },
-    });
-    if (result.value) {
-      handleInputChange("phone", result.value);
-    }
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+
+  const handleEditPhoneClick = () => {
+    setIsPhoneModalOpen(true);
   };
 
   const { serviceFeeAmount, netAmount } = useMemo(() => {
@@ -215,8 +192,18 @@ export default function ConsignmentService({
                   <Pencil className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          </motion.div>
+          </div>
+
+          <PhoneNumberEditModal
+            open={isPhoneModalOpen}
+            initialPhone={formState.phone}
+            onCancel={() => setIsPhoneModalOpen(false)}
+            onSave={(newPhone) => {
+              handleInputChange("phone", newPhone);
+              setIsPhoneModalOpen(false);
+            }}
+          />
+        </motion.div>
 
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">รายละเอียดเพิ่มเติม</Label>

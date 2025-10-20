@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { IPhoneExchangeServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
+import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 
 // Interface for Component Props
@@ -118,34 +119,10 @@ export default function IPhoneExchangeService({
     setSelectedBtsLine("");
   };
 
-  const handleEditPhoneClick = async () => {
-    const result = await Swal.fire({
-      title: "แก้ไขเบอร์โทรศัพท์",
-      text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
-      input: "tel",
-      inputValue: formState.phone,
-      inputAttributes: {
-        maxlength: "10",
-        inputmode: "numeric",
-        pattern: "[0-9]*",
-        autocapitalize: "off",
-        autocorrect: "off",
-      },
-      showCancelButton: true,
-      confirmButtonText: "ยืนยัน",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: (value) => {
-        const sanitized = (value || "").replace(/[^0-9]/g, "");
-        if (!/^\d{10}$/.test(sanitized)) {
-          Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
-          return;
-        }
-        return sanitized;
-      },
-    });
-    if (result.value) {
-      handleInputChange("phone", result.value);
-    }
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+
+  const handleEditPhoneClick = () => {
+    setIsPhoneModalOpen(true);
   };
 
   const { feeAmount, netAmount } = useMemo(() => {
@@ -258,33 +235,27 @@ export default function IPhoneExchangeService({
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
                 <Input id={`phone-exchange`} type="tel" placeholder="0xx-xxx-xxxx" value={formState.phone} readOnly inputMode="numeric" pattern="[0-9]{10}" maxLength={10} className="h-12 pr-12 pl-10" />
-                <button type="button" onClick={() => {
-                  void Swal.fire({
-                    title: "แก้ไขเบอร์โทรศัพท์",
-                    text: "กรุณากรอกเบอร์ 10 หลัก เช่น 0987654321",
-                    input: "tel",
-                    inputValue: formState.phone,
-                    inputAttributes: { maxlength: "10", inputmode: "numeric", pattern: "[0-9]*", autocapitalize: "off", autocorrect: "off" },
-                    showCancelButton: true,
-                    confirmButtonText: "ยืนยัน",
-                    cancelButtonText: "ยกเลิก",
-                    preConfirm: (value) => {
-                      const sanitized = (value || "").replace(/[^0-9]/g, "");
-                      if (!/^\d{10}$/.test(sanitized)) {
-                        Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก");
-                        return;
-                      }
-                      return sanitized;
-                    },
-                  }).then((result) => {
-                    if (result.value) handleInputChange("phone", result.value);
-                  });
-                }} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50" aria-label="แก้ไขเบอร์โทรศัพท์">
+                <button
+                  type="button"
+                  onClick={handleEditPhoneClick}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                  aria-label="แก้ไขเบอร์โทรศัพท์"
+                >
                   <Pencil className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </motion.div>
+
+          <PhoneNumberEditModal
+            open={isPhoneModalOpen}
+            initialPhone={formState.phone}
+            onCancel={() => setIsPhoneModalOpen(false)}
+            onSave={(newPhone) => {
+              handleInputChange("phone", newPhone);
+              setIsPhoneModalOpen(false);
+            }}
+          />
 
           {/* Location Selection */}
           <motion.div variants={formVariants} className="space-y-4">

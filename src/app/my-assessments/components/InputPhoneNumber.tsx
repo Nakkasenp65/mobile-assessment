@@ -74,7 +74,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
                 maxLength={10}
                 value={sanitizedPhone}
                 onChange={(e) => onPhoneNumberChange(e.target.value)}
-                className="h-12 w-full rounded-2xl border border-gray-200 bg-gray-50 text-center text-base tracking-wider transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:ring-offset-0 sm:h-14 sm:pr-20 sm:text-lg"
+                className="h-12 w-full rounded-2xl border border-gray-200 bg-gray-50 text-center text-base tracking-wider transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:ring-offset-0 sm:h-14 sm:text-lg"
                 required
               />
             </div>
