@@ -10,7 +10,10 @@ const AnimatedButton = () => {
     // [แก้ไข] เพิ่ม pointer-events-none เพื่อให้ div นี้ "โปร่งใส" ต่อการคลิก
     <div className="pointer-events-none fixed z-50 hidden h-full w-full xl:block">
       {/* [แก้ไข] เพิ่ม pointer-events-auto เพื่อให้เฉพาะส่วนนี้เท่านั้นที่คลิกได้ */}
-      <div className="pointer-events-auto absolute right-0 z-50 w-52 cursor-pointer duration-500 ease-in-out hover:right-40 lg:mt-4">
+      <a
+        href="tel:0947878783"
+        className="pointer-events-auto absolute right-0 z-50 w-52 cursor-pointer duration-500 ease-in-out hover:right-40 lg:mt-4"
+      >
         <Image
           src={"https://lh3.googleusercontent.com/d/1OBI2QoC4WkKv_u0WyhKdsFeJ-z53TK6U"}
           alt="coin bouncing"
@@ -29,7 +32,7 @@ const AnimatedButton = () => {
             </span>
           </div>
         </button>
-      </div>
+      </a>
     </div>
   );
 };
