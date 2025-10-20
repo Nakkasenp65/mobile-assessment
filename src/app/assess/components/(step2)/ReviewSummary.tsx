@@ -1,18 +1,11 @@
 // src/app/assess/components/(step2)/ReviewSummary.tsx
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, AlertCircle, Phone, ShieldCheck, ArrowLeft, CardSim } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle, AlertCircle, Phone, ArrowLeft, CardSim } from "lucide-react";
 import AssessmentLedger from "../../../details/(step3)/AssessmentLedger";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
@@ -42,32 +35,44 @@ export default function ReviewSummary({
   const isValidPhone = /^\d{10}$/.test(sanitized);
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
-  const openPhoneModal = () => {
+  function openPhoneModal() {
     setPhoneError(null);
     setIsPhoneModalOpen(true);
-  };
-  const closePhoneModal = () => setIsPhoneModalOpen(false);
-  const handleConfirmClick = () => {
+  }
+
+  function closePhoneModal() {
+    setIsPhoneModalOpen(false);
+  }
+
+  function handleConfirmClick() {
     if (!isValidPhone) {
       setPhoneError("กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก)");
       return;
     }
     setPhoneError(null);
     onConfirm(sanitized);
-  };
+  }
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
+      {/* Summary Container */}
       <div className="rounded-2xl border bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        {/* Summary Header */}
         <h3 className="mb-3 flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
           <CheckCircle className="h-5 w-5 text-emerald-600" />
           ตรวจสอบสรุปข้อมูลอุปกรณ์ของคุณ
         </h3>
         {/* Device Info Summary */}
         <div className="mt-6 flex items-center justify-between">
-          <div className="text-foreground text-base font-semibold">
+          {/* Device Name */}
+          <div className="text-foreground text-lg font-semibold">
             {deviceInfo.brand} {deviceInfo.model || deviceInfo.productType}
           </div>
+          {/* Storage */}
           {deviceInfo.storage && (
             <div className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
               <CardSim className="h-3.5 w-3.5" />
@@ -135,65 +140,104 @@ export default function ReviewSummary({
 
       {/* Phone Number Modal */}
       <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-600 text-white shadow">
-                <Phone className="h-4 w-4" />
-              </span>
-              ยืนยันเบอร์โทรศัพท์เพื่อบันทึกรายการ
-            </DialogTitle>
-            <DialogDescription>
-              กรุณากรอกเบอร์โทรศัพท์ 10 หลัก เพื่อใช้ค้นหาและติดตามรายการประเมินของคุณในภายหลัง
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">เบอร์โทรศัพท์</label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Phone className="h-4 w-4 text-gray-400" />
+        <DialogContent className="overflow-hidden rounded-3xl border-0 bg-white p-0 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:max-w-md">
+          {/* Apple-style header */}
+          <div className="px-8 pt-8 pb-6">
+            <DialogHeader className="space-y-6 text-center">
+              <div className="flex justify-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+                  <Phone className="h-10 w-10 text-gray-600" strokeWidth={1.5} />
+                </div>
               </div>
-              <Input
-                type="tel"
-                inputMode="numeric"
-                value={sanitized ? sanitized : phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
-                className="h-11 w-full rounded-lg border-gray-200 bg-gray-50 pr-4 pl-10 text-base transition-all focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-900"
-                placeholder="0987654321"
-                maxLength={10}
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className={`h-4 w-4 ${isValidPhone ? "text-emerald-600" : "text-red-500"}`} />
-              <p className={`text-xs ${isValidPhone ? "text-emerald-700" : "text-red-600"}`}>
-                {isValidPhone ? "รูปแบบเบอร์ถูกต้อง" : "ต้องเป็นตัวเลข 10 หลัก"}
-              </p>
-            </div>
-            {phoneError && <p className="text-sm text-red-600">{phoneError}</p>}
-            {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+              <div className="space-y-2">
+                <DialogTitle className="text-2xl font-semibold tracking-tight text-gray-900">
+                  ยืนยันเบอร์โทรศัพท์
+                </DialogTitle>
+                <DialogDescription className="text-base leading-relaxed text-gray-500">
+                  กรอกเบอร์โทรศัพท์ 10 หลัก เพื่อใช้ในการติดตามรายการประเมินของคุณ
+                </DialogDescription>
+              </div>
+            </DialogHeader>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closePhoneModal} className="rounded-lg" disabled={isSubmitting}>
-              ยกเลิก
-            </Button>
-            <Button
-              onClick={handleConfirmClick}
-              className="rounded-lg bg-gradient-to-r from-orange-500 to-pink-600 text-white disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!isValidPhone || isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" />
-                  กำลังบันทึก...
-                </span>
-              ) : (
-                "บันทึกรายการ"
+          {/* Input section */}
+          <div className="px-8 pb-8">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
+                <div className="relative">
+                  <Input
+                    type="tel"
+                    inputMode="numeric"
+                    value={sanitized ? sanitized : phoneInput}
+                    onChange={(e) => setPhoneInput(e.target.value)}
+                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 text-center text-xl tracking-widest transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0"
+                    placeholder="เบอร์โทรศัพท์ 10 หลัก"
+                    maxLength={10}
+                    disabled={isSubmitting}
+                  />
+                  {/* Subtle validation indicator */}
+                  {sanitized.length > 0 && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                      {isValidPhone ? (
+                        <div className="h-3 w-3 rounded-full bg-green-500" />
+                      ) : (
+                        <div className="flex space-x-1">
+                          {Array.from({ length: 10 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-1 w-1 rounded-full ${i < sanitized.length ? "bg-blue-500" : "bg-gray-200"}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Minimalist validation */}
+
+              {/* Clean error display */}
+              {(phoneError || serverError) && (
+                <div className="rounded-2xl bg-red-50 px-4 py-3 text-center">
+                  <p className="text-sm text-red-600">{phoneError || serverError}</p>
+                </div>
               )}
-            </Button>
-          </DialogFooter>
+            </div>
+          </div>
+
+          {/* Apple-style button section */}
+          <div className="border-t border-gray-100 px-8 py-6">
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={closePhoneModal}
+                className="h-12 flex-1 rounded-2xl border-gray-200 bg-white font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 focus:ring-offset-0"
+                disabled={isSubmitting}
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={handleConfirmClick}
+                className={`h-12 flex-1 rounded-2xl font-medium transition-all focus:ring-2 focus:ring-offset-0 ${
+                  isValidPhone && !isSubmitting
+                    ? "bg-blue-600 text-white shadow-[0_4px_12px_rgba(59,130,246,0.25)] hover:bg-blue-700 focus:ring-blue-500/50"
+                    : "cursor-not-allowed bg-gray-200 text-gray-400"
+                }`}
+                disabled={!isValidPhone || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center gap-3">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    กำลังบันทึก
+                  </span>
+                ) : (
+                  "บันทึกรายการ"
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

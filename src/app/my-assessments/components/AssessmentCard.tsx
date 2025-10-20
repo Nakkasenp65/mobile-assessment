@@ -87,17 +87,17 @@ interface AssessmentRecord {
 const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   const statusConfig = {
     completed: {
-      label: "ประเมินเสร็จสิ้น",
+      label: "เสร็จสิ้น",
       icon: CheckCircle,
       color: "bg-green-100 text-green-800 border-green-200",
     },
     pending: {
-      label: "รอการประเมิน",
+      label: "รอประเมิน",
       icon: Clock,
       color: "bg-yellow-100 text-yellow-800 border-yellow-200",
     },
     "in-progress": {
-      label: "กำลังดำเนินการ",
+      label: "ดำเนินการ",
       icon: Wrench,
       color: "bg-blue-100 text-blue-800 border-blue-200",
     },
@@ -107,80 +107,87 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
         config.color,
-        "border",
-        "min-w-[100px]",
-        "justify-center",
+        "min-w-[80px] justify-center",
       )}
     >
-      <Icon className="h-4 w-4 flex-shrink-0" />
+      <Icon className="h-3 w-3 flex-shrink-0" />
       <span>{config.label}</span>
     </span>
   );
 };
 
-export default function AssessmentCard({ assessment, index }: { assessment: AssessmentRecord; index: number }) {
+export default function AssessmentCard({ assessment }: { assessment: AssessmentRecord; index?: number }) {
   const { data: productData, isLoading } = useMobile(assessment.device.brand, assessment.device.model);
   const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
   const ServiceIcon = service?.icon;
+
   return (
     <motion.div className="w-full">
       <Link
         href={`/details/${assessment.id}`}
-        className="group block h-full rounded-lg border border-slate-200 bg-white/80 p-5 shadow-sm transition-all duration-300 hover:border-orange-300"
+        className="group block h-full rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md"
       >
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100">
               {isLoading ? (
-                <Skeleton className="h-12 w-12 rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-md" />
               ) : productData?.image_url ? (
                 <Image
                   src={productData.image_url}
                   alt={`${assessment.device.brand} ${assessment.device.model}`}
-                  width={56}
-                  height={56}
-                  className="h-12 w-12 object-contain"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
                 />
               ) : (
                 <div className="text-xs text-slate-500">ไม่มีรูป</div>
               )}
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="min-w-0 flex-1">
+              <h3 className="line-clamp-2 text-sm leading-tight font-bold text-slate-900 sm:text-base">
                 {assessment.device.brand} {assessment.device.model}
               </h3>
-              <p className="text-sm text-slate-500">{assessment.device.storage}</p>
+              <p className="truncate text-xs text-slate-500 sm:text-sm">{assessment.device.storage}</p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-500" />
+          <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-500" />
         </div>
-        <div className="my-4 h-px bg-slate-200" />
-        <div className="space-y-3 text-sm">
+
+        {/* Divider */}
+        <div className="my-3 h-px bg-slate-200" />
+
+        {/* Details */}
+        <div className="space-y-2 text-xs sm:text-sm">
           <div className="flex items-center justify-between">
             <span className="text-slate-500">สถานะ:</span>
             <StatusBadge status={assessment.status} />
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500">บริการ:</span>
-            {service && ServiceIcon && (
+          {service && ServiceIcon && (
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">บริการ:</span>
               <div className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}>
-                <ServiceIcon className="h-4 w-4 flex-shrink-0" />
-                <span>{service.title}</span>
+                <ServiceIcon className="h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
+                <span className="truncate">{service.title}</span>
               </div>
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500">วันที่ประเมิน:</span>
-            <span className="font-medium text-slate-700">{assessment.assessmentDate}</span>
-          </div>
+            </div>
+          )}
+          {assessment.assessmentDate && (
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">วันที่ประเมิน:</span>
+              <span className="truncate font-medium text-slate-700">{assessment.assessmentDate}</span>
+            </div>
+          )}
         </div>
-        <div className="my-4 h-px bg-slate-200" />
-        <div className="flex items-end justify-between">
+
+        {/* Price Section */}
+        <div className="mt-3 flex items-end justify-between border-t border-slate-100 pt-3">
           <div>
-            <p className="text-sm text-slate-500">ราคาประเมิน</p>
-            <p className="text-xl font-bold text-orange-600">
+            <p className="text-xs text-slate-500">ราคาประเมิน</p>
+            <p className="text-lg font-bold text-orange-600 sm:text-xl">
               {assessment.estimatedValue.toLocaleString("th-TH", {
                 style: "currency",
                 currency: "THB",
@@ -188,9 +195,9 @@ export default function AssessmentCard({ assessment, index }: { assessment: Asse
               })}
             </p>
           </div>
-          <div className="inline-flex items-center text-sm font-semibold text-orange-600 group-hover:text-orange-700">
+          <div className="inline-flex items-center text-xs font-semibold text-orange-600 group-hover:text-orange-700 sm:text-sm">
             ดูรายละเอียด
-            <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+            <ChevronRight className="ml-1 h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
           </div>
         </div>
       </Link>

@@ -36,7 +36,7 @@ const ModelAndStorageSelector = ({
     <div className="flex w-full max-w-2xl flex-col gap-6">
       {/* Model Selection */}
       <div className="grid w-full gap-2">
-        <Label htmlFor="model-select" className="text-foreground mb-4 text-base font-semibold">
+        <Label htmlFor="model-select" className="text-foreground text-base font-semibold">
           รุ่น <span className="text-red-500">*</span>
         </Label>
         <Select
@@ -63,7 +63,7 @@ const ModelAndStorageSelector = ({
 
       {/* Storage Selection */}
       <div className="grid w-full gap-2">
-        <Label htmlFor="storage-select" className="text-foreground mb-4 text-base font-semibold">
+        <Label htmlFor="storage-select" className="text-foreground text-base font-semibold">
           ความจุ <span className="text-red-500">*</span>
         </Label>
         <Select

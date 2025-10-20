@@ -56,34 +56,24 @@ const AssessStep1 = ({
   const [simpleValid, setSimpleValid] = useState<boolean>(false);
   const [simpleData, setSimpleData] = useState<{ imageFile: File; description: string } | null>(null);
 
-  // ✨ [FIXED] แก้ไข useEffect ให้จัดการกับ Race Condition ของ isDesktop
   useEffect(() => {
-    // ถ้าผู้ใช้เริ่มดำเนินการไปแล้ว (ไม่ใช่ step เริ่มต้น) ให้หยุดการทำงานของ effect นี้
-    // เพื่อไม่ให้ไปรบกวนการย้อนกลับ (Back) ของผู้ใช้
     if (currentStep !== "initializing" && currentStep !== "selectDeviceType") {
       return;
     }
 
-    // กรณีเป็น Desktop: จะข้ามหน้า UserDeviceSelection ไปยังหน้าเลือก Brand ทันที
     if (isDesktop) {
       onUserDeviceUpdate(false);
       setUserDeviceSelection("other_device");
 
-      // หากมีข้อมูลจากหน้าแรก (pre-filled) ให้ข้ามไป step ที่เหมาะสม
       if (deviceInfo.brand) {
         setCurrentStep(deviceInfo.brand === "Apple" ? "selectProduct" : "selectModelStorage");
       } else {
-        // หากเป็นการเข้าชมปกติ ให้ไปที่หน้าเลือก Brand
         setCurrentStep("selectBrand");
       }
-    }
-    // กรณีเป็น Mobile (หรือ Desktop ที่ยังตรวจไม่เสร็จ): จะแสดงหน้า UserDeviceSelection ก่อน
-    else {
-      // ตั้งค่าเริ่มต้นบน Mobile โดยคำนึงถึงข้อมูลที่มีอยู่แล้ว เพื่อไม่ให้ข้ามขั้นตอนโดยไม่ตั้งใจ
+    } else {
       if (currentStep === "initializing") {
         if (deviceInfo.brand) {
           if (deviceInfo.brand === "Apple") {
-            // หากระบุ productType แล้ว เลือก step ที่เหมาะสม
             if (deviceInfo.productType) {
               const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
               setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
@@ -158,7 +148,7 @@ const AssessStep1 = ({
     setDirection(1);
   };
 
-  const nextStep = () => {
+  function nextStep() {
     setDirection(1);
     switch (currentStep) {
       case "selectBrand":
@@ -198,9 +188,9 @@ const AssessStep1 = ({
       default:
         break;
     }
-  };
+  }
 
-  const prevStep = () => {
+  function prevStep() {
     setDirection(-1);
     switch (currentStep) {
       case "selectBrand":
@@ -224,7 +214,7 @@ const AssessStep1 = ({
       default:
         break;
     }
-  };
+  }
 
   function renderCurrentStep() {
     if (currentStep === "initializing") {
@@ -271,11 +261,13 @@ const AssessStep1 = ({
             description="เลือกประเภทของอุปกรณ์ Apple ที่คุณต้องการประเมิน"
             direction={direction}
           >
+            {/* Product Selector */}
             <ProductSelector
               selectedProduct={deviceInfo.productType || ""}
               onProductChange={handleProductSelectAndNext}
             />
-            <div className="mt-auto flex w-full justify-start pt-6">
+            {/* Step Navigation */}
+            <div className="mt-auto flex w-full justify-start">
               <FramerButton
                 variant="ghost"
                 onClick={prevStep}

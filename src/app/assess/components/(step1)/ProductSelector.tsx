@@ -10,7 +10,7 @@ import { IconType } from "react-icons";
 import { LucideIcon } from "lucide-react";
 
 // --- Sub-component for individual buttons to manage their own tap state ---
-const ProductButton = ({
+function ProductButton({
   product,
   isSelected,
   onClick,
@@ -18,7 +18,7 @@ const ProductButton = ({
   product: { id: string; name: string; icon: LucideIcon | IconType };
   isSelected: boolean;
   onClick: () => void;
-}) => {
+}) {
   const [isTapping, setIsTapping] = useState(false);
   const Icon = product.icon;
 
@@ -39,7 +39,7 @@ const ProductButton = ({
       transition={{ type: "spring", stiffness: 1000, damping: 30 }}
       className={cn(
         "bg-card relative flex h-32 min-w-36 flex-1 flex-shrink-0 flex-col items-center justify-center rounded-2xl border",
-        "sm:min-w-40",
+        "sm:min-w-56",
         // Use the combined state for styling
         shouldShowSelectedStyle
           ? "border-primary shadow-primary/10 ring-primary shadow-lg ring-2"
@@ -85,7 +85,7 @@ const ProductButton = ({
       )}
     </motion.button>
   );
-};
+}
 
 // --- Main Component ---
 interface ProductSelectorProps {
@@ -93,12 +93,12 @@ interface ProductSelectorProps {
   onProductChange: (productId: string) => void;
 }
 
-const ProductSelector = ({ selectedProduct, onProductChange }: ProductSelectorProps) => {
+export default function ProductSelector({ selectedProduct, onProductChange }: ProductSelectorProps) {
   const appleProducts = PHONE_DATA.products["Apple"] || [];
 
   return (
     <section className="w-full">
-      <div className="flex flex-wrap justify-center gap-4 py-2 sm:justify-start">
+      <div className="mt-4 mb-4 flex flex-wrap justify-center gap-4 py-2 sm:justify-start lg:mt-24">
         {appleProducts.map((product) => (
           <ProductButton
             key={product.id}
@@ -110,6 +110,4 @@ const ProductSelector = ({ selectedProduct, onProductChange }: ProductSelectorPr
       </div>
     </section>
   );
-};
-
-export default ProductSelector;
+}

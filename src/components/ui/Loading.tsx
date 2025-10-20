@@ -7,7 +7,7 @@ export default function Loading() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex min-h-[100dvh] w-full items-center justify-center bg-white p-6"
+      className="flex min-h-[80dvh] w-full items-center justify-center rounded-2xl bg-white p-6 shadow-xl"
     >
       <div className="flex flex-col items-center gap-4">
         {/* Animated dots */}

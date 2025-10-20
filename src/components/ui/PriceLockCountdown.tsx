@@ -102,7 +102,7 @@ export function PriceLockCountdown({ expiresAt, compact = false, className = "" 
           >
             ล็อกราคา
           </span>
-          <div className="flex items-baseline gap-0.5 font-mono">
+          <div className="flex items-baseline gap-0.5">
             {timeRemaining.days > 0 && (
               <>
                 <motion.span
