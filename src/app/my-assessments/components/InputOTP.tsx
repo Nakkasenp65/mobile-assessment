@@ -90,21 +90,15 @@ const InputOTP: React.FC<InputOTPProps> = ({
       transition={{ duration: 0.5 }}
       className="w-full text-center"
     >
-      <h1 className="text-3xl font-extrabold tracking-tight text-[#110e0c] sm:text-4xl md:text-5xl">
-        ยืนยันตัวตน
-      </h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-[#110e0c] sm:text-4xl md:text-5xl">ยืนยันตัวตน</h1>
       <p className="mx-auto mt-4 max-w-xl text-base text-[#78716c] md:text-lg">
-        กรอกรหัส OTP 6 หลักที่ส่งไปยัง{" "}
-        <span className="font-semibold text-orange-600">{phoneNumber}</span>
+        กรอกรหัส OTP 6 หลักที่ส่งไปยัง <span className="font-semibold text-orange-600">{phoneNumber}</span>
       </p>
       {/* แสดงผลรหัสอ้างอิง */}
       <p className="mt-2 text-sm text-slate-500">
-        รหัสอ้างอิง (Ref): <span className="font-mono">REF666</span>
+        รหัสอ้างอิง (Ref): <span>REF666</span>
       </p>
-      <form
-        onSubmit={onSubmit}
-        className="mx-auto mt-6 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
-      >
+      <form onSubmit={onSubmit} className="mx-auto mt-6 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <div className="flex justify-center gap-2 md:gap-3">
           {otp.map((data, index) => (
             <Input
