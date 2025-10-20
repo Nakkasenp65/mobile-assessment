@@ -71,8 +71,9 @@ export async function requestOTP(phoneNumber: string): Promise<OTPRequestRespons
   console.log("Requesting OTP for phone number:", phoneNumber);
   try {
     const msisdn = toMsisdn(phoneNumber);
+    const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
     const response = await axios.post(
-      "https://us-central1-no1-money.cloudfunctions.net/requestOTP",
+      otpBaseUrl + "/requestOTP",
       { to: msisdn },
       { headers: { "Content-Type": "application/json" } },
     );
@@ -116,9 +117,10 @@ export async function requestOTP(phoneNumber: string): Promise<OTPRequestRespons
  * Verify OTP code using token & pin
  */
 export async function verifyOTP(token: string, pin: string): Promise<OTPVerifyResponse> {
+  const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
   try {
     const response = await axios.post(
-      "https://us-central1-no1-money.cloudfunctions.net/verifyOTP",
+      otpBaseUrl + "/verifyOTP",
       { token, pin },
       { headers: { "Content-Type": "application/json" } },
     );

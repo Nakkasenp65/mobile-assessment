@@ -64,7 +64,11 @@ async function fetchAssessmentsByPhone(phone: string): Promise<AssessmentRecord[
     const dev = rec.deviceInfo ?? rec.device ?? { brand: "", model: "", storage: "" };
     const created = rec.createdAt ?? rec.updatedAt ?? "";
     const assessmentDate = created
-      ? new Date(created).toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })
+      ? new Date(created).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
       : "";
 
     return {
@@ -132,7 +136,8 @@ export default function MyAssessmentsPage() {
   } = useQuery<AssessmentRecord[], Error>({
     queryKey: ["assessmentsByPhone", phoneNumber],
     queryFn: () => fetchAssessmentsByPhone(phoneNumber),
-    enabled: step === "show-results" && !!phoneNumber && isPhoneVerified && (isDevEnv || !!turnstileToken),
+    enabled:
+      step === "show-results" && !!phoneNumber && isPhoneVerified && (isDevEnv || !!turnstileToken),
     staleTime: 2 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -288,7 +293,11 @@ export default function MyAssessmentsPage() {
           />
         );
       case "show-results":
-        return isLoading ? <Loading /> : <ResultsView assessments={assessmentsData} onBack={handleBack} />;
+        return isLoading ? (
+          <Loading />
+        ) : (
+          <ResultsView assessments={assessmentsData} onBack={handleBack} />
+        );
       default:
         return null;
     }

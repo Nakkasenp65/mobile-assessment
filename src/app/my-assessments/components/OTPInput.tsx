@@ -85,16 +85,16 @@ const OTPInput: React.FC<OTPInputProps> = ({
   }, []);
 
   return (
-    <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-white/95 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+    <div className="w-full max-w-md sm:max-w-lg overflow-hidden rounded-3xl bg-white/95 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
       {/* Header Section */}
-      <div className="px-10 pt-12 pb-8 text-center">
-        <div className="mx-auto mb-8 flex h-18 w-18 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_8px_32px_rgba(59,130,246,0.3)]">
-          <Shield className="h-8 w-8 text-white" strokeWidth={1.5} />
+      <div className="px-6 pt-8 pb-6 sm:px-10 sm:pt-12 sm:pb-8 text-center">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_6px_24px_rgba(59,130,246,0.25)]">
+          <Shield className="h-7 w-7 text-white" strokeWidth={1.5} />
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-900">ยืนยันรหัส OTP</h1>
-          <p className="text-lg leading-relaxed text-gray-500">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">ยืนยันรหัส OTP</h1>
+          <p className="text-base sm:text-lg leading-relaxed text-gray-500">
             รหัสยืนยันถูกส่งไปยัง
           </p>
           <p className="text-sm font-medium text-blue-600">
@@ -109,7 +109,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
       </div>
 
       {/* Content Section */}
-      <div className="px-10 pb-10">
+      <div className="px-6 pb-8 sm:px-10 sm:pb-10">
         {/* Error Message */}
         {error && (
           <div className="mb-6 flex items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-3">
@@ -119,13 +119,13 @@ const OTPInput: React.FC<OTPInputProps> = ({
         )}
 
         {/* OTP Input Fields */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-gray-700 text-center">
               กรุณากรอกรหัส OTP 6 หลัก
             </label>
             
-            <div className="flex justify-center gap-3" onPaste={handlePaste}>
+            <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
               {otp.map((digit, index) => (
                 <Input
                   key={index}
@@ -138,7 +138,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="h-16 w-12 rounded-2xl border border-gray-200 bg-gray-50 text-center text-2xl font-bold transition-all duration-200 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:ring-offset-0"
+                  className="h-12 sm:h-14 w-10 sm:w-12 rounded-2xl border border-gray-200 bg-gray-50 text-center text-xl sm:text-2xl font-bold transition-all duration-200 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:ring-offset-0"
                   disabled={isLoading}
                 />
               ))}
@@ -149,7 +149,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
           <div className="space-y-4">
             <Button
               onClick={() => onOTPVerify(otp.join(""))}
-              className={`h-16 w-full rounded-2xl text-lg font-semibold transition-all duration-300 focus:ring-4 focus:ring-offset-0 ${
+              className={`h-12 sm:h-14 w-full rounded-2xl text-base sm:text-lg font-semibold transition-all duration-300 focus:ring-4 focus:ring-offset-0 ${
                 isOTPComplete && !isLoading
                   ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-[0_8px_32px_rgba(59,130,246,0.3)] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(59,130,246,0.4)] focus:ring-blue-200"
                   : "cursor-not-allowed bg-gray-200 text-gray-400"
@@ -195,7 +195,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
             <Button
               variant="outline"
               onClick={onBack}
-              className="h-12 w-full rounded-2xl border-gray-200 text-gray-600 hover:bg-gray-50"
+              className="h-10 sm:h-12 w-full rounded-2xl border-gray-200 text-gray-600 hover:bg-gray-50"
               disabled={isLoading || isResending}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
