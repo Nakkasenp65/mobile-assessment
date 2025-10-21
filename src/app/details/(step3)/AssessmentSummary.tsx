@@ -155,6 +155,7 @@ const AssessmentSummary = ({
                     height={100}
                     alt="animated-coin"
                     className="-m-6"
+                    priority
                   />
                   {finalPrice.toLocaleString("th-TH", {
                     style: "currency",

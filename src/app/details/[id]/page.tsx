@@ -19,8 +19,6 @@ export default function AssessmentDetailsPage() {
 
   const { data, isLoading, error } = useAssessment(assessmentId);
 
-  console.log(data);
-
   if (isLoading) {
     return (
       <Layout>
@@ -37,18 +35,7 @@ export default function AssessmentDetailsPage() {
     );
   }
 
-  const { device, conditionInfo, priceLockExpiresAt } = data;
-
-  // Transform device data to match DeviceInfo type
-  const deviceInfo = {
-    brand: device.brand,
-    model: device.model,
-    storage: device.storage,
-    productType: device.brand === "Apple" ? "iPhone" : "Android", // Simplified logic
-  };
-
-  // Note: Avoid calling additional hooks after conditional returns
-  // If image data is needed, fetch it inside child components that always mount
+  const { deviceInfo, conditionInfo, priceLockExpiresAt } = data;
 
   // Handler to advance to service form
   const handleNext = () => {

@@ -54,7 +54,10 @@ export default function AssessStep3({
 
   const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
 
-  const { data: mobileData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
+  const { data: mobileData, isLoading: isImageLoading } = useMobile(
+    deviceInfo.brand,
+    deviceInfo.model,
+  );
 
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
@@ -95,7 +98,12 @@ export default function AssessStep3({
         <h2 className="text-2xl font-bold text-black lg:mb-2 lg:text-4xl">ผลการประเมินอุปกรณ์</h2>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-3", !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3")}>
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-3",
+          !isIcloudLocked && "lg:grid-cols-2 lg:items-start lg:gap-3",
+        )}
+      >
         <AssessmentSummary
           deviceInfo={deviceInfo}
           conditionInfo={conditionInfo}
@@ -112,7 +120,6 @@ export default function AssessStep3({
           docId={docId}
         />
 
-        {/* ✨ Block services when expired */}
         {!isIcloudLocked && (
           <div ref={servicesRef} id="services-section" className="lg:sticky lg:top-0">
             {isExpired ? (

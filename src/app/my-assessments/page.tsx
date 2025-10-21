@@ -57,7 +57,6 @@ async function fetchAssessmentsByPhone(phone: string): Promise<Assessment[]> {
       },
       status: (rec.status as AssessmentStatus) ?? "pending",
       estimatedValue: typeof rec.estimatedValue === "number" ? rec.estimatedValue : 0,
-      selectedServiceId: "", // hide service row in card
     } as Assessment;
   });
 }

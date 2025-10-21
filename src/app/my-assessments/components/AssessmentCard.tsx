@@ -116,7 +116,14 @@ export default function AssessmentCard({
     assessment.deviceInfo.brand,
     assessment.deviceInfo.model,
   );
-  const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
+  const derivedServiceId = (() => {
+    if (assessment.sellNowServiceInfo) return "sell";
+    if (assessment.pawnServiceInfo) return "pawn";
+    if (assessment.tradeInServiceInfo) return "tradein";
+    if (assessment.consignmentServiceInfo) return "consignment";
+    return "";
+  })();
+  const service = ALL_SERVICES.find((s) => s.id === derivedServiceId);
   const ServiceIcon = service?.icon;
 
   return (

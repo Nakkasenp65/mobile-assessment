@@ -37,8 +37,6 @@ export interface Assessment {
   refinanceServiceInfo?: RefinanceServiceInfo;
   iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
   tradeInServiceInfo?: TradeInServiceInfo;
-  // Optional selection markers used by some UIs
-  selectedServiceId?: string;
   email?: string;
 }
 
