@@ -2,14 +2,18 @@
 
 import { Suspense } from "react";
 import AssessComponent from "./AssessComponent";
+import Layout from "../../components/Layout/Layout";
+import Loading from "@/components/ui/Loading";
 
-const Loading = () => {
-  return <div>Loading...</div>;
-};
+const LoadingContainer = () => (
+  <Layout>
+    <Loading />
+  </Layout>
+);
 
 export default function AssessPage() {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<LoadingContainer />}>
       <AssessComponent />
     </Suspense>
   );
