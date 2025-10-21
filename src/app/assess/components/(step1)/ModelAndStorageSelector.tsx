@@ -5,7 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LockKeyhole } from "lucide-react";
 import clsx from "clsx";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 interface ModelAndStorageSelectorProps {
@@ -152,7 +158,7 @@ const ModelAndStorageSelector = ({
       <p className="mt-4 text-center text-xs text-gray-500">
         เมื่อเริ่มประเมินถือว่าท่านได้ยอมรับ{" "}
         <a
-          href="/terms-and-conditions"
+          href="https://pdpa.no1.mobi/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-pink-600 underline hover:text-pink-700"
