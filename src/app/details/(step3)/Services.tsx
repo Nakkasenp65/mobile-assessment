@@ -3,12 +3,24 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Banknote, CircleDot, CreditCard, Handshake, LucideIcon, ShoppingBag, Wrench } from "lucide-react";
+import {
+  ArrowUpDown,
+  Banknote,
+  CircleDot,
+  CreditCard,
+  ExternalLink,
+  Handshake,
+  LucideIcon,
+  ShoppingBag,
+  Wrench,
+} from "lucide-react";
 import MaintenanceService from "./(services)/MaintenanceService";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { Button } from "../../../components/ui/button";
 import { DeviceInfo } from "../../../types/device";
 import { ServiceOption } from "../../../types/service";
+import { Assessment } from "../../../types/assessment";
+import Link from "next/link";
 
 interface ServicesProps {
   selectedService: string;
@@ -19,6 +31,8 @@ interface ServicesProps {
   deviceInfo: DeviceInfo;
   onNext: () => void;
   finalPrice: number;
+  assessmentId?: string;
+  assessmentData?: Assessment;
 }
 
 const serviceBenefits: { [key: string]: string[] } = {
@@ -51,7 +65,12 @@ const serviceBenefits: { [key: string]: string[] } = {
     "ต่อรอบได้ทุก 10 วัน โดยชำระค่าบริการ 15% ของวงเงิน",
     "ใช้ iCloud ของตัวเองได้ ไม่ติดไอคลาวด์ร้าน",
   ],
-  pawn: ["รับเงินสดทันที ไม่ต้องรอ", "ไม่ต้องใช้คนค้ำประกัน", "เก็บรักษาเครื่องให้อย่างดี", "ไถ่ถอนได้เมื่อครบกำหนด"],
+  pawn: [
+    "รับเงินสดทันที ไม่ต้องรอ",
+    "ไม่ต้องใช้คนค้ำประกัน",
+    "เก็บรักษาเครื่องให้อย่างดี",
+    "ไถ่ถอนได้เมื่อครบกำหนด",
+  ],
 };
 
 const PALETTE = {
@@ -152,12 +171,31 @@ export default function Services({
   deviceInfo,
   onNext,
   finalPrice,
+  assessmentId,
+  assessmentData,
 }: ServicesProps) {
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
   const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
   const calculatedExchangePrice = Math.round(finalPrice * 0.7);
   const isAppleDevice = deviceInfo.brand === "Apple";
+
+  // Helper function to check if a service has assessment data
+  const hasServiceData = (serviceId: string): boolean => {
+    if (!assessmentData) return false;
+
+    const serviceFieldMap: Record<string, keyof Assessment> = {
+      sell: "sellNowServiceInfo",
+      consignment: "consignmentServiceInfo",
+      tradein: "tradeInServiceInfo",
+      refinance: "refinanceServiceInfo",
+      "iphone-exchange": "iphoneExchangeServiceInfo",
+      pawn: "pawnServiceInfo",
+    };
+
+    const field = serviceFieldMap[serviceId];
+    return field ? !!assessmentData[field] : false;
+  };
 
   const baseServices: ServiceOption[] = [
     {
@@ -241,7 +279,9 @@ export default function Services({
 
   return (
     <div className="w-full">
-      <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">เลือกบริการที่ต้องการ</h2>
+      <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">
+        เลือกบริการที่ต้องการ
+      </h2>
       <div className="flex w-full flex-col gap-4">
         {services.map((service) => {
           const isMaintenance = service.id === "maintenance";
@@ -313,11 +353,33 @@ export default function Services({
                   <ul className="text-muted-foreground space-y-2 text-sm">
                     {benefits.map((benefit, index) => (
                       <li key={index} className="flex items-start gap-2.5">
-                        <div className={cn("mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50", theme.solidBg)} />
+                        <div
+                          className={cn(
+                            "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
+                            theme.solidBg,
+                          )}
+                        />
                         <span>{benefit}</span>
                       </li>
                     ))}
                   </ul>
+
+                  {/* View Details Link - Only shown if assessment data exists for this service */}
+                  {assessmentId && hasServiceData(service.id) && (
+                    <div className="mt-4 flex items-center justify-start">
+                      <Link
+                        href={`/confirmed/${assessmentId}`}
+                        className={cn(
+                          "inline-flex items-center gap-2 text-sm font-medium transition-colors hover:underline",
+                          theme.text,
+                        )}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        ดูรายละเอียดการจอง
+                      </Link>
+                    </div>
+                  )}
 
                   <AnimatePresence>
                     {isSelected && (

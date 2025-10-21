@@ -68,6 +68,8 @@ export default function AssessmentDetailsPage() {
               onNext={handleNext}
               setSelectedService={setSelectedService}
               priceLockExpiresAt={priceLockExpiresAt}
+              assessmentId={assessmentId}
+              assessmentData={data}
             />
           )}
 

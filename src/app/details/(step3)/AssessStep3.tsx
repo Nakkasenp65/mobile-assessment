@@ -10,6 +10,7 @@ import FramerButton from "../../../components/ui/framer/FramerButton";
 import AssessmentSummary from "./AssessmentSummary";
 import { useRepairPrices } from "@/hooks/useRepairPrices";
 import { ConditionInfo, DeviceInfo } from "../../../types/device";
+import { Assessment } from "../../../types/assessment";
 import ScrollDownIndicator from "../../../components/ui/ScrollDownIndicator";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,8 @@ interface AssessStep3Props {
   onNext: () => void;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
   priceLockExpiresAt?: string; // Optional for price lock countdown
+  assessmentId?: string; // For "View Details" links
+  assessmentData?: Assessment; // Full assessment data to check service info
 }
 
 export default function AssessStep3({
@@ -38,6 +41,8 @@ export default function AssessStep3({
   onNext,
   setSelectedService,
   priceLockExpiresAt,
+  assessmentId,
+  assessmentData,
 }: AssessStep3Props) {
   const isIcloudLocked = !conditionInfo.canUnlockIcloud;
   const isPriceable = conditionInfo.canUnlockIcloud;
@@ -137,6 +142,8 @@ export default function AssessStep3({
                 deviceInfo={deviceInfo}
                 onNext={onNext}
                 finalPrice={isPriceable ? finalPrice : 0}
+                assessmentId={assessmentId}
+                assessmentData={assessmentData}
               />
             )}
           </div>
