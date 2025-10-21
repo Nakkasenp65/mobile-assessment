@@ -13,7 +13,13 @@ interface OptionCardProps {
   onSelect: (selection: Selection) => void;
 }
 
-export default function OptionCard({ value, title, isSelected, imgSrc, onSelect }: OptionCardProps) {
+export default function OptionCard({
+  value,
+  title,
+  isSelected,
+  imgSrc,
+  onSelect,
+}: OptionCardProps) {
   return (
     <motion.button
       onClick={() => {
@@ -35,7 +41,14 @@ export default function OptionCard({ value, title, isSelected, imgSrc, onSelect 
         {/* Text Content */}
         <div className="flex flex-col items-center gap-2">
           <div className="flex h-32 w-32 items-center justify-center">
-            <Image src={imgSrc} width={128} height={128} alt="Device Image" className="h-auto w-full object-contain" />
+            <Image
+              src={imgSrc}
+              width={128}
+              height={128}
+              alt="Device Image"
+              priority
+              className="h-auto w-full object-contain"
+            />
           </div>
           <h3 className="text-foreground text-base font-semibold">{title}</h3>
         </div>

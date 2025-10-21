@@ -38,6 +38,8 @@ interface AssessStep1Props {
   onConditionUpdate: (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => void;
   onNext: () => void;
   onUserDeviceUpdate: (value: boolean) => void;
+  isFromMainPage?: boolean;
+  paramsReady?: boolean;
 }
 
 const AssessStep1 = ({
@@ -47,16 +49,22 @@ const AssessStep1 = ({
   onConditionUpdate,
   onNext,
   onUserDeviceUpdate,
+  isFromMainPage,
+  paramsReady,
 }: AssessStep1Props) => {
-  const { isDesktop } = useDeviceDetection();
+  const { isDesktop, isAndroid, isIOS } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("initializing");
   const [direction, setDirection] = useState(1);
   const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
   const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
   const [simpleValid, setSimpleValid] = useState<boolean>(false);
   const [simpleData, setSimpleData] = useState<{ imageFile: File; description: string } | null>(null);
+  const [skipBrandAfterDeviceSelection, setSkipBrandAfterDeviceSelection] = useState<boolean>(!!isFromMainPage);
 
   useEffect(() => {
+    // Wait until URL params are processed to avoid race conditions
+    if (!paramsReady) return;
+
     if (currentStep !== "initializing" && currentStep !== "selectDeviceType") {
       return;
     }
@@ -73,22 +81,44 @@ const AssessStep1 = ({
     } else {
       if (currentStep === "initializing") {
         if (deviceInfo.brand) {
-          if (deviceInfo.brand === "Apple") {
-            if (deviceInfo.productType) {
-              const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
-              setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
-            } else {
-              setCurrentStep("selectProduct");
-            }
+          // Only bypass device selection for Apple non-detailed products when coming from main page
+          if (
+            isFromMainPage &&
+            deviceInfo.brand === "Apple" &&
+            deviceInfo.productType &&
+            !["iPhone", "iPad"].includes(deviceInfo.productType)
+          ) {
+            setCurrentStep("simpleAssessment");
+          } else if (isFromMainPage) {
+            // For prefilled flows from main page, start at device selection
+            setCurrentStep("selectDeviceType");
           } else {
-            setCurrentStep("selectModelStorage");
+            // Preserve existing behavior for non-main-page flows
+            if (deviceInfo.brand === "Apple") {
+              if (deviceInfo.productType) {
+                const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+                setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
+              } else {
+                setCurrentStep("selectProduct");
+              }
+            } else {
+              setCurrentStep("selectModelStorage");
+            }
           }
         } else {
           setCurrentStep("selectDeviceType");
         }
       }
     }
-  }, [isDesktop, deviceInfo.brand, onUserDeviceUpdate, currentStep]);
+  }, [
+    paramsReady,
+    isDesktop,
+    deviceInfo.brand,
+    deviceInfo.productType,
+    onUserDeviceUpdate,
+    currentStep,
+    isFromMainPage,
+  ]);
 
   useEffect(() => {
     if (direction > 0 && currentStep === "selectProduct" && deviceInfo.productType) {
@@ -125,10 +155,33 @@ const AssessStep1 = ({
     onUserDeviceUpdate(selection === "this_device");
     setDirection(1);
 
-    // ไม่ข้ามไป Step2 แม้จะมีข้อมูล model อยู่แล้ว เพื่อให้ผู้ใช้ยืนยัน Model/Storage อีกครั้ง
-    if (deviceInfo.brand) {
+    // Handle iOS own device explicitly; preserve prefilled values from main page
+    if (selection === "this_device" && isIOS) {
+      const newInfo = {
+        ...deviceInfo,
+        brand: deviceInfo.brand || "Apple",
+        // Keep productType/model/storage if already prefilled
+      };
+      onDeviceUpdate(newInfo);
+
+      if (skipBrandAfterDeviceSelection && newInfo.brand === "Apple") {
+        if (newInfo.productType) {
+          const isDetailed = newInfo.productType === "iPhone" || newInfo.productType === "iPad";
+          setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
+        } else {
+          setCurrentStep("selectProduct");
+        }
+      } else {
+        setCurrentStep("selectProduct");
+      }
+
+      setSkipBrandAfterDeviceSelection(false);
+      return;
+    }
+
+    // For non-iOS or other-device selection, only skip brand once if coming from main page
+    if (skipBrandAfterDeviceSelection && deviceInfo.brand) {
       if (deviceInfo.brand === "Apple") {
-        // ถ้ามี productType แล้ว ให้ไปเลือก Model/Storage ของ iPhone/iPad
         if (deviceInfo.productType) {
           const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
           setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
@@ -141,6 +194,8 @@ const AssessStep1 = ({
     } else {
       setCurrentStep("selectBrand");
     }
+
+    setSkipBrandAfterDeviceSelection(false);
   };
 
   const handleProductSelectAndNext = (productId: string) => {
@@ -195,11 +250,28 @@ const AssessStep1 = ({
     switch (currentStep) {
       case "selectBrand":
         if (!isDesktop) {
-          setCurrentStep("selectDeviceType");
+          // If this flow originated from the main page and went directly to simple form,
+          // avoid forcing device selection on back; return to simple form instead when applicable.
+          if (
+            isFromMainPage &&
+            deviceInfo.brand === "Apple" &&
+            deviceInfo.productType &&
+            !["iPhone", "iPad"].includes(deviceInfo.productType)
+          ) {
+            setCurrentStep("simpleAssessment");
+          } else {
+            setSkipBrandAfterDeviceSelection(false);
+            setCurrentStep("selectDeviceType");
+          }
         }
         break;
       case "selectProduct":
-        setCurrentStep("selectBrand");
+        if (userDeviceSelection === "this_device" && isIOS) {
+          setSkipBrandAfterDeviceSelection(false);
+          setCurrentStep("selectDeviceType");
+        } else {
+          setCurrentStep("selectBrand");
+        }
         break;
       case "selectModelStorage":
         if (deviceInfo.brand === "Apple") {
@@ -236,7 +308,7 @@ const AssessStep1 = ({
       case "selectBrand":
         return (
           <StepWrapper
-            title="ระบุยี่ห้ออุปกรณ์ของคุณ"
+            title="ระบุยี่ห้ออปกรณ์ของคุณ"
             description="เลือกยี่ห้อของเครื่องที่ต้องการประเมิน"
             direction={direction}
           >
@@ -245,6 +317,7 @@ const AssessStep1 = ({
               onBrandChange={(brand) => handleSelectChange("brand", brand)}
               accordionValue="brand-selector"
               onAccordionChange={() => {}}
+              isOwnDevice={userDeviceSelection === "this_device"}
             />
             <NavigationButtons
               onBack={isDesktop ? undefined : prevStep}

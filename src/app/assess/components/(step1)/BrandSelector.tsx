@@ -5,12 +5,14 @@ import { PHONE_DATA } from "@/util/phone";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 
 interface BrandSelectorProps {
   selectedBrand: string;
   onBrandChange: (brandId: string) => void;
   accordionValue: string;
   onAccordionChange: (value: string) => void;
+  isOwnDevice?: boolean;
 }
 
 export default function BrandSelector({
@@ -18,14 +20,17 @@ export default function BrandSelector({
   onBrandChange,
   accordionValue,
   onAccordionChange,
+  isOwnDevice = false,
 }: BrandSelectorProps) {
   const [hoveredBrand, setHoveredBrand] = useState<string | null>(null);
+  const { isAndroid } = useDeviceDetection();
+  const renderBrands = isOwnDevice && isAndroid ? PHONE_DATA.brands.filter((b) => b.id !== "Apple") : PHONE_DATA.brands;
 
   return (
     <Accordion type="single" collapsible className="w-full" value={accordionValue} onValueChange={onAccordionChange}>
       <span className="text-foreground">{selectedBrand ? `แบรนด์ที่เลือก: ${selectedBrand}` : "เลือกแบรนด์"}</span>
       <div className="grid grid-cols-3 gap-2 pt-4 sm:grid-cols-4">
-        {PHONE_DATA.brands.map((brand) => {
+        {renderBrands.map((brand) => {
           const isSelected = selectedBrand === brand.id;
           const isHovered = hoveredBrand === brand.id;
           const brandColor = brand.color || "#000000";

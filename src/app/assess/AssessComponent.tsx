@@ -50,18 +50,21 @@ export default function AssessComponent() {
 
   const searchParams = useSearchParams();
   const [isInitialStepCalculated, setIsInitialStepCalculated] = useState(false);
+  const [isFromMainPage, setIsFromMainPage] = useState<boolean>(false);
 
   useEffect(() => {
-    if (isInitialStepCalculated) return;
-
     const brand = searchParams.get("brand");
     const model = searchParams.get("model");
     const capacity = searchParams.get("capacity");
     const isIcloudUnlock = searchParams.get("isIcloudUnlock");
     const productType = searchParams.get("productType");
-    const isFromMainPage = searchParams.get("isFromMainPage");
+    const fromMain = searchParams.get("isFromMainPage") === "true";
 
-    if (isFromMainPage === "true" && (brand || productType)) {
+    // Track source to adjust initial step behavior in AssessStep1
+    setIsFromMainPage(fromMain);
+
+    // Prefill only when navigating from main page and we have usable params
+    if (fromMain && (brand || productType || model || capacity)) {
       setDeviceInfo((prev) => ({
         ...prev,
         brand: brand || prev.brand,
@@ -76,10 +79,13 @@ export default function AssessComponent() {
           canUnlockIcloud: isIcloudUnlock === "true",
         }));
       }
-    }
 
-    setIsInitialStepCalculated(true);
-  }, [searchParams, isInitialStepCalculated]);
+      setIsInitialStepCalculated(true);
+    } else if (!fromMain) {
+      // For non-main-page flows, we can initialize immediately
+      setIsInitialStepCalculated(true);
+    }
+  }, [searchParams]);
 
   const handleNext = () => {
     if (currentStep < 2) {
@@ -138,6 +144,8 @@ export default function AssessComponent() {
               onConditionUpdate={handleConditionUpdate}
               onUserDeviceUpdate={handleUserDeviceUpdate}
               onNext={handleNext}
+              isFromMainPage={isFromMainPage}
+              paramsReady={isInitialStepCalculated}
             />
           )}
 
