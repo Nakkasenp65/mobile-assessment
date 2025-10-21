@@ -19,10 +19,12 @@ export type AssessmentUpdateBody = {
 };
 
 export function useUpdateAssessment(assessmentId: string | undefined) {
-  return useMutation<{ success: boolean }, Error, AssessmentUpdateBody>({
-    mutationFn: async (payload: AssessmentUpdateBody) => {
+  return useMutation<{ success: boolean }, Error, AssessmentUpdateBody | FormData>({
+    mutationFn: async (payload) => {
       if (!assessmentId) throw new Error("Missing assessmentId");
-      const res = await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessments/${assessmentId}`, payload);
+      const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessments/${assessmentId}`;
+      const isForm = typeof FormData !== "undefined" && payload instanceof FormData;
+      const res = await axios.put(url, payload, isForm ? undefined : { headers: { "Content-Type": "application/json" } });
       console.log("PUT /api/assessments/:id response:", res.data);
       return res.data;
     },

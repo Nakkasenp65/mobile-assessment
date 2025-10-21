@@ -1,9 +1,9 @@
-import React from "react";
-import { Phone } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Phone, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Turnstile from "@/components/Turnstile";
-import { AlertTriangle } from "lucide-react"; // Import AlertTriangle icon
+import { getVerifiedSession } from "../lib/session";
 
 interface InputPhoneNumberProps {
   phoneNumber: string;
@@ -26,6 +26,30 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
 }) => {
   const sanitizedPhone = phoneNumber.replace(/\D/g, "").slice(0, 10);
   const isValidPhone = /^\d{10}$/.test(sanitizedPhone);
+
+  const [hasCachedSession, setHasCachedSession] = useState(false);
+  const [sessionExpiry, setSessionExpiry] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isValidPhone) {
+      setHasCachedSession(false);
+      setSessionExpiry(null);
+      return;
+    }
+    getVerifiedSession(sanitizedPhone).then((sess) => {
+      if (sess) {
+        setHasCachedSession(true);
+        setSessionExpiry(new Date(sess.expiresAt).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }));
+      } else {
+        setHasCachedSession(false);
+        setSessionExpiry(null);
+      }
+    });
+  }, [sanitizedPhone, isValidPhone]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +82,28 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
             <p className="text-sm font-medium text-red-600">
               กรุณาตรวจสอบ Cloudflare ก่อนดำเนินการต่อ
             </p>
+          </div>
+        )}
+
+        {/* Cached Session Notice */}
+        {hasCachedSession && (
+          <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-700">พบเซสชันที่ยืนยันแล้ว</p>
+                {sessionExpiry && (
+                  <p className="text-xs text-emerald-600">หมดอายุ: {sessionExpiry}</p>
+                )}
+              </div>
+            </div>
+            <Button
+              type="button"
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={() => onPhoneSubmit(sanitizedPhone)}
+            >
+              ดูผลทันที
+            </Button>
           </div>
         )}
 

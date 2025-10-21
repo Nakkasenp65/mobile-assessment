@@ -3,6 +3,7 @@ import { Shield, ArrowLeft, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { getVerifiedSession } from "../lib/session";
 
 interface OTPInputProps {
   phoneNumber: string;
@@ -29,6 +30,8 @@ const OTPInput: React.FC<OTPInputProps> = ({
 }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [hasCachedSession, setHasCachedSession] = useState(false);
+  const [sessionExpiry, setSessionExpiry] = useState<string | null>(null);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -84,6 +87,23 @@ const OTPInput: React.FC<OTPInputProps> = ({
     inputRefs.current[0]?.focus();
   }, []);
 
+  // Detect cached session for this phone number
+  useEffect(() => {
+    getVerifiedSession(phoneNumber).then((sess) => {
+      if (sess) {
+        setHasCachedSession(true);
+        setSessionExpiry(new Date(sess.expiresAt).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }));
+      } else {
+        setHasCachedSession(false);
+        setSessionExpiry(null);
+      }
+    });
+  }, [phoneNumber]);
+
   return (
     <div className="w-full max-w-md sm:max-w-lg overflow-hidden rounded-3xl bg-white/95 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
       {/* Header Section */}
@@ -115,6 +135,26 @@ const OTPInput: React.FC<OTPInputProps> = ({
           <div className="mb-6 flex items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-3">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <p className="text-sm font-medium text-red-600">{error}</p>
+          </div>
+        )}
+
+        {/* Cached Session Notice */}
+        {hasCachedSession && (
+          <div className="mb-6 flex items-center justify-center gap-3 rounded-2xl bg-emerald-50 px-4 py-3">
+            <Shield className="h-5 w-5 text-emerald-600" />
+            <div className="text-sm">
+              <p className="font-semibold text-emerald-700">พบเซสชันที่ยืนยันแล้ว</p>
+              {sessionExpiry && (
+                <p className="text-xs text-emerald-600">หมดอายุ: {sessionExpiry}</p>
+              )}
+            </div>
+            <Button
+              type="button"
+              className="ml-4 bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={() => onOTPVerify(otp.join("") || "000000")}
+            >
+              ดำเนินการต่อ
+            </Button>
           </div>
         )}
 

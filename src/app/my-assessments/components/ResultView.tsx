@@ -1,12 +1,13 @@
-import { SearchIcon, ArrowLeft } from "lucide-react";
+import { SearchIcon, ArrowLeft, LogOut } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "../../../components/ui/input";
 import { AnimatePresence, motion } from "framer-motion";
 import AssessmentCard from "./AssessmentCard";
 import clsx from "clsx";
 import FramerButton from "../../../components/ui/framer/FramerButton";
+import type { Assessment } from "@/types/assessment";
 
-export default function ResultsView({ assessments, onBack }) {
+export default function ResultsView({ assessments, onBack, onLogout }: { assessments: Assessment[]; onBack: () => void; onLogout?: () => void }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
@@ -53,8 +54,20 @@ export default function ResultsView({ assessments, onBack }) {
     >
       {/* Header */}
       <div className="flex-shrink-0 pb-4">
-        <div className="text-center">
-          <h1 className="text-foreground text-2xl font-bold md:text-3xl">รายการประเมินของคุณ</h1>
+        <div className="flex items-center justify-between">
+          <div className="text-center flex-1">
+            <h1 className="text-foreground text-2xl font-bold md:text-3xl">รายการประเมินของคุณ</h1>
+          </div>
+          {onLogout && (
+            <FramerButton
+              variant="ghost"
+              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-10 items-center rounded-full border bg-white px-4 text-sm transition-colors sm:h-12 sm:px-6"
+              onClick={onLogout}
+            >
+              <LogOut className="h-4 w-4 text-stone-500" />
+              <span className="ml-2 font-semibold text-stone-500">ออกจากระบบ</span>
+            </FramerButton>
+          )}
         </div>
       </div>
 

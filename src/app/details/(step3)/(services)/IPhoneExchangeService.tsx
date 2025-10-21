@@ -20,6 +20,7 @@ import type { IPhoneExchangeServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
+import { buildIPhoneExchangeFormData } from "@/util/servicePayloads";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -170,33 +171,28 @@ export default function IPhoneExchangeService({
   const updateAssessment = useUpdateAssessment(assessmentId);
 
   const handleConfirmExchange = () => {
-    const base = {
+    if (!formState.documentFile) {
+      void Swal.fire({ icon: "error", title: "กรุณาแนบเอกสาร", text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล" });
+      return;
+    }
+
+    const formData = buildIPhoneExchangeFormData({
       customerName: formState.customerName,
       phone: formState.phone,
-      locationType: (locationType as "store" | "bts") ?? "store",
-      appointmentDate: String(formState.date),
-      appointmentTime: String(formState.time),
+      time: formState.time,
       occupation: formState.occupation as "salaried" | "freelance" | "",
       documentFile: formState.documentFile,
-    };
+    });
 
-    const payload: IPhoneExchangeServiceInfo =
-      locationType === "bts"
-        ? { ...base, btsStation: formState.btsStation }
-        : { ...base, storeLocation: formState.storeLocation };
-
-    updateAssessment.mutate(
-      { iphoneExchangeServiceInfo: payload },
-      {
-        onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
-          onSuccess?.();
-        },
-        onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
-        },
+    updateAssessment.mutate(formData, {
+      onSuccess: () => {
+        void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+        onSuccess?.();
       },
-    );
+      onError: () => {
+        void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+      },
+    });
   };
 
   return (

@@ -80,10 +80,9 @@ export interface RefinanceServiceInfo {
   customerName: string;
   phone: string;
   occupation: "salaried" | "freelance" | "";
-  documentFile: File | null; // ในการเก็บลง DB อาจจะต้องเปลี่ยนเป็น URL ของไฟล์ที่อัปโหลดแล้ว
+  documentFileUrl: string; // ในการเก็บลง DB อาจจะต้องเปลี่ยนเป็น URL ของไฟล์ที่อัปโหลดแล้ว
 
-  // วันและเวลานัดหมาย (เพิ่มเข้ามา)
-  appointmentDate: string; // หรือ Date
+  // วันและเวลานัดหมาย
   appointmentTime: string;
   nextSteps?: string[];
 }
@@ -96,21 +95,13 @@ export interface RefinanceServiceInfo {
 export interface IPhoneExchangeServiceInfo {
   customerName: string;
   phone: string;
-  locationType: "store" | "bts";
-
-  // BTS/MRT (กรณีเลือก "bts")
-  btsStation?: string;
-
-  // สาขา (กรณีเลือก "ที่ร้าน")
-  storeLocation?: string;
 
   // วันและเวลานัดหมาย (ปรับชื่อให้เป็นมาตรฐาน)
-  appointmentDate: string; // หรือ Date
   appointmentTime: string;
 
   // ข้อมูลอาชีพและเอกสาร
   occupation: "salaried" | "freelance" | "";
-  documentFile: File | null; // เช่นเดียวกัน ควรเปลี่ยนเป็น URL ของไฟล์
+  documentFileUrl: string; // เช่นเดียวกัน ควรเปลี่ยนเป็น URL ของไฟล์
   nextSteps?: string[];
 }
 
@@ -124,19 +115,21 @@ export interface PawnServiceInfo {
   phone: string;
   locationType: "home" | "bts" | "store";
 
-  // ที่อยู่ (กรณีเลือก "ที่บ้าน")
+  // ข้อมูลสถานที่บริการ
   address?: string;
   province?: string;
   district?: string;
+  subdistrict?: string;
+  postcode?: string;
 
-  // BTS/MRT (กรณีเลือก "bts")
+  // BTS/MRT
   btsStation?: string;
   btsLine?: string;
 
   // สาขา (กรณีเลือก "ที่ร้าน")
   storeLocation?: string;
 
-  // วันและเวลานัดหมาย (ปรับชื่อให้เป็นมาตรฐาน)
+  // วันและเวลานัดหมาย
   appointmentDate: string;
   appointmentTime: string;
 
@@ -145,8 +138,7 @@ export interface PawnServiceInfo {
 
 /**
  * @interface IcloudServiceInfo
- * @description ข้อมูลสำหรับบริการสินเชื่อ iCloud
- * @basedOn src/app/assess/components/(step3)/(services)/IcloudService.tsx
+ * @description ข้อมูลสำหรับบริการ iCloud
  */
 export interface IcloudServiceInfo {
   customerName: string;
@@ -154,7 +146,7 @@ export interface IcloudServiceInfo {
   password?: string; // รหัสผ่านอาจจะไม่เก็บลง DB โดยตรงเพื่อความปลอดภัย
   termsAccepted: boolean;
 
-  // วันและเวลานัดหมาย (เพิ่มเข้ามา)
+  // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
   nextSteps?: string[];
@@ -162,8 +154,7 @@ export interface IcloudServiceInfo {
 
 /**
  * @interface ServiceOption
- * @description ตัวเลือกบริการที่ใช้สำหรับ UI ของหน้าบริการขั้นตอนที่ 3
- * @usedBy src/app/assess/components/(step3)/Services.tsx
+ * @description ตัวเลือกบริการที่แสดงใน UI
  */
 export interface ServiceOption {
   id: string; // ตัวระบุบริการ เช่น "sell", "consignment", "tradein", "refinance", "iphone-exchange", "pawn", "maintenance"

@@ -13,6 +13,7 @@ import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { SellNowServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 
 // Import sub-components
 import PriceDisplay from "./sell-now-components/PriceDisplay";
@@ -80,13 +81,6 @@ export default function SellNowService({
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
   const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
 
-  // ✨ [เพิ่ม] useEffect เพื่อกำหนดค่า default latitude, longitude ให้แผนที่เมื่อ component โหลดเสร็จ
-  useEffect(() => {
-    // Set default location on initial component mount
-    import("leaflet").then((L) => {
-      setMapCenter(new L.LatLng(13.763913011138287, 100.53931692698971));
-    });
-  }, []); // dependency array ว่างเพื่อให้ทำงานแค่ครั้งเดียว
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -108,7 +102,12 @@ export default function SellNowService({
       },
       (error) => {
         console.error("Geolocation error:", error);
-        setLocationError("Unable to retrieve your location. Please check your browser permissions.");
+        if ((error as { code?: number }).code === 1) {
+          // 1 = PERMISSION_DENIED
+          setLocationError("ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง");
+        } else {
+          setLocationError("ไม่สามารถดึงตำแหน่งได้ โปรดตรวจสอบการตั้งค่าเบราว์เซอร์");
+        }
         setHasUserLocation(false);
         setIsLocationLoading(false);
       },
@@ -132,7 +131,7 @@ export default function SellNowService({
         const status = await permAPI.query({ name: "geolocation" });
         setGeoPermission(status.state);
         if (status.state === "denied") {
-          setLocationError("กรุณาอนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์");
+          setLocationError("ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง");
           return; // ไม่ดึง Lat-Long ถ้า deny
         }
       }
@@ -141,6 +140,11 @@ export default function SellNowService({
     }
     requestLocation();
   }, [requestLocation]);
+
+  // เรียกขอสิทธิ์ตำแหน่งทันทีเมื่อโหลด SellNowService
+  useEffect(() => {
+    ensurePermissionThenLocate();
+  }, [ensurePermissionThenLocate]);
 
   useEffect(() => {
     if (turnstileToken) {
@@ -159,20 +163,16 @@ export default function SellNowService({
     }));
   }, []);
 
-  // ✨ [แก้ไข] ปรับ Logic ให้เรียก requestLocation() ทุกครั้งที่เลือก "ที่บ้าน"
+  // ✨ [แก้ไข] เมื่อเลือก "ที่บ้าน" ให้เรียกขอพิกัด แต่ไม่รีเซ็ตสถานะ
   const handleLocationTypeChange = useCallback(
     (newLocationType: "home" | "bts" | "store") => {
       setLocationType(newLocationType);
-      // ถ้าผู้ใช้เลือก "ที่บ้าน" ให้เริ่มขอตำแหน่งปัจจุบันทันที
       if (newLocationType === "home") {
-        // รีเซ็ตสถานะก่อนเริ่มขอสิทธิ์และดึงพิกัดจริง
-        setHasUserLocation(false);
-        setMapCenter(null);
-        setLocationError(null);
+        // ไม่รีเซ็ต hasUserLocation/mapCenter เพื่อให้แผนที่ขึ้นทันทีหากพิกัดพร้อม
         ensurePermissionThenLocate();
       }
     },
-    [ensurePermissionThenLocate], // เรียก function ที่ขอ permission ก่อน
+    [ensurePermissionThenLocate],
   );
 
   const handleAddressChange = useCallback((address: LongdoAddressData) => {
@@ -296,6 +296,34 @@ export default function SellNowService({
                 handleLocationTypeChange={handleLocationTypeChange}
                 formVariants={formVariants}
               />
+              {locationType && (
+                <div
+                  className={`rounded-lg border px-4 py-3 flex items-start gap-3 ${
+                    locationType === "store"
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                      : "border-blue-300 bg-blue-50 text-blue-800"
+                  }`}
+                >
+                  {locationType === "store" ? (
+                    <ShieldCheck className="h-5 w-5 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 mt-0.5" />
+                  )}
+                  <div>
+                    {locationType === "store" ? (
+                      <>
+                        <p className="font-semibold">ไม่มีการชำระมัดจำสำหรับรับซื้อที่ร้าน</p>
+                        <p className="text-sm">สามารถนำเครื่องมาที่สาขาเพื่อดำเนินการได้ทันที</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold">ต้องชำระเงินมัดจำสำหรับการรับซื้อนอกสถานที่</p>
+                        <p className="text-sm">ระบบจะแจ้งขั้นตอนและจำนวนเงินมัดจำหลังกรอกข้อมูลนัดหมายครบถ้วน</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
               <LocationDetails
                 locationType={locationType}
                 formState={formState}

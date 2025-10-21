@@ -15,6 +15,7 @@ import ResultsView from "./components/ResultView";
 import type { Assessment, RawAssessmentRecord } from "@/types/assessment";
 import Loading from "../../components/ui/Loading";
 import { requestOTP, verifyOTP, OTPError } from "./lib/otp-api";
+import { getVerifiedSession, persistLastPhone, loadLastPhone, clearAllSessions } from "./lib/session";
 
 type AssessmentStatus = Assessment["status"];
 
@@ -101,6 +102,26 @@ export default function MyAssessmentsPage() {
     }
   }, [env, isDevEnv]);
 
+  // Prefill last phone and auto-verify if a valid session exists
+  useEffect(() => {
+    const last = loadLastPhone();
+    if (last) {
+      setPhoneNumberInput(last);
+      // Attempt to rehydrate verified state from session cache
+      getVerifiedSession(last).then((sess) => {
+        if (sess) {
+          setIsPhoneVerified(true);
+          setPhoneNumber(last);
+          // If in dev or Turnstile already verified, go straight to results
+          if (isDevEnv || !!turnstileToken) {
+            setStep("show-results");
+          }
+        }
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const {
     data: assessmentsData = [],
     isLoading,
@@ -128,6 +149,7 @@ export default function MyAssessmentsPage() {
     setShowTurnstileWarning(false);
     setPhoneNumber(phone);
     setOtpError("");
+    persistLastPhone(phone);
 
     try {
       setIsOtpLoading(true);
@@ -139,6 +161,11 @@ export default function MyAssessmentsPage() {
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120); // 2 minutes countdown
         setStep("verify-otp");
+      } else if (response.success && !response.data?.token) {
+        // Cached session — immediate verification
+        setIsPhoneVerified(true);
+        setStep("show-results");
+        refetch();
       } else {
         throw new OTPError(response.message || "Failed to send OTP");
       }
@@ -164,7 +191,7 @@ export default function MyAssessmentsPage() {
       setIsOtpLoading(true);
       setOtpError("");
 
-      const response = await verifyOTP(otpToken, otpCode);
+      const response = await verifyOTP(otpToken, otpCode, phoneNumber);
 
       if (response.success && response.data?.verified) {
         setIsPhoneVerified(true);
@@ -198,6 +225,11 @@ export default function MyAssessmentsPage() {
         setOtpToken(response.data.token ?? null);
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120);
+      } else if (response.success && !response.data?.token) {
+        // Cached session — immediate verification
+        setIsPhoneVerified(true);
+        setStep("show-results");
+        refetch();
       } else {
         throw new OTPError(response.message || "Failed to resend OTP");
       }
@@ -235,6 +267,12 @@ export default function MyAssessmentsPage() {
     setStep("enter-phone");
   };
 
+  const handleLogout = () => {
+    clearAllSessions();
+    setIsPhoneVerified(false);
+    setStep("enter-phone");
+  };
+
   const renderContent = () => {
     switch (step) {
       case "enter-phone":
@@ -267,7 +305,7 @@ export default function MyAssessmentsPage() {
         return isLoading ? (
           <Loading />
         ) : (
-          <ResultsView assessments={assessmentsData} onBack={handleBack} />
+          <ResultsView assessments={assessmentsData} onBack={handleBack} onLogout={handleLogout} />
         );
       default:
         return null;

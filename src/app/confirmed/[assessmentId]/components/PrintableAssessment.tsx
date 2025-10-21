@@ -75,12 +75,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
   const isServiceInfo = (val: unknown): val is AnyServiceInfo => {
     if (!val || typeof val !== "object") return false;
     const obj = val as Record<string, unknown>;
-    return (
-      typeof obj.customerName === "string" &&
-      typeof obj.phone === "string" &&
-      typeof obj.appointmentDate === "string" &&
-      typeof obj.appointmentTime === "string"
-    );
+    const hasCore = typeof obj.customerName === "string" && typeof obj.phone === "string";
+    const hasTime = typeof obj.appointmentTime === "string";
+    return hasCore && hasTime;
   };
 
   const { activeService, serviceType } = React.useMemo(() => {
@@ -256,26 +253,30 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         <div className="grid grid-cols-2 gap-3">
           {/* Service Information */}
           <section>
-            <SectionHeader title={`${SERVICE_CONFIG[serviceType].icon} ข้อมูลบริการ`} />
-            <div className="space-y-1">
-              <DetailRow
-                label="บริการ"
-                value={SERVICE_CONFIG[serviceType as keyof typeof SERVICE_CONFIG]?.title || "-"}
-              />
-              <DetailRow label="ชื่อลูกค้า" value={activeService.customerName || "-"} />
-              <DetailRow label="เบอร์โทร" value={activeService.phone || "-"} />
-              <DetailRow label="สถานที่" value={getLocationText(activeService)} />
-              <DetailRow
-                label="วันนัดหมาย"
-                value={
-                  <div className="flex gap-1">
-                    <div>{activeService.appointmentDate}</div>
-                    <div className="text-pink-600">{activeService.appointmentTime}</div>
-                  </div>
-                }
-              />
-            </div>
-          </section>
+-            <SectionHeader title={`${SERVICE_CONFIG[serviceType].icon} ข้อมูลบริการ`} />
++            <SectionHeader title={`${SERVICE_CONFIG[serviceType as keyof typeof SERVICE_CONFIG]?.icon || ""} ข้อมูลบริการ`} />
+             <div className="space-y-1">
+               <DetailRow
+                 label="บริการ"
+                 value={SERVICE_CONFIG[serviceType as keyof typeof SERVICE_CONFIG]?.title || "-"}
+               />
+-              <DetailRow label="ชื่อลูกค้า" value={activeService.customerName || "-"} />
+-              <DetailRow label="เบอร์โทร" value={activeService.phone || "-"} />
++              <DetailRow label="ชื่อลูกค้า" value={activeService?.customerName || "-"} />
++              <DetailRow label="เบอร์โทร" value={activeService?.phone || "-"} />
+               <DetailRow label="สถานที่" value={getLocationText(activeService)} />
+               <DetailRow
+                 label="วันนัดหมาย"
+                 value={
+                   <div className="flex gap-1">
+-                    <div>{(() => { const rec = activeService as unknown as Record<string, unknown>; return typeof rec.appointmentDate === "string" ? (rec.appointmentDate as string) : "-"; })()}</div>
++                    <div>{activeService && "appointmentDate" in activeService ? activeService.appointmentDate : "-"}</div>
++                    <div className="text-pink-600">{activeService?.appointmentTime || "-"}</div>
+                   </div>
+                 }
+               />
+             </div>
+           </section>
 
           {/* Device Information */}
           <section>

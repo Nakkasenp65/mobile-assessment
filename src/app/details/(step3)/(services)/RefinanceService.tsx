@@ -17,6 +17,7 @@ import type { RefinanceServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
+import { buildRefinanceFormData } from "@/util/servicePayloads";
 
 // Dynamically import Turnstile (SSR-safe)
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
@@ -181,27 +182,29 @@ export default function RefinanceService({
       setShowTurnstileError(false);
     }
 
-    const payload: RefinanceServiceInfo = {
+
+    if (!formState.documentFile) {
+      await Swal.fire({ icon: "error", title: "กรุณาแนบเอกสาร", text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล" });
+      return;
+    }
+
+    const formData = buildRefinanceFormData({
       customerName: formState.customerName,
       phone: formState.phone,
       occupation: (formState.occupation as "salaried" | "freelance" | "") ?? "",
-      documentFile: formState.documentFile,
-      appointmentDate: "",
       appointmentTime: "",
-    };
+      documentFile: formState.documentFile,
+    });
 
-    updateAssessment.mutate(
-      { refinanceServiceInfo: payload },
-      {
-        onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
-          onSuccess?.();
-        },
-        onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
-        },
+    updateAssessment.mutate(formData, {
+      onSuccess: () => {
+        void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+        onSuccess?.();
       },
-    );
+      onError: () => {
+        void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+      },
+    });
   };
 
   useEffect(() => {

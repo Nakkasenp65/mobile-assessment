@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getVerifiedSession, setVerifiedSession } from "./session";
 
 interface OTPRequestResponse {
   success: boolean;
@@ -69,6 +70,20 @@ function toMsisdn(phoneNumber: string): string {
 export async function requestOTP(phoneNumber: string): Promise<OTPRequestResponse> {
   console.log("Requesting OTP for phone number:", phoneNumber);
   try {
+    // Skip OTP if we already have a valid verified session
+    const cached = await getVerifiedSession(phoneNumber);
+    if (cached) {
+      return {
+        success: true,
+        message: "พบเซสชันที่ยืนยันแล้ว — ข้ามการขอ OTP",
+        data: {
+          // No token/ref because we didn't request a new OTP
+          expiresAt: new Date(cached.expiresAt).toISOString(),
+        },
+        raw: { source: "cache" },
+      };
+    }
+
     const msisdn = toMsisdn(phoneNumber);
     const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
 
@@ -120,9 +135,22 @@ export async function requestOTP(phoneNumber: string): Promise<OTPRequestRespons
 /**
  * Verify OTP code using token & pin
  */
-export async function verifyOTP(token: string, pin: string): Promise<OTPVerifyResponse> {
+export async function verifyOTP(token: string, pin: string, phoneNumber?: string): Promise<OTPVerifyResponse> {
   const otpBaseUrl = process.env.NEXT_PUBLIC_OTP_BASE_URL;
   try {
+    // If a valid cached session exists, skip verification call
+    if (phoneNumber) {
+      const cached = await getVerifiedSession(phoneNumber);
+      if (cached) {
+        return {
+          success: true,
+          message: "ยืนยันแล้วจากเซสชันก่อนหน้า",
+          data: { verified: true },
+          raw: { source: "cache" },
+        };
+      }
+    }
+
     if (!otpBaseUrl) {
       throw new OTPError("OTP_BASE_URL environment variable is not set");
     }
@@ -139,6 +167,11 @@ export async function verifyOTP(token: string, pin: string): Promise<OTPVerifyRe
 
     if (!success) {
       throw new OTPError(raw?.msg || "Failed to verify OTP", raw?.code, Number(raw?.status));
+    }
+
+    // Persist verified session for future reuse
+    if (phoneNumber) {
+      await setVerifiedSession(phoneNumber);
     }
 
     return {
