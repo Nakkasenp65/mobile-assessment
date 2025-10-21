@@ -1,7 +1,7 @@
 // src/app/assess/components/(step2)/AssessStep2.tsx
 
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
 import { ASSESSMENT_QUESTIONS, Platform } from "@/util/info";
@@ -13,54 +13,9 @@ import InteractiveTests from "./InteractiveTests";
 import ReviewSummary from "./ReviewSummary";
 import SimpleReviewSummary from "./SimpleReviewSummary";
 import { useCreateAssessment } from "../../../../hooks/useCreateAssessment";
+// Permission prompt now handled inside InteractiveTests
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
-function PermissionPrompt({ open, onAllow, onCancel }: { open: boolean; onAllow: () => void; onCancel: () => void }) {
-  if (!open) return null;
-  return (
-    <AnimatePresence>
-      <motion.div
-        key="overlay"
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      />
-      <motion.div
-        key="modal"
-        className="fixed inset-0 z-50 grid place-items-center px-4"
-        initial={{ opacity: 0, y: 16, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -8, scale: 0.98 }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-      >
-        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/90 p-6 shadow-xl backdrop-blur-md dark:bg-zinc-900/90">
-          <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">อนุญาตกล้องและไมโครโฟน</h3>
-          <p className="text-sm text-slate-600 dark:text-zinc-300">
-            เพื่อทำการประเมินอัตโนมัติอย่างถูกต้อง กรุณา{" "}
-            <span className="font-semibold">อนุญาตการเข้าถึงกล้องและไมโครโฟน</span>{" "}
-            เมื่อเบราว์เซอร์มีหน้าต่างขอสิทธิ์ขึ้นมา
-          </p>
-
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              onClick={onCancel}
-              className="rounded-xl border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              ภายหลัง
-            </button>
-            <button
-              onClick={onAllow}
-              className="rounded-xl bg-gradient-to-r from-orange-500 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow hover:brightness-110 active:translate-y-px"
-            >
-              ตกลง
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
 
 interface AssessStep2Props {
   deviceInfo: DeviceInfo;
@@ -87,7 +42,8 @@ const TOGGLE_KEYS = [
   "faceId",
 ] as const;
 type ToggleKey = (typeof TOGGLE_KEYS)[number];
-const isToggleKey = (id: keyof ConditionInfo): id is ToggleKey => TOGGLE_KEYS.includes(id as ToggleKey);
+const isToggleKey = (id: keyof ConditionInfo): id is ToggleKey =>
+  TOGGLE_KEYS.includes(id as ToggleKey);
 
 // Required device fields per flow
 const REQUIRED_DEVICE_APPLE_SIMPLE = ["brand", "model"] as const;
@@ -97,19 +53,21 @@ export default function AssessStep2({
   deviceInfo,
   conditionInfo,
   onConditionUpdate,
-  onNext,
   onBack,
   isOwnDevice,
 }: AssessStep2Props) {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid, isIOS } = useDeviceDetection();
-  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  // PermissionPrompt moved to InteractiveTests
 
   console.log(conditionInfo);
 
   // Apple-specific simple flow: Mac, Apple Watch, AirPods, Apple Pencil
   const isAppleSpecialDevice =
-    deviceInfo.brand === "Apple" && !!deviceInfo.productType && deviceInfo.productType !== "iPhone" && deviceInfo.productType !== "iPad";
+    deviceInfo.brand === "Apple" &&
+    !!deviceInfo.productType &&
+    deviceInfo.productType !== "iPhone" &&
+    deviceInfo.productType !== "iPad";
 
   // For Apple-specific devices, jump directly to review summary
   useEffect(() => {
@@ -140,24 +98,17 @@ export default function AssessStep2({
       return;
     }
 
-    // SELF_ANDROID needs permission prompt for automated tests
+    // SELF_ANDROID goes to automated tests; InteractiveTests will handle permissions later
     if (platform === "SELF_ANDROID") {
-      setShowPermissionPrompt(true);
+      setCurrentSubStep("automated");
       return;
     }
 
     // SELF_IOS proceeds to interactive tests
     setCurrentSubStep("interactive");
-  }, [isDesktop, resolvePlatform]);
+  }, [isDesktop, resolvePlatform, isAppleSpecialDevice]);
 
-  const handleAllowPermissions = useCallback(() => {
-    setShowPermissionPrompt(false);
-    setCurrentSubStep("automated");
-  }, []);
-
-  const handleCancelPermissions = useCallback(() => {
-    setShowPermissionPrompt(false);
-  }, []);
+  // Permission handlers removed; handled inside InteractiveTests
 
   const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
 
@@ -203,7 +154,7 @@ export default function AssessStep2({
     } else {
       onBack();
     }
-  }, [currentSubStep, isAndroid, isOwnDevice, isDesktop, onBack]);
+  }, [currentSubStep, isAndroid, isOwnDevice, isDesktop, onBack, isAppleSpecialDevice]);
 
   const [errors, setErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -223,18 +174,21 @@ export default function AssessStep2({
     return choiceIds as (keyof ConditionInfo)[];
   }, [resolvePlatform, isAppleSpecialDevice]);
 
-  const TOGGLE_BEST: Partial<Record<ToggleKey, ConditionInfo[ToggleKey]>> = {
-    wifi: "wifi_ok",
-    charger: "charger_ok",
-    touchScreen: "touchscreen_ok",
-    mic: "mic_ok",
-    speaker: "speaker_ok",
-    call: "call_ok",
-    homeButton: "home_button_ok",
-    sensor: "sensor_ok",
-    buttons: "buttons_ok",
-    faceId: "biometric_ok",
-  };
+  const TOGGLE_BEST = useMemo<Partial<Record<ToggleKey, ConditionInfo[ToggleKey]>>>(
+    () => ({
+      wifi: "wifi_ok",
+      charger: "charger_ok",
+      touchScreen: "touchscreen_ok",
+      mic: "mic_ok",
+      speaker: "speaker_ok",
+      call: "call_ok",
+      homeButton: "home_button_ok",
+      sensor: "sensor_ok",
+      buttons: "buttons_ok",
+      faceId: "biometric_ok",
+    }),
+    [],
+  );
 
   const applyPlatformToggleDefaults = useCallback(
     (info: ConditionInfo): ConditionInfo => {
@@ -260,14 +214,17 @@ export default function AssessStep2({
           const best = TOGGLE_BEST[id];
           if (best) {
             // Recreate object to avoid control-flow narrowing on indexed assignment
-            next = { ...next, [id]: best } as ConditionInfo as Record<ToggleKey, ConditionInfo[ToggleKey]> &
+            next = { ...next, [id]: best } as ConditionInfo as Record<
+              ToggleKey,
+              ConditionInfo[ToggleKey]
+            > &
               ConditionInfo;
           }
         }
       });
       return next as ConditionInfo;
     },
-    [resolvePlatform, isAppleSpecialDevice],
+    [resolvePlatform, isAppleSpecialDevice, TOGGLE_BEST],
   );
 
   const validateSelections = useCallback(
@@ -290,30 +247,40 @@ export default function AssessStep2({
     [deviceInfo, getPlatformRelevantChoiceIds, isAppleSpecialDevice],
   );
 
-  const handleConfirm = useCallback((phoneNumber: string) => {
-    // Default toggles for unanswered items relevant to platform
-    const defaulted = applyPlatformToggleDefaults(conditionInfo);
-    const msgs = validateSelections(defaulted);
-    if (msgs.length > 0) {
-      setErrors(msgs);
+  const handleConfirm = useCallback(
+    (phoneNumber: string) => {
+      // Default toggles for unanswered items relevant to platform
+      const defaulted = applyPlatformToggleDefaults(conditionInfo);
+      const msgs = validateSelections(defaulted);
+      if (msgs.length > 0) {
+        setErrors(msgs);
+        setServerError(null);
+        return;
+      }
+      setErrors([]);
       setServerError(null);
-      return;
-    }
-    setErrors([]);
-    setServerError(null);
-    // Persist any defaults before proceeding
-    onConditionUpdate(defaulted);
-    // Submit to backend
-    createAssessment(
-      { phoneNumber, deviceInfo, conditionInfo: defaulted },
-      {
-        onError: (err) => {
-          // Surface server-side validation or network errors
-          setServerError(err.message || "เกิดข้อผิดพลาดในการส่งข้อมูล");
+      // Persist any defaults before proceeding
+      onConditionUpdate(defaulted);
+      // Submit to backend
+      createAssessment(
+        { phoneNumber, deviceInfo, conditionInfo: defaulted },
+        {
+          onError: (err) => {
+            // Surface server-side validation or network errors
+            setServerError(err.message || "เกิดข้อผิดพลาดในการส่งข้อมูล");
+          },
         },
-      },
-    );
-  }, [applyPlatformToggleDefaults, conditionInfo, validateSelections, onConditionUpdate, createAssessment, deviceInfo]);
+      );
+    },
+    [
+      applyPlatformToggleDefaults,
+      conditionInfo,
+      validateSelections,
+      onConditionUpdate,
+      createAssessment,
+      deviceInfo,
+    ],
+  );
 
   // Initialize defaults when entering review state
   useEffect(() => {
@@ -332,12 +299,7 @@ export default function AssessStep2({
 
   return (
     <div className="md:border-border flex flex-1 flex-col items-center justify-center rounded-xl md:p-2">
-      {/* แจ้งเตือนอนุญาตการใช้ ไมโครโฟนและกล้อง */}
-      <PermissionPrompt
-        open={showPermissionPrompt}
-        onAllow={handleAllowPermissions}
-        onCancel={handleCancelPermissions}
-      />
+      {/* PermissionPrompt handled inside InteractiveTests */}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -380,8 +342,8 @@ export default function AssessStep2({
           )}
 
           {/* สรุปรายการข้อมูลอุปกรณ์และการยืนยันก่อนดำเนินการต่อ */}
-          {currentSubStep === "review" && (
-            isAppleSpecialDevice ? (
+          {currentSubStep === "review" &&
+            (isAppleSpecialDevice ? (
               <SimpleReviewSummary
                 deviceInfo={deviceInfo}
                 conditionInfo={conditionInfo}
@@ -401,8 +363,7 @@ export default function AssessStep2({
                 isSubmitting={isPending}
                 serverError={serverError ?? undefined}
               />
-            )
-          )}
+            ))}
         </motion.div>
       </AnimatePresence>
     </div>
