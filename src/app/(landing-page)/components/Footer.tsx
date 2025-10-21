@@ -11,7 +11,12 @@ import {
   TwitterLogo,
   YoutubeLogo,
 } from "@phosphor-icons/react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Link from "next/link";
 
 export default function Footer() {
@@ -56,14 +61,17 @@ export default function Footer() {
               ให้ราคาดีที่คุณต้องถูกใจ
             </h3>
             <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น รู้ราคาภายใน 1 นาที พร้อมประเมินราคายุติธรรมกว่าท้องตลาด
-              รับซื้อ iPhone, Samsung, OPPO และอีกมากมาย
+              OK Mobile บริการรับซื้อมือถือราคาสูงทุกรุ่น รู้ราคาภายใน 1 นาที
+              พร้อมประเมินราคายุติธรรมกว่าท้องตลาด รับซื้อ iPhone, Samsung, OPPO และอีกมากมาย
             </p>
           </section>
 
           {/* Column 2: Subscribe & Contact (ไม่มีการเปลี่ยนแปลง) */}
           <section aria-labelledby="footer-subscribe">
-            <h3 id="footer-subscribe" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
+            <h3
+              id="footer-subscribe"
+              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
+            >
               Subscribe
             </h3>
             <form
@@ -158,22 +166,34 @@ export default function Footer() {
 
           {/* Layout เดิมสำหรับจอ Desktop (ไม่มีการเปลี่ยนแปลง) */}
           <nav aria-labelledby="footer-customer" className="hidden md:block">
-            <h3 id="footer-customer" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
+            <h3
+              id="footer-customer"
+              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
+            >
               ศูนย์ดูแลลูกค้า
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="#"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   คำถามบ่อยๆ
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="#"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   วิธีการขายสินค้า
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="#"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   วิธีการรับเงิน
                 </a>
               </li>
@@ -181,22 +201,35 @@ export default function Footer() {
           </nav>
 
           <nav aria-labelledby="footer-company" className="hidden md:block">
-            <h3 id="footer-company" className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase">
+            <h3
+              id="footer-company"
+              className="mb-4 text-sm font-bold tracking-wider text-gray-900 uppercase"
+            >
               OK Mobile
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="#"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   เกี่ยวกับ OK Mobile
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="#"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   ข้อกำหนดและเงื่อนไข
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground text-sm transition-colors hover:text-gray-900">
+                <a
+                  href="https://pdpa.no1.mobi/"
+                  target="_blank"
+                  className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
+                >
                   นโยบายความเป็นส่วนตัว
                 </a>
               </li>
@@ -208,7 +241,9 @@ export default function Footer() {
             - ลบ col-span class ที่ไม่จำเป็นออก
           */}
           <div>
-            <h3 className="mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">Follow Us</h3>
+            <h3 className="mb-3 text-sm font-bold tracking-wider text-gray-900 uppercase">
+              Follow Us
+            </h3>
             <ul className="flex gap-2" aria-label="โซเชียลมีเดีย">
               <li>
                 <a
