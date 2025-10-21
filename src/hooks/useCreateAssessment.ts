@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { ConditionInfo, DeviceInfo } from "../types/device";
+import type { AssessmentCreatePayload } from "../types/assessment";
 
 interface CreateAssessmentInput {
   phoneNumber: string;
@@ -34,7 +35,7 @@ interface AssessmentApiResponse {
   data: RawAssessmentRecord;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+// Using local API route; upstream URL comes from the route handler.
 
 function ensureConditionDefaults(ci: ConditionInfo): ConditionInfo {
   return {
@@ -79,18 +80,19 @@ export function useCreateAssessment() {
         throw new Error(validationErrors.join("; "));
       }
 
-      const payload = {
+      const payload: AssessmentCreatePayload = {
         phoneNumber: input.phoneNumber.replace(/\D/g, ""),
         status: "pending",
         estimatedValue: 19999,
         deviceInfo: {
           brand: input.deviceInfo.brand,
+          productType: input.deviceInfo.productType,
           model: input.deviceInfo.model,
           storage: input.deviceInfo.storage,
         },
         conditionInfo: ensureConditionDefaults(input.conditionInfo),
         // include expiredAt if provided; server will default if absent
-        ...(input.expiredAt ? { expiredAt: input.expiredAt } : {}),
+        expiredAt: input.expiredAt ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
       try {
@@ -105,7 +107,11 @@ export function useCreateAssessment() {
         return data;
       } catch (err) {
         const axErr = err as AxiosError<{ message?: string } & { error?: { message?: string } }>;
-        const msg = axErr.response?.data?.error?.message || axErr.response?.data?.message || axErr.message || "ไม่สามารถสร้างรายการประเมินได้";
+        const msg =
+          axErr.response?.data?.error?.message ||
+          axErr.response?.data?.message ||
+          axErr.message ||
+          "ไม่สามารถสร้างรายการประเมินได้";
         console.error("POST /api/assessments failed:", axErr);
         throw new Error(msg);
       }

@@ -2,65 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ConditionInfo } from "../types/device";
-import {
-  ConsignmentServiceInfo,
-  IPhoneExchangeServiceInfo,
-  PawnServiceInfo,
-  RefinanceServiceInfo,
-  SellNowServiceInfo,
-} from "../types/service";
+import { RawAssessmentRecord, Assessment } from "../types/assessment";
 
-// Normalized shape returned by the hook
-export interface AssessmentData {
-  id: string;
-  docId?: string;
-  phoneNumber?: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  conditionInfo: ConditionInfo;
-  pawnServiceInfo?: PawnServiceInfo;
-  sellNowServiceInfo?: SellNowServiceInfo;
-  consignmentServiceInfo?: ConsignmentServiceInfo;
-  refinanceServiceInfo?: RefinanceServiceInfo;
-  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
-  status?: "pending" | "completed" | "in-progress" | string;
-  estimatedValue: number;
-  assessmentDate?: string;
-  priceLockExpiresAt?: string; // optional in case backend does not provide
-}
-
-// Raw API response types
-interface RawAssessmentRecord {
-  _id: string;
-  docId?: string;
-  phoneNumber: string;
-  device?: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  deviceInfo?: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  conditionInfo: ConditionInfo;
-  pawnServiceInfo?: PawnServiceInfo;
-  sellNowServiceInfo?: SellNowServiceInfo;
-  consignmentServiceInfo?: ConsignmentServiceInfo;
-  refinanceServiceInfo?: RefinanceServiceInfo;
-  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
-  status: "pending" | "completed" | "in-progress" | string;
-  estimatedValue?: number;
-  assessmentDate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  priceLockExpiresAt?: string;
-}
+// Normalized shape returned by the hook aligns with canonical Assessment
+export type AssessmentData = Assessment;
 
 interface AssessmentApiResponse {
   success: boolean;
@@ -77,29 +22,32 @@ async function fetchAssessment(id: string): Promise<AssessmentData> {
 
   const record = data.data;
 
+  const deviceInfo = record.deviceInfo ?? {
+    brand: record.device?.brand ?? "",
+    model: record.device?.model ?? "",
+    storage: record.device?.storage ?? "",
+    productType: undefined,
+  };
+
   return {
     id: record._id,
     docId: record.docId,
     phoneNumber: record.phoneNumber,
-    device: (() => {
-      const dev = record.device ?? record.deviceInfo;
-      return {
-        brand: dev?.brand ?? "",
-        model: dev?.model ?? "",
-        storage: dev?.storage ?? "",
-      };
-    })(),
+    deviceInfo,
     conditionInfo: record.conditionInfo,
     pawnServiceInfo: record.pawnServiceInfo,
     sellNowServiceInfo: record.sellNowServiceInfo,
     consignmentServiceInfo: record.consignmentServiceInfo,
     refinanceServiceInfo: record.refinanceServiceInfo,
     iphoneExchangeServiceInfo: record.iphoneExchangeServiceInfo,
-    status: record.status,
+    tradeInServiceInfo: record.tradeInServiceInfo,
+    status: (record.status as Assessment["status"]) ?? "pending",
     estimatedValue: typeof record.estimatedValue === "number" ? record.estimatedValue : 0,
     assessmentDate: record.assessmentDate ?? record.createdAt,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
     priceLockExpiresAt: record.priceLockExpiresAt,
-  };
+  } satisfies Assessment;
 }
 
 export function useAssessment(assessmentId: string | undefined) {

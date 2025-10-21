@@ -39,7 +39,7 @@ export default function ResultsView({ assessments, onBack }) {
       .filter((a) => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
-        return `${a.device.brand} ${a.device.model}`.toLowerCase().includes(searchLower);
+        return `${a.deviceInfo.brand} ${a.deviceInfo.model}`.toLowerCase().includes(searchLower);
       });
   }, [assessments, searchTerm, filterStatus]);
 
@@ -112,8 +112,12 @@ export default function ResultsView({ assessments, onBack }) {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 sm:h-20 sm:w-20">
                   <SearchIcon className="h-8 w-8 text-slate-400 sm:h-9 sm:w-9" />
                 </div>
-                <h3 className="text-base font-semibold text-slate-800 sm:text-lg">ไม่พบรายการที่ตรงกัน</h3>
-                <p className="text-sm text-slate-500 sm:text-base">ลองปรับเปลี่ยนคำค้นหาหรือตัวกรองของคุณ</p>
+                <h3 className="text-base font-semibold text-slate-800 sm:text-lg">
+                  ไม่พบรายการที่ตรงกัน
+                </h3>
+                <p className="text-sm text-slate-500 sm:text-base">
+                  ลองปรับเปลี่ยนคำค้นหาหรือตัวกรองของคุณ
+                </p>
               </div>
             </motion.div>
           )}

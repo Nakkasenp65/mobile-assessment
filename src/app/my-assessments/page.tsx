@@ -12,45 +12,18 @@ import axios from "axios";
 import InputPhoneNumber from "./components/InputPhoneNumber";
 import OTPInput from "./components/OTPInput";
 import ResultsView from "./components/ResultView";
+import type { Assessment, RawAssessmentRecord } from "@/types/assessment";
 import Loading from "../../components/ui/Loading";
 import { requestOTP, verifyOTP, OTPError } from "./lib/otp-api";
 
-type AssessmentStatus = "completed" | "pending" | "in-progress";
-
-interface AssessmentRecord {
-  id: string;
-  email: string;
-  phoneNumber: string;
-  assessmentDate: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  status: AssessmentStatus;
-  estimatedValue: number;
-  selectedServiceId: string; // optional in API; keep empty string to hide service
-}
-
-// Raw API record shape (subset)
-interface RawAssessmentRecord {
-  _id: string;
-  docId?: string;
-  phoneNumber: string;
-  status: AssessmentStatus | string;
-  estimatedValue?: number;
-  deviceInfo?: { brand: string; model: string; storage: string };
-  device?: { brand: string; model: string; storage: string };
-  createdAt?: string;
-  updatedAt?: string;
-}
+type AssessmentStatus = Assessment["status"];
 
 interface SearchApiResponse {
   success: boolean;
   data: RawAssessmentRecord[];
 }
 
-async function fetchAssessmentsByPhone(phone: string): Promise<AssessmentRecord[]> {
+async function fetchAssessmentsByPhone(phone: string): Promise<Assessment[]> {
   const endpoint = `https://assessments-api-ten.vercel.app/api/assessments/search?phoneNumber=${encodeURIComponent(
     phone,
   )}`;
@@ -76,15 +49,16 @@ async function fetchAssessmentsByPhone(phone: string): Promise<AssessmentRecord[
       email: "",
       phoneNumber: rec.phoneNumber ?? "",
       assessmentDate,
-      device: {
+      deviceInfo: {
         brand: dev.brand ?? "",
         model: dev.model ?? "",
         storage: dev.storage ?? "",
+        productType: undefined,
       },
       status: (rec.status as AssessmentStatus) ?? "pending",
       estimatedValue: typeof rec.estimatedValue === "number" ? rec.estimatedValue : 0,
       selectedServiceId: "", // hide service row in card
-    } as AssessmentRecord;
+    } as Assessment;
   });
 }
 
@@ -96,7 +70,7 @@ export default function MyAssessmentsPage() {
   const [showTurnstileWarning, setShowTurnstileWarning] = useState(false);
 
   // OTP-related state
-  const [otpRequestId, setOtpRequestId] = useState<string | null>(null);
+  // const [otpRequestId, setOtpRequestId] = useState<string | null>(null);
   const [otpToken, setOtpToken] = useState<string | null>(null);
   const [otpRef, setOtpRef] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string>("");
@@ -133,7 +107,7 @@ export default function MyAssessmentsPage() {
     isLoading,
     error,
     refetch,
-  } = useQuery<AssessmentRecord[], Error>({
+  } = useQuery<Assessment[], Error>({
     queryKey: ["assessmentsByPhone", phoneNumber],
     queryFn: () => fetchAssessmentsByPhone(phoneNumber),
     enabled:
@@ -162,7 +136,7 @@ export default function MyAssessmentsPage() {
 
       if (response.success && response.data?.token) {
         setOtpToken(response.data.token ?? null);
-        setOtpRequestId(response.data.requestNo ?? null);
+        // setOtpRequestId(response.data.requestNo ?? null);
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120); // 2 minutes countdown
         setStep("verify-otp");
@@ -223,7 +197,6 @@ export default function MyAssessmentsPage() {
 
       if (response.success && response.data?.token) {
         setOtpToken(response.data.token ?? null);
-        setOtpRequestId(response.data.requestNo ?? null);
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120);
       } else {
@@ -244,7 +217,7 @@ export default function MyAssessmentsPage() {
   const handleBackFromOTP = () => {
     setStep("enter-phone");
     setOtpError("");
-    setOtpRequestId(null);
+    // setOtpRequestId(null);
     setOtpToken(null);
     setOtpRef(null);
     setOtpCountdown(0);
@@ -256,7 +229,6 @@ export default function MyAssessmentsPage() {
     setTurnstileToken(null);
     setShowTurnstileWarning(false);
     setOtpError("");
-    setOtpRequestId(null);
     setOtpToken(null);
     setOtpRef(null);
     setOtpCountdown(0);

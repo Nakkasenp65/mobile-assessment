@@ -8,27 +8,43 @@ import {
   TradeInServiceInfo,
 } from "./service";
 
-export interface AssessmentRecord {
+// Canonical lightweight device summary used across UI
+export interface DeviceSummary {
+  brand: string;
+  model: string;
+  storage: string;
+}
+
+// Canonical Assessment type used across the app (UI, hooks, and most API surfaces)
+export interface Assessment {
   id: string;
-  docId: string;
+  docId?: string;
   phoneNumber: string;
   status: "completed" | "pending" | "in-progress";
   estimatedValue: number;
-  assessmentDate: string;
-  priceLockExpiresAt: string;
+  // Dates are ISO 8601 strings when provided
+  assessmentDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  priceLockExpiresAt?: string;
+  // Canonical device shape for assessment flow (matches src/types/device.ts)
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
+  // Optional service payloads
   pawnServiceInfo?: PawnServiceInfo;
   sellNowServiceInfo?: SellNowServiceInfo;
   consignmentServiceInfo?: ConsignmentServiceInfo;
   refinanceServiceInfo?: RefinanceServiceInfo;
   iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
   tradeInServiceInfo?: TradeInServiceInfo;
-  createdAt: string;
-  updatedAt: string;
+  // Optional selection markers used by some UIs
+  selectedServiceId?: string;
+  email?: string;
 }
 
-// New payload structure for POST /assessments
+// Backward compat alias to ease refactors in older files
+export type AssessmentRecord = Assessment;
+
 export interface PawnServicePayload {
   locationType: "home" | "bts" | "store";
   btsLine?: string;
@@ -39,12 +55,8 @@ export interface PawnServicePayload {
 
 export interface AssessmentCreatePayload {
   phoneNumber: string;
-  customerName: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
+  customerName?: string; // optional for now; not all flows collect it at creation time
+  deviceInfo: DeviceInfo; // Keep payload consistent with assessment flow
   conditionInfo: ConditionInfo;
   pawnServiceInfo?: PawnServiceInfo;
   sellNowServiceInfo?: SellNowServiceInfo;
@@ -56,4 +68,26 @@ export interface AssessmentCreatePayload {
   estimatedValue: number;
   // Added: price lock expiration control (ISO 8601 string, required server-side)
   expiredAt: string;
+}
+
+// Raw API record shape as commonly returned by backend(s)
+export interface RawAssessmentRecord {
+  _id: string;
+  docId?: string;
+  phoneNumber: string;
+  status: "completed" | "pending" | "in-progress" | string;
+  estimatedValue?: number;
+  assessmentDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  priceLockExpiresAt?: string;
+  device?: DeviceSummary;
+  deviceInfo?: DeviceInfo;
+  conditionInfo: ConditionInfo;
+  pawnServiceInfo?: PawnServiceInfo;
+  sellNowServiceInfo?: SellNowServiceInfo;
+  consignmentServiceInfo?: ConsignmentServiceInfo;
+  refinanceServiceInfo?: RefinanceServiceInfo;
+  iphoneExchangeServiceInfo?: IPhoneExchangeServiceInfo;
+  tradeInServiceInfo?: TradeInServiceInfo;
 }

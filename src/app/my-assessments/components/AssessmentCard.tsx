@@ -67,22 +67,10 @@ const ALL_SERVICES: ServiceOption[] = [
   },
 ];
 
-type AssessmentStatus = "completed" | "pending" | "in-progress";
+import type { Assessment } from "@/types/assessment";
+type AssessmentStatus = Assessment["status"];
 
-interface AssessmentRecord {
-  id: string;
-  email: string;
-  phoneNumber: string;
-  assessmentDate: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  status: AssessmentStatus;
-  estimatedValue: number;
-  selectedServiceId: string;
-}
+type AssessmentRecord = Assessment;
 
 const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   const statusConfig = {
@@ -118,8 +106,16 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   );
 };
 
-export default function AssessmentCard({ assessment }: { assessment: AssessmentRecord; index?: number }) {
-  const { data: productData, isLoading } = useMobile(assessment.device.brand, assessment.device.model);
+export default function AssessmentCard({
+  assessment,
+}: {
+  assessment: AssessmentRecord;
+  index?: number;
+}) {
+  const { data: productData, isLoading } = useMobile(
+    assessment.deviceInfo.brand,
+    assessment.deviceInfo.model,
+  );
   const service = ALL_SERVICES.find((s) => s.id === assessment.selectedServiceId);
   const ServiceIcon = service?.icon;
 
@@ -138,7 +134,7 @@ export default function AssessmentCard({ assessment }: { assessment: AssessmentR
               ) : productData?.image_url ? (
                 <Image
                   src={productData.image_url}
-                  alt={`${assessment.device.brand} ${assessment.device.model}`}
+                  alt={`${assessment.deviceInfo.brand} ${assessment.deviceInfo.model}`}
                   width={40}
                   height={40}
                   className="h-10 w-10 object-contain"
@@ -149,9 +145,11 @@ export default function AssessmentCard({ assessment }: { assessment: AssessmentR
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="line-clamp-2 text-sm leading-tight font-bold text-slate-900 sm:text-base">
-                {assessment.device.brand} {assessment.device.model}
+                {assessment.deviceInfo.brand} {assessment.deviceInfo.model}
               </h3>
-              <p className="truncate text-xs text-slate-500 sm:text-sm">{assessment.device.storage}</p>
+              <p className="truncate text-xs text-slate-500 sm:text-sm">
+                {assessment.deviceInfo.storage}
+              </p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-500" />
@@ -169,7 +167,9 @@ export default function AssessmentCard({ assessment }: { assessment: AssessmentR
           {service && ServiceIcon && (
             <div className="flex items-center justify-between">
               <span className="text-slate-500">บริการ:</span>
-              <div className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}>
+              <div
+                className={clsx("flex items-center space-x-1.5 font-medium", service.colorClass)}
+              >
                 <ServiceIcon className="h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
                 <span className="truncate">{service.title}</span>
               </div>
@@ -178,7 +178,9 @@ export default function AssessmentCard({ assessment }: { assessment: AssessmentR
           {assessment.assessmentDate && (
             <div className="flex items-center justify-between">
               <span className="text-slate-500">วันที่ประเมิน:</span>
-              <span className="truncate font-medium text-slate-700">{assessment.assessmentDate}</span>
+              <span className="truncate font-medium text-slate-700">
+                {assessment.assessmentDate}
+              </span>
             </div>
           )}
         </div>
