@@ -21,6 +21,7 @@ import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 import { buildIPhoneExchangeFormData } from "@/util/servicePayloads";
+import { validateUploadFile, computeIsFormComplete, type ExchangeFormState, type OccupationType } from "@/util/exchangeValidation";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -35,8 +36,8 @@ const storeLocations = ["สาขาห้างเซ็นเตอร์ว�
 const SERVICE_FEE_RATE = 0.15; // 15%
 
 const OCCUPATION_TYPES = {
-  SALARIED: "salaried",
-  FREELANCE: "freelance",
+  SALARIED: "salaried" as OccupationType,
+  FREELANCE: "freelance" as OccupationType,
 };
 
 // Helper function for currency formatting
@@ -61,7 +62,7 @@ export default function IPhoneExchangeService({
   const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
   const merged = mergeTrainDataWithApi(btsData);
 
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<ExchangeFormState>({
     customerName: "",
     phone: phoneNumber,
     btsStation: "",
@@ -69,36 +70,40 @@ export default function IPhoneExchangeService({
     date: "",
     time: "",
     occupation: "",
-    documentFile: null as File | null,
+    documentFile: null,
   });
+
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Keep phone in sync if prop changes
   useEffect(() => {
     setFormState((prev) => ({ ...prev, phone: phoneNumber || "" }));
   }, [phoneNumber]);
 
-  const handleInputChange = (field: keyof typeof formState, value: string | Date | undefined) => {
+  const handleInputChange = (field: keyof ExchangeFormState, value: string | Date | undefined) => {
     if (field === "phone") {
-      const numericValue = (value as string).replace(/[^0-9]/g, "");
+      const numericValue = ((value ?? "") as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
+    } else if (field === "occupation") {
+      setFormState((prev) => ({ ...prev, occupation: (value as OccupationType) ?? "", documentFile: null }));
+      setUploadError(null);
     } else {
-      setFormState((prev) => {
-        const newState = { ...prev, [field]: value };
-        if (field === "occupation") {
-          newState.documentFile = null;
-        }
-        return newState;
-      });
+      const str = typeof value === "string" ? value : value ? String(value) : "";
+      setFormState((prev) => ({ ...prev, [field]: str }));
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFormState((prev) => ({
-        ...prev,
-        documentFile: e.target.files![0],
-      }));
+    const f = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
+    if (!f) return;
+    const result = validateUploadFile({ name: f.name, type: f.type, size: f.size });
+    if ("error" in result) {
+      setUploadError(result.error);
+      setFormState((prev) => ({ ...prev, documentFile: null }));
+      return;
     }
+    setUploadError(null);
+    setFormState((prev) => ({ ...prev, documentFile: f }));
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -113,10 +118,7 @@ export default function IPhoneExchangeService({
 
   const handleLocationTypeChange = (newLocationType: "store" | "bts") => {
     setLocationType(newLocationType);
-    setFormState((prev) => ({
-      ...prev,
-      btsStation: "",
-    }));
+    setFormState((prev) => ({ ...prev, btsStation: "" }));
     setSelectedBtsLine("");
   };
 
@@ -148,15 +150,7 @@ export default function IPhoneExchangeService({
     return null;
   }, [formState.occupation]);
 
-  const isFormComplete =
-    formState.customerName &&
-    formState.phone.length === 10 &&
-    formState.date &&
-    formState.time &&
-    locationType !== null &&
-    (locationType === "bts" ? formState.btsStation : locationType === "store" ? true : false) &&
-    !!formState.occupation &&
-    !!formState.documentFile;
+  const isFormComplete = computeIsFormComplete(formState, locationType);
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
@@ -179,7 +173,7 @@ export default function IPhoneExchangeService({
     const formData = buildIPhoneExchangeFormData({
       customerName: formState.customerName,
       phone: formState.phone,
-      time: formState.time,
+      time: formState.time as string,
       occupation: formState.occupation as "salaried" | "freelance" | "",
       documentFile: formState.documentFile,
     });
@@ -253,15 +247,49 @@ export default function IPhoneExchangeService({
             }}
           />
 
+          {/* Occupation Selection */}
+          <motion.div variants={formVariants} className="space-y-4">
+            <Label className="block text-lg font-semibold">อาชีพของคุณ</Label>
+            <div className="flex flex-row gap-4">
+              {[OCCUPATION_TYPES.SALARIED, OCCUPATION_TYPES.FREELANCE].map((value) => (
+                <Card
+                  key={value}
+                  tabIndex={0}
+                  className={`relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 px-6 py-4 transition ${
+                    formState.occupation === value ? "border-emerald-500 bg-emerald-50/50 shadow-lg" : "border-zinc-200 bg-white/40"
+                  } focus:border-emerald-400 focus:outline-none`}
+                  onClick={() => handleInputChange("occupation", value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") handleInputChange("occupation", value);
+                  }}
+                  aria-checked={formState.occupation === value}
+                  role="radio"
+                >
+                  {value === OCCUPATION_TYPES.SALARIED ? (
+                    <Briefcase className="h-7 w-7 text-emerald-600" />
+                  ) : (
+                    <Sparkles className="h-7 w-7 text-emerald-600" />
+                  )}
+                  <span className="mt-1 text-base font-medium text-emerald-950">
+                    {value === "salaried" ? "พนักงานเงินเดือน" : "อาชีพอิสระ"}
+                  </span>
+                  {formState.occupation === value && (
+                    <Check className="absolute top-2 right-2 h-4 w-4 text-emerald-600" />
+                  )}
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+
           {/* Location Selection */}
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">เลือกรูปแบบสถานที่รับบริการ</Label>
             <div className="grid grid-cols-2 gap-4">
-              <motion.button type="button" onClick={() => setLocationType("bts")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "bts" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
+              <motion.button type="button" onClick={() => handleLocationTypeChange("bts")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "bts" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
                 <Train className="h-6 w-6" />
                 <span className="font-semibold">นัดรับที่สถานีรถไฟ</span>
               </motion.button>
-              <motion.button type="button" onClick={() => setLocationType("store")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "store" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
+              <motion.button type="button" onClick={() => handleLocationTypeChange("store")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "store" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
                 <Store className="h-6 w-6" />
                 <span className="font-semibold">รับบริการที่สาขา</span>
               </motion.button>
@@ -329,9 +357,9 @@ export default function IPhoneExchangeService({
               <DateTimeSelect
                 serviceType="บริการแลกเปลี่ยน iPhone"
                 serviceData={{ ...formState, locationType }}
-                dateValue={formState.date}
+                dateValue={formState.date as string}
                 onDateChange={(value) => handleInputChange("date", value)}
-                timeValue={formState.time}
+                timeValue={formState.time as string}
                 onTimeChange={(value) => handleInputChange("time", value)}
                 className="w-full"
                 labelDate="วัน"
@@ -353,10 +381,17 @@ export default function IPhoneExchangeService({
               </Label>
 
               <div
-                className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 bg-gradient-to-br from-green-50 to-emerald-50 px-6 py-6 shadow transition ${formState.documentFile ? "border-green-400" : "border-dashed border-green-300 hover:border-green-500"} cursor-pointer`}
+                className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 px-6 py-6 shadow transition ${
+                  uploadError
+                    ? "border-red-400 bg-red-50"
+                    : formState.documentFile
+                      ? "border-green-400 bg-gradient-to-br from-green-50 to-emerald-50"
+                      : "border-dashed border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 hover:border-green-500"
+                } cursor-pointer`}
                 tabIndex={0}
                 role="button"
                 aria-label="อัปโหลดไฟล์"
+                aria-busy={updateAssessment.isPending}
                 onClick={() => fileRef.current?.click()}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") fileRef.current?.click();
@@ -382,6 +417,7 @@ export default function IPhoneExchangeService({
                       variant="outline"
                       size="sm"
                       onClick={() => setFormState((prev) => ({ ...prev, documentFile: null }))}
+                      disabled={updateAssessment.isPending}
                     >
                       ลบไฟล์
                     </Button>
@@ -390,6 +426,11 @@ export default function IPhoneExchangeService({
                   <p className="text-muted-foreground mt-1 text-xs">{documentUploadDetails.description}</p>
                 )}
               </div>
+              {uploadError && (
+                <p className="mt-1 text-sm font-medium text-red-600" role="alert" aria-live="polite">
+                  {uploadError}
+                </p>
+              )}
             </motion.div>
           )}
         </motion.div>

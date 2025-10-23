@@ -1,7 +1,7 @@
 // src/util/servicePayloads.test.ts
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { buildIPhoneExchangePayload, buildRefinancePayload } from "./servicePayloads";
+import { buildIPhoneExchangePayload, buildRefinancePayload } from "./servicePayloads.ts";
 
 test("buildIPhoneExchangePayload excludes location and appointmentDate", () => {
   const payload = buildIPhoneExchangePayload({
