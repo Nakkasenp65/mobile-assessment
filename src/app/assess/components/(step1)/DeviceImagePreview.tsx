@@ -1,8 +1,7 @@
 // src/app/assess/components/(step1)/DeviceImagePreview.tsx
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PhoneScene } from "../../../../components/3D/PhoneScene";
-import { IoPhoneLandscapeSharp, IoPhonePortraitOutline, IoReloadOutline } from "react-icons/io5";
+import { IoPhonePortraitOutline } from "react-icons/io5";
 
 interface DeviceImagePreviewProps {
   imageUrl?: string;
