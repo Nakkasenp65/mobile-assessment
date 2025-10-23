@@ -6,6 +6,8 @@ import "./globals.css";
 
 // ✨ [เพิ่ม] Import Component ใหม่ที่เราสร้าง
 import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
+// Added: Import LiffProvider for environment-aware LINE integration
+import { LiffProvider } from "@/components/Provider/LiffProvider";
 
 export const metadata: Metadata = {
   title: "OK Mobile ประเมินสภาพเครื่อง",
@@ -27,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <LiffProvider>{children}</LiffProvider>
+        </Providers>
       </body>
       <LongdoScriptLoader />
     </html>

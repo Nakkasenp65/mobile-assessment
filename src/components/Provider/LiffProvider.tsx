@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useMemo } from "react";
 import liff from "@line/liff";
 import Loading from "../ui/Loading";
 
@@ -11,6 +11,28 @@ interface LiffProfile {
   displayName: string;
   pictureUrl?: string;
   statusMessage?: string;
+}
+
+// Added: Environment and payload typing
+// Define decoded token shape to avoid `any` usage
+interface DecodedIdToken {
+  iss?: string;
+  sub?: string;
+  aud?: string;
+  exp?: number;
+  iat?: number;
+  amr?: string[];
+  name?: string;
+  picture?: string;
+  email?: string;
+}
+
+type LiffEnvironment = "web" | "liff";
+
+export interface UserPayload {
+  phoneNumber: string;
+  // Only present when running inside LIFF client
+  line_user_id?: string;
 }
 
 type TextResultStatus = "dev-noop" | "unsupported" | "sent" | "error";
@@ -35,6 +57,14 @@ interface LiffContextValue {
   liff: typeof liff | null;
   actions: LiffActions;
   liffDecodedIdToken: unknown | null;
+  // Added: environment-aware fields
+  environment: LiffEnvironment;
+  loginAvailable: boolean;
+  loginUnavailableReason?: string;
+  phoneNumber: string;
+  setPhoneNumber: (value: string) => void;
+  userPayload: UserPayload;
+  lineUserId: string | null;
 }
 
 const noopActions: LiffActions = {
@@ -52,6 +82,13 @@ const LiffContext = createContext<LiffContextValue>({
   liff: null,
   actions: noopActions,
   liffDecodedIdToken: null,
+  environment: "web",
+  loginAvailable: false,
+  loginUnavailableReason: "LINE login is only available inside the LINE app (LIFF).",
+  phoneNumber: "",
+  setPhoneNumber: () => {},
+  userPayload: { phoneNumber: "" },
+  lineUserId: null,
 });
 
 const inClient = (): boolean => {
@@ -76,6 +113,12 @@ export function LiffProvider({ children }: LiffProviderProps) {
   const [lineAccessToken, setLineAccessToken] = useState<string>("");
   const [liffReady, setLiffReady] = useState<boolean>(false);
   const [liffDecodedIdToken, setLiffDecodedIdToken] = useState<unknown | null>(null);
+  // Added: phone and environment state
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const envIsClient = inClient();
+  const environment: LiffEnvironment = envIsClient ? "liff" : "web";
+  const loginAvailable = envIsClient;
+  const [lineUserId, setLineUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const longProfile: LiffProfile = {
@@ -116,6 +159,8 @@ export function LiffProvider({ children }: LiffProviderProps) {
         setLiffProfile(longProfile);
         setLineAccessToken(lineAccessTokenDev || "");
         setLiffDecodedIdToken(mockDecodedTokenId);
+        // Derive line user id only when in LIFF client
+        setLineUserId(envIsClient ? mockDecodedTokenId.sub ?? longProfile.userId : null);
         setLiffReady(true); // no real LIFF in dev
         setIsLoading(false);
         return;
@@ -143,17 +188,30 @@ export function LiffProvider({ children }: LiffProviderProps) {
           const accessToken = liff.getAccessToken();
           console.log("Access token liff provider: ", accessToken);
           setLineAccessToken(accessToken || "");
+          // Derive line user id only when in LIFF client
+          const token = decodedIdToken as DecodedIdToken | null;
+          const derivedLineId = envIsClient
+            ? token?.sub ?? profile.userId ?? null
+            : null;
+          setLineUserId(derivedLineId);
           setIsLoading(false);
         } else {
-          liff.login();
+          // Strictly guard login: only trigger inside LIFF client
+          if (envIsClient) {
+            liff.login();
+          } else {
+            console.warn("[LIFF] Login disabled: not inside LINE app (web environment)");
+            setIsLoading(false);
+          }
         }
       } catch (e) {
         console.error("[LIFF init error]", e);
+        setIsLoading(false);
       }
     };
 
     init();
-  }, []);
+  }, [server, envIsClient]);
 
   // Safe wrappers so components can call without worrying about environment
   const actions: LiffActions = {
@@ -163,7 +221,7 @@ export function LiffProvider({ children }: LiffProviderProps) {
           console.warn("[LIFF] closeWindow noop in dev");
           return;
         }
-        if (inClient()) {
+        if (envIsClient) {
           liff.closeWindow();
         } else {
           // Fallback when opened in external browser
@@ -190,7 +248,7 @@ export function LiffProvider({ children }: LiffProviderProps) {
           console.warn("[LIFF] text noop in dev:", message);
           return { status: "dev-noop" };
         }
-        if (!inClient()) {
+        if (!envIsClient) {
           console.warn("[LIFF] text() works only inside LINE client chat.");
           return { status: "unsupported" };
         }
@@ -219,9 +277,9 @@ export function LiffProvider({ children }: LiffProviderProps) {
         return;
       }
 
-      if (!liffReady || !liff.isLoggedIn()) {
+      if (!envIsClient || !liffReady || !liff.isLoggedIn()) {
         console.error(
-          "[LIFF_ERROR] LIFF is not ready or user is not logged in for shareTargetPicker.",
+          "[LIFF_ERROR] shareTargetPicker requires LIFF client and logged-in state.",
         );
         return;
       }
@@ -248,6 +306,12 @@ export function LiffProvider({ children }: LiffProviderProps) {
     },
   };
 
+  const userPayload: UserPayload = useMemo(() => {
+    return envIsClient && lineUserId
+      ? { phoneNumber, line_user_id: lineUserId }
+      : { phoneNumber };
+  }, [envIsClient, lineUserId, phoneNumber]);
+
   if (isLoading) {
     return (
       <div className="gradient-background flex h-dvh w-full items-center justify-center">
@@ -266,6 +330,15 @@ export function LiffProvider({ children }: LiffProviderProps) {
         liff: liffReady ? liff : null,
         actions,
         liffDecodedIdToken,
+        environment,
+        loginAvailable,
+        loginUnavailableReason: loginAvailable
+          ? undefined
+          : "LINE login is only available inside the LINE app (LIFF).",
+        phoneNumber,
+        setPhoneNumber,
+        userPayload,
+        lineUserId,
       }}
     >
       {children}
