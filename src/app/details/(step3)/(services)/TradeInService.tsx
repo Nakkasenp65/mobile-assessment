@@ -17,6 +17,7 @@ import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { TradeInServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
+import Image from "next/image";
 
 interface TradeInServiceProps {
   assessmentId: string;
@@ -159,9 +160,19 @@ export default function TradeInService({
         <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-amber-100/50 blur-2xl" />
         <div className="relative z-10">
           <h3 className="text-lg font-semibold text-amber-900">มูลค่าเครื่องเก่าของคุณ</h3>
-          <p className="mt-2 bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
-            {THB(tradeInPrice)}
+          <div className="mt-2 flex items-center justify-center gap-2">
+          <p className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
+          {THB(tradeInPrice)}
           </p>
+          <Image
+          src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+          width={100}
+          height={100}
+          alt="animated-coin"
+          className="-m-6"
+          priority
+          />
+          </div>
           <p className="mt-2 text-sm text-amber-800/80">ใช้ส่วนลดสำหรับซื้อเครื่องใหม่ได้ทันที</p>
         </div>
       </motion.div>

@@ -11,6 +11,7 @@ import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { RefinanceServiceInfo } from "@/types/service";
@@ -229,9 +230,19 @@ export default function RefinanceService({
             <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
               วงเงินรีไฟแนนซ์ที่คุณจะได้รับ
             </h3>
-            <p className="mt-2 bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-purple-400 dark:to-violet-400">
-              {THB(refinancePrice)}
-            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <p className="bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-purple-400 dark:to-violet-400">
+                {THB(refinancePrice)}
+              </p>
+              <Image
+                src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                width={100}
+                height={100}
+                alt="animated-coin"
+                className="-m-6"
+                priority
+              />
+            </div>
             <p className="mt-2 text-sm text-purple-800/80 dark:text-purple-200/80">
               รับเงินสดทันที และแบ่งชำระคืนสบายๆ
             </p>

@@ -11,6 +11,7 @@ import { AlertTriangle, Lock, Mail, User, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface IcloudServiceProps {
   deviceInfo: DeviceInfo;
@@ -29,7 +30,7 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
     termsAccepted: false,
   });
 
-  const handleInputChange = (field: keyof typeof formState, value: any) => {
+  const handleInputChange = (field: keyof typeof formState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -106,7 +107,17 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-indigo-800 dark:text-indigo-200">ยอดประเมินสูงสุด</span>
-              <span className="font-semibold text-indigo-900 dark:text-indigo-100">{THB(icloudPawnPrice)}</span>
+              <span className="font-semibold text-indigo-900 dark:text-indigo-100 inline-flex items-center gap-2">
+                {THB(icloudPawnPrice)}
+                <Image
+                  src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                  width={100}
+                  height={100}
+                  alt="animated-coin"
+                  className="-m-6"
+                  priority
+                />
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-indigo-800 dark:text-indigo-200">หัก ดอกเบี้ย (15% ต่อ 10 วัน)</span>
@@ -124,9 +135,19 @@ const IcloudService = ({ deviceInfo, icloudPawnPrice }: IcloudServiceProps) => {
 
           <div className="text-center">
             <p className="text-sm text-indigo-800 dark:text-indigo-200">ยอดเงินที่คุณจะได้รับ</p>
-            <p className="mt-2 bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-blue-400">
-              {THB(calculatedValues.netAmount)}
-            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <p className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-blue-400">
+                {THB(calculatedValues.netAmount)}
+              </p>
+              <Image
+                src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                width={100}
+                height={100}
+                alt="animated-coin"
+                className="-m-6"
+                priority
+              />
+            </div>
             <p className="mt-2 text-sm text-indigo-800/80 dark:text-indigo-200/80">
               รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น
             </p>

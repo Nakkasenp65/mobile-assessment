@@ -1,11 +1,10 @@
 // src/app/assess/components/(step3)/(services)/MaintenanceService.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wrench, Loader2, CheckCircle2 } from "lucide-react";
 import { DeviceInfo } from "../../../../types/device";
-import FramerButton from "@/components/ui/framer/FramerButton";
 import { RepairItem } from "@/hooks/useRepairPrices";
 import { cn } from "@/lib/utils";
 import { Button } from "../../../../components/ui/button";
@@ -46,7 +45,9 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
       <h2 className="text-lg font-bold text-slate-800 md:text-2xl dark:text-zinc-100">
         รายละเอียดสภาพเครื่องและบริการซ่อม
       </h2>
-      <p className="text-sm text-slate-600">คุณสามารถเลือกรายการที่ต้องการซ่อมเพื่อดูค่าใช้จ่ายโดยประมาณได้</p>
+      <p className="text-sm text-slate-600">
+        คุณสามารถเลือกรายการที่ต้องการซ่อมเพื่อดูค่าใช้จ่ายโดยประมาณได้
+      </p>
 
       {/* Repair items list */}
       <div className="flex flex-col gap-2 rounded-xl border bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
@@ -83,7 +84,9 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
                   <span
                     className={cn(
                       "font-medium",
-                      isSelected ? "text-blue-800 dark:text-blue-200" : "text-slate-800 dark:text-zinc-100",
+                      isSelected
+                        ? "text-blue-800 dark:text-blue-200"
+                        : "text-slate-800 dark:text-zinc-100",
                     )}
                   >
                     {repair.part}
@@ -93,7 +96,9 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
                   <span
                     className={cn(
                       "font-semibold",
-                      isSelected ? "text-blue-900 dark:text-blue-100" : "text-slate-800 dark:text-zinc-100",
+                      isSelected
+                        ? "text-blue-900 dark:text-blue-100"
+                        : "text-slate-800 dark:text-zinc-100",
                     )}
                   >
                     ฿{repair.cost.toLocaleString()}
@@ -101,7 +106,11 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-300 dark:border-zinc-600">
                     <AnimatePresence>
                       {isSelected && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                        >
                           <CheckCircle2 className="h-5 w-5 text-blue-500" />
                         </motion.div>
                       )}
@@ -125,14 +134,20 @@ const MaintenanceService: React.FC<MaintenanceServiceProps> = ({ repairs, isLoad
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative flex flex-col justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900"
       >
-        <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-zinc-200">ค่าบริการซ่อมที่เลือก</h3>
-        <p className="text-4xl font-bold text-slate-700 dark:text-zinc-50">
-          ฿{" "}
-          {selectedTotalCost.toLocaleString("th-TH", {
-            minimumFractionDigits: 0,
-          })}
+        <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-zinc-200">
+          ค่าบริการซ่อมที่เลือก
+        </h3>
+        <div className="flex items-center justify-center gap-2">
+          <p className="text-4xl font-bold text-slate-700 dark:text-zinc-50">
+            ฿{" "}
+            {selectedTotalCost.toLocaleString("th-TH", {
+              minimumFractionDigits: 0,
+            })}
+          </p>
+        </div>
+        <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">
+          ระยะเวลาซ่อม: {estimatedTime}
         </p>
-        <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">ระยะเวลาซ่อม: {estimatedTime}</p>
       </motion.div>
 
       <motion.div

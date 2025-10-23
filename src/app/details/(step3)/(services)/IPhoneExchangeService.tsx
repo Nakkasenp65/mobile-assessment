@@ -22,6 +22,7 @@ import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 import { buildIPhoneExchangeFormData } from "@/util/servicePayloads";
 import { validateUploadFile, computeIsFormComplete, type ExchangeFormState, type OccupationType } from "@/util/exchangeValidation";
+import Image from "next/image";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -202,9 +203,19 @@ export default function IPhoneExchangeService({
           <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-emerald-100/50 blur-2xl dark:bg-emerald-400/20" />
           <div className="relative z-10">
             <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">ราคาประเมินเพื่อแลกเปลี่ยน iPhone</h3>
-            <p className="mt-2 bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-green-400 dark:to-emerald-400">
-              {THB(exchangePrice)}
-            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <p className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-green-400 dark:to-emerald-400">
+                {THB(exchangePrice)}
+              </p>
+              <Image
+                src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                width={100}
+                height={100}
+                alt="animated-coin"
+                className="-m-6"
+                priority
+              />
+            </div>
             <p className="mt-2 text-sm text-green-800/80 dark:text-green-200/80">รับเครื่องใหม่พร้อมส่วนต่างทันที</p>
           </div>
         </motion.div>

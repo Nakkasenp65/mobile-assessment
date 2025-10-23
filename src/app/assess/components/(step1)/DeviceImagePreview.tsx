@@ -34,7 +34,7 @@ const DeviceImagePreview = ({ imageUrl, altText, isLoading }: DeviceImagePreview
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
                   <IoPhonePortraitOutline className="mx-auto mb-2 h-10 w-10 text-slate-400 sm:h-12 sm:w-12" />
-                  <div className="text-xs font-medium text-slate-500">ไม่มีรูปภาพ</div>
+                  <div className="text-xs font-medium text-slate-500">เลือกรุ่นเพื่อแสดงรูปภาพ</div>
                 </div>
               </div>
             </div>

@@ -14,6 +14,7 @@ import { User, Phone, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { ConsignmentServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
@@ -136,9 +137,19 @@ export default function ConsignmentService({
           <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-sky-100/50 blur-2xl dark:bg-sky-400/20" />
           <div className="relative z-10">
             <h3 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">ราคาประเมินเพื่อฝากขาย</h3>
-            <p className="mt-2 bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-cyan-400 dark:to-sky-400">
-              {THB(consignmentPrice)}
-            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <p className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-cyan-400 dark:to-sky-400">
+                {THB(consignmentPrice)}
+              </p>
+              <Image
+                src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                width={100}
+                height={100}
+                alt="animated-coin"
+                className="-m-6"
+                priority
+              />
+            </div>
             <p className="mt-2 text-sm text-cyan-800/80 dark:text-cyan-200/80">เราช่วยขายให้คุณเพื่อได้ราคาดีที่สุด</p>
           </div>
         </motion.div>
@@ -226,9 +237,19 @@ export default function ConsignmentService({
                 <div className="my-2 border-t border-cyan-200/50 dark:border-cyan-400/20" />
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-cyan-900 dark:text-cyan-100">ยอดเงินสุทธิที่จะได้รับ</span>
-                  <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent dark:from-cyan-400 dark:to-sky-400">
-                    {THB(netAmount)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent dark:from-cyan-400 dark:to-sky-400">
+                      {THB(netAmount)}
+                    </span>
+                    <Image
+                      src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                      width={100}
+                      height={100}
+                      alt="animated-coin"
+                      className="-m-6"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
               <p className="mt-3 text-xs text-cyan-700/80 dark:text-cyan-300/80">

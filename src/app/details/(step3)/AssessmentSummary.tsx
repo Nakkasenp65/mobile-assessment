@@ -147,28 +147,28 @@ const AssessmentSummary = ({
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="flex bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent sm:text-6xl"
+                  className="flex items-center bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent sm:text-6xl"
                 >
-                  <Image
-                    src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
-                    width={100}
-                    height={100}
-                    alt="animated-coin"
-                    className="-m-6"
-                    priority
-                  />
                   {finalPrice.toLocaleString("th-TH", {
                     style: "currency",
                     currency: "THB",
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
+                  <Image
+                    src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+                    width={128}
+                    height={128}
+                    alt="animated-coin"
+                    className="-m-6"
+                    priority
+                  />
                 </motion.p>
               </div>
               {/* Meta row: single compact chip with countdown + date */}
               <div className="flex justify-center">
                 <span
-                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-[11px] font-medium whitespace-nowrap text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="flex max-w-full items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-[11px] font-medium whitespace-nowrap text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                   aria-label="รายละเอียดการล็อคราคาและวันที่ประเมิน"
                 >
                   {priceLockExpiresAt && (

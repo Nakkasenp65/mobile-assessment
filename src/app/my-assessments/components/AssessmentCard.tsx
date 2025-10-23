@@ -196,13 +196,15 @@ export default function AssessmentCard({
         <div className="mt-3 flex items-end justify-between border-t border-slate-100 pt-3">
           <div>
             <p className="text-xs text-slate-500">ราคาประเมิน</p>
-            <p className="text-lg font-bold text-orange-600 sm:text-xl">
-              {assessment.estimatedValue.toLocaleString("th-TH", {
-                style: "currency",
-                currency: "THB",
-                minimumFractionDigits: 0,
-              })}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-bold text-orange-600 sm:text-xl">
+                {assessment.estimatedValue.toLocaleString("th-TH", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 0,
+                })}
+              </p>
+            </div>
           </div>
           <div className="inline-flex items-center text-xs font-semibold text-orange-600 group-hover:text-orange-700 sm:text-sm">
             ดูรายละเอียด

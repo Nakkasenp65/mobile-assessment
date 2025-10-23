@@ -1,467 +1,503 @@
 // src/app/confirmed/[assessmentId]/page.tsx
+
 "use client";
 
-import { useParams } from "next/navigation";
-import {
-  CheckCircle,
-  User,
-  Phone,
-  MapPin,
-  Calendar,
-  Banknote,
-  MessageSquare,
-  ArrowLeft,
-  ClipboardCheck,
-  ChevronDown,
-  Printer,
-  HardDrive,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import Layout from "../../../components/Layout/Layout";
-import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
-import PrintableAssessment from "./components/PrintableAssessment";
-import { AssessmentRecord } from "@/types/assessment";
-import Footer from "@/app/(landing-page)/components/Footer";
+import Image from "next/image";
+import {
+  HardDrive,
+  CheckCircle,
+  ArrowLeft,
+  Printer,
+  PhoneCall,
+  XCircle,
+  Star,
+  MessageCircle,
+} from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { useAssessment } from "@/hooks/useAssessment";
 import { useMobile } from "@/hooks/useMobile";
 import { ASSESSMENT_QUESTIONS } from "@/util/info";
-import type { ConditionInfo } from "@/types/device";
-import { motion } from "framer-motion";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
+import { Button } from "@/components/ui/button";
+import Loading from "@/components/ui/Loading";
+import PrintableAssessment from "./components/PrintableAssessment";
+import SellNowService from "./components/SellNowService";
+import ConsignmentService from "./components/ConsignmentService";
+import RefinanceService from "./components/RefinanceService";
+import IPhoneExchangeService from "./components/IPhoneExchangeService";
+import PawnService from "./components/PawnService";
+import TradeInService from "./components/TradeInService";
+import type { Assessment } from "@/types/assessment";
+import type { ConditionInfo, DeviceInfo } from "@/types/device";
+import { usePriceCalculation } from "@/hooks/usePriceCalculation";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { useReactToPrint } from "react-to-print";
+import type {
+  SellNowServiceInfo,
+  PawnServiceInfo,
+  ConsignmentServiceInfo,
+  RefinanceServiceInfo,
+  IPhoneExchangeServiceInfo,
+  TradeInServiceInfo,
+} from "@/types/service";
 
-// Support contact info (static)
-const support = {
-  phone: "098-950-9222",
-  lineUrl: "https://line.me/ti/p/~@no1money",
-};
+// Helper: map ConditionInfo keys and values to Thai labels using ASSESSMENT_QUESTIONS
+function getConditionItems(conditionInfo: ConditionInfo | undefined) {
+  if (!conditionInfo) return [];
 
-export default function AssessmentConfirmationPage() {
+  return Object.entries(conditionInfo)
+    .filter(([key]) => key !== "id" && key !== "assessmentId")
+    .map(([key, value]) => {
+      const question = ASSESSMENT_QUESTIONS.find((section) =>
+        section.questions.some((q) => q.id === key),
+      );
+      const questionItem = question?.questions.find((q) => q.id === key);
+      return {
+        id: key,
+        question: questionItem?.question || key,
+        answer: value === true ? "ใช่" : value === false ? "ไม่ใช่" : value || "-",
+      };
+    });
+}
+
+export default function ConfirmedAssessmentPage() {
   const params = useParams();
-  const assessmentId = params.assessmentId as string;
+  const router = useRouter();
+  const assessmentId = params?.assessmentId as string | undefined;
+  const { data, isLoading, error } = useAssessment(assessmentId);
+  const assessment = data as Assessment;
 
-  // ✨ 5. สร้าง Ref และ Hook สำหรับการพิมพ์
-  const componentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    contentRef: componentRef,
-    documentTitle: `Assessment-Confirmation-${assessmentId}`,
-  });
-
-  // Mock record aligned to global AssessmentRecord type
-  const mockRecord: AssessmentRecord = {
-    id: assessmentId,
-    docId: "AS-202510-0010",
-    phoneNumber: "0987444366",
-    status: "pending",
-    estimatedValue: 19999,
-    assessmentDate: "2025-10-15T16:18:51.239Z",
-    priceLockExpiresAt: "2025-10-22T16:18:51.239Z",
-    deviceInfo: {
-      brand: "Apple",
-      model: "iPhone 16e",
-      storage: "128 GB",
-    },
-    conditionInfo: {
-      canUnlockIcloud: true,
-      modelType: "model_th",
-      warranty: "warranty_active_long",
-      accessories: "acc_full",
-      bodyCondition: "body_mint",
-      screenGlass: "glass_ok",
-      screenDisplay: "display_ok",
-      batteryHealth: "battery_health_high",
-      camera: "camera_ok",
-      wifi: "wifi_failed",
-      faceId: "biometric_ok",
-      speaker: "speaker_ok",
-      mic: "mic_ok",
-      touchScreen: "touchscreen_ok",
-      charger: "charger_ok",
-      call: "call_ok",
-      homeButton: "home_button_ok",
-      sensor: "sensor_ok",
-      buttons: "buttons_ok",
-    },
-    sellNowServiceInfo: {
-      customerName: "นาคเสน พุทธเจริญ",
-      phone: "0987777777",
-      locationType: "home",
-      appointmentDate: "2025-10-17",
-      appointmentTime: "12:00",
-      addressDetails: "เซ็นเตอร์ วัน ถนนราชวิถี",
-      province: "กรุงเทพมหานคร",
-      district: "เขตราชเทวี",
-      subdistrict: "แขวงถนนพญาไท",
-      postcode: "10400",
-      nextSteps: [
-        "เราจะติดต่อคุณเพื่อยืนยันการนัดหมายภายใน 24 ชั่วโมง",
-        "โปรดเตรียมเครื่องโทรศัพท์ของคุณให้พร้อมสำหรับการตรวจสอบสภาพ",
-        "นำเครื่องโทรศัพท์ของคุณมายังสถานที่นัดหมายตามวันและเวลาที่กำหนด",
-        "เตรียมเอกสารที่จำเป็น เช่น บัตรประชาชน หรือเอกสารยืนยันความเป็นเจ้าของ",
-      ],
-    },
-    createdAt: "2025-10-15T16:18:51.239Z",
-    updatedAt: "2025-10-15T16:18:51.239Z",
-  };
-
-  // Derive selected service label for UI display
-  const selectedServiceLabel = mockRecord.sellNowServiceInfo
-    ? "บริการขายทันที"
-    : mockRecord.pawnServiceInfo
-      ? "บริการจำนำ"
-      : mockRecord.consignmentServiceInfo
-        ? "บริการฝากขาย"
-        : mockRecord.refinanceServiceInfo
-          ? "บริการรีไฟแนนซ์"
-          : mockRecord.iphoneExchangeServiceInfo
-            ? "ไอโฟนแลกเงิน"
-            : "บริการไม่ระบุ";
-
-  // ดึงรูปภาพอุปกรณ์จาก Supabase ผ่าน useMobile
+  // Initialize hooks first to avoid conditional hook calls
   const { data: productData, isLoading: isImageLoading } = useMobile(
-    mockRecord.deviceInfo.brand,
-    mockRecord.deviceInfo.model,
+    assessment?.deviceInfo?.brand,
+    assessment?.deviceInfo?.model,
   );
 
-  // ที่อยู่สถานที่นัดหมาย (รวมค่าให้เป็นข้อความเดียว)
-  const locationText =
-    mockRecord.sellNowServiceInfo?.locationType === "home"
-      ? [
-          mockRecord.sellNowServiceInfo.addressDetails,
-          mockRecord.sellNowServiceInfo.subdistrict,
-          mockRecord.sellNowServiceInfo.district,
-          mockRecord.sellNowServiceInfo.province,
-          mockRecord.sellNowServiceInfo.postcode,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      : "สถานที่นัดหมายตามที่ระบุ";
+  const conditionItems = useMemo(
+    () => getConditionItems(assessment?.conditionInfo),
+    [assessment?.conditionInfo],
+  );
+
+  const { grade, finalPrice } = usePriceCalculation(
+    (assessment?.deviceInfo || {}) as DeviceInfo,
+    (assessment?.conditionInfo || {}) as ConditionInfo,
+  );
+
+  // Print reference and handler
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    documentTitle: `Assessment-Confirmation-${assessmentId}`,
+    contentRef: componentRef,
+    onAfterPrint: () => console.log("Printing completed"),
+    // removeAfterPrint is not a valid option in UseReactToPrintOptions
+  });
+
+  // Cancel state
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  // Service info extraction
+  const serviceInfo = useMemo(() => {
+    if (!assessment) return null;
+
+    const {
+      sellNowServiceInfo,
+      pawnServiceInfo,
+      consignmentServiceInfo,
+      refinanceServiceInfo,
+      iphoneExchangeServiceInfo,
+      tradeInServiceInfo,
+    } = assessment;
+
+    // Find the active service
+    if (sellNowServiceInfo) {
+      return { type: "sellNow", info: sellNowServiceInfo };
+    } else if (pawnServiceInfo) {
+      return { type: "pawn", info: pawnServiceInfo };
+    } else if (consignmentServiceInfo) {
+      return { type: "consignment", info: consignmentServiceInfo };
+    } else if (refinanceServiceInfo) {
+      return { type: "refinance", info: refinanceServiceInfo };
+    } else if (iphoneExchangeServiceInfo) {
+      return { type: "iphoneExchange", info: iphoneExchangeServiceInfo };
+    } else if (tradeInServiceInfo) {
+      return { type: "tradeIn", info: tradeInServiceInfo };
+    }
+
+    return null;
+  }, [assessment]);
+
+  // Service component selection
+  const ServiceComponent = useMemo(() => {
+    if (!serviceInfo) return null;
+
+    switch (serviceInfo.type) {
+      case "sellNow":
+        return (
+          <SellNowService info={serviceInfo.info as SellNowServiceInfo} assessment={assessment} />
+        );
+      case "pawn":
+        return <PawnService info={serviceInfo.info as PawnServiceInfo} assessment={assessment} />;
+      case "consignment":
+        return (
+          <ConsignmentService
+            info={serviceInfo.info as ConsignmentServiceInfo}
+            assessment={assessment}
+          />
+        );
+      case "refinance":
+        return (
+          <RefinanceService
+            info={serviceInfo.info as RefinanceServiceInfo}
+            assessment={assessment}
+          />
+        );
+      case "iphoneExchange":
+        return (
+          <IPhoneExchangeService
+            info={serviceInfo.info as IPhoneExchangeServiceInfo}
+            assessment={assessment}
+          />
+        );
+      case "tradeIn":
+        return (
+          <TradeInService info={serviceInfo.info as TradeInServiceInfo} assessment={assessment} />
+        );
+      default:
+        return null;
+    }
+  }, [serviceInfo, assessment]);
+
+  // Support phone
+  const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || "";
+  const handleBack = () => router.back();
+
+  const handleContact = () => {
+    window.open("tel:0989509222", "_self");
+  };
+
+  const handleLineContact = () => {
+    // Open Line messaging - you can customize this URL based on your Line official account
+    window.open("https://line.me/R/ti/p/@no1money", "_blank");
+  };
+
+  const handleCancelConfirm = async () => {
+    setShowCancelConfirm(false);
+    alert("ยกเลิกการจองเรียบร้อย");
+    router.back();
+  };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex min-h-screen items-center justify-center">
+          <Loading />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !assessment) {
+    return (
+      <Layout>
+        <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
+          <h1 className="mb-4 text-2xl font-bold text-red-600">ไม่พบข้อมูลการจอง</h1>
+          <p className="mb-6 text-gray-600">
+            ไม่พบข้อมูลการจองบริการตามรหัสที่ระบุ หรือข้อมูลอาจถูกลบไปแล้ว
+          </p>
+          <Button onClick={handleBack} className="gap-1">
+            <ArrowLeft className="h-4 w-4" /> กลับไปหน้าหลัก
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <>
-      {/* ส่วนนี้คือ Component ที่ซ่อนไว้สำหรับพิมพ์ จะไม่แสดงบนหน้าจอปกติ */}
+      {/* Hidden component for printing */}
       <div className="hidden">
-        <PrintableAssessment ref={componentRef} assessment={mockRecord} />
+        <PrintableAssessment ref={componentRef} assessment={assessment} />
       </div>
 
       <Layout>
-        {/* ใช้ print:hidden เพื่อซ่อน Layout หลักทั้งหมดเมื่อสั่งพิมพ์ */}
         <div className="min-h-screen bg-white print:hidden">
-          {/* Header with gradient */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-pink-50 via-orange-50 to-pink-50">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,182,193,0.1),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(255,200,124,0.1),transparent_50%)]" />
+          <div className="relative">
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-b from-blue-50 to-white pt-12 pb-8">
+              <div className="container mx-auto px-4">
+                <h1 className="text-center text-2xl font-bold text-gray-900 md:text-3xl">
+                  ยืนยันการจองบริการ
+                </h1>
+                <p className="mt-2 text-center text-sm text-gray-600 md:text-base">
+                  กรุณาตรวจสอบข้อมูลและรายละเอียดการจองให้ถูกต้อง
+                </p>
+              </div>
+            </div>
 
-            <div className="relative mx-auto max-w-3xl px-6 py-8 sm:px-8">
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col items-center justify-center">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                    <CheckCircle className="h-10 w-10 text-green-600" strokeWidth={2.5} />
+            {/* Main content */}
+            <main className="container mx-auto -mt-6 px-4 pb-20">
+              <div className="space-y-6">
+                {/* Service Component */}
+                {ServiceComponent}
+
+                {/* Device Information */}
+                <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <div className="flex flex-col gap-4 md:flex-row">
+                    {/* Device Image */}
+                    <div className="flex items-center justify-center md:w-1/3">
+                      {isImageLoading ? (
+                        <div className="h-48 w-48 animate-pulse rounded-xl bg-gray-200"></div>
+                      ) : productData?.image_url ? (
+                        <div className="relative h-48 w-48">
+                          <Image
+                            src={productData.image_url}
+                            alt={assessment.deviceInfo?.model || "Device"}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-48 w-48 items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
+                          <HardDrive className="h-16 w-16 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Device Details */}
+                    <div className="flex-1">
+                      <h2 className="mb-2 text-xl font-bold text-gray-900">
+                        {assessment.deviceInfo?.brand} {assessment.deviceInfo?.model}
+                      </h2>
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                          <HardDrive className="h-3 w-3" />
+                          {assessment.deviceInfo?.storage || "N/A"}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                          <Star className="h-3 w-3" />
+                          เกรด {grade || "N/A"}
+                        </span>
+                      </div>
+
+                      {/* Price Highlight */}
+                      <div className="mb-4 rounded-lg bg-orange-50 p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-orange-700">ราคาประเมิน</span>
+                          <span className="text-xl font-bold text-orange-700">
+                            {finalPrice?.toLocaleString() || "N/A"} บาท
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Condition Summary */}
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-medium text-gray-700">สภาพเครื่อง</h3>
+                        <div className="flex flex-wrap gap-1">
+                          {conditionItems.slice(0, 3).map((item) => (
+                            <span
+                              key={item.id}
+                              className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+                            >
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                              {item.question}
+                            </span>
+                          ))}
+                          {conditionItems.length > 3 && (
+                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                              +{conditionItems.length - 3} อื่นๆ
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">ยืนยันนัดหมายสำเร็จ</h1>
-                  <p className="mt-2 text-lg text-gray-600">
-                    รหัสการประเมิน <span className="font-semibold text-gray-900">#{mockRecord.docId}</span>
+                </section>
+
+                {/* Condition Details Accordion */}
+                <Accordion
+                  type="single"
+                  collapsible
+                  className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100"
+                >
+                  <AccordionItem value="condition" className="border-0 px-6 py-2">
+                    <AccordionTrigger className="py-3 text-base font-semibold text-gray-900 hover:no-underline">
+                      รายละเอียดสภาพเครื่อง
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-3">
+                        {conditionItems.map((item) => (
+                          <div key={item.id} className="flex items-start gap-2 text-sm">
+                            <div className="mt-0.5">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{item.question}</p>
+                              <p className="text-gray-600">{item.answer}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
+                {/* Actions section with redesigned buttons */}
+                <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">การดำเนินการ</h3>
+
+                  {/* Primary Actions Row */}
+                  <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* Print Button - Primary */}
+                    <Button
+                      onClick={handlePrint}
+                      className="h-14 bg-blue-600 text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl"
+                      aria-label="พิมพ์เอกสารการประเมิน"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <Printer className="h-5 w-5" />
+                        <span className="text-sm font-medium">พิมพ์เอกสาร</span>
+                      </div>
+                    </Button>
+
+                    {/* Line Contact Button - Green Theme */}
+                    <Button
+                      onClick={handleLineContact}
+                      className="h-14 bg-green-500 text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-xl"
+                      aria-label="ติดต่อผ่าน Line"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <MessageCircle className="h-5 w-5" />
+                        <span className="text-sm font-medium">Line ติดต่อ</span>
+                      </div>
+                    </Button>
+
+                    {/* Phone Contact Button */}
+                    <Button
+                      variant="outline"
+                      onClick={handleContact}
+                      className="h-14 border-2 border-gray-300 bg-white text-gray-700 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-lg"
+                      aria-label="โทรติดต่อเจ้าหน้าที่"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <PhoneCall className="h-5 w-5" />
+                        <span className="text-sm font-medium">โทรติดต่อ</span>
+                      </div>
+                    </Button>
+
+                    {/* Back Button */}
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      className="h-14 border-2 border-gray-300 bg-white text-gray-700 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-lg"
+                      aria-label="กลับไปหน้าก่อนหน้า"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <ArrowLeft className="h-5 w-5" />
+                        <span className="text-sm font-medium">กลับ</span>
+                      </div>
+                    </Button>
+                  </div>
+
+                  {/* Secondary Actions Row */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      {/* Cancel Button - Destructive */}
+                      <Button
+                        variant="destructive"
+                        onClick={() => setShowCancelConfirm(true)}
+                        className="h-12 bg-red-600 text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-lg sm:w-auto"
+                        aria-label="ยกเลิกการจองบริการ"
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        <span className="font-medium">ยกเลิกการจอง</span>
+                      </Button>
+
+                      {/* Support Info */}
+                      <div className="text-center sm:text-right">
+                        <p className="text-sm text-gray-600">ต้องการความช่วยเหลือ?</p>
+                        <p className="text-lg font-bold text-gray-900">{supportPhone}</p>
+                        <p className="text-xs text-gray-500">บริการลูกค้าทุกวัน 9:00 - 18:00 น.</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </main>
+          </div>
+        </div>
+
+        {/* Cancel Confirmation Modal - Simple overlay instead of Dialog */}
+        {showCancelConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-gray-900">ยืนยันการยกเลิกการจอง</h3>
+              </div>
+              <div className="mb-6 space-y-3 text-sm text-gray-700">
+                <p>คุณต้องการยกเลิกการจองบริการนี้หรือไม่?</p>
+                <div className="rounded-lg bg-red-50 p-3">
+                  <p className="text-xs text-red-700">
+                    การยกเลิกการจองอาจมีผลต่อเงื่อนไขการคืนเงินตามนโยบายบริษัท
                   </p>
                 </div>
               </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1"
+                >
+                  ปิด
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleCancelConfirm}
+                  className="flex-1 gap-2"
+                >
+                  <XCircle className="h-4 w-4" />
+                  ยืนยันยกเลิก
+                </Button>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Main Content */}
-          <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-            {/* Price Card - Most Important */}
-            <div className="from-primary to-secondary mb-8 overflow-hidden rounded-3xl bg-gradient-to-br p-8 text-center shadow-lg">
-              <p className="mb-2 text-sm font-medium tracking-wide text-white/90 uppercase">ราคาประเมินสุดท้าย</p>
-              <p className="text-6xl font-bold text-white">฿{mockRecord.estimatedValue.toLocaleString()}</p>
-              <div className="mt-6 flex items-center justify-center gap-2 text-white/90">
-                <Banknote className="h-5 w-5" />
-                <span className="text-sm font-medium">{selectedServiceLabel}</span>
-              </div>
-            </div>
+        {/* A4 Print Styles */}
+        <style jsx global>{`
+          @media print {
+            @page {
+              size: A4;
+              margin: 0;
+            }
 
-            {/* Device Info */}
-            <div className="mb-8 rounded-2xl bg-gray-50 p-6 sm:p-8">
-              {/* Device Info Container */}
-              <div className="flex items-center justify-between gap-6">
-                {/* Image + Details wrapper */}
-                <div className="flex w-full flex-row items-center gap-4">
-                  {/* Device Image */}
-                  <div className="flex-shrink-0">
-                    {isImageLoading ? (
-                      <div className="h-[100px] w-[100px] rounded-xl bg-white p-2 shadow-sm" />
-                    ) : productData?.image_url ? (
-                      <Image
-                        src={productData.image_url}
-                        alt={`${mockRecord.deviceInfo.brand} ${mockRecord.deviceInfo.model}`}
-                        width={100}
-                        height={100}
-                        className="h-[64px] w-[64px] rounded-xl bg-white object-contain p-1 shadow-sm"
-                      />
-                    ) : (
-                      <div className="flex h-[100px] w-[100px] items-center justify-center rounded-xl bg-white p-2 text-xs text-slate-500 shadow-sm">
-                        ไม่มีรูป
-                      </div>
-                    )}
-                  </div>
-                  {/* Device Details */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-foreground text-base leading-tight font-bold sm:text-xl">
-                      {mockRecord.deviceInfo.brand} {mockRecord.deviceInfo.model || mockRecord.deviceInfo.productType}
-                    </h3>
-                    {mockRecord.deviceInfo.storage && (
-                      <div className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                        <HardDrive className="h-3.5 w-3.5" />
-                        <span>{mockRecord.deviceInfo.storage}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            body {
+              margin: 0;
+              padding: 0;
+            }
 
-                {/* Grade badge pushed to the right */}
-                <motion.div
-                  initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
-                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 15,
-                    delay: 0.2,
-                  }}
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center self-end rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm sm:h-20 sm:w-20 sm:self-auto dark:from-green-900/20 dark:to-emerald-900/20"
-                >
-                  <span className="text-3xl font-black text-green-600 sm:text-5xl dark:text-green-400">A</span>
-                </motion.div>
-              </div>
+            body * {
+              visibility: hidden;
+            }
 
-              <div className="mt-6 space-y-4 border-t border-gray-200 pt-6">
-                <h2 className="text-lg font-bold text-gray-900">สภาพตัวเครื่อง</h2>
-                {(() => {
-                  const ci: Partial<ConditionInfo> = mockRecord.conditionInfo ?? ({} as Partial<ConditionInfo>);
-                  const questions = ASSESSMENT_QUESTIONS.flatMap((s) => s.questions);
-                  const getMeta = (key: keyof ConditionInfo) => questions.find((q) => q.id === key);
-                  const getOptionLabel = (key: keyof ConditionInfo, value?: string) => {
-                    if (!value) return "ไม่ระบุ";
-                    const meta = getMeta(key);
-                    const opt = meta?.options.find((o) => o.id === value);
-                    return opt?.label ?? "ไม่ระบุ";
-                  };
+            .hidden > * {
+              visibility: visible;
+            }
 
-                  const items: Array<{ label: string; value: string }> = [
-                    {
-                      label: getMeta("bodyCondition")?.question ?? "สภาพตัวเครื่อง",
-                      value: getOptionLabel("bodyCondition", ci.bodyCondition),
-                    },
-                    {
-                      label: getMeta("batteryHealth")?.question ?? "สุขภาพแบตเตอรี่",
-                      value: getOptionLabel("batteryHealth", ci.batteryHealth),
-                    },
-                    {
-                      label: getMeta("accessories")?.question ?? "อุปกรณ์ในกล่อง",
-                      value: getOptionLabel("accessories", ci.accessories),
-                    },
-                    {
-                      label: getMeta("screenGlass")?.question ?? "สภาพกระจกหน้าจอ",
-                      value: getOptionLabel("screenGlass", ci.screenGlass),
-                    },
-                    {
-                      label: getMeta("screenDisplay")?.question ?? "คุณภาพการแสดงผล",
-                      value: getOptionLabel("screenDisplay", ci.screenDisplay),
-                    },
-                    { label: getMeta("wifi")?.question ?? "Wi‑Fi / Bluetooth", value: getOptionLabel("wifi", ci.wifi) },
-                    {
-                      label: getMeta("faceId")?.question ?? "Face ID / Touch ID",
-                      value: getOptionLabel("faceId", ci.faceId),
-                    },
-                    {
-                      label: getMeta("speaker")?.question ?? "ลำโพงและการสั่น",
-                      value: getOptionLabel("speaker", ci.speaker),
-                    },
-                    { label: getMeta("mic")?.question ?? "ไมโครโฟน", value: getOptionLabel("mic", ci.mic) },
-                    {
-                      label: getMeta("touchScreen")?.question ?? "การสัมผัสหน้าจอ",
-                      value: getOptionLabel("touchScreen", ci.touchScreen),
-                    },
-                    {
-                      label: getMeta("charger")?.question ?? "การชาร์จไฟ",
-                      value: getOptionLabel("charger", ci.charger),
-                    },
-                    { label: getMeta("call")?.question ?? "การโทร", value: getOptionLabel("call", ci.call) },
-                    {
-                      label: getMeta("homeButton")?.question ?? "ปุ่ม Home",
-                      value: getOptionLabel("homeButton", ci.homeButton),
-                    },
-                    { label: getMeta("sensor")?.question ?? "Sensor", value: getOptionLabel("sensor", ci.sensor) },
-                    {
-                      label: getMeta("buttons")?.question ?? "ปุ่ม Power / Volume",
-                      value: getOptionLabel("buttons", ci.buttons),
-                    },
-                    {
-                      label: getMeta("modelType")?.question ?? "รุ่นโมเดลเครื่อง",
-                      value: getOptionLabel("modelType", ci.modelType),
-                    },
-                    {
-                      label: getMeta("warranty")?.question ?? "ประกันศูนย์",
-                      value: getOptionLabel("warranty", ci.warranty),
-                    },
-                    { label: "ปลดล็อก iCloud", value: ci.canUnlockIcloud ? "ทำได้" : "ทำไม่ได้" },
-                  ];
-
-                  return (
-                    <Accordion type="single" collapsible className="rounded-2xl bg-white p-6 shadow-lg">
-                      <AccordionItem value="device-condition" className="border-0">
-                        <AccordionTrigger className="group flex w-full items-center justify-between text-left text-sm font-bold text-gray-900 hover:no-underline">
-                          <span>รายละเอียดสภาพเครื่อง</span>
-                          <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="grid grid-cols-1 gap-2 pt-4 sm:grid-cols-2">
-                            {items.map((item, index) => (
-                              <div key={index}>
-                                <p className="text-xs text-black">
-                                  <span className="font-bold">{item.label}:</span> {item.value}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* Booking + Next Steps (Responsive Grid) */}
-            <div className="mb-12 grid grid-cols-1 gap-8">
-              {/* Booking Info */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
-                <h2 className="mb-4 text-lg font-bold text-gray-900">ข้อมูลการจอง</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <ClipboardCheck className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">รหัสการประเมิน</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">{mockRecord.docId}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Banknote className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">บริการ</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">{selectedServiceLabel}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">วันที่และเวลา</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {mockRecord.sellNowServiceInfo?.appointmentDate}, {mockRecord.sellNowServiceInfo?.appointmentTime}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-8">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="w-max text-sm text-gray-500">สถานที่</span>
-                    </div>
-                    <span className="text-right text-sm font-semibold text-gray-900">{locationText}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">ชื่อผู้นัดหมาย</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {mockRecord.sellNowServiceInfo?.customerName}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">เบอร์โทรศัพท์</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">{mockRecord.sellNowServiceInfo?.phone}</span>
-                  </div>
-                </div>
-                <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
-                  <button
-                    onClick={handlePrint}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-2 py-2 text-white shadow-lg transition hover:scale-[1.02] hover:bg-pink-700 focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:outline-none"
-                    aria-label="พิมพ์เอกสาร"
-                  >
-                    <Printer className="h-5 w-5" />
-                    <span className="font-semibold">พิมพ์เอกสาร</span>
-                  </button>
-                  <a
-                    href={support.lineUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-300 bg-white px-2 py-2 font-semibold text-gray-700 shadow-sm transition hover:scale-[1.02] hover:border-gray-400"
-                  >
-                    <MessageSquare className="h-5 w-5" />
-                    <span>ติดต่อเจ้าหน้าที่</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Next Steps */}
-              <div className="rounded-2xl bg-gray-50 p-6 shadow-sm transition-shadow hover:shadow-md">
-                <h2 className="mb-4 text-2xl font-bold text-gray-900">ขั้นตอนต่อไป</h2>
-                <ol className="space-y-3 text-gray-800">
-                  {mockRecord.sellNowServiceInfo?.nextSteps?.map((text, index) => (
-                    <li key={index} className="flex items-center gap-4">
-                      {/* Fun gradient number badge */}
-                      <div className="relative h-6 w-6">
-                        <span className="absolute top-1/2 left-1/2 inline-flex h-6 w-6 flex-shrink-0 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-orange-500 text-xs font-extrabold text-white shadow-md">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <span>{text}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-
-            {/* Support Section */}
-            <div className="rounded-2xl bg-gray-50 p-8 text-center">
-              <h3 className="mb-2 text-lg font-bold text-gray-900">ต้องการความช่วยเหลือ?</h3>
-              <p className="mb-6 text-sm text-gray-600">หากมีข้อสงสัยหรือต้องการเปลี่ยนแปลงนัดหมาย</p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                <a
-                  href={support.lineUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-semibold text-white shadow-sm transition-transform hover:scale-105"
-                >
-                  <MessageSquare className="h-5 w-5" />
-                  <span>ติดต่อทาง LINE</span>
-                </a>
-                <a
-                  href={`tel:${support.phone}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-transform hover:scale-105"
-                >
-                  <Phone className="h-5 w-5" />
-                  <span>{support.phone}</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="mt-12 flex flex-col items-center justify-center gap-6 border-t border-gray-200 pt-8 sm:flex-row sm:justify-between">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="font-medium">กลับไปที่หน้าแรก</span>
-              </Link>
-            </div>
-          </div>
-
-          <Footer />
-        </div>
+            .hidden {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+            }
+          }
+        `}</style>
       </Layout>
     </>
   );

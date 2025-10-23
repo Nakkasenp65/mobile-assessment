@@ -21,6 +21,8 @@ import { DeviceInfo } from "../../../types/device";
 import { ServiceOption } from "../../../types/service";
 import { Assessment } from "../../../types/assessment";
 import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface ServicesProps {
   selectedService: string;
@@ -35,9 +37,19 @@ interface ServicesProps {
   assessmentData?: Assessment;
 }
 
+// Define service id type to map payloads and navigation
+type ServiceId =
+  | "sell"
+  | "consignment"
+  | "tradein"
+  | "refinance"
+  | "iphone-exchange"
+  | "pawn"
+  | "maintenance";
+
 const serviceBenefits: { [key: string]: string[] } = {
   sell: [
-    "รับเงินสดทันทีภายใน 30 นาที",
+    "รับเงินสดทันที",
     "ไม่มีค่าธรรมเนียมแอบแฝง",
     "บริการล้างข้อมูลและ iCloud ให้ฟรี",
     "มีออฟชั่นซื้อเครื่องคืนภายใน 7 วัน",
@@ -179,22 +191,155 @@ export default function Services({
   const calculatedRefinancePrice = Math.round(finalPrice * 0.5);
   const calculatedExchangePrice = Math.round(finalPrice * 0.7);
   const isAppleDevice = deviceInfo.brand === "Apple";
+  const router = useRouter();
+  const [navError, setNavError] = useState<string | null>(null);
 
-  // Helper function to check if a service has assessment data
-  const hasServiceData = (serviceId: string): boolean => {
-    if (!assessmentData) return false;
+  // --- Reservation status loading & error states ---
+  const [reservationCheckLoading, setReservationCheckLoading] = useState<boolean>(false);
+  const [reservationCheckError, setReservationCheckError] = useState<string | null>(null);
+  const [remoteAssessment, setRemoteAssessment] = useState<Assessment | null>(null);
 
-    const serviceFieldMap: Record<string, keyof Assessment> = {
-      sell: "sellNowServiceInfo",
-      consignment: "consignmentServiceInfo",
-      tradein: "tradeInServiceInfo",
-      refinance: "refinanceServiceInfo",
-      "iphone-exchange": "iphoneExchangeServiceInfo",
-      pawn: "pawnServiceInfo",
+  // Map service id to assessment field key
+  const serviceFieldMap: Record<Exclude<ServiceId, "maintenance">, keyof Assessment> = {
+    sell: "sellNowServiceInfo",
+    consignment: "consignmentServiceInfo",
+    tradein: "tradeInServiceInfo",
+    refinance: "refinanceServiceInfo",
+    "iphone-exchange": "iphoneExchangeServiceInfo",
+    pawn: "pawnServiceInfo",
+  };
+
+  // New function: query backend for reservation status and normalize Assessment
+  async function checkReservationStatus(id: string): Promise<Assessment> {
+    const endpoint = `/api/assessments/${id}`;
+    const { data } = await axios.get<{ success: boolean; data: unknown }>(endpoint);
+    if (!data || typeof data !== "object" || !("success" in data) || !("data" in data)) {
+      throw new Error("Invalid response from assessments API");
+    }
+    const ok = (data as { success: boolean }).success;
+    const payload = (data as { data: unknown }).data;
+    if (!ok || !payload || typeof payload !== "object")
+      throw new Error("Invalid response from assessments API");
+    const record = payload as Record<string, unknown>;
+
+    const pickStr = (o: Record<string, unknown>, key: string, fallback = ""): string => {
+      const v = o[key];
+      return typeof v === "string" ? (v as string) : fallback;
+    };
+    const pickNum = (o: Record<string, unknown>, key: string, fallback = 0): number => {
+      const v = o[key];
+      return typeof v === "number" ? (v as number) : fallback;
     };
 
-    const field = serviceFieldMap[serviceId];
-    return field ? !!assessmentData[field] : false;
+    const deviceInfoRaw = record["deviceInfo"] as Record<string, unknown> | undefined;
+    const deviceSummaryRaw = record["device"] as Record<string, unknown> | undefined;
+
+    const deviceInfo: DeviceInfo = deviceInfoRaw
+      ? {
+          brand: pickStr(deviceInfoRaw, "brand"),
+          productType: pickStr(deviceInfoRaw, "productType"),
+          model: pickStr(deviceInfoRaw, "model"),
+          storage: pickStr(deviceInfoRaw, "storage"),
+        }
+      : {
+          brand: deviceSummaryRaw ? pickStr(deviceSummaryRaw, "brand") : "",
+          productType: undefined,
+          model: deviceSummaryRaw ? pickStr(deviceSummaryRaw, "model") : "",
+          storage: deviceSummaryRaw ? pickStr(deviceSummaryRaw, "storage") : "",
+        };
+
+    return {
+      id: pickStr(record, "_id"),
+      docId: pickStr(record, "docId", undefined as unknown as string),
+      phoneNumber: pickStr(record, "phoneNumber"),
+      deviceInfo,
+      conditionInfo:
+        (record["conditionInfo"] as Assessment["conditionInfo"]) ??
+        ({} as Assessment["conditionInfo"]),
+      pawnServiceInfo: record["pawnServiceInfo"] as Assessment["pawnServiceInfo"],
+      sellNowServiceInfo: record["sellNowServiceInfo"] as Assessment["sellNowServiceInfo"],
+      consignmentServiceInfo: record[
+        "consignmentServiceInfo"
+      ] as Assessment["consignmentServiceInfo"],
+      refinanceServiceInfo: record["refinanceServiceInfo"] as Assessment["refinanceServiceInfo"],
+      iphoneExchangeServiceInfo: record[
+        "iphoneExchangeServiceInfo"
+      ] as Assessment["iphoneExchangeServiceInfo"],
+      tradeInServiceInfo: record["tradeInServiceInfo"] as Assessment["tradeInServiceInfo"],
+      status: (pickStr(record, "status") as Assessment["status"]) || "pending",
+      estimatedValue: pickNum(record, "estimatedValue"),
+      assessmentDate: pickStr(
+        record,
+        "assessmentDate",
+        pickStr(record, "createdAt", undefined as unknown as string),
+      ),
+      createdAt: pickStr(record, "createdAt", undefined as unknown as string),
+      updatedAt: pickStr(record, "updatedAt", undefined as unknown as string),
+      priceLockExpiresAt: pickStr(record, "priceLockExpiresAt", undefined as unknown as string),
+    } as Assessment;
+  }
+
+  // Kick off reservation status check when assessmentId changes
+  useEffect(() => {
+    if (!assessmentId) return;
+    let alive = true;
+    setReservationCheckLoading(true);
+    setReservationCheckError(null);
+    checkReservationStatus(assessmentId)
+      .then((res) => {
+        if (alive) setRemoteAssessment(res);
+      })
+      .catch((err) => {
+        console.error("Reservation status check failed:", err);
+        if (alive) setReservationCheckError(err?.message || "ไม่สามารถตรวจสอบสถานะการจองได้");
+      })
+      .finally(() => {
+        if (alive) setReservationCheckLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [assessmentId]);
+
+  // Helper to get effective assessment (remote if available, else prop)
+  const effectiveAssessment: Assessment | undefined = remoteAssessment ?? assessmentData;
+
+  // Helper function to check if a service has assessment data (reserved)
+  const hasServiceData = (serviceId: string): boolean => {
+    if (!effectiveAssessment) return false;
+    const key = (serviceFieldMap as Record<string, keyof Assessment>)[serviceId];
+    return key ? !!effectiveAssessment[key] : false;
+  };
+
+  // Helper to get reserved payload object for a given service
+  const getServicePayload = (serviceId: ServiceId): Record<string, unknown> | null => {
+    if (!effectiveAssessment || serviceId === "maintenance") return null;
+    const key = serviceFieldMap[serviceId as Exclude<ServiceId, "maintenance">];
+    const payload = key
+      ? (effectiveAssessment as unknown as Record<string, unknown>)[key as keyof Assessment]
+      : null;
+    return typeof payload === "object" && payload ? (payload as Record<string, unknown>) : null;
+  };
+
+  // Safe location text extraction across variants
+  const getLocationText = (payload: Record<string, unknown> | null): string => {
+    if (!payload) return "-";
+    const rec = payload as Record<string, unknown>;
+    const storeLocation =
+      typeof rec.storeLocation === "string" ? (rec.storeLocation as string) : undefined;
+    const btsStation = typeof rec.btsStation === "string" ? (rec.btsStation as string) : undefined;
+    const address = typeof rec.address === "string" ? (rec.address as string) : undefined;
+    const addressDetails =
+      typeof rec.addressDetails === "string" ? (rec.addressDetails as string) : undefined;
+    const subdistrict =
+      typeof rec.subdistrict === "string" ? (rec.subdistrict as string) : undefined;
+    const district = typeof rec.district === "string" ? (rec.district as string) : undefined;
+    const province = typeof rec.province === "string" ? (rec.province as string) : undefined;
+    if (storeLocation) return storeLocation;
+    if (btsStation) return `สถานี BTS: ${btsStation}`;
+    const addrLine =
+      addressDetails ?? address ?? [subdistrict, district, province].filter(Boolean).join(" ");
+    return addrLine || "-";
   };
 
   const baseServices: ServiceOption[] = [
@@ -259,6 +404,22 @@ export default function Services({
     },
   ];
 
+  // NEW: Determine if there is a reserved service and filter visible services accordingly
+  const reservedServiceId: ServiceId | undefined = (
+    ["sell", "consignment", "tradein", "refinance", "iphone-exchange", "pawn"] as const
+  ).find((id) => hasServiceData(id)) as ServiceId | undefined;
+
+  const visibleServices: ServiceOption[] = reservedServiceId
+    ? services.filter((s) => s.id === reservedServiceId)
+    : services;
+
+  // NEW: If a service is reserved, preselect it so navigation uses existing flow
+  useEffect(() => {
+    if (reservedServiceId) {
+      setSelectedService(reservedServiceId);
+    }
+  }, [reservedServiceId, setSelectedService]);
+
   const handleSelect = (serviceId: string) => {
     if (serviceId === "maintenance") {
       setIsMaintenanceOpen((current) => !current);
@@ -282,13 +443,34 @@ export default function Services({
       <h2 className="my-6 text-left text-2xl font-bold text-slate-800 lg:hidden">
         เลือกบริการที่ต้องการ
       </h2>
-      <div className="flex w-full flex-col gap-4">
-        {services.map((service) => {
+      {/* Reservation check states */}
+      {reservationCheckLoading && (
+        <div
+          className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+          aria-live="polite"
+        >
+          กำลังตรวจสอบการจองบริการ...
+        </div>
+      )}
+      {reservationCheckError && (
+        <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
+          {reservationCheckError}
+        </div>
+      )}
+      {navError && (
+        <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
+          {navError}
+        </div>
+      )}
+      <div className="flex w-full flex-col gap-4" role="list" aria-busy={reservationCheckLoading}>
+        {visibleServices.map((service) => {
           const isMaintenance = service.id === "maintenance";
           const isSelected = isMaintenance ? isMaintenanceOpen : selectedService === service.id;
           const theme = getTheme(service.id);
           const Icon = service.icon as LucideIcon;
           const benefits = serviceBenefits[service.id] || [];
+          const payload = getServicePayload(service.id as ServiceId);
+          const isReserved = !!payload && !isMaintenance;
 
           if (isMaintenance && repairs.length === 0) {
             return null;
@@ -304,16 +486,23 @@ export default function Services({
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className={cn(
                 "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
-                isSelected
+                isSelected || isReserved
                   ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
                   : "border-border hover:border-slate-300",
-                "cursor-pointer",
+                isReserved ? "cursor-default" : "cursor-pointer",
                 isMaintenance && "lg:hidden",
               )}
-              onClick={() => handleSelect(service.id)}
+              role={isReserved ? "article" : "button"}
+              aria-disabled={isReserved}
+              aria-selected={isSelected}
+              aria-label={`${service.title}${isReserved ? " (จองแล้ว)" : ""}`}
+              onClick={() => {
+                if (isReserved) return; // prevent selecting already reserved service
+                handleSelect(service.id);
+              }}
             >
               <AnimatePresence>
-                {isSelected && (
+                {(isSelected || isReserved) && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -339,7 +528,22 @@ export default function Services({
                   <Icon className="h-7 w-7 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-foreground font-bold">{service.title}</h4>
+                  <h4 className="text-foreground font-bold">
+                    {service.title}
+                    {isReserved && (
+                      <span
+                        className={cn(
+                          "ml-2 rounded-full px-2 py-0.5 text-xs font-semibold",
+                          theme.soft,
+                          theme.text,
+                          theme.borderColor,
+                          "border",
+                        )}
+                      >
+                        จองแล้ว
+                      </span>
+                    )}
+                  </h4>
                   <p className="text-muted-foreground text-sm">{service.description}</p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -350,63 +554,163 @@ export default function Services({
               {!isMaintenance && (
                 <>
                   <div className="bg-border my-4 h-px w-full" />
-                  <ul className="text-muted-foreground space-y-2 text-sm">
-                    {benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-2.5">
-                        <div
+                  {/* Reserved details (if any) */}
+                  {isReserved ? (
+                    <div className="space-y-2 text-sm text-slate-700">
+                      {/* Reserved primary details (safe-access across service variants) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500">ชื่อลูกค้า:</span>
+                        <span className="font-medium">
+                          {(() => {
+                            const rec = payload as Record<string, unknown>;
+                            return typeof rec.customerName === "string"
+                              ? (rec.customerName as string)
+                              : "-";
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500">เบอร์โทร:</span>
+                        <span className="font-medium">
+                          {(() => {
+                            const rec = payload as Record<string, unknown>;
+                            return typeof rec.phone === "string" ? (rec.phone as string) : "-";
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500">สถานที่:</span>
+                        <span className="font-medium">{getLocationText(payload)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500">วันนัดหมาย:</span>
+                        <span className="font-medium">
+                          {(() => {
+                            const rec = payload as Record<string, unknown>;
+                            return typeof rec.appointmentDate === "string"
+                              ? (rec.appointmentDate as string)
+                              : "-";
+                          })()}
+                        </span>
+                        <span className="text-pink-600">
+                          {(() => {
+                            const rec = payload as Record<string, unknown>;
+                            return typeof rec.appointmentTime === "string"
+                              ? (rec.appointmentTime as string)
+                              : "-";
+                          })()}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-start gap-2">
+                        <Link
+                          href={`/confirmed/${assessmentId}?service=${service.id}`}
                           className={cn(
-                            "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
-                            theme.solidBg,
+                            "inline-flex items-center gap-2 text-sm font-semibold",
+                            theme.text,
                           )}
-                        />
-                        <span>{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          ดูใบยืนยันการจอง
+                        </Link>
+                      </div>
 
-                  {/* View Details Link - Only shown if assessment data exists for this service */}
-                  {assessmentId && hasServiceData(service.id) && (
-                    <div className="mt-4 flex items-center justify-start">
-                      <Link
-                        href={`/confirmed/${assessmentId}`}
-                        className={cn(
-                          "inline-flex items-center gap-2 text-sm font-medium transition-colors hover:underline",
-                          theme.text,
-                        )}
-                        onClick={(e) => e.stopPropagation()}
+                      {/* NEW: Benefits section for reserved service, visually distinct */}
+                      <div
+                        className={cn("mt-4 rounded-xl border p-4", theme.soft, theme.borderColor)}
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        ดูรายละเอียดการจอง
-                      </Link>
-                    </div>
-                  )}
+                        <p className={cn("text-xs font-semibold", theme.text)}>
+                          สิทธิประโยชน์ของบริการนี้
+                        </p>
+                        <ul className="mt-2 space-y-2 text-sm">
+                          {benefits.map((benefit, index) => (
+                            <li key={index} className="flex items-start gap-2.5">
+                              <div
+                                className={cn(
+                                  "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
+                                  theme.solidBg,
+                                )}
+                              />
+                              <span>{benefit}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
-                  <AnimatePresence>
-                    {isSelected && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
-                        exit={{ opacity: 0, height: 0, marginTop: "0px" }}
-                        transition={{ duration: 0.3 }}
-                        className="flex justify-end overflow-hidden"
-                      >
+                      {/* NEW: Go to Details button using confirmed route with error handling */}
+                      <div className="mt-4 flex justify-end">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onNext();
+                            try {
+                              if (!assessmentId || typeof assessmentId !== "string") {
+                                throw new Error("ไม่พบรหัสการประเมินที่ถูกต้อง");
+                              }
+                              router.push(`/confirmed/${assessmentId}`);
+                            } catch (err) {
+                              const msg =
+                                err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการนำทาง";
+                              setNavError(msg);
+                              console.error("Navigation error:", err);
+                            }
                           }}
                           size="lg"
+                          aria-label={`ไปที่รายละเอียดบริการ ${service.title}`}
                           className={cn(
                             "h-12 w-full text-base font-bold text-white shadow-lg transition-all duration-300 sm:w-max",
                             theme.solidBg,
                             `hover:${theme.solidBg} hover:brightness-110`,
                           )}
                         >
-                          ยืนยันบริการนี้
+                          ไปที่รายละเอียด
                         </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <ul className="text-muted-foreground space-y-2 text-sm">
+                        {benefits.map((benefit, index) => (
+                          <li key={index} className="flex items-start gap-2.5">
+                            <div
+                              className={cn(
+                                "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full opacity-50",
+                                theme.solidBg,
+                              )}
+                            />
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <AnimatePresence>
+                        {isSelected && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
+                            exit={{ opacity: 0, height: 0, marginTop: "0px" }}
+                            transition={{ duration: 0.3 }}
+                            className="flex justify-end overflow-hidden"
+                          >
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onNext();
+                              }}
+                              size="lg"
+                              className={cn(
+                                "h-12 w-full text-base font-bold text-white shadow-lg transition-all duration-300 sm:w-max",
+                                theme.solidBg,
+                                `hover:${theme.solidBg} hover:brightness-110`,
+                              )}
+                            >
+                              ยืนยันบริการนี้
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
                 </>
               )}
 

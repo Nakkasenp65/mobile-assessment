@@ -1,3 +1,5 @@
+// src/types/assessment.ts
+
 import { ConditionInfo, DeviceInfo } from "./device";
 import {
   ConsignmentServiceInfo,

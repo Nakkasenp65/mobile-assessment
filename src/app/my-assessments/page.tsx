@@ -15,7 +15,12 @@ import ResultsView from "./components/ResultView";
 import type { Assessment, RawAssessmentRecord } from "@/types/assessment";
 import Loading from "../../components/ui/Loading";
 import { requestOTP, verifyOTP, OTPError } from "./lib/otp-api";
-import { getVerifiedSession, persistLastPhone, loadLastPhone, clearAllSessions } from "./lib/session";
+import {
+  getVerifiedSession,
+  persistLastPhone,
+  loadLastPhone,
+  clearAllSessions,
+} from "./lib/session";
 
 type AssessmentStatus = Assessment["status"];
 
@@ -119,8 +124,15 @@ export default function MyAssessmentsPage() {
         }
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-transition to results when verified session and security checks are satisfied
+  useEffect(() => {
+    if (isPhoneVerified && phoneNumber && (isDevEnv || !!turnstileToken)) {
+      setStep("show-results");
+    }
+  }, [isPhoneVerified, phoneNumber, isDevEnv, turnstileToken]);
 
   const {
     data: assessmentsData = [],
@@ -153,11 +165,25 @@ export default function MyAssessmentsPage() {
 
     try {
       setIsOtpLoading(true);
+
+      // Avoid OTP request when a verified session already exists
+      const existing = await getVerifiedSession(phone);
+      if (existing) {
+        setIsPhoneVerified(true);
+        if (isDevEnv || !!turnstileToken) {
+          setStep("show-results");
+          refetch();
+        } else {
+          // Wait for Turnstile verification; auto-transition handled by effect above
+          setStep("enter-phone");
+        }
+        return;
+      }
+
       const response = await requestOTP(phone);
 
       if (response.success && response.data?.token) {
         setOtpToken(response.data.token ?? null);
-        // setOtpRequestId(response.data.requestNo ?? null);
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120); // 2 minutes countdown
         setStep("verify-otp");
@@ -218,6 +244,19 @@ export default function MyAssessmentsPage() {
     try {
       setIsResendingOtp(true);
       setOtpError("");
+
+      // Avoid OTP resend when a verified session already exists
+      const existing = await getVerifiedSession(phoneNumber);
+      if (existing) {
+        setIsPhoneVerified(true);
+        if (isDevEnv || !!turnstileToken) {
+          setStep("show-results");
+          refetch();
+        } else {
+          setStep("enter-phone");
+        }
+        return;
+      }
 
       const response = await requestOTP(phoneNumber);
 
@@ -305,7 +344,10 @@ export default function MyAssessmentsPage() {
         return isLoading ? (
           <Loading />
         ) : (
-          <ResultsView assessments={assessmentsData} onBack={handleBack} onClearSession={handleClearSession} />
+          <ResultsView
+            assessments={assessmentsData}
+            onClearSession={handleClearSession}
+          />
         );
       default:
         return null;

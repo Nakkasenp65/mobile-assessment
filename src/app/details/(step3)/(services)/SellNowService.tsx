@@ -79,8 +79,9 @@ export default function SellNowService({
   const [geoPermission, setGeoPermission] = useState<"prompt" | "granted" | "denied" | null>(null);
   // ✨ [แก้ไข] กำหนด state เริ่มต้นเป็น null ก่อน
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
-  const { data: geocodeData } = useLongdoReverseGeocode(mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null);
-
+  const { data: geocodeData } = useLongdoReverseGeocode(
+    mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null,
+  );
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -124,7 +125,9 @@ export default function SellNowService({
     try {
       const permAPI = (
         navigator as unknown as {
-          permissions?: { query: (q: { name: string }) => Promise<{ state: "granted" | "prompt" | "denied" }> };
+          permissions?: {
+            query: (q: { name: string }) => Promise<{ state: "granted" | "prompt" | "denied" }>;
+          };
         }
       ).permissions;
       if (permAPI && permAPI.query) {
@@ -156,12 +159,15 @@ export default function SellNowService({
     setTurnstileToken(token);
   }, []);
 
-  const handleInputChange = useCallback((field: keyof typeof formState, value: string | Date | undefined) => {
-    setFormState((prev) => ({
-      ...prev,
-      [field]: field === "phone" ? (value as string).replace(/[^0-9]/g, "") : value,
-    }));
-  }, []);
+  const handleInputChange = useCallback(
+    (field: keyof typeof formState, value: string | Date | undefined) => {
+      setFormState((prev) => ({
+        ...prev,
+        [field]: field === "phone" ? (value as string).replace(/[^0-9]/g, "") : value,
+      }));
+    },
+    [],
+  );
 
   // ✨ [แก้ไข] เมื่อเลือก "ที่บ้าน" ให้เรียกขอพิกัด แต่ไม่รีเซ็ตสถานะ
   const handleLocationTypeChange = useCallback(
@@ -192,7 +198,11 @@ export default function SellNowService({
         turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         setShowTurnstileError(true);
         setTimeout(() => setShowTurnstileError(false), 3000);
-        await Swal.fire({ icon: "error", title: "กรุณายืนยันความปลอดภัย", text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ" });
+        await Swal.fire({
+          icon: "error",
+          title: "กรุณายืนยันความปลอดภัย",
+          text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ",
+        });
         return;
       }
       setShowTurnstileError(false);
@@ -200,12 +210,20 @@ export default function SellNowService({
       try {
         const { data } = await axios.post("/api/verify-turnstile", { token: turnstileToken });
         if (!data?.success) {
-          await Swal.fire({ icon: "error", title: "การยืนยันไม่สำเร็จ", text: "โปรดลองใหม่อีกครั้ง" });
+          await Swal.fire({
+            icon: "error",
+            title: "การยืนยันไม่สำเร็จ",
+            text: "โปรดลองใหม่อีกครั้ง",
+          });
           return;
         }
       } catch (err) {
         console.warn("Turnstile verification request failed", err);
-        await Swal.fire({ icon: "error", title: "ไม่สามารถยืนยัน Turnstile ได้", text: "โปรดลองอีกครั้ง" });
+        await Swal.fire({
+          icon: "error",
+          title: "ไม่สามารถยืนยัน Turnstile ได้",
+          text: "โปรดลองอีกครั้ง",
+        });
         return;
       }
     } else {
@@ -245,11 +263,19 @@ export default function SellNowService({
       { sellNowServiceInfo: payload },
       {
         onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          void Swal.fire({
+            icon: "success",
+            title: "ยืนยันข้อมูลสำเร็จ",
+            text: "เราจะติดต่อคุณเร็วๆ นี้",
+          });
           onSuccess?.();
         },
         onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+          void Swal.fire({
+            icon: "error",
+            title: "บันทึกข้อมูลไม่สำเร็จ",
+            text: "กรุณาลองใหม่อีกครั้ง",
+          });
         },
       },
     );
@@ -268,7 +294,11 @@ export default function SellNowService({
         : locationType === "store")
   );
 
-  const formVariants = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
+  const formVariants = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
+  };
 
   useEffect(() => {
     scrollTo(0, 0);
@@ -278,7 +308,12 @@ export default function SellNowService({
     <main className="w-full space-y-6 pt-4">
       <AnimatePresence mode="wait">
         {serviceStep === "filling_form" ? (
-          <motion.div key="filling_form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="filling_form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <PriceDisplay sellPrice={sellPrice} />
             <motion.div
               initial="initial"
@@ -298,16 +333,16 @@ export default function SellNowService({
               />
               {locationType && (
                 <div
-                  className={`rounded-lg border px-4 py-3 flex items-start gap-3 ${
+                  className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${
                     locationType === "store"
                       ? "border-emerald-300 bg-emerald-50 text-emerald-800"
                       : "border-blue-300 bg-blue-50 text-blue-800"
                   }`}
                 >
                   {locationType === "store" ? (
-                    <ShieldCheck className="h-5 w-5 mt-0.5" />
+                    <ShieldCheck className="mt-0.5 h-5 w-5" />
                   ) : (
-                    <AlertTriangle className="h-5 w-5 mt-0.5" />
+                    <AlertTriangle className="mt-0.5 h-5 w-5" />
                   )}
                   <div>
                     {locationType === "store" ? (
@@ -317,8 +352,10 @@ export default function SellNowService({
                       </>
                     ) : (
                       <>
-                        <p className="font-semibold">ต้องชำระเงินมัดจำสำหรับการรับซื้อนอกสถานที่</p>
-                        <p className="text-sm">ระบบจะแจ้งขั้นตอนและจำนวนเงินมัดจำหลังกรอกข้อมูลนัดหมายครบถ้วน</p>
+                        <p className="font-semibold">ต้องชำระเงินมัดจำ 200 บาท</p>
+                        <p className="text-sm">
+                          ระบบจะแจ้งขั้นตอนและจำนวนเงินมัดจำหลังกรอกข้อมูลนัดหมายครบถ้วน
+                        </p>
                       </>
                     )}
                   </div>

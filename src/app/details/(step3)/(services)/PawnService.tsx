@@ -21,6 +21,7 @@ import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ Fetch BTS API
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge with static MRT/SRT
+import Image from "next/image";
 
 const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
@@ -135,9 +136,19 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
         <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-amber-100/50 blur-2xl" />
         <div className="relative z-10">
           <h3 className="text-lg font-semibold text-orange-900">ยอดเงินที่คุณจะได้รับ (จำนำ)</h3>
-          <p className="mt-2 bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
-            {THB(pawnPrice)}
-          </p>
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <p className="bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
+              {THB(pawnPrice)}
+            </p>
+            <Image
+              src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+              width={100}
+              height={100}
+              alt="animated-coin"
+              className="-m-6"
+              priority
+            />
+          </div>
           <p className="mt-2 text-sm text-orange-800/80">รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น</p>
         </div>
       </motion.div>

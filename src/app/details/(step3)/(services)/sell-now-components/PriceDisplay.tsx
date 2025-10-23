@@ -2,8 +2,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
-const THB = (n: number) => n.toLocaleString("th-TH", { style: "currency", currency: "THB", minimumFractionDigits: 0 });
+const THB = (n: number) =>
+  n.toLocaleString("th-TH", { style: "currency", currency: "THB", minimumFractionDigits: 0 });
 
 interface PriceDisplayProps {
   sellPrice: number;
@@ -20,11 +22,25 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ sellPrice }) => {
       <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-pink-100/50 blur-2xl dark:bg-pink-400/20" />
       <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-orange-100/50 blur-2xl dark:bg-orange-400/20" />
       <div className="relative z-10">
-        <h3 className="text-lg font-semibold text-pink-900 dark:text-pink-100">ยอดเงินที่คุณจะได้รับ</h3>
+        <h3 className="text-lg font-semibold text-pink-900 dark:text-pink-100">
+          ยอดเงินที่คุณจะได้รับ
+        </h3>
         <p className="mt-2 bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-pink-400 dark:to-orange-400">
-          {THB(sellPrice)}
+          <span className="inline-flex items-center gap-2">
+            {THB(sellPrice)}
+            <Image
+              src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+              width={100}
+              height={100}
+              alt="animated-coin"
+              className="-m-6"
+              priority
+            />
+          </span>
         </p>
-        <p className="mt-2 text-sm text-pink-800/80 dark:text-pink-200/80">รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น</p>
+        <p className="mt-2 text-sm text-pink-800/80 dark:text-pink-200/80">
+          รับเงินสดทันทีเมื่อการตรวจสอบเสร็จสิ้น
+        </p>
       </div>
     </motion.div>
   );

@@ -124,7 +124,10 @@ export interface PriceCalculationResult {
 
 export const usePriceCalculation = (deviceInfo: DeviceInfo, conditionInfo: ConditionInfo): PriceCalculationResult => {
   return useMemo(() => {
-    const { model, storage } = deviceInfo;
+    // Safe destructuring with fallback values
+    const model = deviceInfo?.model || "default";
+    const storage = deviceInfo?.storage || "128 GB";
+    
     const calculatedBasePrice = (BASE_PRICES[model] || BASE_PRICES["default"]) + (STORAGE_ADJUSTMENTS[storage] || 0);
 
     const adjustments: PriceAdjustment[] = [];

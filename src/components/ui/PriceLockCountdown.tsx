@@ -85,7 +85,7 @@ export function PriceLockCountdown({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         aria-live="polite"
-        className={`flex items-center justify-center gap-2 text-xs text-red-600 dark:text-red-400 ${className}`}
+        className={`-mb-3 flex items-center justify-center gap-2 text-xs text-red-600 dark:text-red-400 ${className}`}
       >
         <Clock className="h-3.5 w-3.5" />
         <span className="font-medium">ราคาล็อกหมดอายุแล้ว</span>

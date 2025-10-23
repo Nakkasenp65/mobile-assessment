@@ -1,4 +1,4 @@
-import { SearchIcon, ArrowLeft, LogOut } from "lucide-react";
+import { SearchIcon, LogOut } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "../../../components/ui/input";
 import { AnimatePresence, motion } from "framer-motion";
@@ -7,7 +7,13 @@ import clsx from "clsx";
 import FramerButton from "../../../components/ui/framer/FramerButton";
 import type { Assessment } from "@/types/assessment";
 
-export default function ResultsView({ assessments, onBack, onClearSession }: { assessments: Assessment[]; onBack: () => void; onClearSession?: () => void }) {
+export default function ResultsView({
+  assessments,
+  onClearSession,
+}: {
+  assessments: Assessment[];
+  onClearSession?: () => void;
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
@@ -57,10 +63,6 @@ export default function ResultsView({ assessments, onBack, onClearSession }: { a
         <div className="flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-foreground text-2xl font-bold md:text-3xl">รายการประเมินของคุณ</h1>
-            {/* คำอธิบายสั้น ๆ เพื่อสื่อถึงลักษณะชั่วคราวของเซสชัน */}
-            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              เซสชันชั่วคราวเพื่อประหยัดโควตา OTP สามารถล้างได้ตลอดเวลา
-            </p>
           </div>
         </div>
       </div>
@@ -132,19 +134,8 @@ export default function ResultsView({ assessments, onBack, onClearSession }: { a
       </div>
 
       {/* Actions Footer */}
-      <div className="flex-shrink-0 pt-4 mt-2 border-t border-slate-200">
-        <div className="flex w-full items-center justify-between gap-3">
-          <FramerButton
-            variant="ghost"
-            className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-10 w-max items-center rounded-full border bg-white px-4 text-sm transition-colors sm:h-12 sm:px-6"
-            onClick={onBack}
-            aria-label="กลับ"
-            title="กลับ"
-          >
-            <ArrowLeft className="h-4 w-4 text-stone-500" />
-            <span className="ml-2 font-semibold text-stone-500">กลับ</span>
-          </FramerButton>
-
+      <div className="mt-2 flex-shrink-0 border-t border-slate-200 pt-4">
+        <div className="flex w-full items-center justify-end gap-3">
           {onClearSession && (
             <FramerButton
               variant="ghost"

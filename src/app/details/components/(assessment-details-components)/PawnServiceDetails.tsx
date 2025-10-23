@@ -11,6 +11,7 @@ import {
   AssessmentRecord,
   PawnServiceInfo,
 } from "../AssessmentDetails";
+import Image from "next/image";
 
 export default function PawnServiceDetails({
   pawnServiceInfo,
@@ -47,13 +48,23 @@ export default function PawnServiceDetails({
           <span className="text-xs text-slate-600 md:text-sm">
             ยอดเงินที่จะได้รับ
           </span>
-          <span className="block text-xl font-bold text-[#f97316] md:text-2xl">
-            {selectedService.price.toLocaleString("th-TH", {
-              style: "currency",
-              currency: "THB",
-              minimumFractionDigits: 0,
-            })}
-          </span>
+          <div className="flex items-center justify-start md:justify-end gap-2">
+            <span className="block text-xl font-bold text-[#f97316] md:text-2xl">
+              {selectedService.price.toLocaleString("th-TH", {
+                style: "currency",
+                currency: "THB",
+                minimumFractionDigits: 0,
+              })}
+            </span>
+            <Image
+              src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+              width={100}
+              height={100}
+              alt="animated-coin"
+              className="-m-6"
+              priority
+            />
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-2 text-xs lg:text-sm">
