@@ -58,9 +58,7 @@ function fromBase64(b64: string): ArrayBuffer {
 async function sha256Hex(input: string): Promise<string> {
   const digest = await window.crypto.subtle.digest("SHA-256", te.encode(input));
   const bytes = new Uint8Array(digest);
-  return Array.prototype.map
-    .call(bytes, (b: number) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return Array.prototype.map.call(bytes, (b: number) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function deriveKey(passphrase: string, salt: ArrayBuffer): Promise<CryptoKey> {
@@ -90,7 +88,10 @@ async function sessionStorageKeyForPhone(phoneNumber: string): Promise<string> {
   return `${STORAGE_PREFIX}:v1:${hash}`;
 }
 
-async function encryptSession(phoneNumber: string, payload: CachedSession): Promise<EncryptedRecord> {
+async function encryptSession(
+  phoneNumber: string,
+  payload: CachedSession,
+): Promise<EncryptedRecord> {
   const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(`${PEPPER}|${phoneNumber}`, saltBytes.buffer);
@@ -105,7 +106,10 @@ async function encryptSession(phoneNumber: string, payload: CachedSession): Prom
   };
 }
 
-async function decryptSession(phoneNumber: string, record: EncryptedRecord): Promise<CachedSession> {
+async function decryptSession(
+  phoneNumber: string,
+  record: EncryptedRecord,
+): Promise<CachedSession> {
   const saltBuf = fromBase64(record.salt);
   const iv = new Uint8Array(fromBase64(record.iv));
   const key = await deriveKey(`${PEPPER}|${phoneNumber}`, saltBuf);
