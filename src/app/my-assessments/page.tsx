@@ -267,7 +267,7 @@ export default function MyAssessmentsPage() {
     setStep("enter-phone");
   };
 
-  const handleLogout = () => {
+  const handleClearSession = () => {
     clearAllSessions();
     setIsPhoneVerified(false);
     setStep("enter-phone");
@@ -305,7 +305,7 @@ export default function MyAssessmentsPage() {
         return isLoading ? (
           <Loading />
         ) : (
-          <ResultsView assessments={assessmentsData} onBack={handleBack} onLogout={handleLogout} />
+          <ResultsView assessments={assessmentsData} onBack={handleBack} onClearSession={handleClearSession} />
         );
       default:
         return null;
