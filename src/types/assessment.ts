@@ -22,7 +22,7 @@ export interface Assessment {
   id: string;
   docId?: string;
   phoneNumber: string;
-  status: "completed" | "pending" | "in-progress";
+  status: "completed" | "reserved" | "pending" | "cancelled" | "in-progress" | string;
   estimatedValue: number;
   // Dates are ISO 8601 strings when provided
   assessmentDate?: string;

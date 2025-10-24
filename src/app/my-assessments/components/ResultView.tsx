@@ -24,6 +24,11 @@ export default function ResultsView({
       color: "bg-slate-100 text-slate-600",
     },
     {
+      label: "จองแล้ว",
+      value: "reserved",
+      color: "bg-blue-100 text-blue-700",
+    },
+    {
       label: "เสร็จสิ้น",
       value: "completed",
       color: "bg-emerald-100 text-emerald-700",

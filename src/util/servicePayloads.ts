@@ -65,6 +65,7 @@ export function buildIPhoneExchangeFormData(params: {
     // nextSteps can be added if/when available from UI
   };
   fd.append("serviceKey", serviceKey);
+  fd.append("status", "reserved");
   fd.append("serviceInfo", JSON.stringify(serviceInfo));
   fd.append("documentFile", params.documentFile);
   return fd;
@@ -87,6 +88,7 @@ export function buildRefinanceFormData(params: {
     // nextSteps can be added if/when available from UI
   };
   fd.append("serviceKey", serviceKey);
+  fd.append("status", "reserved");
   fd.append("serviceInfo", JSON.stringify(serviceInfo));
   fd.append("documentFile", params.documentFile);
   return fd;

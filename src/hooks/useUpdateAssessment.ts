@@ -10,6 +10,7 @@ import type {
 } from "@/types/service";
 
 export type AssessmentUpdateBody = {
+  status: "reserved";
   sellNowServiceInfo?: SellNowServiceInfo;
   pawnServiceInfo?: PawnServiceInfo;
   consignmentServiceInfo?: ConsignmentServiceInfo;
