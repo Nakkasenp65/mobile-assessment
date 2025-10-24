@@ -3,14 +3,8 @@
 "use client";
 
 import * as React from "react";
-import {
-  Phone,
-  Envelope,
-  FacebookLogo,
-  ChatTeardropText, // LINE
-  TwitterLogo,
-  YoutubeLogo,
-} from "@phosphor-icons/react";
+import { FaFacebookF, FaLine, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { Phone, Envelope } from "@phosphor-icons/react";
 import {
   Accordion,
   AccordionContent,
@@ -18,6 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from "next/link";
+import { PiYoutubeLogo } from "react-icons/pi";
 
 export default function Footer() {
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -251,7 +246,7 @@ export default function Footer() {
                   aria-label="Facebook"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877f2] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
-                  <FacebookLogo size={20} weight="fill" />
+                  <FaFacebookF />
                 </a>
               </li>
               <li>
@@ -260,16 +255,16 @@ export default function Footer() {
                   aria-label="LINE"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
-                  <ChatTeardropText size={20} weight="fill" />
+                  <FaLine />
                 </a>
               </li>
               <li>
                 <a
                   href="#"
                   aria-label="Twitter/X"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1da1f2] text-white shadow-sm transition-transform hover:-translate-y-1"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
-                  <TwitterLogo size={20} weight="fill" />
+                  <FaXTwitter />
                 </a>
               </li>
               <li>
@@ -278,7 +273,7 @@ export default function Footer() {
                   aria-label="YouTube"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff0000] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
-                  <YoutubeLogo size={20} weight="fill" />
+                  <FaYoutube />
                 </a>
               </li>
             </ul>
