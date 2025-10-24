@@ -6,7 +6,13 @@ import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../types/device";
@@ -83,7 +89,10 @@ export default function ConsignmentService({
   }, [consignmentPrice]);
 
   const isFormComplete =
-    formState.customerName && formState.phone.length === 10 && formState.dropoffDate && formState.dropoffTime;
+    formState.customerName &&
+    formState.phone.length === 10 &&
+    formState.dropoffDate &&
+    formState.dropoffTime;
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
@@ -108,14 +117,22 @@ export default function ConsignmentService({
     };
 
     updateAssessment.mutate(
-      { consignmentServiceInfo: payload },
+      { status: "reserved", consignmentServiceInfo: payload },
       {
         onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          void Swal.fire({
+            icon: "success",
+            title: "ยืนยันข้อมูลสำเร็จ",
+            text: "เราจะติดต่อคุณเร็วๆ นี้",
+          });
           onSuccess?.();
         },
         onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+          void Swal.fire({
+            icon: "error",
+            title: "บันทึกข้อมูลไม่สำเร็จ",
+            text: "กรุณาลองใหม่อีกครั้ง",
+          });
         },
       },
     );
@@ -136,7 +153,9 @@ export default function ConsignmentService({
           <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-cyan-100/50 blur-2xl dark:bg-cyan-400/20" />
           <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-sky-100/50 blur-2xl dark:bg-sky-400/20" />
           <div className="relative z-10">
-            <h3 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">ราคาประเมินเพื่อฝากขาย</h3>
+            <h3 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">
+              ราคาประเมินเพื่อฝากขาย
+            </h3>
             <div className="mt-2 flex items-center justify-center gap-2">
               <p className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-cyan-400 dark:to-sky-400">
                 {THB(consignmentPrice)}
@@ -150,7 +169,9 @@ export default function ConsignmentService({
                 priority
               />
             </div>
-            <p className="mt-2 text-sm text-cyan-800/80 dark:text-cyan-200/80">เราช่วยขายให้คุณเพื่อได้ราคาดีที่สุด</p>
+            <p className="mt-2 text-sm text-cyan-800/80 dark:text-cyan-200/80">
+              เราช่วยขายให้คุณเพื่อได้ราคาดีที่สุด
+            </p>
           </div>
         </motion.div>
 
@@ -174,7 +195,7 @@ export default function ConsignmentService({
                   placeholder="กรอกชื่อ-นามสกุล"
                   value={formState.customerName}
                   onChange={(e) => handleInputChange("customerName", e.target.value)}
-                  className="pl-10"
+                  className="h-12 pl-10"
                 />
               </div>
             </div>
@@ -192,7 +213,7 @@ export default function ConsignmentService({
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength={10}
-                  className="pr-12 pl-10"
+                  className="h-12 pr-12 pl-10"
                 />
                 <button
                   type="button"
@@ -203,18 +224,18 @@ export default function ConsignmentService({
                   <Pencil className="h-4 w-4" />
                 </button>
               </div>
-          </div>
+            </div>
 
-          <PhoneNumberEditModal
-            open={isPhoneModalOpen}
-            initialPhone={formState.phone}
-            onCancel={() => setIsPhoneModalOpen(false)}
-            onSave={(newPhone) => {
-              handleInputChange("phone", newPhone);
-              setIsPhoneModalOpen(false);
-            }}
-          />
-        </motion.div>
+            <PhoneNumberEditModal
+              open={isPhoneModalOpen}
+              initialPhone={formState.phone}
+              onCancel={() => setIsPhoneModalOpen(false)}
+              onSave={(newPhone) => {
+                handleInputChange("phone", newPhone);
+                setIsPhoneModalOpen(false);
+              }}
+            />
+          </motion.div>
 
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">รายละเอียดเพิ่มเติม</Label>
@@ -226,7 +247,9 @@ export default function ConsignmentService({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-cyan-800 dark:text-cyan-200">ราคาประเมินฝากขาย</span>
-                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">{THB(consignmentPrice)}</span>
+                  <span className="font-semibold text-cyan-900 dark:text-cyan-100">
+                    {THB(consignmentPrice)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-cyan-800 dark:text-cyan-200">
@@ -236,7 +259,9 @@ export default function ConsignmentService({
                 </div>
                 <div className="my-2 border-t border-cyan-200/50 dark:border-cyan-400/20" />
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-cyan-900 dark:text-cyan-100">ยอดเงินสุทธิที่จะได้รับ</span>
+                  <span className="font-bold text-cyan-900 dark:text-cyan-100">
+                    ยอดเงินสุทธิที่จะได้รับ
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent dark:from-cyan-400 dark:to-sky-400">
                       {THB(netAmount)}
@@ -278,12 +303,12 @@ export default function ConsignmentService({
                 value={formState.storeLocation}
                 onValueChange={(value) => handleInputChange("storeLocation", value)}
               >
-                <SelectTrigger id={`store-consignment`} className="w-full">
+                <SelectTrigger id={`store-consignment`} className="h-12 w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {storeLocations.map((loc) => (
-                    <SelectItem key={loc} value={loc}>
+                    <SelectItem key={loc} value={loc} className="h-12">
                       {loc}
                     </SelectItem>
                   ))}
@@ -326,7 +351,8 @@ export default function ConsignmentService({
             {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการฝากขาย"}
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการฝากขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            การคลิก &quot;ยืนยันการฝากขาย&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
               href="#"
               target="_blank"

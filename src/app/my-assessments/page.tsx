@@ -134,6 +134,7 @@ export default function MyAssessmentsPage() {
     }
   }, [isPhoneVerified, phoneNumber, isDevEnv, turnstileToken]);
 
+  // Fetch assessments when in results step with verified phone
   const {
     data: assessmentsData = [],
     isLoading,
@@ -344,10 +345,7 @@ export default function MyAssessmentsPage() {
         return isLoading ? (
           <Loading />
         ) : (
-          <ResultsView
-            assessments={assessmentsData}
-            onClearSession={handleClearSession}
-          />
+          <ResultsView assessments={assessmentsData} onClearSession={handleClearSession} />
         );
       default:
         return null;

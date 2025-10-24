@@ -6,7 +6,13 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, RefreshCcw, Sparkles, Pencil } from "lucide-react";
@@ -131,14 +137,22 @@ export default function TradeInService({
     };
 
     updateAssessment.mutate(
-      { tradeInServiceInfo: payload },
+      { status: "reserved", tradeInServiceInfo: payload },
       {
         onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          void Swal.fire({
+            icon: "success",
+            title: "ยืนยันข้อมูลสำเร็จ",
+            text: "เราจะติดต่อคุณเร็วๆ นี้",
+          });
           onSuccess?.();
         },
         onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+          void Swal.fire({
+            icon: "error",
+            title: "บันทึกข้อมูลไม่สำเร็จ",
+            text: "กรุณาลองใหม่อีกครั้ง",
+          });
         },
       },
     );
@@ -161,17 +175,17 @@ export default function TradeInService({
         <div className="relative z-10">
           <h3 className="text-lg font-semibold text-amber-900">มูลค่าเครื่องเก่าของคุณ</h3>
           <div className="mt-2 flex items-center justify-center gap-2">
-          <p className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
-          {THB(tradeInPrice)}
-          </p>
-          <Image
-          src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
-          width={100}
-          height={100}
-          alt="animated-coin"
-          className="-m-6"
-          priority
-          />
+            <p className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
+              {THB(tradeInPrice)}
+            </p>
+            <Image
+              src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
+              width={100}
+              height={100}
+              alt="animated-coin"
+              className="-m-6"
+              priority
+            />
           </div>
           <p className="mt-2 text-sm text-amber-800/80">ใช้ส่วนลดสำหรับซื้อเครื่องใหม่ได้ทันที</p>
         </div>
@@ -190,11 +204,15 @@ export default function TradeInService({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-amber-800">ราคาเครื่องใหม่</span>
-                <span className="font-semibold text-amber-900">{THB(priceCalculation.newDevicePrice)}</span>
+                <span className="font-semibold text-amber-900">
+                  {THB(priceCalculation.newDevicePrice)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-amber-800">หัก มูลค่าเครื่องเก่า</span>
-                <span className="font-semibold text-green-600">- {THB(priceCalculation.tradeInValue)}</span>
+                <span className="font-semibold text-green-600">
+                  - {THB(priceCalculation.tradeInValue)}
+                </span>
               </div>
               <div className="my-2 border-t border-amber-200/50" />
               <div className="flex justify-between">
@@ -266,7 +284,10 @@ export default function TradeInService({
 
           <div className="space-y-3">
             <Label htmlFor="newDevice-tradein">รุ่นเครื่อง</Label>
-            <Select value={formState.newDevice} onValueChange={(value) => handleInputChange("newDevice", value)}>
+            <Select
+              value={formState.newDevice}
+              onValueChange={(value) => handleInputChange("newDevice", value)}
+            >
               <SelectTrigger id="newDevice-tradein" className="h-14 w-full">
                 <SelectValue placeholder="เลือกเครื่องที่ต้องการ" />
               </SelectTrigger>
@@ -287,7 +308,10 @@ export default function TradeInService({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
               <Label htmlFor="storage-tradein">ความจุ</Label>
-              <Select value={formState.storage} onValueChange={(value) => handleInputChange("storage", value)}>
+              <Select
+                value={formState.storage}
+                onValueChange={(value) => handleInputChange("storage", value)}
+              >
                 <SelectTrigger id="storage-tradein" className="h-14 w-full">
                   <SelectValue placeholder="เลือกความจุ" />
                 </SelectTrigger>
@@ -302,7 +326,10 @@ export default function TradeInService({
             </div>
             <div className="space-y-3">
               <Label htmlFor="color-tradein">สี</Label>
-              <Select value={formState.color} onValueChange={(value) => handleInputChange("color", value)}>
+              <Select
+                value={formState.color}
+                onValueChange={(value) => handleInputChange("color", value)}
+              >
                 <SelectTrigger id="color-tradein" className="h-14 w-full">
                   <SelectValue placeholder="เลือกสี" />
                 </SelectTrigger>
@@ -356,12 +383,12 @@ export default function TradeInService({
                 inputMode="numeric"
                 pattern="[0-9]{10}"
                 maxLength={10}
-                className="h-12 pl-10 pr-12"
+                className="h-12 pr-12 pl-10"
               />
               <button
                 type="button"
                 onClick={handleEditPhoneClick}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
                 aria-label="แก้ไขเบอร์โทรศัพท์"
               >
                 <Pencil className="h-4 w-4" />
@@ -426,8 +453,8 @@ export default function TradeInService({
           {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการแลกเปลี่ยนเครื่อง"}
         </FramerButton>
         <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
-          และยอมรับใน{" "}
+          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot;
+          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
           <a
             href="#"
             target="_blank"

@@ -260,7 +260,7 @@ export default function SellNowService({
           : { ...base, storeLocation: formState.storeLocation };
 
     updateAssessment.mutate(
-      { sellNowServiceInfo: payload },
+      { status: "reserved", sellNowServiceInfo: payload },
       {
         onSuccess: () => {
           void Swal.fire({

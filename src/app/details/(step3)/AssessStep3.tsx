@@ -14,13 +14,6 @@ import { Assessment } from "../../../types/assessment";
 import ScrollDownIndicator from "../../../components/ui/ScrollDownIndicator";
 import { cn } from "@/lib/utils";
 
-const getExpiryDate = (days: number): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  date.setHours(23, 59, 59, 999);
-  return date.toISOString();
-};
-
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;

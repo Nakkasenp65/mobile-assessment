@@ -7,7 +7,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../../types/device";
@@ -33,7 +39,13 @@ interface PawnServiceProps {
   onSuccess?: () => void;
 }
 
-export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phoneNumber, onSuccess }: PawnServiceProps) {
+export default function PawnService({
+  assessmentId,
+  deviceInfo,
+  pawnPrice,
+  phoneNumber,
+  onSuccess,
+}: PawnServiceProps) {
   const router = useRouter();
   const [locationType, setLocationType] = useState<"home" | "bts" | "store">("home");
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
@@ -54,7 +66,10 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
   const merged = mergeTrainDataWithApi(btsData);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
-  const handleInputChange = (field: keyof typeof formState, value: string | Date | boolean | undefined) => {
+  const handleInputChange = (
+    field: keyof typeof formState,
+    value: string | Date | boolean | undefined,
+  ) => {
     if (field === "phone") {
       const numericValue = (value as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
@@ -73,7 +88,11 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
     formState.date &&
     formState.time &&
     formState.termsAccepted &&
-    (locationType === "home" ? formState.address : locationType === "bts" ? formState.btsStation : true);
+    (locationType === "home"
+      ? formState.address
+      : locationType === "bts"
+        ? formState.btsStation
+        : true);
 
   const THB = (n: number) =>
     n.toLocaleString("th-TH", {
@@ -101,20 +120,33 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
 
     const payload: PawnServiceInfo =
       locationType === "home"
-        ? { ...base, address: formState.address, province: formState.province, district: formState.district }
+        ? {
+            ...base,
+            address: formState.address,
+            province: formState.province,
+            district: formState.district,
+          }
         : locationType === "bts"
           ? { ...base, btsStation: formState.btsStation, btsLine: selectedBtsLine }
           : { ...base, storeLocation: formState.storeLocation };
 
     updateAssessment.mutate(
-      { pawnServiceInfo: payload },
+      { status: "reserved", pawnServiceInfo: payload },
       {
         onSuccess: () => {
-          void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+          void Swal.fire({
+            icon: "success",
+            title: "ยืนยันข้อมูลสำเร็จ",
+            text: "เราจะติดต่อคุณเร็วๆ นี้",
+          });
           onSuccess?.();
         },
         onError: () => {
-          void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+          void Swal.fire({
+            icon: "error",
+            title: "บันทึกข้อมูลไม่สำเร็จ",
+            text: "กรุณาลองใหม่อีกครั้ง",
+          });
         },
       },
     );
@@ -252,12 +284,12 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
                 placeholder="0xx-xxx-xxxx"
                 value={formState.phone}
                 readOnly
-                className="pl-10 pr-12"
+                className="pr-12 pl-10"
               />
               <button
                 type="button"
                 onClick={handleEditPhoneClick}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
                 aria-label="แก้ไขเบอร์โทรศัพท์"
               >
                 <Pencil className="h-4 w-4" />
@@ -306,7 +338,10 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="province-pawn">จังหวัด</Label>
-                    <Select value={formState.province} onValueChange={(value) => handleInputChange("province", value)}>
+                    <Select
+                      value={formState.province}
+                      onValueChange={(value) => handleInputChange("province", value)}
+                    >
                       <SelectTrigger id="province-pawn" className="w-full">
                         <SelectValue />
                       </SelectTrigger>
@@ -317,7 +352,10 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="district-pawn">เขต</Label>
-                    <Select value={formState.district} onValueChange={(value) => handleInputChange("district", value)}>
+                    <Select
+                      value={formState.district}
+                      onValueChange={(value) => handleInputChange("district", value)}
+                    >
                       <SelectTrigger id="district-pawn" className="w-full">
                         <SelectValue />
                       </SelectTrigger>
@@ -335,10 +373,19 @@ export default function PawnService({ assessmentId, deviceInfo, pawnPrice, phone
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="bts-line-pawn">สายรถไฟ BTS/MRT</Label>
-                    <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
+                    <Select
+                      onValueChange={setSelectedBtsLine}
+                      disabled={isLoadingBts || !!btsError}
+                    >
                       <SelectTrigger id="bts-line-pawn" className="w-full">
                         <SelectValue
-                          placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"}
+                          placeholder={
+                            isLoadingBts
+                              ? "กำลังโหลด..."
+                              : btsError
+                                ? "เกิดข้อผิดพลาด"
+                                : "เลือกสายรถไฟ"
+                          }
                         />
                       </SelectTrigger>
                       <SelectContent>
