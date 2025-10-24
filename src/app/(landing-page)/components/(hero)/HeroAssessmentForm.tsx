@@ -6,7 +6,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { PHONE_DATA } from "@/util/phone";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { LockKeyhole } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,7 +29,8 @@ export default function HeroAssessmentForm() {
   const [isDpoConsentVisible, setIsDpoConsentVisible] = useState(false);
 
   const availableBrands = PHONE_DATA.brands;
-  const availableProductTypes = selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
+  const availableProductTypes =
+    selectedBrand === "Apple" ? PHONE_DATA.products[selectedBrand] || [] : [];
 
   // SECTION: Event Handlers
   const handleBrandChange = (brand: string) => {
@@ -49,7 +56,11 @@ export default function HeroAssessmentForm() {
     setIsDpoConsentVisible(false);
 
     // ตรวจสอบเงื่อนไขการ Redirect สำหรับสินค้า Apple ที่ไม่มีรุ่น/ความจุ
-    if (selectedBrand === "Apple" && selectedProductType && !["iPhone", "iPad"].includes(selectedProductType)) {
+    if (
+      selectedBrand === "Apple" &&
+      selectedProductType &&
+      !["iPhone", "iPad"].includes(selectedProductType)
+    ) {
       const params = new URLSearchParams({
         brand: "Apple",
         productType: selectedProductType,
@@ -117,21 +128,26 @@ export default function HeroAssessmentForm() {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-lg md:p-5 lg:p-6">
       <AnimatePresence>
-        {isDpoConsentVisible && <DPOConsent onAccept={handleAcceptConsentAndNavigate} onClose={handleCloseConsent} />}
+        {isDpoConsentVisible && (
+          <DPOConsent onAccept={handleAcceptConsentAndNavigate} onClose={handleCloseConsent} />
+        )}
       </AnimatePresence>
 
-      <form className="flex w-full flex-col gap-2.5 md:gap-3 lg:gap-4" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="flex w-full flex-col gap-2.5 md:gap-3 lg:gap-4"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <h3 className="text-secondary text-center text-base font-bold md:text-lg lg:text-xl">
           ประเมินราคาอุปกรณ์ของคุณ
         </h3>
         <AnimatePresence mode="wait">
           <Select key={"select-brand"} onValueChange={handleBrandChange} value={selectedBrand}>
-            <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
+            <SelectTrigger className="h-10 w-full text-sm md:h-12 md:text-sm lg:text-base">
               <SelectValue placeholder="เลือกยี่ห้อ" />
             </SelectTrigger>
             <SelectContent>
               {availableBrands.map((brand) => (
-                <SelectItem key={brand.id} value={brand.id}>
+                <SelectItem key={brand.id} value={brand.id} className="h-12">
                   {brand.name}
                 </SelectItem>
               ))}
@@ -146,13 +162,17 @@ export default function HeroAssessmentForm() {
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <Select onValueChange={handleProductTypeChange} value={selectedProductType} disabled={!selectedBrand}>
-                <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
+              <Select
+                onValueChange={handleProductTypeChange}
+                value={selectedProductType}
+                disabled={!selectedBrand}
+              >
+                <SelectTrigger className="h-10 w-full text-sm md:h-12 md:text-sm lg:text-base">
                   <SelectValue placeholder="เลือกประเภทสินค้า" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableProductTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
+                    <SelectItem key={type.id} value={type.id} className="h-12">
                       {type.name}
                     </SelectItem>
                   ))}
@@ -162,26 +182,34 @@ export default function HeroAssessmentForm() {
           )}
 
           <div className="flex flex-col gap-2.5 md:gap-3 lg:gap-4" key={"form-model-storage"}>
-            <Select onValueChange={handleModelChange} value={selectedModel} disabled={availableModels.length === 0}>
-              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
+            <Select
+              onValueChange={handleModelChange}
+              value={selectedModel}
+              disabled={availableModels.length === 0}
+            >
+              <SelectTrigger className="h-10 w-full text-sm md:h-12 md:text-sm lg:text-base">
                 <SelectValue placeholder="เลือกรุ่น" />
               </SelectTrigger>
               <SelectContent>
                 {availableModels.map((model) => (
-                  <SelectItem key={model} value={model}>
+                  <SelectItem key={model} value={model} className="h-12">
                     {model}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select onValueChange={setSelectedStorage} value={selectedStorage} disabled={!selectedModel}>
-              <SelectTrigger className="h-10 w-full text-sm md:h-11 md:text-sm lg:text-base">
+            <Select
+              onValueChange={setSelectedStorage}
+              value={selectedStorage}
+              disabled={!selectedModel}
+            >
+              <SelectTrigger className="h-10 w-full text-sm md:h-12 md:text-sm lg:text-base">
                 <SelectValue placeholder="เลือกความจุ" />
               </SelectTrigger>
               <SelectContent>
                 {availableStorage.map((storage) => (
-                  <SelectItem key={storage} value={storage}>
+                  <SelectItem key={storage} value={storage} className="h-12">
                     {storage}
                   </SelectItem>
                 ))}
@@ -249,7 +277,11 @@ export default function HeroAssessmentForm() {
 
         <p className="mt-2 text-center text-xs text-gray-500">
           เมื่อเริ่มประเมินราคา ถือว่าท่านได้ยอมรับ{" "}
-          <button type="button" onClick={handleShowConsent} className="text-pink-600 underline hover:text-pink-700">
+          <button
+            type="button"
+            onClick={handleShowConsent}
+            className="text-pink-600 underline hover:text-pink-700"
+          >
             ข้อตกลงและเงื่อนไข
           </button>{" "}
           การใช้บริการ

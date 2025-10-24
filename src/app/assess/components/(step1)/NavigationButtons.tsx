@@ -9,9 +9,15 @@ interface NavigationButtonsProps {
   isNextDisabled: boolean;
 }
 
-export default function NavigationButtons({ onBack, onNext, isNextDisabled }: NavigationButtonsProps) {
+export default function NavigationButtons({
+  onBack,
+  onNext,
+  isNextDisabled,
+}: NavigationButtonsProps) {
   return (
-    <div className={`flex w-full ${onBack ? "justify-between" : "justify-end"} mt-auto items-center pt-6`}>
+    <div
+      className={`flex w-full ${onBack ? "justify-between" : "justify-end"} mt-auto items-center pt-6`}
+    >
       {onBack && (
         <FramerButton
           variant="ghost"

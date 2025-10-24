@@ -79,6 +79,11 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
       icon: CheckCircle,
       color: "bg-green-100 text-green-800 border-green-200",
     },
+    reserved: {
+      label: "จองแล้ว",
+      icon: CheckCircle,
+      color: "bg-blue-100 text-blue-800 border-blue-200",
+    },
     pending: {
       label: "รอประเมิน",
       icon: Clock,
@@ -89,8 +94,9 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
       icon: Wrench,
       color: "bg-blue-100 text-blue-800 border-blue-200",
     },
-  };
-  const config = statusConfig[status];
+  } as const;
+
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
   const Icon = config.icon;
   return (
     <span
@@ -126,10 +132,14 @@ export default function AssessmentCard({
   const service = ALL_SERVICES.find((s) => s.id === derivedServiceId);
   const ServiceIcon = service?.icon;
 
+  // Determine the correct route based on status
+  const linkHref =
+    assessment.status === "reserved" ? `/confirmed/${assessment.id}` : `/details/${assessment.id}`;
+
   return (
     <motion.div className="w-full">
       <Link
-        href={`/details/${assessment.id}`}
+        href={linkHref}
         className="group block h-full rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md"
       >
         {/* Header */}

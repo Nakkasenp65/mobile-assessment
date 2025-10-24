@@ -19,9 +19,13 @@ export default function AssessmentDetailsPage() {
   const [step, setStep] = useState(1); // 1 = Service Selection (AssessStep3), 2 = Service Form (AssessStep4)
   const [selectedService, setSelectedService] = useState<string>("");
 
-  const { data, isLoading, error } = useAssessment(assessmentId);
+  const {
+    data: assessmentData,
+    isLoading: assessmentLoading,
+    error: assessmentError,
+  } = useAssessment(assessmentId);
 
-  if (isLoading) {
+  if (assessmentLoading) {
     return (
       <Layout>
         <Loading />
@@ -29,7 +33,7 @@ export default function AssessmentDetailsPage() {
     );
   }
 
-  if (error || !data) {
+  if (assessmentError || !assessmentData) {
     return (
       <Layout>
         <Error />
@@ -37,7 +41,7 @@ export default function AssessmentDetailsPage() {
     );
   }
 
-  const { deviceInfo, conditionInfo, priceLockExpiresAt } = data;
+  const { deviceInfo, conditionInfo, priceLockExpiresAt } = assessmentData;
 
   // Handler to advance to service form
   const handleNext = () => {
@@ -63,7 +67,7 @@ export default function AssessmentDetailsPage() {
         <div className="z-10 container flex w-full flex-col items-center">
           {step === 1 && (
             <AssessStep3
-              docId={data.docId}
+              docId={assessmentData.docId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               onBack={handleBack}
@@ -71,13 +75,13 @@ export default function AssessmentDetailsPage() {
               setSelectedService={setSelectedService}
               priceLockExpiresAt={priceLockExpiresAt}
               assessmentId={assessmentId}
-              assessmentData={data}
+              assessmentData={assessmentData}
             />
           )}
 
           {step === 2 && (
             <AssessStep4
-              phoneNumber={data?.phoneNumber}
+              phoneNumber={assessmentData?.phoneNumber}
               assessmentId={assessmentId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}

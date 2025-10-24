@@ -65,6 +65,34 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
       setQrError(!qrValue);
     }, [qrValue]);
 
+    // Add print styles
+    React.useEffect(() => {
+      const style = document.createElement("style");
+      style.textContent = `
+        @media print {
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+          .print-container {
+            width: 100%;
+            min-height: auto;
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      return () => {
+        document.head.removeChild(style);
+      };
+    }, []);
+
     // Get current date
     const currentDate = new Date().toLocaleDateString("th-TH", {
       year: "numeric",
@@ -122,11 +150,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         return service.storeLocation;
       }
 
-      if (
-        "btsStation" in service &&
-        typeof service.btsStation === "string" &&
-        service.btsStation
-      ) {
+      if ("btsStation" in service && typeof service.btsStation === "string" && service.btsStation) {
         return `สถานี BTS: ${service.btsStation}`;
       }
 
@@ -135,9 +159,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           ? service.addressDetails
           : undefined;
       const address =
-        "address" in service && typeof service.address === "string"
-          ? service.address
-          : undefined;
+        "address" in service && typeof service.address === "string" ? service.address : undefined;
       const subdistrict =
         "subdistrict" in service && typeof service.subdistrict === "string"
           ? service.subdistrict
@@ -151,7 +173,8 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           ? service.province
           : undefined;
 
-      const addrLine = addressDetails || address || [subdistrict, district, province].filter(Boolean).join(" ");
+      const addrLine =
+        addressDetails || address || [subdistrict, district, province].filter(Boolean).join(" ");
       return addrLine || "-";
     };
 
@@ -251,7 +274,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
 
     if (!activeService || !serviceType) {
       return (
-        <div ref={ref} className="flex min-h-[297mm] w-[210mm] flex-col bg-white p-6 text-gray-800">
+        <div ref={ref} className="print-container flex w-full flex-col bg-white p-4 text-gray-800">
           <div className="flex flex-1 items-center justify-center">
             <p className="text-sm text-gray-500">ไม่พบข้อมูลบริการที่สมบูรณ์</p>
           </div>
@@ -264,7 +287,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
     return (
       <div
         ref={ref}
-        className="flex min-h-[297mm] w-[210mm] flex-col bg-white p-6 text-gray-800"
+        className="print-container flex w-full flex-col bg-white p-4 text-gray-800"
         style={{ fontFamily: '"LINESeedSansTH", sans-serif' }}
       >
         {/* Header */}
@@ -311,7 +334,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
                   value={
                     <div className="flex gap-1">
                       <div>{readStringProp(serviceRecord, "appointmentDate") ?? "-"}</div>
-                      <div className="text-pink-600">{readStringProp(serviceRecord, "appointmentTime") ?? "-"}</div>
+                      <div className="text-pink-600">
+                        {readStringProp(serviceRecord, "appointmentTime") ?? "-"}
+                      </div>
                     </div>
                   }
                 />
@@ -406,7 +431,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         </footer>
       </div>
     );
-  }
+  },
 );
 
 PrintableAssessment.displayName = "PrintableAssessment";
