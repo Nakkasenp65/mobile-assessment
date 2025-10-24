@@ -19,7 +19,7 @@ interface PrintableAssessmentProps {
 }
 
 const SectionHeader = ({ title }: { title: string }) => (
-  <h2 className="mb-2 rounded border-l-3 border-orange-500 bg-orange-50 px-3 py-1.5 text-sm font-bold text-orange-700">
+  <h2 className="mb-1.5 rounded border-l-3 border-orange-500 bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700">
     {title}
   </h2>
 );
@@ -31,7 +31,7 @@ const DetailRow = ({
   label: string;
   value: string | number | React.ReactNode;
 }) => (
-  <div className="flex border-b border-gray-100 py-1.5 text-xs">
+  <div className="flex border-b border-gray-100 py-1 text-[10px]">
     <span className="w-2/5 font-medium text-gray-600">{label}</span>
     <span className="w-3/5 font-semibold text-gray-800">{value}</span>
   </div>
@@ -72,7 +72,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         @media print {
           @page {
             size: A4;
-            margin: 10mm;
+            margin: 8mm;
           }
           body {
             margin: 0;
@@ -84,6 +84,16 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
             margin: 0;
             padding: 0;
             background: white;
+            page-break-inside: avoid;
+          }
+          .print-section {
+            page-break-inside: avoid;
+          }
+          .print-header {
+            page-break-after: avoid;
+          }
+          .print-footer {
+            page-break-before: auto;
           }
         }
       `;
@@ -287,40 +297,40 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
     return (
       <div
         ref={ref}
-        className="print-container flex w-full flex-col bg-white p-4 text-gray-800"
+        className="print-container flex w-full flex-col bg-white p-3 text-gray-800"
         style={{ fontFamily: '"LINESeedSansTH", sans-serif' }}
       >
         {/* Header */}
-        <header className="mb-3">
+        <header className="print-header mb-2">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-xl font-bold text-orange-600">NO.1 Money</h1>
-              <p className="mt-0.5 text-xs text-gray-500">ใบสรุปการประเมินราคาและนัดหมาย</p>
+              <h1 className="text-lg font-bold text-orange-600">NO.1 Money</h1>
+              <p className="mt-0.5 text-[10px] text-gray-500">ใบสรุปการประเมินราคาและนัดหมาย</p>
             </div>
             <div className="text-right">
               <div className="inline-block bg-white">
                 {qrError || !qrValue ? (
-                  <div className="flex h-16 w-16 items-center justify-center bg-gray-100 text-[10px] text-gray-500">
+                  <div className="flex h-12 w-12 items-center justify-center bg-gray-100 text-[9px] text-gray-500">
                     QR N/A
                   </div>
                 ) : (
-                  <QRCode value={qrValue} size={48} level="M" />
+                  <QRCode value={qrValue} size={40} level="M" />
                 )}
               </div>
-              <p className="mt-0.5 text-[10px] text-gray-500">ID: {assessment.id}</p>
+              <p className="mt-0.5 text-[9px] text-gray-500">ID: {assessment.id}</p>
             </div>
           </div>
         </header>
 
         {/* Main Content - Compact Layout */}
-        <main className="flex-1 space-y-4">
+        <main className="space-y-2.5">
           {/* Service & Device Info in one row */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="print-section grid grid-cols-2 gap-2.5">
             {/* Service Information */}
             <section>
               <SectionHeader title={`${SERVICE_CONFIG[serviceType].icon} ข้อมูลบริการ`} />
 
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <DetailRow
                   label="บริการ"
                   value={SERVICE_CONFIG[serviceType as keyof typeof SERVICE_CONFIG]?.title || "-"}
@@ -346,7 +356,7 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
             {/* Device Information */}
             <section>
               <SectionHeader title="📱 ข้อมูลอุปกรณ์" />
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <DetailRow label="อุปกรณ์" value={deviceName} />
                 <DetailRow
                   label="สถานะประกัน"
@@ -365,22 +375,22 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           </div>
 
           {/* Price Summary */}
-          <section>
+          <section className="print-section">
             <SectionHeader title="💰 สรุปราคา" />
-            <div className="rounded border-1 border-pink-300 bg-pink-50 p-2 text-center">
-              <p className="mb-1 text-xs text-gray-600">ราคาประเมินสูงสุด</p>
-              <p className="text-2xl font-bold text-pink-600">
+            <div className="rounded border-1 border-pink-300 bg-pink-50 p-1.5 text-center">
+              <p className="mb-0.5 text-[10px] text-gray-600">ราคาประเมินสูงสุด</p>
+              <p className="text-xl font-bold text-pink-600">
                 {finalPrice.toLocaleString("th-TH")} บาท
               </p>
             </div>
           </section>
 
           {/* Condition Summary - 2 columns */}
-          <section>
+          <section className="print-section">
             <SectionHeader title="🔍 สรุปสภาพเครื่อง" />
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
               {conditionDetails.map((item, index) => (
-                <div key={index} className="flex justify-between border-b border-gray-100 py-1">
+                <div key={index} className="flex justify-between border-b border-gray-100 py-0.5">
                   <span className="text-gray-600">{item.label}</span>
                   <span
                     className={`font-semibold ${
@@ -402,9 +412,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           </section>
 
           {/* Important Notes */}
-          <section>
+          <section className="print-section">
             <SectionHeader title="⚠️ หมายเหตุสำคัญ" />
-            <div className="space-y-1 text-xs text-gray-700">
+            <div className="space-y-0.5 text-[10px] text-gray-700">
               <p>ราคาประเมินอาจมีการเปลี่ยนแปลงตามสภาพจริงของอุปกรณ์ ณ วันที่นัดหมาย</p>
               <p>กรุณาเตรียมเอกสารที่จำเป็น เช่น บัตรประชาชน และอุปกรณ์ที่เกี่ยวข้องให้พร้อม</p>
               <p>หากติดขัดเรื่องเวลาหรือสถานที่ กรุณาแจ้งเจ้าหน้าที่ล่วงหน้า</p>
@@ -412,9 +422,9 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
           </section>
 
           {/* Next Steps */}
-          <section>
+          <section className="print-section">
             <SectionHeader title="📋 ขั้นตอนถัดไป" />
-            <ol className="list-inside list-decimal space-y-1 text-xs text-gray-700">
+            <ol className="list-inside list-decimal space-y-0.5 text-[10px] text-gray-700">
               <li>ตรวจสอบข้อมูลนัดหมายให้ถูกต้อง</li>
               <li>เตรียมอุปกรณ์และเอกสารที่เกี่ยวข้อง</li>
               <li>ติดต่อเจ้าหน้าที่หากต้องการเลื่อนหรือเปลี่ยนแปลงนัดหมาย</li>
@@ -423,8 +433,8 @@ const PrintableAssessment = React.forwardRef<HTMLDivElement, PrintableAssessment
         </main>
 
         {/* Footer */}
-        <footer className="mt-4 border-t border-gray-200 pt-2">
-          <div className="flex items-center justify-between text-xs text-gray-600">
+        <footer className="print-footer mt-2 border-t border-gray-200 pt-1.5">
+          <div className="flex items-center justify-between text-[10px] text-gray-600">
             <span>วันที่ออกเอกสาร: {currentDate}</span>
             <span>NO.1 Money • https://no1money.co</span>
           </div>

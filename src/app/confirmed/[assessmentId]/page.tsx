@@ -287,12 +287,18 @@ export default function ConfirmedAssessmentPage() {
     pageStyle: `
       @page {
         size: A4;
-        margin: 10mm;
+        margin: 8mm;
       }
       @media print {
-        body {
+        html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
+        }
+        body {
+          overflow: hidden;
         }
       }
     `,
