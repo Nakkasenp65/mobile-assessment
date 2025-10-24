@@ -61,7 +61,7 @@ import type {
 import PrintableAssessment from "./components/PrintableAssessment";
 
 // --- Constants ---
-const LINE_CONTACT_URL = "https://line.me/R/ti/p/@no1money";
+const LINE_CONTACT_URL = "https://lin.ee/0ab3Rcl";
 
 // --- Sub-components for better organization ---
 

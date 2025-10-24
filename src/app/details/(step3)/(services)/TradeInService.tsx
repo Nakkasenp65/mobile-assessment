@@ -24,16 +24,17 @@ import type { TradeInServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import Image from "next/image";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 
 interface TradeInServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   tradeInPrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
-
-const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 const newDevices = [
   { id: "iphone15pro", name: "iPhone 15 Pro", price: 39900 },
@@ -58,13 +59,14 @@ export default function TradeInService({
   deviceInfo,
   tradeInPrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: TradeInServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
     phone: phoneNumber,
-    storeLocation: storeLocations[0],
+    storeLocation: BRANCHES[0].name,
     newDevice: "",
     storage: "",
     color: "",
@@ -121,9 +123,15 @@ export default function TradeInService({
     scrollTo(0, 0);
   }, []);
 
-  const updateAssessment = useUpdateAssessment(assessmentId);
+  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
 
   const handleConfirmTradeIn = () => {
+    // Combine date and time for queue booking
+    const appointmentAt = combineDateTime(formState.appointmentDate, formState.appointmentTime);
+
+    // Get branch ID from store location
+    const branchId = getBranchIdFromName(formState.storeLocation);
+
     const payload: TradeInServiceInfo = {
       customerName: formState.customerName,
       phone: formState.phone,
@@ -134,6 +142,10 @@ export default function TradeInService({
       phoneCondition: formState.phoneCondition as "first_hand" | "second_hand",
       appointmentDate: String(formState.appointmentDate),
       appointmentTime: String(formState.appointmentTime),
+      // Queue booking fields
+      appointmentAt,
+      branchId,
+      serviceType: SERVICE_TYPES.TRADE_IN,
     };
 
     updateAssessment.mutate(
@@ -409,9 +421,9 @@ export default function TradeInService({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {storeLocations.map((loc) => (
-                  <SelectItem key={loc} value={loc}>
-                    {loc}
+                {BRANCHES.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.name}>
+                    {branch.name}
                   </SelectItem>
                 ))}
               </SelectContent>

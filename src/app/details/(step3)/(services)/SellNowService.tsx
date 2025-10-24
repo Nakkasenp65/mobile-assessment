@@ -14,6 +14,8 @@ import type { SellNowServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 
 // Import sub-components
 import PriceDisplay from "./sell-now-components/PriceDisplay";
@@ -35,6 +37,7 @@ interface SellNowServiceProps {
   deviceInfo: DeviceInfo;
   sellPrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
 
@@ -45,6 +48,7 @@ export default function SellNowService({
   deviceInfo: _deviceInfo,
   sellPrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: SellNowServiceProps) {
   const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
@@ -52,7 +56,7 @@ export default function SellNowService({
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstileError, setShowTurnstileError] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
-  const updateAssessment = useUpdateAssessment(assessmentId);
+  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
   const isDev = process.env.NODE_ENV !== "production";
 
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
@@ -231,18 +235,34 @@ export default function SellNowService({
       setShowTurnstileError(false);
     }
 
+    // Combine date and time for queue booking
+    const appointmentAt = combineDateTime(formState.date, formState.time);
+
+    // Determine branch ID based on location type
+    let branchId: string | undefined;
+    if (locationType === "store" && formState.storeLocation) {
+      branchId = getBranchIdFromName(formState.storeLocation);
+    }
+
     const base: {
       customerName: string;
       phone: string;
       locationType: "home" | "bts" | "store";
       appointmentDate: string;
       appointmentTime: string;
+      appointmentAt: string;
+      branchId?: string;
+      serviceType: string;
     } = {
       customerName: formState.customerName,
       phone: formState.phone,
       locationType: (locationType as "home" | "bts" | "store") ?? "store",
       appointmentDate: String(formState.date),
       appointmentTime: String(formState.time),
+      // Queue booking fields
+      appointmentAt,
+      branchId,
+      serviceType: SERVICE_TYPES.SELL_NOW,
     };
 
     const payload: SellNowServiceInfo =

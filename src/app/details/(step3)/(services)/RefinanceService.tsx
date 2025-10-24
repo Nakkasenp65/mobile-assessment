@@ -8,7 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone, Sparkles, Check, Briefcase, FileUp, Receipt, CalendarDays, Pencil } from "lucide-react";
+import {
+  User,
+  Phone,
+  Sparkles,
+  Check,
+  Briefcase,
+  FileUp,
+  Receipt,
+  CalendarDays,
+  Pencil,
+} from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -19,6 +29,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { buildRefinanceFormData } from "@/util/servicePayloads";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCH_IDS } from "@/constants/queueBooking";
 
 // Dynamically import Turnstile (SSR-safe)
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
@@ -33,6 +45,7 @@ interface RefinanceServiceProps {
   deviceInfo: DeviceInfo;
   refinancePrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
 
@@ -56,12 +69,13 @@ export default function RefinanceService({
   deviceInfo,
   refinancePrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: RefinanceServiceProps) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
-  const updateAssessment = useUpdateAssessment(assessmentId);
+  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
   const isDev = process.env.NODE_ENV !== "production";
 
   const [formState, setFormState] = useState({
@@ -128,7 +142,10 @@ export default function RefinanceService({
   // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
   // โดยนำเงื่อนไขการยอมรับข้อตกลงออก และเพิ่มการตรวจสอบความยาวเบอร์โทร
   const isFormComplete =
-    formState.customerName && formState.phone.length === 10 && !!formState.occupation && !!formState.documentFile;
+    formState.customerName &&
+    formState.phone.length === 10 &&
+    !!formState.occupation &&
+    !!formState.documentFile;
 
   const documentUploadDetails = useMemo(() => {
     if (formState.occupation === OCCUPATION_TYPES.SALARIED) {
@@ -162,7 +179,11 @@ export default function RefinanceService({
         turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         setShowTurnstileError(true);
         setTimeout(() => setShowTurnstileError(false), 3000);
-        await Swal.fire({ icon: "error", title: "กรุณายืนยันความปลอดภัย", text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ" });
+        await Swal.fire({
+          icon: "error",
+          title: "กรุณายืนยันความปลอดภัย",
+          text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ",
+        });
         return;
       }
       setShowTurnstileError(false);
@@ -170,12 +191,20 @@ export default function RefinanceService({
       try {
         const { data } = await axios.post("/api/verify-turnstile", { token: turnstileToken });
         if (!data?.success) {
-          await Swal.fire({ icon: "error", title: "การยืนยันไม่สำเร็จ", text: "โปรดลองใหม่อีกครั้ง" });
+          await Swal.fire({
+            icon: "error",
+            title: "การยืนยันไม่สำเร็จ",
+            text: "โปรดลองใหม่อีกครั้ง",
+          });
           return;
         }
       } catch (err) {
         console.warn("Turnstile verification request failed", err);
-        await Swal.fire({ icon: "error", title: "ไม่สามารถยืนยัน Turnstile ได้", text: "โปรดลองอีกครั้ง" });
+        await Swal.fire({
+          icon: "error",
+          title: "ไม่สามารถยืนยัน Turnstile ได้",
+          text: "โปรดลองอีกครั้ง",
+        });
         return;
       }
     } else {
@@ -183,27 +212,51 @@ export default function RefinanceService({
       setShowTurnstileError(false);
     }
 
-
     if (!formState.documentFile) {
-      await Swal.fire({ icon: "error", title: "กรุณาแนบเอกสาร", text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล" });
+      await Swal.fire({
+        icon: "error",
+        title: "กรุณาแนบเอกสาร",
+        text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล",
+      });
       return;
     }
+
+    // For refinance, we don't have specific appointment date/time from UI
+    // Using current date + 1 day as default for queue booking
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const appointmentDate = tomorrow.toISOString().split("T")[0];
+    const appointmentTime = "10:00"; // Default time
+    const appointmentAt = combineDateTime(appointmentDate, appointmentTime);
 
     const formData = buildRefinanceFormData({
       customerName: formState.customerName,
       phone: formState.phone,
       occupation: (formState.occupation as "salaried" | "freelance" | "") ?? "",
-      appointmentTime: "",
+      appointmentTime: appointmentTime,
+      appointmentDate: appointmentDate,
       documentFile: formState.documentFile,
+      // Queue booking fields
+      appointmentAt,
+      branchId: BRANCH_IDS.CENTER_ONE, // Default branch for refinance
+      serviceType: SERVICE_TYPES.REFINANCE,
     });
 
     updateAssessment.mutate(formData, {
       onSuccess: () => {
-        void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+        void Swal.fire({
+          icon: "success",
+          title: "ยืนยันข้อมูลสำเร็จ",
+          text: "เราจะติดต่อคุณเร็วๆ นี้",
+        });
         onSuccess?.();
       },
       onError: () => {
-        void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        void Swal.fire({
+          icon: "error",
+          title: "บันทึกข้อมูลไม่สำเร็จ",
+          text: "กรุณาลองใหม่อีกครั้ง",
+        });
       },
     });
   };
@@ -279,7 +332,9 @@ export default function RefinanceService({
                   } p-0 sm:p-2`}
                 >
                   <span className="text-base font-semibold">{months} เดือน</span>
-                  {isSelected && <Check className="absolute top-2 right-2 h-4 w-4 text-violet-600" />}
+                  {isSelected && (
+                    <Check className="absolute top-2 right-2 h-4 w-4 text-violet-600" />
+                  )}
                   <div className="mt-1 w-full px-0 sm:px-2">
                     <div
                       className={`text-[10px] sm:text-xs ${isSelected ? "translate-y-0 opacity-100" : "translate-y-1"}`}
@@ -302,20 +357,26 @@ export default function RefinanceService({
           transition={{ delay: 0.1 }}
           className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 dark:border-purple-400/30 dark:bg-purple-400/10"
         >
-          <h4 className="mb-3 text-sm font-semibold text-purple-900 dark:text-purple-100">รายละเอียดการผ่อนชำระ</h4>
+          <h4 className="mb-3 text-sm font-semibold text-purple-900 dark:text-purple-100">
+            รายละเอียดการผ่อนชำระ
+          </h4>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-purple-800 dark:text-purple-200">ยอดผ่อนชำระต่อเดือน</span>
             </div>
-            <span className="text-2xl font-bold text-purple-700 dark:text-purple-300">{THB(monthlyPayment)}</span>
+            <span className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+              {THB(monthlyPayment)}
+            </span>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-purple-800 dark:text-purple-200">ระยะเวลา</span>
             </div>
-            <span className="font-semibold text-purple-800 dark:text-purple-200">{selectedMonths} เดือน</span>
+            <span className="font-semibold text-purple-800 dark:text-purple-200">
+              {selectedMonths} เดือน
+            </span>
           </div>
         </motion.div>
 
@@ -395,7 +456,8 @@ export default function RefinanceService({
                     } focus:border-violet-400 focus:outline-none`}
                     onClick={() => handleInputChange("occupation", value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") handleInputChange("occupation", value);
+                      if (e.key === "Enter" || e.key === " ")
+                        handleInputChange("occupation", value);
                     }}
                     aria-checked={formState.occupation === value}
                     role="radio"
@@ -449,7 +511,8 @@ export default function RefinanceService({
                 >
                   <FileUp className="mb-2 h-8 w-8 text-violet-600" />
                   <span className="text-center text-sm text-violet-800">
-                    ลากไฟล์มาวางที่นี่ หรือ <span className="font-semibold text-violet-600 underline">เลือกไฟล์</span>
+                    ลากไฟล์มาวางที่นี่ หรือ{" "}
+                    <span className="font-semibold text-violet-600 underline">เลือกไฟล์</span>
                   </span>
                   <input
                     ref={fileRef}
@@ -482,7 +545,9 @@ export default function RefinanceService({
                       </button>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground mt-1 text-xs">{documentUploadDetails.description}</p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      {documentUploadDetails.description}
+                    </p>
                   )}
                 </div>
               </motion.div>
@@ -522,8 +587,8 @@ export default function RefinanceService({
           {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
           {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ
-            และยอมรับใน{" "}
+            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
             <a
               href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
               target="_blank"

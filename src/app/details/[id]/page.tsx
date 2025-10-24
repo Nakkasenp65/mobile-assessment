@@ -8,6 +8,7 @@ import Layout from "../../../components/Layout/Layout";
 import AssessStep3 from "../(step3)/AssessStep3";
 import AssessStep4 from "../(step4)/AssessStep4";
 import { useAssessment } from "@/hooks/useAssessment";
+import { useLiff } from "@/components/Provider/LiffProvider";
 import Loading from "../../../components/ui/Loading";
 import Error from "../../../components/ui/Error";
 // Removed useMobile call here to keep Hooks order consistent across renders
@@ -18,6 +19,7 @@ export default function AssessmentDetailsPage() {
   const assessmentId = params.id as string;
   const [step, setStep] = useState(1); // 1 = Service Selection (AssessStep3), 2 = Service Form (AssessStep4)
   const [selectedService, setSelectedService] = useState<string>("");
+  const { lineUserId } = useLiff(); // ดึง LINE User ID จาก LIFF context
 
   const {
     data: assessmentData,
@@ -86,6 +88,7 @@ export default function AssessmentDetailsPage() {
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               selectedService={selectedService}
+              lineUserId={lineUserId}
               onBack={handleBack}
               onSuccess={() => {
                 // หลังบันทึกสำเร็จ กลับไปหน้าก่อนฟอร์ม (เลือกบริการ)

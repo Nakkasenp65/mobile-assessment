@@ -19,6 +19,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DeviceInfo } from "../../../../types/device";
 import { Store, User, Phone, Home, Train, Check, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 import { useRouter } from "next/navigation";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
@@ -29,13 +31,12 @@ import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ Fetch BTS API
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge with static MRT/SRT
 import Image from "next/image";
 
-const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
-
 interface PawnServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   pawnPrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
 
@@ -44,6 +45,7 @@ export default function PawnService({
   deviceInfo,
   pawnPrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: PawnServiceProps) {
   const router = useRouter();
@@ -56,7 +58,7 @@ export default function PawnService({
     province: "BKK",
     district: "PHN",
     btsStation: "",
-    storeLocation: storeLocations[0],
+    storeLocation: BRANCHES[0].name,
     date: "",
     time: "",
     termsAccepted: false,
@@ -110,12 +112,25 @@ export default function PawnService({
   const updateAssessment = useUpdateAssessment(assessmentId);
 
   const handleConfirmPawn = () => {
+    // Combine date and time for queue booking
+    const appointmentAt = combineDateTime(formState.date, formState.time);
+
+    // Determine branch ID based on location type
+    let branchId: string | undefined;
+    if (locationType === "store" && formState.storeLocation) {
+      branchId = getBranchIdFromName(formState.storeLocation);
+    }
+
     const base = {
       customerName: formState.customerName,
       phone: formState.phone,
       locationType,
       appointmentDate: String(formState.date),
       appointmentTime: String(formState.time),
+      // Queue booking fields
+      appointmentAt,
+      branchId,
+      serviceType: SERVICE_TYPES.PAWN,
     };
 
     const payload: PawnServiceInfo =
@@ -431,9 +446,9 @@ export default function PawnService({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {storeLocations.map((loc) => (
-                        <SelectItem key={loc} value={loc}>
-                          {loc}
+                      {BRANCHES.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.name}>
+                          {branch.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -4,7 +4,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../../LongdoAddressForm";
@@ -12,6 +18,7 @@ import type { LatLng } from "leaflet";
 import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 1. Import Hook ใหม่
 import { Button } from "@/components/ui/button";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
+import { BRANCHES } from "@/constants/queueBooking";
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
   ssr: false,
@@ -25,9 +32,6 @@ const LongdoAddressForm = dynamic(() => import("../../LongdoAddressForm"), {
   ssr: false,
   loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
 });
-
-// ✨ 2. ลบ btsMrtData และ storeLocations ที่เป็นข้อมูลเก่าออก
-const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 interface LocationDetailsProps {
   locationType: "home" | "bts" | "store" | null;
@@ -98,12 +102,16 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
               {!isLocationLoading && !locationError && hasUserLocation && mapCenter && (
                 <>
                   <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
-                  <LongdoAddressForm initialData={geocodeData} onAddressChange={handleAddressChange} />
+                  <LongdoAddressForm
+                    initialData={geocodeData}
+                    onAddressChange={handleAddressChange}
+                  />
                 </>
               )}
               {!isLocationLoading && !locationError && !hasUserLocation && (
                 <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-                  กดปุ่ม &quot;รับซื้อถึงบ้าน&quot; เพื่ออนุญาตการเข้าถึงตำแหน่ง และรอระบบดึงค่าพิกัดจริง
+                  กดปุ่ม &quot;รับซื้อถึงบ้าน&quot; เพื่ออนุญาตการเข้าถึงตำแหน่ง
+                  และรอระบบดึงค่าพิกัดจริง
                 </div>
               )}
             </motion.div>
@@ -117,7 +125,9 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                 <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                   <SelectTrigger id="bts-line-sell" className="w-full">
                     <SelectValue
-                      placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"}
+                      placeholder={
+                        isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"
+                      }
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -131,7 +141,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bts-station-sell">ระบุสถานี</Label>
-                <Select disabled={!selectedBtsLine} onValueChange={(value) => handleInputChange("btsStation", value)}>
+                <Select
+                  disabled={!selectedBtsLine}
+                  onValueChange={(value) => handleInputChange("btsStation", value)}
+                >
                   <SelectTrigger id="bts-station-sell" className="w-full">
                     <SelectValue placeholder="เลือกสถานี" />
                   </SelectTrigger>
@@ -159,9 +172,9 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {storeLocations.map((loc) => (
-                    <SelectItem key={loc} value={loc}>
-                      {loc}
+                  {BRANCHES.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.name}>
+                      {branch.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

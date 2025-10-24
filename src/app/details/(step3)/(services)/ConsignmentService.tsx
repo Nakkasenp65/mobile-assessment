@@ -19,6 +19,8 @@ import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { DateSelect } from "@/components/ui/date-select";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
@@ -32,10 +34,9 @@ interface ConsignmentServiceProps {
   deviceInfo: DeviceInfo;
   consignmentPrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
-
-const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 
 const SERVICE_FEE_RATE = 0.1; // 10% ค่าบริการ
 
@@ -52,13 +53,14 @@ export default function ConsignmentService({
   deviceInfo,
   consignmentPrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: ConsignmentServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
     customerName: "",
     phone: phoneNumber,
-    storeLocation: storeLocations[0],
+    storeLocation: BRANCHES[0].name,
     additionalNotes: "",
     dropoffDate: "",
     dropoffTime: "",
@@ -104,9 +106,15 @@ export default function ConsignmentService({
     scrollTo(0, 0);
   }, []);
 
-  const updateAssessment = useUpdateAssessment(assessmentId);
+  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
 
   const handleConfirmConsignment = () => {
+    // Combine date and time for queue booking
+    const appointmentAt = combineDateTime(formState.dropoffDate, formState.dropoffTime);
+
+    // Get branch ID from store location
+    const branchId = getBranchIdFromName(formState.storeLocation);
+
     const payload: ConsignmentServiceInfo = {
       customerName: formState.customerName,
       phone: formState.phone,
@@ -114,6 +122,10 @@ export default function ConsignmentService({
       additionalNotes: formState.additionalNotes,
       appointmentDate: String(formState.dropoffDate),
       appointmentTime: String(formState.dropoffTime),
+      // Queue booking fields
+      appointmentAt,
+      branchId,
+      serviceType: SERVICE_TYPES.CONSIGNMENT,
     };
 
     updateAssessment.mutate(
@@ -307,9 +319,9 @@ export default function ConsignmentService({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {storeLocations.map((loc) => (
-                    <SelectItem key={loc} value={loc} className="h-12">
-                      {loc}
+                  {BRANCHES.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.name} className="h-12">
+                      {branch.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

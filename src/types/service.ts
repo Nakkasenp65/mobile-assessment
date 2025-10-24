@@ -27,6 +27,12 @@ export interface SellNowServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
+
   nextSteps?: string[];
 }
 
@@ -51,6 +57,12 @@ export interface TradeInServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
+
   nextSteps?: string[];
 }
 
@@ -68,6 +80,12 @@ export interface ConsignmentServiceInfo {
   // วันและเวลาส่งมอบเครื่อง (ปรับชื่อให้เป็นมาตรฐาน)
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
+
   nextSteps?: string[];
 }
 
@@ -84,6 +102,13 @@ export interface RefinanceServiceInfo {
 
   // วันและเวลานัดหมาย
   appointmentTime: string;
+  appointmentDate?: string; // For queue booking
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
+
   nextSteps?: string[];
 }
 
@@ -98,10 +123,17 @@ export interface IPhoneExchangeServiceInfo {
 
   // วันและเวลานัดหมาย (ปรับชื่อให้เป็นมาตรฐาน)
   appointmentTime: string;
+  appointmentDate?: string; // For queue booking
 
   // ข้อมูลอาชีพและเอกสาร
   occupation: "salaried" | "freelance" | "";
   documentFileUrl: string; // เช่นเดียวกัน ควรเปลี่ยนเป็น URL ของไฟล์
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
+
   nextSteps?: string[];
 }
 
@@ -132,6 +164,11 @@ export interface PawnServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string;
   appointmentTime: string;
+
+  // Queue booking fields
+  appointmentAt?: string; // ISO 8601 format for queue booking
+  branchId?: string; // Branch ID for queue booking
+  serviceType?: string; // Service type identifier for queue booking
 
   nextSteps?: string[];
 }

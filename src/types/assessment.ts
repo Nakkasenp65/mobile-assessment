@@ -22,6 +22,7 @@ export interface Assessment {
   id: string;
   docId?: string;
   phoneNumber: string;
+  line_user_id?: string; // LINE User ID (เฉพาะผู้ใช้บน LIFF)
   status: "completed" | "reserved" | "pending" | "cancelled" | "in-progress" | string;
   estimatedValue: number;
   // Dates are ISO 8601 strings when provided
@@ -55,6 +56,7 @@ export interface PawnServicePayload {
 
 export interface AssessmentCreatePayload {
   phoneNumber: string;
+  line_user_id?: string; // LINE User ID (เฉพาะผู้ใช้บน LIFF)
   customerName?: string; // optional for now; not all flows collect it at creation time
   deviceInfo: DeviceInfo; // Keep payload consistent with assessment flow
   conditionInfo: ConditionInfo;
@@ -75,6 +77,7 @@ export interface RawAssessmentRecord {
   _id: string;
   docId?: string;
   phoneNumber: string;
+  line_user_id?: string; // LINE User ID (เฉพาะผู้ใช้บน LIFF)
   status: "completed" | "pending" | "in-progress" | string;
   estimatedValue?: number;
   assessmentDate?: string;

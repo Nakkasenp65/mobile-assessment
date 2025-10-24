@@ -7,10 +7,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
-import { Store, User, Phone, Train, Briefcase, Sparkles, Check, FileUp, Pencil } from "lucide-react";
+import {
+  Store,
+  User,
+  Phone,
+  Train,
+  Briefcase,
+  Sparkles,
+  Check,
+  FileUp,
+  Pencil,
+} from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { useBtsStations } from "@/hooks/useBtsStations";
 import { Card } from "@/components/ui/card";
@@ -21,8 +37,15 @@ import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 import { buildIPhoneExchangeFormData } from "@/util/servicePayloads";
-import { validateUploadFile, computeIsFormComplete, type ExchangeFormState, type OccupationType } from "@/util/exchangeValidation";
+import {
+  validateUploadFile,
+  computeIsFormComplete,
+  type ExchangeFormState,
+  type OccupationType,
+} from "@/util/exchangeValidation";
 import Image from "next/image";
+import { combineDateTime } from "@/util/dateTime";
+import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -30,10 +53,10 @@ interface IPhoneExchangeServiceProps {
   deviceInfo: DeviceInfo;
   exchangePrice: number;
   phoneNumber: string;
+  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
 }
 
-const storeLocations = ["สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)"];
 const SERVICE_FEE_RATE = 0.15; // 15%
 
 const OCCUPATION_TYPES = {
@@ -54,6 +77,7 @@ export default function IPhoneExchangeService({
   deviceInfo,
   exchangePrice,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onSuccess,
 }: IPhoneExchangeServiceProps) {
   const router = useRouter();
@@ -67,7 +91,7 @@ export default function IPhoneExchangeService({
     customerName: "",
     phone: phoneNumber,
     btsStation: "",
-    storeLocation: storeLocations[0],
+    storeLocation: BRANCHES[0].name,
     date: "",
     time: "",
     occupation: "",
@@ -81,12 +105,18 @@ export default function IPhoneExchangeService({
     setFormState((prev) => ({ ...prev, phone: phoneNumber || "" }));
   }, [phoneNumber]);
 
+  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+
   const handleInputChange = (field: keyof ExchangeFormState, value: string | Date | undefined) => {
     if (field === "phone") {
       const numericValue = ((value ?? "") as string).replace(/[^0-9]/g, "");
       setFormState((prev) => ({ ...prev, [field]: numericValue }));
     } else if (field === "occupation") {
-      setFormState((prev) => ({ ...prev, occupation: (value as OccupationType) ?? "", documentFile: null }));
+      setFormState((prev) => ({
+        ...prev,
+        occupation: (value as OccupationType) ?? "",
+        documentFile: null,
+      }));
       setUploadError(null);
     } else {
       const str = typeof value === "string" ? value : value ? String(value) : "";
@@ -163,29 +193,53 @@ export default function IPhoneExchangeService({
     scrollTo(0, 0);
   }, []);
 
-  const updateAssessment = useUpdateAssessment(assessmentId);
-
   const handleConfirmExchange = () => {
     if (!formState.documentFile) {
-      void Swal.fire({ icon: "error", title: "กรุณาแนบเอกสาร", text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล" });
+      void Swal.fire({
+        icon: "error",
+        title: "กรุณาแนบเอกสาร",
+        text: "โปรดเลือกไฟล์ก่อนส่งข้อมูล",
+      });
       return;
+    }
+
+    // Combine date and time for queue booking
+    const appointmentAt = combineDateTime(formState.date as string, formState.time as string);
+
+    // Determine branch ID based on location type
+    let branchId: string | undefined;
+    if (locationType === "store" && formState.storeLocation) {
+      branchId = getBranchIdFromName(formState.storeLocation);
     }
 
     const formData = buildIPhoneExchangeFormData({
       customerName: formState.customerName,
       phone: formState.phone,
       time: formState.time as string,
+      date: formState.date as string,
       occupation: formState.occupation as "salaried" | "freelance" | "",
       documentFile: formState.documentFile,
+      // Queue booking fields
+      appointmentAt,
+      branchId,
+      serviceType: SERVICE_TYPES.IPHONE_EXCHANGE,
     });
 
     updateAssessment.mutate(formData, {
       onSuccess: () => {
-        void Swal.fire({ icon: "success", title: "ยืนยันข้อมูลสำเร็จ", text: "เราจะติดต่อคุณเร็วๆ นี้" });
+        void Swal.fire({
+          icon: "success",
+          title: "ยืนยันข้อมูลสำเร็จ",
+          text: "เราจะติดต่อคุณเร็วๆ นี้",
+        });
         onSuccess?.();
       },
       onError: () => {
-        void Swal.fire({ icon: "error", title: "บันทึกข้อมูลไม่สำเร็จ", text: "กรุณาลองใหม่อีกครั้ง" });
+        void Swal.fire({
+          icon: "error",
+          title: "บันทึกข้อมูลไม่สำเร็จ",
+          text: "กรุณาลองใหม่อีกครั้ง",
+        });
       },
     });
   };
@@ -202,7 +256,9 @@ export default function IPhoneExchangeService({
           <div className="absolute -top-10 -right-10 h-36 w-36 rounded-full bg-green-100/50 blur-2xl dark:bg-green-400/20" />
           <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-emerald-100/50 blur-2xl dark:bg-emerald-400/20" />
           <div className="relative z-10">
-            <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">ราคาประเมินเพื่อแลกเปลี่ยน iPhone</h3>
+            <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">
+              ราคาประเมินเพื่อแลกเปลี่ยน iPhone
+            </h3>
             <div className="mt-2 flex items-center justify-center gap-2">
               <p className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-green-400 dark:to-emerald-400">
                 {THB(exchangePrice)}
@@ -216,11 +272,18 @@ export default function IPhoneExchangeService({
                 priority
               />
             </div>
-            <p className="mt-2 text-sm text-green-800/80 dark:text-green-200/80">รับเครื่องใหม่พร้อมส่วนต่างทันที</p>
+            <p className="mt-2 text-sm text-green-800/80 dark:text-green-200/80">
+              รับเครื่องใหม่พร้อมส่วนต่างทันที
+            </p>
           </div>
         </motion.div>
 
-        <motion.div initial="initial" animate="animate" variants={{ animate: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
+        <motion.div
+          initial="initial"
+          animate="animate"
+          variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+          className="space-y-6"
+        >
           {/* Customer Info */}
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">กรอกข้อมูลเพื่อดำเนินการ</Label>
@@ -228,14 +291,30 @@ export default function IPhoneExchangeService({
               <Label htmlFor={`customerName-exchange`}>ชื่อ-นามสกุล</Label>
               <div className="relative">
                 <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-                <Input id={`customerName-exchange`} placeholder="กรอกชื่อ-นามสกุล" value={formState.customerName} onChange={(e) => handleInputChange("customerName", e.target.value)} className="h-12 pl-10" />
+                <Input
+                  id={`customerName-exchange`}
+                  placeholder="กรอกชื่อ-นามสกุล"
+                  value={formState.customerName}
+                  onChange={(e) => handleInputChange("customerName", e.target.value)}
+                  className="h-12 pl-10"
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor={`phone-exchange`}>เบอร์โทรศัพท์ติดต่อ</Label>
               <div className="relative">
                 <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
-                <Input id={`phone-exchange`} type="tel" placeholder="0xx-xxx-xxxx" value={formState.phone} readOnly inputMode="numeric" pattern="[0-9]{10}" maxLength={10} className="h-12 pr-12 pl-10" />
+                <Input
+                  id={`phone-exchange`}
+                  type="tel"
+                  placeholder="0xx-xxx-xxxx"
+                  value={formState.phone}
+                  readOnly
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  className="h-12 pr-12 pl-10"
+                />
                 <button
                   type="button"
                   onClick={handleEditPhoneClick}
@@ -267,7 +346,9 @@ export default function IPhoneExchangeService({
                   key={value}
                   tabIndex={0}
                   className={`relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 px-6 py-4 transition ${
-                    formState.occupation === value ? "border-emerald-500 bg-emerald-50/50 shadow-lg" : "border-zinc-200 bg-white/40"
+                    formState.occupation === value
+                      ? "border-emerald-500 bg-emerald-50/50 shadow-lg"
+                      : "border-zinc-200 bg-white/40"
                   } focus:border-emerald-400 focus:outline-none`}
                   onClick={() => handleInputChange("occupation", value)}
                   onKeyDown={(e) => {
@@ -296,11 +377,19 @@ export default function IPhoneExchangeService({
           <motion.div variants={formVariants} className="space-y-4">
             <Label className="block text-lg font-semibold">เลือกรูปแบบสถานที่รับบริการ</Label>
             <div className="grid grid-cols-2 gap-4">
-              <motion.button type="button" onClick={() => handleLocationTypeChange("bts")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "bts" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
+              <motion.button
+                type="button"
+                onClick={() => handleLocationTypeChange("bts")}
+                className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "bts" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}
+              >
                 <Train className="h-6 w-6" />
                 <span className="font-semibold">นัดรับที่สถานีรถไฟ</span>
               </motion.button>
-              <motion.button type="button" onClick={() => handleLocationTypeChange("store")} className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "store" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}>
+              <motion.button
+                type="button"
+                onClick={() => handleLocationTypeChange("store")}
+                className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "store" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}
+              >
                 <Store className="h-6 w-6" />
                 <span className="font-semibold">รับบริการที่สาขา</span>
               </motion.button>
@@ -313,7 +402,15 @@ export default function IPhoneExchangeService({
                   <Label htmlFor="bts-line-exchange">สายรถไฟ</Label>
                   <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
                     <SelectTrigger id="bts-line-exchange" className="w-full">
-                      <SelectValue placeholder={isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"} />
+                      <SelectValue
+                        placeholder={
+                          isLoadingBts
+                            ? "กำลังโหลด..."
+                            : btsError
+                              ? "เกิดข้อผิดพลาด"
+                              : "เลือกสายรถไฟ"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {merged.lines.map((line) => (
@@ -326,7 +423,10 @@ export default function IPhoneExchangeService({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bts-station-exchange">ระบุสถานี</Label>
-                  <Select disabled={!selectedBtsLine} onValueChange={(value) => handleInputChange("btsStation", value)}>
+                  <Select
+                    disabled={!selectedBtsLine}
+                    onValueChange={(value) => handleInputChange("btsStation", value)}
+                  >
                     <SelectTrigger id="bts-station-exchange" className="w-full">
                       <SelectValue placeholder="เลือกสถานี" />
                     </SelectTrigger>
@@ -345,14 +445,17 @@ export default function IPhoneExchangeService({
             {locationType === "store" && (
               <motion.div key="store-form" variants={formVariants} className="space-y-2">
                 <Label htmlFor="store-branch-exchange">สาขา</Label>
-                <Select value={formState.storeLocation} onValueChange={(value) => handleInputChange("storeLocation", value)}>
+                <Select
+                  value={formState.storeLocation}
+                  onValueChange={(value) => handleInputChange("storeLocation", value)}
+                >
                   <SelectTrigger id="store-branch-exchange" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {storeLocations.map((loc) => (
-                      <SelectItem key={loc} value={loc}>
-                        {loc}
+                    {BRANCHES.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.name}>
+                        {branch.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -434,11 +537,17 @@ export default function IPhoneExchangeService({
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground mt-1 text-xs">{documentUploadDetails.description}</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {documentUploadDetails.description}
+                  </p>
                 )}
               </div>
               {uploadError && (
-                <p className="mt-1 text-sm font-medium text-red-600" role="alert" aria-live="polite">
+                <p
+                  className="mt-1 text-sm font-medium text-red-600"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {uploadError}
                 </p>
               )}
@@ -447,13 +556,28 @@ export default function IPhoneExchangeService({
         </motion.div>
 
         {/* Confirmation */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-4">
-          <FramerButton size="lg" disabled={!isFormComplete || updateAssessment.isPending} className="h-14 w-full" onClick={handleConfirmExchange}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4 pt-4"
+        >
+          <FramerButton
+            size="lg"
+            disabled={!isFormComplete || updateAssessment.isPending}
+            className="h-14 w-full"
+            onClick={handleConfirmExchange}
+          >
             {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการแลกเปลี่ยน iPhone"}
           </FramerButton>
           <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการแลกเปลี่ยน iPhone&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-            <a href="#" target="_blank" rel="noopener noreferrer" className="font-semibold text-green-600 underline hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">
+            การคลิก &quot;ยืนยันการแลกเปลี่ยน iPhone&quot;
+            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-green-600 underline hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+            >
               ข้อตกลงและเงื่อนไขการใช้บริการ
             </a>
           </p>

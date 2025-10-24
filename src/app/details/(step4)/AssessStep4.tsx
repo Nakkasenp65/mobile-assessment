@@ -19,6 +19,7 @@ interface AssessStep4Props {
   conditionInfo: ConditionInfo;
   selectedService: string;
   phoneNumber: string;
+  lineUserId: string | null; // เพิ่ม lineUserId
   onBack: () => void;
   onSuccess?: () => void;
 }
@@ -29,6 +30,7 @@ const AssessStep4 = ({
   conditionInfo,
   selectedService,
   phoneNumber,
+  lineUserId, // รับ lineUserId
   onBack,
   onSuccess,
 }: AssessStep4Props) => {
@@ -88,6 +90,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             sellPrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );
@@ -98,6 +101,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             tradeInPrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );
@@ -108,6 +112,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             consignmentPrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );
@@ -118,6 +123,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             refinancePrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );
@@ -128,6 +134,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             exchangePrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );
@@ -138,6 +145,7 @@ const AssessStep4 = ({
             assessmentId={assessmentId}
             deviceInfo={deviceInfo}
             pawnPrice={servicePrice}
+            lineUserId={lineUserId}
             onSuccess={onSuccess}
           />
         );

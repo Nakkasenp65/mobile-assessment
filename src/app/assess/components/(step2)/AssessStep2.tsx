@@ -13,6 +13,7 @@ import InteractiveTests from "./InteractiveTests";
 import ReviewSummary from "./ReviewSummary";
 import SimpleReviewSummary from "./SimpleReviewSummary";
 import { useCreateAssessment } from "../../../../hooks/useCreateAssessment";
+import { useLiff } from "@/components/Provider/LiffProvider";
 // Permission prompt now handled inside InteractiveTests
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
@@ -58,6 +59,7 @@ export default function AssessStep2({
 }: AssessStep2Props) {
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid, isIOS } = useDeviceDetection();
+  const { lineUserId } = useLiff(); // ดึง LINE User ID จาก LIFF context
   // PermissionPrompt moved to InteractiveTests
 
   console.log(conditionInfo);
@@ -263,7 +265,12 @@ export default function AssessStep2({
       onConditionUpdate(defaulted);
       // Submit to backend
       createAssessment(
-        { phoneNumber, deviceInfo, conditionInfo: defaulted },
+        {
+          phoneNumber,
+          deviceInfo,
+          conditionInfo: defaulted,
+          ...(lineUserId && { line_user_id: lineUserId }), // เพิ่ม line_user_id ถ้ามี (เฉพาะผู้ใช้บน LIFF)
+        },
         {
           onError: (err) => {
             // Surface server-side validation or network errors
@@ -279,6 +286,7 @@ export default function AssessStep2({
       onConditionUpdate,
       createAssessment,
       deviceInfo,
+      lineUserId, // เพิ่ม dependency
     ],
   );
 

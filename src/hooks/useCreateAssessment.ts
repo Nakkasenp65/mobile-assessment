@@ -8,6 +8,7 @@ import type { AssessmentCreatePayload } from "../types/assessment";
 
 interface CreateAssessmentInput {
   phoneNumber: string;
+  line_user_id?: string; // LINE User ID (เฉพาะผู้ใช้บน LIFF)
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   // Optional: allow caller to provide a specific expiry; server will validate/default
@@ -82,6 +83,7 @@ export function useCreateAssessment() {
 
       const payload: AssessmentCreatePayload = {
         phoneNumber: input.phoneNumber.replace(/\D/g, ""),
+        ...(input.line_user_id && { line_user_id: input.line_user_id }), // เพิ่ม line_user_id ถ้ามี
         status: "pending",
         estimatedValue: 19999,
         deviceInfo: {

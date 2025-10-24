@@ -52,8 +52,13 @@ export function buildIPhoneExchangeFormData(params: {
   customerName: string;
   phone: string;
   time: string | Date;
+  date?: string | Date;
   occupation: "salaried" | "freelance" | "";
   documentFile: File;
+  // Queue booking fields
+  appointmentAt?: string;
+  branchId?: string;
+  serviceType?: string;
 }): FormData {
   const fd = new FormData();
   const serviceKey = "iphoneExchangeServiceInfo";
@@ -61,13 +66,24 @@ export function buildIPhoneExchangeFormData(params: {
     customerName: params.customerName,
     phone: params.phone,
     appointmentTime: String(params.time ?? ""),
+    appointmentDate: params.date ? String(params.date) : undefined,
     occupation: params.occupation ?? "",
+    // Queue booking fields
+    appointmentAt: params.appointmentAt,
+    branchId: params.branchId,
+    serviceType: params.serviceType,
     // nextSteps can be added if/when available from UI
   };
   fd.append("serviceKey", serviceKey);
   fd.append("status", "reserved");
   fd.append("serviceInfo", JSON.stringify(serviceInfo));
   fd.append("documentFile", params.documentFile);
+
+  // Also append queue booking fields at top level for useUpdateAssessment hook
+  if (params.appointmentAt) fd.append("appointmentAt", params.appointmentAt);
+  if (params.branchId) fd.append("branchId", params.branchId);
+  if (params.serviceType) fd.append("serviceType", params.serviceType);
+
   return fd;
 }
 
@@ -76,7 +92,12 @@ export function buildRefinanceFormData(params: {
   phone: string;
   occupation: "salaried" | "freelance" | "";
   appointmentTime?: string | Date;
+  appointmentDate?: string;
   documentFile: File;
+  // Queue booking fields
+  appointmentAt?: string;
+  branchId?: string;
+  serviceType?: string;
 }): FormData {
   const fd = new FormData();
   const serviceKey = "refinanceServiceInfo";
@@ -84,12 +105,23 @@ export function buildRefinanceFormData(params: {
     customerName: params.customerName,
     phone: params.phone,
     appointmentTime: String(params.appointmentTime ?? ""),
+    appointmentDate: params.appointmentDate,
     occupation: params.occupation ?? "",
+    // Queue booking fields
+    appointmentAt: params.appointmentAt,
+    branchId: params.branchId,
+    serviceType: params.serviceType,
     // nextSteps can be added if/when available from UI
   };
   fd.append("serviceKey", serviceKey);
   fd.append("status", "reserved");
   fd.append("serviceInfo", JSON.stringify(serviceInfo));
   fd.append("documentFile", params.documentFile);
+
+  // Also append queue booking fields at top level for useUpdateAssessment hook
+  if (params.appointmentAt) fd.append("appointmentAt", params.appointmentAt);
+  if (params.branchId) fd.append("branchId", params.branchId);
+  if (params.serviceType) fd.append("serviceType", params.serviceType);
+
   return fd;
 }
