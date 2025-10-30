@@ -1,21 +1,22 @@
 // src/app/assess/components/(step2)/ReviewSummary.tsx
+
+// Review Summary to For Mobile Assessment Confirmation
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { CheckCircle, AlertCircle, Phone, ArrowLeft, CardSim } from "lucide-react";
 import AssessmentLedger from "../../../details/(step3)/AssessmentLedger";
 import { ConditionInfo, DeviceInfo } from "../../../../types/device";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
+import PersonalInformationModal from "./PersonalInformationModal";
 
 interface ReviewSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   errors: string[];
   onBack: () => void;
-  onConfirm: (phoneNumber: string) => void;
+  onConfirm: (phoneNumber: string, customerName: string) => void;
   isSubmitting?: boolean;
   serverError?: string;
 }
@@ -30,27 +31,9 @@ export default function ReviewSummary({
   serverError,
 }: ReviewSummaryProps) {
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
-  const [phoneInput, setPhoneInput] = useState("");
-  const sanitized = phoneInput.replace(/\D/g, "").slice(0, 10);
-  const isValidPhone = /^\d{10}$/.test(sanitized);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   function openPhoneModal() {
-    setPhoneError(null);
     setIsPhoneModalOpen(true);
-  }
-
-  function closePhoneModal() {
-    setIsPhoneModalOpen(false);
-  }
-
-  function handleConfirmClick() {
-    if (!isValidPhone) {
-      setPhoneError("กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก)");
-      return;
-    }
-    setPhoneError(null);
-    onConfirm(sanitized);
   }
 
   useEffect(() => {
@@ -112,12 +95,9 @@ export default function ReviewSummary({
         </div>
       )}
 
+      {/* Navigation Buttons */}
       <div className="flex items-center justify-between">
-        <FramerButton
-          variant="ghost"
-          onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-1 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-        >
+        <FramerButton variant="outline" onClick={onBack} className="h-12">
           <ArrowLeft className="mr-2 h-4 w-4" />
           กลับไปแก้ไข
         </FramerButton>
@@ -138,108 +118,13 @@ export default function ReviewSummary({
         </FramerButton>
       </div>
 
-      {/* Phone Number Modal */}
-      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-        <DialogContent className="overflow-hidden rounded-3xl border-0 bg-white p-0 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:max-w-md">
-          {/* Apple-style header */}
-          <div className="px-8 pt-8 pb-6">
-            <DialogHeader className="space-y-6 text-center">
-              <div className="flex justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
-                  <Phone className="h-10 w-10 text-gray-600" strokeWidth={1.5} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <DialogTitle className="text-2xl font-semibold tracking-tight text-gray-900">
-                  ยืนยันเบอร์โทรศัพท์
-                </DialogTitle>
-                <DialogDescription className="text-base leading-relaxed text-gray-500">
-                  กรอกเบอร์โทรศัพท์ 10 หลัก เพื่อใช้ในการติดตามรายการประเมินของคุณ
-                </DialogDescription>
-              </div>
-            </DialogHeader>
-          </div>
-
-          {/* Input section */}
-          <div className="px-8 pb-8">
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
-                <div className="relative">
-                  <Input
-                    type="tel"
-                    inputMode="numeric"
-                    value={sanitized ? sanitized : phoneInput}
-                    onChange={(e) => setPhoneInput(e.target.value)}
-                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 text-center text-xl tracking-widest transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0"
-                    placeholder="เบอร์โทรศัพท์ 10 หลัก"
-                    maxLength={10}
-                    disabled={isSubmitting}
-                  />
-                  {/* Subtle validation indicator */}
-                  {sanitized.length > 0 && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-4">
-                      {isValidPhone ? (
-                        <div className="h-3 w-3 rounded-full bg-green-500" />
-                      ) : (
-                        <div className="flex space-x-1">
-                          {Array.from({ length: 10 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className={`h-1 w-1 rounded-full ${i < sanitized.length ? "bg-blue-500" : "bg-gray-200"}`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Minimalist validation */}
-
-              {/* Clean error display */}
-              {(phoneError || serverError) && (
-                <div className="rounded-2xl bg-red-50 px-4 py-3 text-center">
-                  <p className="text-sm text-red-600">{phoneError || serverError}</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Apple-style button section */}
-          <div className="border-t border-gray-100 px-8 py-6">
-            <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={closePhoneModal}
-                className="h-12 flex-1 rounded-2xl border-gray-200 bg-white font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 focus:ring-offset-0"
-                disabled={isSubmitting}
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                onClick={handleConfirmClick}
-                className={`h-12 flex-1 rounded-2xl font-medium transition-all focus:ring-2 focus:ring-offset-0 ${
-                  isValidPhone && !isSubmitting
-                    ? "bg-blue-600 text-white shadow-[0_4px_12px_rgba(59,130,246,0.25)] hover:bg-blue-700 focus:ring-blue-500/50"
-                    : "cursor-not-allowed bg-gray-200 text-gray-400"
-                }`}
-                disabled={!isValidPhone || isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="inline-flex items-center gap-3">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    กำลังบันทึก
-                  </span>
-                ) : (
-                  "บันทึกรายการ"
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PersonalInformationModal
+        isPhoneModalOpen={isPhoneModalOpen}
+        isSubmitting={isSubmitting}
+        serverError={serverError}
+        onConfirm={onConfirm}
+        setIsPhoneModalOpen={setIsPhoneModalOpen}
+      />
     </div>
   );
 }

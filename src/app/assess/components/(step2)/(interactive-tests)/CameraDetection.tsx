@@ -2,11 +2,16 @@
 
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Check, XCircle, RefreshCw, Timer, AlertTriangle } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { motion } from "framer-motion";
+import { Camera, Check, XCircle, Timer, AlertTriangle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
-// Lightweight MediaPipe Face Detection (no TensorFlow)
 
 interface CameraDetectionProps {
   isOpen: boolean;
@@ -53,7 +58,11 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
   };
   type MPFaceDetectionResults = { detections?: Detection[] };
   type MPFaceDetection = {
-    setOptions: (opts: { model?: "short" | "full"; selfieMode?: boolean; minDetectionConfidence?: number }) => void;
+    setOptions: (opts: {
+      model?: "short" | "full";
+      selfieMode?: boolean;
+      minDetectionConfidence?: number;
+    }) => void;
     onResults: (cb: (results: MPFaceDetectionResults) => void) => void;
     send: (input: { image: HTMLVideoElement }) => Promise<void>;
   };
@@ -108,9 +117,11 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
       type FaceDetectionNamespace = {
         FaceDetection: new (config: { locateFile: (file: string) => string }) => MPFaceDetection;
       };
-      const FaceDetectionCtor = (faceDetectionNs as unknown as FaceDetectionNamespace).FaceDetection;
+      const FaceDetectionCtor = (faceDetectionNs as unknown as FaceDetectionNamespace)
+        .FaceDetection;
       const detector = new FaceDetectionCtor({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
+        locateFile: (file: string) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
       });
       // Use JS-specific options: model (short/full) and minDetectionConfidence
       detector.setOptions({ model: "short", minDetectionConfidence: 0.6 });
@@ -167,7 +178,11 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
       let newStream: MediaStream | null = null;
       try {
         newStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: {
+            facingMode: { exact: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
           audio: false,
         });
       } catch {
@@ -182,10 +197,15 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
           const devices = await navigator.mediaDevices.enumerateDevices();
           const videoInputs = devices.filter((d) => d.kind === "videoinput");
           const backCam =
-            videoInputs.find((d) => /back|rear|environment/i.test(d.label)) || videoInputs[videoInputs.length - 1];
+            videoInputs.find((d) => /back|rear|environment/i.test(d.label)) ||
+            videoInputs[videoInputs.length - 1];
           if (backCam) {
             newStream = await navigator.mediaDevices.getUserMedia({
-              video: { deviceId: { exact: backCam.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } },
+              video: {
+                deviceId: { exact: backCam.deviceId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
               audio: false,
             });
           }
@@ -372,7 +392,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
         <div className="flex h-64 flex-col items-center justify-center text-center">
           <AlertTriangle className="mb-3 h-10 w-10 text-red-600" />
           <p className="text-lg font-semibold text-black">หมดเวลาการตรวจจับ</p>
-          <p className="text-muted-foreground mt-2 text-sm">ไม่สามารถตรวจจับใบหน้าได้ภายใน 30 วินาที</p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            ไม่สามารถตรวจจับใบหน้าได้ภายใน 30 วินาที
+          </p>
           <FramerButton
             size="lg"
             className="bg-primary mt-6 h-14 w-full text-white"
@@ -389,7 +411,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
           <XCircle className="mb-4 h-12 w-12 text-red-600" />
           <p className="text-lg font-semibold text-black">เกิดข้อผิดพลาดในการเข้าถึงกล้อง</p>
           <p className="text-muted-foreground mt-2 text-sm">{permissionError}</p>
-          <p className="text-muted-foreground mt-2 text-sm">โปรดตรวจสอบการอนุญาตของบราวเซอร์และการตั้งค่า</p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            โปรดตรวจสอบการอนุญาตของบราวเซอร์และการตั้งค่า
+          </p>
           <FramerButton
             size="lg"
             className="bg-primary mt-6 h-14 w-full text-white"
@@ -600,7 +624,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
     return (
       <div className="flex h-64 w-full flex-col items-center justify-center text-center">
         <Camera className="text-muted-foreground mb-2 h-8 w-8" />
-        <p className="text-muted-foreground text-sm">จำเป็นต้องอนุญาตการเข้าถึงกล้องสำหรับการทดสอบนี้</p>
+        <p className="text-muted-foreground text-sm">
+          จำเป็นต้องอนุญาตการเข้าถึงกล้องสำหรับการทดสอบนี้
+        </p>
         <FramerButton
           size="lg"
           className="mt-4 h-12 bg-gradient-to-r from-purple-500 to-pink-600 px-6 text-white shadow-lg transition-all duration-300 hover:from-purple-600 hover:to-pink-700 hover:shadow-xl"
@@ -624,7 +650,9 @@ export default function CameraDetection({ isOpen, onConclude }: CameraDetectionP
         </DialogHeader>
         <div className="py-4">
           {isLoadingModel && (
-            <p className="text-muted-foreground mb-2 text-center text-sm">กำลังโหลดโมเดลตรวจจับใบหน้า...</p>
+            <p className="text-muted-foreground mb-2 text-center text-sm">
+              กำลังโหลดโมเดลตรวจจับใบหน้า...
+            </p>
           )}
           {renderContent()}
         </div>

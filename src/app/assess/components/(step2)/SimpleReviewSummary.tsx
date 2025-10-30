@@ -1,7 +1,19 @@
 // src/app/assess/components/(step2)/SimpleReviewSummary.tsx
+
+// Write doc summarize this component here in Thai language
+/**
+ * SimpleReviewSummary เป็นคอมโพเนนต์ React ที่ใช้แสดงสรุปข้อมูลการประเมินอุปกรณ์ Apple เฉพาะทาง
+ * โดยจะแสดงข้อมูลอุปกรณ์ เช่น ยี่ห้อ รุ่น ความจุ และรายละเอียดทั่วไป เช่น สถานะประกันศูนย์ สถานะการซ่อมแซม
+ * นอกจากนี้ยังแสดงรายละเอียดเพิ่มเติมจากผู้ใช้หากมีข้อผิดพลาดหรือข้อมูลที่ต้องแก้ไขก่อนดำเนินการต่อ
+ * ผู้ใช้สามารถยืนยันข้อมูลและดำเนินการต่อโดยกรอกเบอร์โทรศัพท์ 10 หลัก
+ * และข้อมูลเพิ่มเติมจากผู้ใช้หากมี พร้อมทั้งจัดการการยืนยันเบอร์โทรศัพท์ก่อนบันทึกรายการ
+ */
+
+// Specified Review Summary to Apple Special Product (Mac, Apple Watch, Airpods, Apple Pencil)
+
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle,
   AlertCircle,
@@ -26,13 +38,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FramerButton from "../../../../components/ui/framer/FramerButton";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface SimpleReviewSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
   errors: string[];
   onBack: () => void;
-  onConfirm: (phoneNumber: string) => void;
+  onConfirm: (phoneNumber: string, customerName: string) => void;
   isSubmitting?: boolean;
   serverError?: string;
 }
@@ -70,7 +83,8 @@ export default function SimpleReviewSummary({
   const [extraDetails, setExtraDetails] = useState<string>("");
   useEffect(() => {
     try {
-      const raw = typeof window !== "undefined" ? window.sessionStorage.getItem("assessment:simple") : null;
+      const raw =
+        typeof window !== "undefined" ? window.sessionStorage.getItem("assessment:simple") : null;
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed?.description) setExtraDetails(String(parsed.description));
@@ -89,7 +103,7 @@ export default function SimpleReviewSummary({
       return;
     }
     setPhoneError(null);
-    onConfirm(sanitized);
+    onConfirm(sanitized, "[DEV] TODO: ADD NAME PIPE HERE");
   };
 
   const warrantyLabel = WARRANTY_LABELS[conditionInfo.warranty] || "";
@@ -99,7 +113,13 @@ export default function SimpleReviewSummary({
     <div className="flex w-full max-w-3xl flex-col gap-6">
       {/* Product Preview Image */}
       <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gray-100 shadow-lg">
-        <img src="/assets/holding-phone.gif" alt="Product Preview" className="h-full w-full object-cover" />
+        <Image
+          src="/assets/holding-phone.gif"
+          width={100}
+          height={100}
+          alt="Product Preview"
+          className="h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         <div className="absolute bottom-4 left-4 text-2xl font-bold text-white">
           {deviceInfo.model || "Unknown Model"}
@@ -126,7 +146,9 @@ export default function SimpleReviewSummary({
                   </span>
                   ยี่ห้อ
                 </span>
-                <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.brand || "-"}</span>
+                <span className="font-medium text-slate-900 dark:text-white">
+                  {deviceInfo.brand || "-"}
+                </span>
               </div>
               {deviceInfo.productType && (
                 <div className="flex items-center justify-between">
@@ -136,7 +158,9 @@ export default function SimpleReviewSummary({
                     </span>
                     ประเภท
                   </span>
-                  <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.productType}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">
+                    {deviceInfo.productType}
+                  </span>
                 </div>
               )}
               <div className="flex items-center justify-between">
@@ -146,7 +170,9 @@ export default function SimpleReviewSummary({
                   </span>
                   รุ่น
                 </span>
-                <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.model || "-"}</span>
+                <span className="font-medium text-slate-900 dark:text-white">
+                  {deviceInfo.model || "-"}
+                </span>
               </div>
               {deviceInfo.storage && (
                 <div className="flex items-center justify-between">
@@ -156,7 +182,9 @@ export default function SimpleReviewSummary({
                     </span>
                     ความจุ
                   </span>
-                  <span className="font-medium text-slate-900 dark:text-white">{deviceInfo.storage}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">
+                    {deviceInfo.storage}
+                  </span>
                 </div>
               )}
             </div>
@@ -173,14 +201,18 @@ export default function SimpleReviewSummary({
                   <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   ประกันศูนย์
                 </span>
-                <span className="font-medium text-slate-900 dark:text-white">{warrantyLabel || "-"}</span>
+                <span className="font-medium text-slate-900 dark:text-white">
+                  {warrantyLabel || "-"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 font-medium text-slate-700 dark:text-zinc-200">
                   <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   เคยแกะหรือซ่อมมา
                 </span>
-                <span className="font-medium text-slate-900 dark:text-white">{repairedLabel || "-"}</span>
+                <span className="font-medium text-slate-900 dark:text-white">
+                  {repairedLabel || "-"}
+                </span>
               </div>
             </div>
           </div>
@@ -261,7 +293,9 @@ export default function SimpleReviewSummary({
           </DialogHeader>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">เบอร์โทรศัพท์</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">
+              เบอร์โทรศัพท์
+            </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <Phone className="h-4 w-4 text-gray-400" />
@@ -278,7 +312,9 @@ export default function SimpleReviewSummary({
               />
             </div>
             <div className="flex items-center gap-2">
-              <ShieldCheck className={`h-4 w-4 ${isValidPhone ? "text-emerald-600" : "text-red-500"}`} />
+              <ShieldCheck
+                className={`h-4 w-4 ${isValidPhone ? "text-emerald-600" : "text-red-500"}`}
+              />
               <p className={`text-xs ${isValidPhone ? "text-emerald-700" : "text-red-600"}`}>
                 {isValidPhone ? "รูปแบบเบอร์ถูกต้อง" : "ต้องเป็นตัวเลข 10 หลัก"}
               </p>
@@ -288,7 +324,12 @@ export default function SimpleReviewSummary({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={closePhoneModal} className="rounded-lg" disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={closePhoneModal}
+              className="rounded-lg"
+              disabled={isSubmitting}
+            >
               ยกเลิก
             </Button>
             <Button

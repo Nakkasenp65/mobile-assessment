@@ -6,7 +6,12 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ConditionInfo, DeviceInfo } from "../../../../../../types/device";
 import { ASSESSMENT_QUESTIONS, Platform } from "../../../../../../util/info";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
@@ -62,7 +67,8 @@ export default function MobileQuestionAccordion({
   );
 
   const allToggleQuestions = useMemo(
-    () => relevantQuestions.flatMap((section) => section.questions.filter((q) => q.type === "toggle")),
+    () =>
+      relevantQuestions.flatMap((section) => section.questions.filter((q) => q.type === "toggle")),
     [relevantQuestions],
   );
 
@@ -109,11 +115,15 @@ export default function MobileQuestionAccordion({
   const handleUpdate = (questionId: keyof ConditionInfo, value: string) => {
     onConditionUpdate((prev) => {
       const updated = { ...prev, [questionId]: value };
-      const nextUnanswered = allVisibleQuestions.find((q) => !updated[q.id]);
-      setOpenAccordionValue(nextUnanswered ? String(nextUnanswered.id) : "");
       return updated;
     });
   };
+
+  // Update open accordion when conditionInfo changes
+  useEffect(() => {
+    const nextUnanswered = allVisibleQuestions.find((q) => !conditionInfo[q.id]);
+    setOpenAccordionValue(nextUnanswered ? String(nextUnanswered.id) : "");
+  }, [conditionInfo, allVisibleQuestions]);
 
   const isComplete = useMemo(() => {
     return allVisibleQuestions.every((q) => !!conditionInfo[q.id]);
@@ -191,17 +201,27 @@ export default function MobileQuestionAccordion({
 
                         <div className="flex-grow">
                           <div className="flex items-start gap-2">
-                            <span className="text-muted-foreground pt-px font-semibold">{questionIndex + 1}.</span>
-                            <p className="text-foreground flex-1 text-left font-semibold">{question.question}</p>
+                            <span className="text-muted-foreground pt-px font-semibold">
+                              {questionIndex + 1}.
+                            </span>
+                            <p className="text-foreground flex-1 text-left font-semibold">
+                              {question.question}
+                            </p>
                           </div>
-                          {selectedLabel && <p className="text-primary mt-0.5 text-sm font-medium">{selectedLabel}</p>}
+                          {selectedLabel && (
+                            <p className="text-primary mt-0.5 text-sm font-medium">
+                              {selectedLabel}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <RadioGroup
                         value={selectedValue}
-                        onValueChange={(value) => handleUpdate(question.id as keyof ConditionInfo, value)}
+                        onValueChange={(value) =>
+                          handleUpdate(question.id as keyof ConditionInfo, value)
+                        }
                         className="flex flex-col gap-3 border-t pt-4"
                       >
                         {question.options.map((option) => (
@@ -215,7 +235,10 @@ export default function MobileQuestionAccordion({
                                 : "border-border bg-card hover:bg-accent",
                             )}
                           >
-                            <RadioGroupItem value={option.id} id={`${String(question.id)}-${String(option.id)}`} />
+                            <RadioGroupItem
+                              value={option.id}
+                              id={`${String(question.id)}-${String(option.id)}`}
+                            />
                             <span className="text-foreground ml-3 font-medium">{option.label}</span>
                           </Label>
                         ))}
@@ -247,11 +270,7 @@ export default function MobileQuestionAccordion({
       )}
 
       <div className="border-border mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
-        <FramerButton
-          variant="ghost"
-          onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-        >
+        <FramerButton variant="outline" onClick={onBack} className="h-12">
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>

@@ -8,7 +8,12 @@ import { ConditionInfo, DeviceInfo } from "../../../../../../types/device";
 import { ASSESSMENT_QUESTIONS, Platform } from "../../../../../../util/info";
 import FramerButton from "../../../../../../components/ui/framer/FramerButton";
 import QuestionWrapper from "../../../../../../components/ui/QuestionWrapper";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface DesktopReportFormProps {
   deviceInfo: DeviceInfo;
@@ -44,7 +49,6 @@ export default function DesktopReportForm({
     [relevantSections],
   );
 
-  // ✨ [แก้ไข] Logic: ตรวจสอบเฉพาะคำถาม "choice" ใน Section
   const isSectionComplete = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
     if (!section) return false;
@@ -55,20 +59,17 @@ export default function DesktopReportForm({
     return requiredQuestions.every((q) => !!conditionInfo[q.id]);
   };
 
-  // ✨ [แก้ไข] Logic: ตรวจสอบว่ามีคำถามใดๆ ใน Section ถูกตอบแล้วหรือยัง
   const isSectionInProgress = (sectionIndex: number) => {
     const section = relevantSections[sectionIndex];
     return section.questions.some((q) => !!conditionInfo[q.id]);
   };
 
-  // ✨ [แก้ไข] Logic: isComplete จะทำงานถูกต้องโดยอัตโนมัติเนื่องจาก allRequiredQuestions ถูกแก้ไขแล้ว
   const isComplete = useMemo(() => {
     // หากไม่มีคำถามที่ต้องตอบเลย ให้ถือว่าสมบูรณ์
     if (allRequiredQuestions.length === 0) return true;
     return allRequiredQuestions.every((q) => !!conditionInfo[q.id]);
   }, [conditionInfo, allRequiredQuestions]);
 
-  // --- Validation & Defaulting for toggle-type questions ---
   const TOGGLE_KEYS = [
     "touchScreen",
     "wifi",
@@ -81,7 +82,7 @@ export default function DesktopReportForm({
     "sensor",
     "buttons",
   ] as const;
-  type ToggleKey = typeof TOGGLE_KEYS[number];
+  type ToggleKey = (typeof TOGGLE_KEYS)[number];
 
   const isToggleKey = (key: keyof ConditionInfo): key is ToggleKey => {
     return (TOGGLE_KEYS as readonly string[]).includes(key as string);
@@ -205,7 +206,9 @@ export default function DesktopReportForm({
     <div className="flex w-full max-w-4xl flex-col gap-8">
       <div className="text-center">
         <h1 className="text-foreground mb-2 text-3xl font-bold">ประเมินสภาพเครื่อง</h1>
-        <p className="text-muted-foreground">กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ</p>
+        <p className="text-muted-foreground">
+          กรุณาเลือกตัวเลือกที่ตรงกับสภาพเครื่องของท่านให้ครบทุกรายการ
+        </p>
       </div>
 
       <Accordion
@@ -243,7 +246,9 @@ export default function DesktopReportForm({
                     <Circle className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                   )}
                   <div className="flex flex-col items-start gap-1 text-left">
-                    <h2 className="text-foreground text-base font-semibold md:text-lg">{section.section}</h2>
+                    <h2 className="text-foreground text-base font-semibold md:text-lg">
+                      {section.section}
+                    </h2>
                     {/* ✨ [แก้ไข] อัปเดตข้อความแสดงสถานะให้ถูกต้อง */}
                     <p className="text-muted-foreground text-xs md:text-sm">
                       {totalQuestionsInSection > 0
@@ -261,9 +266,14 @@ export default function DesktopReportForm({
                   <div className="divide-border/50 flex flex-col divide-y">
                     {choiceQuestions.map((question) => {
                       // ✨ [แก้ไข] เปลี่ยนไปใช้ allRequiredQuestions ในการหา index
-                      const questionIndex = allRequiredQuestions.findIndex((q) => q.id === question.id);
+                      const questionIndex = allRequiredQuestions.findIndex(
+                        (q) => q.id === question.id,
+                      );
                       return (
-                        <div key={String(question.id)} className="flex items-start gap-3 pt-4 first:pt-0">
+                        <div
+                          key={String(question.id)}
+                          className="flex items-start gap-3 pt-4 first:pt-0"
+                        >
                           <div className="flex-1">
                             <QuestionWrapper
                               question={question}
@@ -282,7 +292,9 @@ export default function DesktopReportForm({
                   <>
                     <div className="mt-6 flex items-center gap-3">
                       {/* ✨ [แก้ไข] ปรับเปลี่ยนหัวข้อให้เหมาะสม */}
-                      <h3 className="text-foreground text-base font-semibold md:text-lg">ฟังก์ชันการทำงานเพิ่มเติม</h3>
+                      <h3 className="text-foreground text-base font-semibold md:text-lg">
+                        ฟังก์ชันการทำงานเพิ่มเติม
+                      </h3>
                       {/* ✨ [แก้ไข] เพิ่มข้อความ "(ไม่จำเป็นต้องเลือก)" */}
                       <span className="text-muted-foreground text-sm">(ไม่จำเป็นต้องเลือก)</span>
                     </div>
@@ -305,11 +317,7 @@ export default function DesktopReportForm({
       </Accordion>
 
       <div className="border-border mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
-        <FramerButton
-          variant="ghost"
-          onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-        >
+        <FramerButton variant="outline" onClick={onBack} className="h-12">
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>

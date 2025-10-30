@@ -4,13 +4,17 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, Check, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
 interface SpeakerDetectionProps {
   isOpen: boolean;
-  // ✨ [แก้ไข] เปลี่ยน Type ของ onConclude
   onConclude: (result: "speaker_ok" | "speaker_failed") => void;
 }
 
@@ -80,7 +84,10 @@ const SpeakerDetection = ({ isOpen, onConclude }: SpeakerDetectionProps) => {
       case "playing":
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
-            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}>
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
               <Volume2 className="text-primary h-16 w-16" />
             </motion.div>
             <p className="text-muted-foreground mt-4">กำลังเล่นเสียง... กรุณาตั้งใจฟัง</p>
@@ -89,7 +96,9 @@ const SpeakerDetection = ({ isOpen, onConclude }: SpeakerDetectionProps) => {
       case "prompting":
         return (
           <div>
-            <DialogDescription className="mb-6 text-center">ท่านได้ยินเสียงหมายเลขใด?</DialogDescription>
+            <DialogDescription className="mb-6 text-center">
+              ท่านได้ยินเสียงหมายเลขใด?
+            </DialogDescription>
             <div className="grid grid-cols-5 gap-2">
               {[1, 2, 3, 4, 5].map((num) => (
                 <FramerButton
@@ -112,7 +121,11 @@ const SpeakerDetection = ({ isOpen, onConclude }: SpeakerDetectionProps) => {
         return (
           <div className="flex h-48 flex-col items-center justify-center text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-              {isCorrect ? <Check className="text-success h-16 w-16" /> : <X className="text-destructive h-16 w-16" />}
+              {isCorrect ? (
+                <Check className="text-success h-16 w-16" />
+              ) : (
+                <X className="text-destructive h-16 w-16" />
+              )}
             </motion.div>
             <p className="mt-4 font-semibold">
               {isCorrect ? "ถูกต้อง!" : attempts < 2 ? "ไม่ถูกต้อง, ลองอีกครั้ง" : "ไม่ถูกต้อง"}

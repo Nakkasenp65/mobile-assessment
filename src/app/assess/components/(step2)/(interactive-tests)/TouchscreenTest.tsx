@@ -2,8 +2,8 @@
 
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence, easeInOut } from "framer-motion";
-import { Brush, Pointer } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Pointer } from "lucide-react";
 
 interface TouchscreenTestProps {
   isOpen: boolean;
@@ -15,7 +15,6 @@ const TIMER_DURATION = 60;
 
 export const TouchscreenTest = ({ isOpen, onConclude }: TouchscreenTestProps) => {
   const [timer, setTimer] = useState(TIMER_DURATION);
-  const [fillPercentage, setFillPercentage] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const touchedCellsRef = useRef<Set<string>>(new Set());
@@ -46,7 +45,6 @@ export const TouchscreenTest = ({ isOpen, onConclude }: TouchscreenTestProps) =>
     if (!isOpen) return;
 
     setTimer(TIMER_DURATION);
-    setFillPercentage(0);
     touchedCellsRef.current.clear();
     isDrawingRef.current = false;
     lastPositionRef.current = null;
@@ -114,7 +112,6 @@ export const TouchscreenTest = ({ isOpen, onConclude }: TouchscreenTestProps) =>
       if (!touchedCellsRef.current.has(cellKey)) {
         touchedCellsRef.current.add(cellKey);
         const newPercentage = Math.floor((touchedCellsRef.current.size / totalCells) * 100);
-        setFillPercentage(newPercentage);
 
         if (newPercentage >= 100) {
           handleConclude();
@@ -169,10 +166,6 @@ export const TouchscreenTest = ({ isOpen, onConclude }: TouchscreenTestProps) =>
             <div className="absolute bottom-24 z-60 text-center">
               <div className="text-4xl font-bold">{timer}</div>
             </div>
-            {/* <div className="text-center">
-              <div className="text-4xl font-bold">{fillPercentage}%</div>
-              <div className="text-xs uppercase">พื้นที่</div>
-            </div> */}
           </div>
         </motion.div>
       )}

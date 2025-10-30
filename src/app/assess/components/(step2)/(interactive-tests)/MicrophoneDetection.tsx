@@ -3,7 +3,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FramerButton from "../../../../../components/ui/framer/FramerButton";
 
@@ -128,7 +128,9 @@ export default function MicrophoneDetection({ isOpen, onConclude }: MicrophoneDe
           <div className="flex h-48 flex-col items-center justify-center text-center">
             <XCircle className="text-destructive mb-4 h-12 w-12" />
             <p className="text-lg font-semibold text-black">ไม่สามารถเข้าถึงไมโครโฟนได้</p>
-            <p className="text-muted-foreground mt-2 text-sm">กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              กรุณาตรวจสอบการตั้งค่าในเบราว์เซอร์ของท่าน
+            </p>
             <FramerButton
               size="lg"
               className="bg-primary mt-6 h-14 w-full text-white"

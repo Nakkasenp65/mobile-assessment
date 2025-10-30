@@ -14,6 +14,7 @@ import ReviewSummary from "./ReviewSummary";
 import SimpleReviewSummary from "./SimpleReviewSummary";
 import { useCreateAssessment } from "../../../../hooks/useCreateAssessment";
 import { useLiff } from "@/components/Provider/LiffProvider";
+import { usePriceCalculation } from "../../../../hooks/usePriceCalculation";
 // Permission prompt now handled inside InteractiveTests
 
 /** Modal แจ้งเตือนการขอสิทธิ์ */
@@ -60,11 +61,7 @@ export default function AssessStep2({
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("physical");
   const { isDesktop, isAndroid, isIOS } = useDeviceDetection();
   const { lineUserId } = useLiff(); // ดึง LINE User ID จาก LIFF context
-  // PermissionPrompt moved to InteractiveTests
-
-  console.log(conditionInfo);
-
-  // Apple-specific simple flow: Mac, Apple Watch, AirPods, Apple Pencil
+  const { finalPrice } = usePriceCalculation(deviceInfo, conditionInfo);
   const isAppleSpecialDevice =
     deviceInfo.brand === "Apple" &&
     !!deviceInfo.productType &&
@@ -109,8 +106,6 @@ export default function AssessStep2({
     // SELF_IOS proceeds to interactive tests
     setCurrentSubStep("interactive");
   }, [isDesktop, resolvePlatform, isAppleSpecialDevice]);
-
-  // Permission handlers removed; handled inside InteractiveTests
 
   const handleAutomatedComplete = useCallback(() => setCurrentSubStep("interactive"), []);
 
@@ -250,7 +245,7 @@ export default function AssessStep2({
   );
 
   const handleConfirm = useCallback(
-    (phoneNumber: string) => {
+    (phoneNumber: string, customerName: string) => {
       // Default toggles for unanswered items relevant to platform
       const defaulted = applyPlatformToggleDefaults(conditionInfo);
       const msgs = validateSelections(defaulted);
@@ -267,6 +262,8 @@ export default function AssessStep2({
       createAssessment(
         {
           phoneNumber,
+          customerName,
+          estimatedValue: finalPrice | 0,
           deviceInfo,
           conditionInfo: defaulted,
           ...(lineUserId && { line_user_id: lineUserId }), // เพิ่ม line_user_id ถ้ามี (เฉพาะผู้ใช้บน LIFF)
@@ -286,7 +283,7 @@ export default function AssessStep2({
       onConditionUpdate,
       createAssessment,
       deviceInfo,
-      lineUserId, // เพิ่ม dependency
+      lineUserId,
     ],
   );
 
