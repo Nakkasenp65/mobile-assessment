@@ -8,6 +8,8 @@ import type { AssessmentCreatePayload } from "../types/assessment";
 
 interface CreateAssessmentInput {
   phoneNumber: string;
+  customerName: string;
+  estimatedValue: number;
   line_user_id?: string; // LINE User ID (เฉพาะผู้ใช้บน LIFF)
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
@@ -66,6 +68,8 @@ function ensureConditionDefaults(ci: ConditionInfo): ConditionInfo {
 function validateInput(input: CreateAssessmentInput): string[] {
   const errors: string[] = [];
   if (!input.phoneNumber) errors.push("กรุณากรอกหมายเลขโทรศัพท์");
+  if (!input.customerName) errors.push("กรุณากรอกชื่อนามสกุลผู้ประเมิน");
+  if (!input.estimatedValue) errors.push("ไม่พบราคาการประเมิน");
   if (!input.deviceInfo?.model) errors.push("กรุณาเลือกชื่อรุ่น");
   if (!input.conditionInfo) errors.push("ข้อมูลสภาพเครื่องไม่ครบถ้วน");
   return errors;
@@ -83,9 +87,10 @@ export function useCreateAssessment() {
 
       const payload: AssessmentCreatePayload = {
         phoneNumber: input.phoneNumber.replace(/\D/g, ""),
-        ...(input.line_user_id && { line_user_id: input.line_user_id }), // เพิ่ม line_user_id ถ้ามี
+        customerName: input.customerName,
+        ...(input.line_user_id && { line_user_id: input.line_user_id }),
         status: "pending",
-        estimatedValue: 19999,
+        estimatedValue: input.estimatedValue,
         deviceInfo: {
           brand: input.deviceInfo.brand,
           productType: input.deviceInfo.productType,

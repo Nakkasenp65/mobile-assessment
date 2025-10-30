@@ -29,7 +29,11 @@ export interface UseCheckAvailabilityResult {
   dailyQuota: number;
 }
 
-export function useCheckAvailability({ serviceType, locationType, selectedDate }: UseCheckAvailabilityParams): UseCheckAvailabilityResult {
+export function useCheckAvailability({
+  serviceType,
+  locationType,
+  selectedDate,
+}: UseCheckAvailabilityParams): UseCheckAvailabilityResult {
   const apiServiceType = toApiServiceType(serviceType);
   const apiLocationType = toApiLocationType(locationType);
 

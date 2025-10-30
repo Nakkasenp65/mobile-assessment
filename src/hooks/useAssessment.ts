@@ -31,13 +31,31 @@ async function fetchAssessment(id: string): Promise<AssessmentData> {
     productType: undefined,
   };
 
+  // Extract type from service info if not present at root level (for backward compatibility)
+  let type = record.type;
+  if (!type) {
+    // Check which service info exists and infer the type
+    if (record.sellNowServiceInfo) {
+      type = "SELL_NOW";
+    } else if (record.consignmentServiceInfo) {
+      type = "CONSIGNMENT";
+    } else if (record.refinanceServiceInfo) {
+      type = "REFINANCE";
+    } else if (record.iphoneExchangeServiceInfo) {
+      type = "IPHONE_EXCHANGE";
+    } else if (record.tradeInServiceInfo) {
+      type = "TRADE_IN";
+    }
+  }
+
   return {
     id: record._id,
     docId: record.docId,
     phoneNumber: record.phoneNumber,
+    customerName: record.customerName,
     deviceInfo,
     conditionInfo: record.conditionInfo,
-    pawnServiceInfo: record.pawnServiceInfo,
+    // pawnServiceInfo: record.pawnServiceInfo,
     sellNowServiceInfo: record.sellNowServiceInfo,
     consignmentServiceInfo: record.consignmentServiceInfo,
     refinanceServiceInfo: record.refinanceServiceInfo,
@@ -48,16 +66,16 @@ async function fetchAssessment(id: string): Promise<AssessmentData> {
     assessmentDate: record.assessmentDate ?? record.createdAt,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
-    priceLockExpiresAt: record.priceLockExpiresAt,
+    expiredAt: record.expiredAt,
+    type: record.type,
   } satisfies Assessment;
 }
 
-export function useAssessment(assessmentId: string | undefined) {
+export function useAssessment(assessmentId: string) {
   return useQuery<AssessmentData, Error>({
     queryKey: ["assessment", assessmentId],
-    queryFn: () => fetchAssessment(String(assessmentId)),
+    queryFn: () => fetchAssessment(assessmentId),
     enabled: !!assessmentId,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    refetchOnWindowFocus: true,
   });
 }
