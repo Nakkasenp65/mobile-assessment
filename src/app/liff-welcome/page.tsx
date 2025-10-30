@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Sparkles, Smartphone, ArrowRight } from "lucide-react";
+import { ClipboardList, Smartphone, ArrowRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,6 @@ export default function LiffWelcomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [lineUserId, setLineUserId] = useState<string | null>(null);
-  const [isFetchingAssessment, setIsFetchingAssessment] = useState(false);
 
   useEffect(() => {
     // Initialize LIFF
@@ -56,29 +55,9 @@ export default function LiffWelcomePage() {
     initializeLiff();
   }, [router]);
 
-  const handleHasAssessment = async () => {
-    if (!lineUserId) {
-      router.push("/assess");
-      return;
-    }
-
-    setIsFetchingAssessment(true);
-
-    try {
-      // TODO: Implement API call to fetch latest assessment by LINE user ID
-      console.log("Fetching assessment for LINE user ID:", lineUserId);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Temporary: redirect to assess page
-      router.push("/assess");
-    } catch (error) {
-      console.error("Error fetching assessment:", error);
-      router.push("/assess");
-    } finally {
-      setIsFetchingAssessment(false);
-    }
+  const handleHasAssessment = () => {
+    // Navigate to LINE assessments page
+    router.push("/line-assessments");
   };
 
   const handleNoAssessment = () => {
@@ -132,19 +111,11 @@ export default function LiffWelcomePage() {
               <Button
                 onClick={handleHasAssessment}
                 className="h-14 w-full rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 font-semibold text-white shadow-lg transition-all duration-300 hover:from-pink-600 hover:to-rose-600 hover:shadow-xl active:scale-95"
-                disabled={isFetchingAssessment}
               >
-                {isFetchingAssessment ? (
-                  <span className="inline-flex items-center gap-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    กำลังค้นหา...
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-2 text-base">
-                    <ClipboardList className="h-5 w-5" />
-                    ดูการประเมินล่าสุด
-                  </span>
-                )}
+                <span className="inline-flex items-center gap-2 text-base">
+                  <ClipboardList className="h-5 w-5" />
+                  ดูการประเมินล่าสุด
+                </span>
               </Button>
 
               {/* New Assessment Button */}
@@ -152,28 +123,14 @@ export default function LiffWelcomePage() {
                 variant="outline"
                 onClick={handleNoAssessment}
                 className="h-14 w-full rounded-2xl border-2 border-pink-200 bg-white font-semibold text-pink-600 transition-all duration-300 hover:border-pink-300 hover:bg-pink-50 hover:text-pink-700 active:scale-95"
-                disabled={isFetchingAssessment}
               >
                 <span className="inline-flex items-center gap-2 text-base">
-                  <Sparkles className="h-5 w-5" />
+                  <Smartphone className="h-5 w-5" />
                   เริ่มประเมินใหม่
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Button>
             </div>
-
-            {/* Quick Info */}
-            <div className="mt-6 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-3 py-1">
-                <div className="h-2 w-2 rounded-full bg-pink-400"></div>
-                <span className="text-xs text-pink-600">ประเมินฟรี • ใช้เวลาเพียง 2 นาที</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-gray-100 px-6 py-4">
-            <p className="text-center text-xs text-gray-400">บริการประเมินอุปกรณ์โดยผู้เชี่ยวชาญ</p>
           </div>
         </DialogContent>
       </Dialog>
