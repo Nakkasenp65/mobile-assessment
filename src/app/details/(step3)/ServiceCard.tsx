@@ -16,7 +16,6 @@ import { formatTHB } from "./serviceConfig";
 interface ServiceCardProps {
   service: ServiceOption;
   isSelected: boolean;
-  isReserved: boolean;
   isMaintenance: boolean;
   theme: any;
   benefits: string[];

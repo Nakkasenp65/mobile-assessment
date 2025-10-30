@@ -36,7 +36,7 @@ export function getServiceStatus(
     return {
       reserved: false,
       expired: false,
-      lockedUntil: assessment?.priceLockExpiresAt ?? null,
+      lockedUntil: assessment?.expiredAt ?? null,
       label: "พร้อมให้บริการ",
       message: "เลือกซ่อมเฉพาะส่วนที่ต้องการ",
     };
@@ -45,16 +45,14 @@ export function getServiceStatus(
   const hasPayload = !!assessment && !!assessment[serviceFieldMap[serviceId]];
 
   const now = Date.now();
-  const expiresAt = assessment?.priceLockExpiresAt
-    ? Date.parse(assessment.priceLockExpiresAt)
-    : null;
+  const expiresAt = assessment?.expiredAt ? Date.parse(assessment.expiredAt) : null;
   const expired = typeof expiresAt === "number" ? now > expiresAt : false;
 
   if (hasPayload) {
     return {
       reserved: true,
       expired,
-      lockedUntil: assessment?.priceLockExpiresAt ?? null,
+      lockedUntil: assessment?.expiredAt ?? null,
       label: expired ? "หมดอายุ" : "จองแล้ว",
       message: expired
         ? "การจองหมดอายุแล้ว กรุณาดำเนินการใหม่"
@@ -65,7 +63,7 @@ export function getServiceStatus(
   return {
     reserved: false,
     expired,
-    lockedUntil: assessment?.priceLockExpiresAt ?? null,
+    lockedUntil: assessment?.expiredAt ?? null,
     label: expired ? "หมดอายุ" : "พร้อมให้บริการ",
     message: expired ? "ราคาล็อคหมดอายุแล้ว กรุณาประเมินใหม่" : "บริการพร้อมให้จอง",
   };

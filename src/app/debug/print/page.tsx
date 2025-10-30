@@ -14,7 +14,7 @@ const mockAssessment: Assessment = {
   type: "SELL_NOW",
   estimatedValue: 15000,
   assessmentDate: new Date().toISOString(),
-  priceLockExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   deviceInfo: {
     brand: "Apple",
     model: "iPhone 14 Pro",

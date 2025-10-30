@@ -45,7 +45,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       const params = req.nextUrl.searchParams;
       const expired = params.get("expired") === "true";
       const now = Date.now();
-      const expiryIso = expired ? new Date(now - 1 * 1000).toISOString() : new Date(now + 5 * 60 * 1000).toISOString();
+      const expiryIso = expired
+        ? new Date(now - 1 * 1000).toISOString()
+        : new Date(now + 5 * 60 * 1000).toISOString();
       const payload = {
         success: true,
         data: {
@@ -80,7 +82,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
           assessmentDate: new Date().toISOString(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          priceLockExpiresAt: expiryIso,
+          expiredAt: expiryIso,
         },
       };
       return NextResponse.json(payload, { status: 200 });
@@ -97,11 +99,11 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     // Enrich with priceLockExpiresAt if missing
     if (data?.success && data?.data) {
       const record = data.data;
-      if (!record.priceLockExpiresAt) {
+      if (!record.expiredAt) {
         const baseDateStr = record.assessmentDate || record.createdAt;
         const baseDate = baseDateStr ? new Date(baseDateStr) : new Date();
         const expires = new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        record.priceLockExpiresAt = expires;
+        record.expiredAt = expires;
       }
     }
 

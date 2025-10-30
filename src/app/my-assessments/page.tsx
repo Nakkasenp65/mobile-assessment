@@ -57,8 +57,6 @@ async function fetchAssessmentsByPhone(phone: string): Promise<Assessment[]> {
       // Check which service info exists and infer the type
       if (rec.sellNowServiceInfo) {
         type = "SELL_NOW";
-      } else if (rec.pawnServiceInfo) {
-        type = "PAWN";
       } else if (rec.consignmentServiceInfo) {
         type = "CONSIGNMENT";
       } else if (rec.refinanceServiceInfo) {

@@ -85,7 +85,7 @@ export default function AssessmentDetails({ record }: { record: Assessment }) {
                       })}
                     </span>
                   </div>
-                  <PriceLockCountdown expiryDate={record.priceLockExpiresAt} />
+                  <PriceLockCountdown expiryDate={record.expiredAt} />
                 </div>
               </div>
             </div>
