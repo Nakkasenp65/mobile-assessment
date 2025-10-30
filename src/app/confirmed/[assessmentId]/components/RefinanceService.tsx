@@ -1,67 +1,147 @@
 // src/app/confirmed/[assessmentId]/components/RefinanceService.tsx
 import React from "react";
-import type { AssessmentRecord } from "@/types/assessment";
+import type { Assessment } from "@/types/assessment";
 import type { RefinanceServiceInfo } from "@/types/service";
-import { Shield, Calendar, Phone } from "lucide-react";
+import { Shield, Calendar, Phone, AlertCircle, FileText } from "lucide-react";
+import { FaLine } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 /**
  * RefinanceService
- * Displays details for Refinance service.
+ * Displays details for Refinance service with prominent contact instructions.
+ * Since this is a manual booking service, the next step is to contact our officers.
  */
 export interface RefinanceServiceProps {
-  assessment: AssessmentRecord;
+  assessment: Assessment;
   info: RefinanceServiceInfo;
 }
+
+const LINE_CONTACT_URL = "https://lin.ee/0ab3Rcl";
 
 export default function RefinanceService({ assessment, info }: RefinanceServiceProps) {
   const time = info?.appointmentTime || "-";
   const phone = info?.phone || assessment.phoneNumber || "-";
   const occupation = info?.occupation || "-";
 
-  return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="text-lg font-bold text-gray-900">บริการรีไฟแนนซ์</h3>
-          <p className="mt-1 text-sm text-gray-600">ยืนยันรายละเอียดเอกสารและนัดหมาย</p>
-        </div>
-        <div className="rounded-full bg-blue-50 p-2">
-          <Shield className="h-5 w-5 text-blue-600" />
-        </div>
-      </div>
+  const handleLineContact = () => {
+    window.open(LINE_CONTACT_URL, "_blank");
+  };
 
-      <div className="mt-4 flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-sm text-gray-700">
-          <Calendar className="h-4 w-4" />
-          <span>
-            เวลา: <span className="font-semibold text-gray-900">{time}</span>
+  const handlePhoneCall = () => {
+    window.location.href = "tel:0947878783";
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Prominent Contact Instructions Alert */}
+      <Alert className="border-2 border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50">
+        <AlertCircle className="h-5 w-5 text-orange-600" />
+        <AlertTitle className="text-lg font-bold text-orange-900">
+          ขั้นตอนถัดไป - โปรดติดต่อเจ้าหน้าที่
+        </AlertTitle>
+        <AlertDescription className="mt-2 text-base text-orange-800">
+          บริการรีไฟแนนซ์ต้องการการตรวจสอบเอกสารเพิ่มเติมจากเจ้าหน้าที่
+          <br />
+          <span className="font-semibold">
+            กรุณาติดต่อเราผ่าน Line หรือโทรศัพท์เพื่อดำเนินการต่อ
           </span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-700">
-          <Phone className="h-4 w-4" />
-          <span>
-            โทร: <span className="font-semibold text-gray-900">{phone}</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-700 sm:col-span-2">
-          <Shield className="h-4 w-4" />
-          <span>
-            อาชีพ: <span className="font-semibold text-gray-900">{occupation}</span>
-          </span>
-        </div>
-        {info?.documentFileUrl && (
-          <div className="sm:col-span-2">
-            <a
-              href={info.documentFileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block text-sm font-semibold text-blue-600 hover:underline"
+        </AlertDescription>
+      </Alert>
+
+      {/* Large Contact Buttons */}
+      <Card className="border-2 border-green-200 bg-gradient-to-br from-white to-green-50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-center text-xl">ติดต่อเจ้าหน้าที่ทันที</CardTitle>
+          <CardDescription className="text-center text-base">
+            เลือกช่องทางที่สะดวกสำหรับคุณ
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Line Contact - Primary */}
+            <Button
+              onClick={handleLineContact}
+              size="lg"
+              className="h-16 gap-2 bg-gradient-to-r from-green-500 to-green-600 text-lg font-semibold hover:from-green-600 hover:to-green-700"
             >
-              เปิดเอกสารประกอบ
-            </a>
+              <FaLine className="h-6 w-6" />
+              ติดต่อผ่าน Line
+            </Button>
+
+            {/* Phone Contact - Secondary */}
+            <Button
+              onClick={handlePhoneCall}
+              size="lg"
+              variant="outline"
+              className="h-16 gap-2 border-2 border-sky-500 bg-gradient-to-r from-sky-50 to-sky-100 text-lg font-semibold text-sky-700 hover:bg-sky-200"
+            >
+              <Phone className="h-5 w-5" />
+              โทร: 094-787-8783
+            </Button>
           </div>
-        )}
-      </div>
-    </section>
+        </CardContent>
+      </Card>
+
+      {/* Service Details */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-lg">บริการรีไฟแนนซ์</CardTitle>
+              <CardDescription>รายละเอียดการนัดหมายและเอกสาร</CardDescription>
+            </div>
+            <div className="rounded-full bg-blue-50 p-2">
+              <Shield className="h-5 w-5 text-blue-600" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+              <Calendar className="h-5 w-5 text-gray-600" />
+              <div>
+                <p className="text-xs text-gray-600">เวลาบันทึก</p>
+                <p className="font-semibold text-gray-900">{time}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+              <Phone className="h-5 w-5 text-gray-600" />
+              <div>
+                <p className="text-xs text-gray-600">เบอร์ติดต่อ</p>
+                <p className="font-semibold text-gray-900">{phone}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+              <Shield className="h-5 w-5 text-gray-600" />
+              <div>
+                <p className="text-xs text-gray-600">อาชีพ</p>
+                <p className="font-semibold text-gray-900">{occupation}</p>
+              </div>
+            </div>
+
+            {info?.documentFileUrl && (
+              <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-3">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-xs text-blue-700">เอกสารประกอบ</p>
+                  <a
+                    href={info.documentFileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-blue-600 hover:underline"
+                  >
+                    เปิดเอกสาร
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

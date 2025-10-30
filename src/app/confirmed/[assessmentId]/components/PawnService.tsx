@@ -1,6 +1,6 @@
 // src/app/confirmed/[assessmentId]/components/PawnService.tsx
 import React from "react";
-import type { AssessmentRecord } from "@/types/assessment";
+import type { Assessment } from "@/types/assessment";
 import type { PawnServiceInfo } from "@/types/service";
 import { Calendar, MapPin, Phone } from "lucide-react";
 
@@ -9,7 +9,7 @@ import { Calendar, MapPin, Phone } from "lucide-react";
  * Displays details for the Pawn service.
  */
 export interface PawnServiceProps {
-  assessment: AssessmentRecord;
+  assessment: Assessment;
   info: PawnServiceInfo;
 }
 
@@ -21,8 +21,15 @@ export default function PawnService({ assessment, info }: PawnServiceProps) {
   const locationSummary = (() => {
     if (!info) return "-";
     if (info.locationType === "store") return info.storeLocation || "สาขาไม่ระบุ";
-    if (info.locationType === "bts") return info.btsStation ? `สถานี BTS: ${info.btsStation}` : "สถานี BTS ไม่ระบุ";
-    const parts = [info.address, info.subdistrict, info.district, info.province, info.postcode].filter(Boolean);
+    if (info.locationType === "bts")
+      return info.btsStation ? `สถานี BTS: ${info.btsStation}` : "สถานี BTS ไม่ระบุ";
+    const parts = [
+      info.address,
+      info.subdistrict,
+      info.district,
+      info.province,
+      info.postcode,
+    ].filter(Boolean);
     return parts.length ? parts.join(" ") : "สถานที่นัดหมายไม่ระบุ";
   })();
 

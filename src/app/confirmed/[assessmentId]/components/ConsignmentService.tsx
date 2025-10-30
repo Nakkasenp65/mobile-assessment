@@ -1,6 +1,6 @@
 // src/app/confirmed/[assessmentId]/components/ConsignmentService.tsx
 import React from "react";
-import type { AssessmentRecord } from "@/types/assessment";
+import type { Assessment } from "@/types/assessment";
 import type { ConsignmentServiceInfo } from "@/types/service";
 import { Calendar, MapPin, Phone } from "lucide-react";
 
@@ -9,7 +9,7 @@ import { Calendar, MapPin, Phone } from "lucide-react";
  * Renders confirmed details for the Consignment service.
  */
 export interface ConsignmentServiceProps {
-  assessment: AssessmentRecord;
+  assessment: Assessment;
   info: ConsignmentServiceInfo;
 }
 

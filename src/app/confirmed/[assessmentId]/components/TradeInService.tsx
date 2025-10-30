@@ -1,6 +1,6 @@
 // src/app/confirmed/[assessmentId]/components/TradeInService.tsx
 import React from "react";
-import type { AssessmentRecord } from "@/types/assessment";
+import type { Assessment } from "@/types/assessment";
 import type { TradeInServiceInfo } from "@/types/service";
 import { Calendar, MapPin, Phone, HardDrive } from "lucide-react";
 
@@ -9,7 +9,7 @@ import { Calendar, MapPin, Phone, HardDrive } from "lucide-react";
  * Displays details for the Trade-In service.
  */
 export interface TradeInServiceProps {
-  assessment: AssessmentRecord;
+  assessment: Assessment;
   info: TradeInServiceInfo;
 }
 
@@ -34,7 +34,10 @@ export default function TradeInService({ assessment, info }: TradeInServiceProps
         <div className="flex items-center gap-2 text-sm text-gray-700">
           <HardDrive className="h-4 w-4" />
           <span>
-            ความจุ/สี: <span className="font-semibold text-gray-900">{info?.storage || "-"} / {info?.color || "-"}</span>
+            ความจุ/สี:{" "}
+            <span className="font-semibold text-gray-900">
+              {info?.storage || "-"} / {info?.color || "-"}
+            </span>
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-700">
