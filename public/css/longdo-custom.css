@@ -33,21 +33,19 @@
   background-color: var(--card);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem; /* text-sm */
+  cursor: pointer;
 
   /* Ring styles for focus state */
   outline: none;
   --ring-offset-shadow: 0 0 0 var(--ring-offset-width, 2px) var(--ring-offset-color);
-  --ring-shadow: 0 0 0 calc(var(--ring-width, 2px) + var(--ring-offset-width, 2px)) var(--ring-color);
+  --ring-shadow: 0 0 0 calc(var(--ring-width, 2px) + var(--ring-offset-width, 2px))
+    var(--ring-color);
 }
 
-#longdo-address-form-container input[type="text"]:focus,
-#longdo-address-form-container select:focus,
-#longdo-address-form-container textarea:focus {
-  box-shadow:
-    var(--ring-offset-shadow),
-    var(--ring-shadow),
-    0 0 #0000;
-  border-color: var(--ring);
+#longdo-address-form-container input[type="text"]:hover,
+#longdo-address-form-container select:hover,
+#longdo-address-form-container textarea:hover {
+  border-color: rgba(0, 0, 0, 0.25);
 }
 
 /* --- Custom dropdown arrow for <select> elements --- */
