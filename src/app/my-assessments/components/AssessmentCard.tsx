@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
+  Folder,
   RefreshCw,
   Shield,
   ShoppingBag,
@@ -18,13 +19,15 @@ import clsx from "clsx";
 import { ComponentType } from "react";
 import { useMobile } from "@/hooks/useMobile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IconType } from "react-icons";
+import { LucideIcon } from "lucide-react";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
 interface ServiceOption {
   id: string;
   title: string;
-  icon: IconComponent;
+  icon: IconComponent | IconType | LucideIcon;
   colorClass: string;
   bgColorClass: string;
 }
@@ -59,18 +62,30 @@ const ALL_SERVICES: ServiceOption[] = [
     bgColorClass: "bg-sky-50",
   },
   {
-    id: "installment",
-    title: "ผ่อนชำระ",
+    id: "refinance",
+    title: "รีไฟแนนซ์",
     icon: CreditCard,
-    colorClass: "text-red-600",
-    bgColorClass: "bg-red-50",
+    colorClass: "text-emerald-600",
+    bgColorClass: "bg-emerald-50",
+  },
+  {
+    id: "iphoneexchange",
+    title: "แลกเปลี่ยน iPhone",
+    icon: RefreshCw,
+    colorClass: "text-indigo-600",
+    bgColorClass: "bg-indigo-50",
+  },
+  {
+    id: "unreserved",
+    title: "ยังไม่ได้จอง",
+    icon: Folder,
+    colorClass: "text-stone-600",
+    bgColorClass: "bg-stone-50",
   },
 ];
 
 import type { Assessment } from "@/types/assessment";
 type AssessmentStatus = Assessment["status"];
-
-type AssessmentRecord = Assessment;
 
 const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   const statusConfig = {
@@ -85,7 +100,7 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
       color: "bg-blue-100 text-blue-800 border-blue-200",
     },
     pending: {
-      label: "รอประเมิน",
+      label: "ระหว่างการจอง",
       icon: Clock,
       color: "bg-yellow-100 text-yellow-800 border-yellow-200",
     },
@@ -112,29 +127,43 @@ const StatusBadge = ({ status }: { status: AssessmentStatus }) => {
   );
 };
 
-export default function AssessmentCard({
-  assessment,
-}: {
-  assessment: AssessmentRecord;
-  index?: number;
-}) {
+export default function AssessmentCard({ assessment }: { assessment: Assessment; index?: number }) {
   const { data: productData, isLoading } = useMobile(
     assessment.deviceInfo.brand,
     assessment.deviceInfo.model,
   );
-  const derivedServiceId = (() => {
-    if (assessment.sellNowServiceInfo) return "sell";
-    if (assessment.pawnServiceInfo) return "pawn";
-    if (assessment.tradeInServiceInfo) return "tradein";
-    if (assessment.consignmentServiceInfo) return "consignment";
-    return "";
-  })();
-  const service = ALL_SERVICES.find((s) => s.id === derivedServiceId);
+
+  // Use the type from root level (new structure)
+  const serviceType = assessment.type;
+
+  // Map service type to service config
+  const getServiceConfig = (type: string | undefined): ServiceOption => {
+    switch (type) {
+      case "SELL_NOW":
+        return ALL_SERVICES.find((s) => s.id === "sell");
+      case "PAWN":
+        return ALL_SERVICES.find((s) => s.id === "pawn");
+      case "TRADE_IN":
+        return ALL_SERVICES.find((s) => s.id === "tradein");
+      case "CONSIGNMENT":
+        return ALL_SERVICES.find((s) => s.id === "consignment");
+      case "REFINANCE":
+        return ALL_SERVICES.find((s) => s.id === "refinance");
+      case "IPHONE_EXCHANGE":
+        return ALL_SERVICES.find((s) => s.id === "iphoneexchange");
+      default:
+        return undefined;
+    }
+  };
+
+  const service = getServiceConfig(serviceType);
   const ServiceIcon = service?.icon;
 
   // Determine the correct route based on status
   const linkHref =
-    assessment.status === "reserved" ? `/confirmed/${assessment.id}` : `/details/${assessment.id}`;
+    assessment.status === "reserved" || assessment.status === "completed"
+      ? `/confirmed/${assessment.id}`
+      : `/details/${assessment.id}`;
 
   return (
     <motion.div className="w-full">
@@ -161,12 +190,10 @@ export default function AssessmentCard({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 text-sm leading-tight font-bold text-slate-900 sm:text-base">
+              <h3 className="line-clamp-1 text-sm leading-tight font-bold text-slate-900">
                 {assessment.deviceInfo.brand} {assessment.deviceInfo.model}
               </h3>
-              <p className="truncate text-xs text-slate-500 sm:text-sm">
-                {assessment.deviceInfo.storage}
-              </p>
+              <p className="truncate text-xs text-slate-500">{assessment.deviceInfo.storage}</p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-500" />
@@ -181,6 +208,7 @@ export default function AssessmentCard({
             <span className="text-slate-500">สถานะ:</span>
             <StatusBadge status={assessment.status} />
           </div>
+
           {service && ServiceIcon && (
             <div className="flex items-center justify-between">
               <span className="text-slate-500">บริการ:</span>

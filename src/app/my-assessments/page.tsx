@@ -2,9 +2,9 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "../../components/Layout/Layout";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -50,10 +50,32 @@ async function fetchAssessmentsByPhone(phone: string): Promise<Assessment[]> {
         })
       : "";
 
+    // Extract type from service info if not present at root level (for backward compatibility)
+    // @ts-ignore - type field may exist at runtime
+    let type = rec.type;
+    if (!type) {
+      // Check which service info exists and infer the type
+      if (rec.sellNowServiceInfo) {
+        type = "SELL_NOW";
+      } else if (rec.pawnServiceInfo) {
+        type = "PAWN";
+      } else if (rec.consignmentServiceInfo) {
+        type = "CONSIGNMENT";
+      } else if (rec.refinanceServiceInfo) {
+        type = "REFINANCE";
+      } else if (rec.iphoneExchangeServiceInfo) {
+        type = "IPHONE_EXCHANGE";
+      } else if (rec.tradeInServiceInfo) {
+        type = "TRADE_IN";
+      }
+    }
+
     return {
       id: rec._id ?? rec.docId ?? Math.random().toString(36).slice(2),
       email: "",
+      docId: rec.docId ?? "",
       phoneNumber: rec.phoneNumber ?? "",
+      customerName: rec.customerName ?? "",
       assessmentDate,
       deviceInfo: {
         brand: dev.brand ?? "",
@@ -61,11 +83,20 @@ async function fetchAssessmentsByPhone(phone: string): Promise<Assessment[]> {
         storage: dev.storage ?? "",
         productType: undefined,
       },
+      conditionInfo: rec.conditionInfo ?? {
+        cosmetic: "",
+        functional: "",
+        accessories: "",
+      },
       status: (rec.status as AssessmentStatus) ?? "pending",
       estimatedValue: typeof rec.estimatedValue === "number" ? rec.estimatedValue : 0,
+      // @ts-ignore - type field added for service detection
+      ...(type && { type }),
     } as Assessment;
   });
 }
+
+const ITEMS_PER_PAGE = 12;
 
 export default function MyAssessmentsPage() {
   const [step, setStep] = useState<"enter-phone" | "verify-otp" | "show-results">("enter-phone");
@@ -75,7 +106,6 @@ export default function MyAssessmentsPage() {
   const [showTurnstileWarning, setShowTurnstileWarning] = useState(false);
 
   // OTP-related state
-  // const [otpRequestId, setOtpRequestId] = useState<string | null>(null);
   const [otpToken, setOtpToken] = useState<string | null>(null);
   const [otpRef, setOtpRef] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string>("");
@@ -83,6 +113,9 @@ export default function MyAssessmentsPage() {
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+
+  // --- Pagination State ---
+  const [currentPage, setCurrentPage] = useState(1);
 
   // OTP countdown timer effect
   useEffect(() => {
@@ -112,12 +145,10 @@ export default function MyAssessmentsPage() {
     const last = loadLastPhone();
     if (last) {
       setPhoneNumberInput(last);
-      // Attempt to rehydrate verified state from session cache
       getVerifiedSession(last).then((sess) => {
         if (sess) {
           setIsPhoneVerified(true);
           setPhoneNumber(last);
-          // If in dev or Turnstile already verified, go straight to results
           if (isDevEnv || !!turnstileToken) {
             setStep("show-results");
           }
@@ -150,6 +181,22 @@ export default function MyAssessmentsPage() {
     refetchOnWindowFocus: false,
   });
 
+  // --- Pagination Logic ---
+  const totalPages = Math.ceil(assessmentsData.length / ITEMS_PER_PAGE);
+
+  const paginatedAssessments = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return assessmentsData.slice(startIndex, endIndex);
+  }, [assessmentsData, currentPage]);
+
+  // Effect to reset to page 1 if data changes and current page becomes invalid
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [assessmentsData, currentPage, totalPages]);
+
   const handlePhoneSubmit = async (phone: string) => {
     if (!turnstileToken && !isDevEnv) {
       setShowTurnstileWarning(true);
@@ -163,11 +210,10 @@ export default function MyAssessmentsPage() {
     setPhoneNumber(phone);
     setOtpError("");
     persistLastPhone(phone);
+    setCurrentPage(1); // Reset page on new search
 
     try {
       setIsOtpLoading(true);
-
-      // Avoid OTP request when a verified session already exists
       const existing = await getVerifiedSession(phone);
       if (existing) {
         setIsPhoneVerified(true);
@@ -175,7 +221,6 @@ export default function MyAssessmentsPage() {
           setStep("show-results");
           refetch();
         } else {
-          // Wait for Turnstile verification; auto-transition handled by effect above
           setStep("enter-phone");
         }
         return;
@@ -186,10 +231,9 @@ export default function MyAssessmentsPage() {
       if (response.success && response.data?.token) {
         setOtpToken(response.data.token ?? null);
         setOtpRef(response.data.ref ?? null);
-        setOtpCountdown(120); // 2 minutes countdown
+        setOtpCountdown(120);
         setStep("verify-otp");
       } else if (response.success && !response.data?.token) {
-        // Cached session — immediate verification
         setIsPhoneVerified(true);
         setStep("show-results");
         refetch();
@@ -245,8 +289,6 @@ export default function MyAssessmentsPage() {
     try {
       setIsResendingOtp(true);
       setOtpError("");
-
-      // Avoid OTP resend when a verified session already exists
       const existing = await getVerifiedSession(phoneNumber);
       if (existing) {
         setIsPhoneVerified(true);
@@ -266,7 +308,6 @@ export default function MyAssessmentsPage() {
         setOtpRef(response.data.ref ?? null);
         setOtpCountdown(120);
       } else if (response.success && !response.data?.token) {
-        // Cached session — immediate verification
         setIsPhoneVerified(true);
         setStep("show-results");
         refetch();
@@ -288,7 +329,6 @@ export default function MyAssessmentsPage() {
   const handleBackFromOTP = () => {
     setStep("enter-phone");
     setOtpError("");
-    // setOtpRequestId(null);
     setOtpToken(null);
     setOtpRef(null);
     setOtpCountdown(0);
@@ -304,13 +344,23 @@ export default function MyAssessmentsPage() {
     setOtpRef(null);
     setOtpCountdown(0);
     setIsPhoneVerified(false);
+    setCurrentPage(1); // Reset page
     setStep("enter-phone");
   };
 
   const handleClearSession = () => {
     clearAllSessions();
     setIsPhoneVerified(false);
+    setCurrentPage(1); // Reset page
     setStep("enter-phone");
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   const renderContent = () => {
@@ -342,10 +392,19 @@ export default function MyAssessmentsPage() {
           />
         );
       case "show-results":
-        return isLoading ? (
-          <Loading />
-        ) : (
-          <ResultsView assessments={assessmentsData} onClearSession={handleClearSession} />
+        if (isLoading) return <Loading />;
+
+        return (
+          <>
+            <ResultsView
+              assessments={paginatedAssessments}
+              onClearSession={handleClearSession}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              handlePrevPage={handlePrevPage}
+              handleNextPage={handleNextPage}
+            />
+          </>
         );
       default:
         return null;
@@ -356,9 +415,7 @@ export default function MyAssessmentsPage() {
     <Layout>
       <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] p-4 sm:px-6 lg:px-8">
         <div className="relative z-10 flex h-full w-full max-w-7xl flex-1 flex-col items-center justify-center">
-          {/* Render content based on current step */}
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
-          {/* Render error message if present */}
           <AnimatePresence>
             {error && step === "show-results" && !isLoading && (
               <motion.div
