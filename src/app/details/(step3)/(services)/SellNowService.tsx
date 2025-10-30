@@ -13,7 +13,6 @@ import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { SellNowServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { combineDateTime } from "@/util/dateTime";
 import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
 
@@ -24,45 +23,46 @@ import LocationSelector from "./sell-now-components/LocationSelector";
 import LocationDetails from "./sell-now-components/LocationDetails";
 import AppointmentScheduler from "./sell-now-components/AppointmentScheduler";
 import Confirmation from "./sell-now-components/Confirmation";
-import DepositPayment from "./sell-now-components/DepositPayment";
+import ConfirmDepositPaymentModal from "./ConfirmDepositPaymentModal";
+import ConfirmServiceNoDepositModal from "./ConfirmServiceNoDepositModal";
+import { useCreatePaymentLink } from "../../../../hooks/usePaymentLink";
 
 // Dynamically import the Turnstile component. This is the correct way.
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
   ssr: false,
   loading: () => <div className="h-[65px] w-[300px] animate-pulse rounded-md bg-gray-200"></div>,
 });
-
 interface SellNowServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   sellPrice: number;
   phoneNumber: string;
-  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
-  onSuccess?: () => void;
+  customerName: string;
+  lineUserId?: string | null;
+  docId: string;
+  handleShowConsent: () => void;
 }
-
-type ServiceStep = "filling_form" | "awaiting_deposit" | "completed";
 
 export default function SellNowService({
   assessmentId,
-  deviceInfo: _deviceInfo,
+  deviceInfo, // TODO: ใช้ deviceInfo ในการคิดราคาเพิ่มเติม
   sellPrice,
   phoneNumber,
-  lineUserId, // รับ lineUserId
-  onSuccess,
+  customerName,
+  lineUserId,
+  docId,
+  handleShowConsent,
 }: SellNowServiceProps) {
-  const [serviceStep, setServiceStep] = useState<ServiceStep>("filling_form");
-  void _deviceInfo;
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [showTurnstileError, setShowTurnstileError] = useState(false);
-  const turnstileRef = useRef<HTMLDivElement>(null);
-  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+  // Environment variables
   const isDev = process.env.NODE_ENV !== "production";
 
+  // State
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstileError, setShowTurnstileError] = useState(false);
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
   const [formState, setFormState] = useState({
-    customerName: "",
+    customerName: customerName,
     phone: phoneNumber,
     addressDetails: "",
     province: "",
@@ -74,25 +74,34 @@ export default function SellNowService({
     date: "",
     time: "",
   });
-
-  console.log("formState", formState);
-
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [hasUserLocation, setHasUserLocation] = useState(false);
   const [geoPermission, setGeoPermission] = useState<"prompt" | "granted" | "denied" | null>(null);
-  // ✨ [แก้ไข] กำหนด state เริ่มต้นเป็น null ก่อน
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
+  const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
+  const [isLoadingProcess, setIsLoadingProcess] = useState(false);
+
+  // refs
+  const turnstileRef = useRef<HTMLDivElement>(null);
+
+  // Derived state
+  const isDepositRequired: boolean = locationType === "bts" || locationType === "home";
+
+  // Hooks
   const { data: geocodeData } = useLongdoReverseGeocode(
     mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : null,
   );
+
+  // Mutations
+  const updateAssessment = useUpdateAssessment(assessmentId, "SELL_NOW", lineUserId);
+  const createPaymentLinkMutation = useCreatePaymentLink(docId);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
       return;
     }
-
     setIsLocationLoading(true);
     setLocationError(null);
 
@@ -124,7 +133,6 @@ export default function SellNowService({
     );
   }, []);
 
-  // ขอสิทธิ์การเข้าถึง Location ให้เสร็จสิ้นก่อน แล้วค่อยดึง Lat-Long
   const ensurePermissionThenLocate = useCallback(async () => {
     try {
       const permAPI = (
@@ -134,6 +142,7 @@ export default function SellNowService({
           };
         }
       ).permissions;
+
       if (permAPI && permAPI.query) {
         const status = await permAPI.query({ name: "geolocation" });
         setGeoPermission(status.state);
@@ -147,6 +156,10 @@ export default function SellNowService({
     }
     requestLocation();
   }, [requestLocation]);
+
+  useEffect(() => {
+    console.log("Form State Updated: ", formState);
+  }, [formState]);
 
   // เรียกขอสิทธิ์ตำแหน่งทันทีเมื่อโหลด SellNowService
   useEffect(() => {
@@ -173,7 +186,6 @@ export default function SellNowService({
     [],
   );
 
-  // ✨ [แก้ไข] เมื่อเลือก "ที่บ้าน" ให้เรียกขอพิกัด แต่ไม่รีเซ็ตสถานะ
   const handleLocationTypeChange = useCallback(
     (newLocationType: "home" | "bts" | "store") => {
       setLocationType(newLocationType);
@@ -197,63 +209,72 @@ export default function SellNowService({
   }, []);
 
   const handleConfirmSell = async () => {
-    if (!isDev) {
+    setIsLoadingProcess(true);
+    // ตรวจสอบ Turnstile verification หากอยู่ใน production
+    if (process.env.NODE_ENV === "production") {
+      console.log("🔒 [PAYMENT] Checking Turnstile verification...");
+
       if (!turnstileToken) {
-        turnstileRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        setShowTurnstileError(true);
-        setTimeout(() => setShowTurnstileError(false), 3000);
+        console.warn("⚠️ [PAYMENT] No Turnstile token found");
         await Swal.fire({
           icon: "error",
-          title: "กรุณายืนยันความปลอดภัย",
-          text: "โปรดยืนยัน Turnstile ก่อนดำเนินการ",
+          title: "Verification Required",
+          text: "Please complete the security verification.",
         });
         return;
       }
-      setShowTurnstileError(false);
 
       try {
-        const { data } = await axios.post("/api/verify-turnstile", { token: turnstileToken });
-        if (!data?.success) {
+        console.log("📤 [PAYMENT] Verifying Turnstile token with API...");
+        const verifyResponse = await axios.post("/api/verify-turnstile", {
+          token: turnstileToken,
+        });
+
+        if (!verifyResponse.data.success) {
+          console.error("❌ [PAYMENT] Turnstile verification failed:", verifyResponse.data);
           await Swal.fire({
             icon: "error",
-            title: "การยืนยันไม่สำเร็จ",
-            text: "โปรดลองใหม่อีกครั้ง",
+            title: "Verification Failed",
+            text: "Security verification failed. Please try again.",
           });
+          // Reset the Turnstile widget
+          setTurnstileToken(null);
           return;
         }
-      } catch (err) {
-        console.warn("Turnstile verification request failed", err);
+
+        console.log("✅ [PAYMENT] Turnstile verification successful");
+      } catch (error) {
+        console.error("❌ [PAYMENT] Turnstile verification error:", error);
         await Swal.fire({
           icon: "error",
-          title: "ไม่สามารถยืนยัน Turnstile ได้",
-          text: "โปรดลองอีกครั้ง",
+          title: "Verification Error",
+          text: "An error occurred during security verification.",
         });
         return;
       }
-    } else {
-      // Development mode bypass: proceed without turnstile verification
-      setShowTurnstileError(false);
     }
 
-    // Combine date and time for queue booking
     const appointmentAt = combineDateTime(formState.date, formState.time);
-
-    // Determine branch ID based on location type
-    let branchId: string | undefined;
+    let branchId: string;
     if (locationType === "store" && formState.storeLocation) {
       branchId = getBranchIdFromName(formState.storeLocation);
+    } else {
+      // For BTS and Home services, use default branch (Center One)
+      branchId = BRANCHES[0].id; // "เซ็นเตอร์วัน"
     }
 
     const base: {
+      type: "SELL_NOW";
       customerName: string;
       phone: string;
       locationType: "home" | "bts" | "store";
       appointmentDate: string;
       appointmentTime: string;
       appointmentAt: string;
-      branchId?: string;
+      branchId: string;
       serviceType: string;
     } = {
+      type: "SELL_NOW",
       customerName: formState.customerName,
       phone: formState.phone,
       locationType: (locationType as "home" | "bts" | "store") ?? "store",
@@ -261,7 +282,7 @@ export default function SellNowService({
       appointmentTime: String(formState.time),
       // Queue booking fields
       appointmentAt,
-      branchId,
+      branchId, // Now always set (store-specific or default)
       serviceType: SERVICE_TYPES.SELL_NOW,
     };
 
@@ -279,18 +300,90 @@ export default function SellNowService({
           ? { ...base, btsStation: formState.btsStation }
           : { ...base, storeLocation: formState.storeLocation };
 
-    updateAssessment.mutate(
+    console.log("✅ [PAYMENT] Payload created successfully:", {
+      locationType: payload.locationType,
+      appointmentAt: payload.appointmentAt,
+      branchId: payload.branchId,
+      serviceType: payload.serviceType,
+    });
+
+    // อัพเดทข้อมูลการจองบริการซื้อขายไป และแบ่ง case สำหรับการชำระเงินมัดจำ
+    await updateAssessment.mutateAsync(
       { status: "reserved", sellNowServiceInfo: payload },
       {
-        onSuccess: () => {
-          void Swal.fire({
-            icon: "success",
-            title: "ยืนยันข้อมูลสำเร็จ",
-            text: "เราจะติดต่อคุณเร็วๆ นี้",
-          });
-          onSuccess?.();
+        onSuccess: async () => {
+          console.log("✅ [PAYMENT] Assessment updated successfully");
+
+          // Check if payment is required (for BTS and Home services)
+          const requiresPayment = locationType === "bts" || locationType === "home";
+
+          if (requiresPayment) {
+            try {
+              // Create payment link
+              const redirectUrl = `${window.location.origin}/confirmed/${assessmentId}`;
+
+              const paymentResponse = await axios.post("/api/create-payment-link", {
+                redirectUrl,
+                docId: docId,
+              });
+
+              console.log("✅ [PAYMENT] Payment link created successfully:", {
+                paymentLinkUrl: paymentResponse.data.paymentLinkUrl,
+                paymentLinkId: paymentResponse.data.paymentLinkId,
+              });
+
+              const { paymentLinkUrl, paymentLinkId } = paymentResponse.data;
+
+              // เอาลิงก์ไปเก็บในฐานข้อมูลผ่าน mutation บน Supabase
+              await createPaymentLinkMutation.mutateAsync({
+                link: paymentLinkUrl,
+                link_id: paymentLinkId,
+              });
+
+              if (!paymentLinkUrl) {
+                console.error(
+                  "❌ [PAYMENT] No payment link URL in response:",
+                  paymentResponse.data,
+                );
+                throw new Error("Payment link not received");
+              }
+
+              // TODO: PAYMENT GATEWAY LINK POP UP
+              window.location.assign(paymentLinkUrl);
+            } catch (error) {
+              console.error("❌ [PAYMENT] Payment flow error:", {
+                error,
+                errorMessage: error instanceof Error ? error.message : String(error),
+                errorStack: error instanceof Error ? error.stack : undefined,
+              });
+              await Swal.fire({
+                icon: "error",
+                title: "เกิดข้อผิดพลาดในการชำระเงิน",
+                text: "กรุณาติดต่อเจ้าหน้าที่",
+              });
+            }
+            setIsLoadingProcess(false);
+            // TODO: THIS NAVIGATED TO NEW PAGE ส่งผู้ใช้ไปยังหน้าสรุปการจองทันที?
+            // window.location.assign(`${window.location.origin}/confirmed/${assessmentId}`);
+          } else {
+            // For store service, no payment required
+            console.log("🏪 [PAYMENT] Store service - no payment required");
+            await Swal.fire({
+              icon: "success",
+              title: "ยืนยันข้อมูลสำเร็จ",
+              text: "เราจะติดต่อคุณเร็วๆ นี้",
+            });
+            console.log("✅ [PAYMENT] Store service confirmed successfully");
+            setIsLoadingProcess(false);
+            window.location.assign(`${window.location.origin}/confirmed/${assessmentId}`);
+          }
         },
-        onError: () => {
+        onError: (error) => {
+          console.error("❌ [PAYMENT] Assessment update failed:", {
+            error,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+          });
           void Swal.fire({
             icon: "error",
             title: "บันทึกข้อมูลไม่สำเร็จ",
@@ -320,91 +413,104 @@ export default function SellNowService({
     exit: { opacity: 0, y: -10 },
   };
 
-  useEffect(() => {
-    scrollTo(0, 0);
-  }, [serviceStep]);
-
   return (
     <main className="w-full space-y-6 pt-4">
+      {isDepositRequired ? (
+        <ConfirmDepositPaymentModal
+          isOpen={isShowConfirmModal}
+          setIsOpen={setIsShowConfirmModal}
+          title={"ยืนยันการจองและชำระค่ามัดจำ"}
+          onConfirm={handleConfirmSell}
+          isLoading={isLoadingProcess}
+        />
+      ) : (
+        <ConfirmServiceNoDepositModal
+          isOpen={isShowConfirmModal}
+          setIsOpen={setIsShowConfirmModal}
+          title={"ยืนยันการจองบริการ (ไม่มีค่ามัดจำ)"}
+          description="เมื่อยืนยันการจองบริการระบบจะนำคุณไปยังหน้าสรุปรายการ"
+          onConfirm={handleConfirmSell}
+          isLoading={isLoadingProcess}
+        />
+      )}
       <AnimatePresence mode="wait">
-        {serviceStep === "filling_form" ? (
+        <motion.div
+          key="filling_form"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <PriceDisplay sellPrice={sellPrice} />
           <motion.div
-            key="filling_form"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial="initial"
+            animate="animate"
+            variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+            className="mt-16 flex flex-col gap-6"
           >
-            <PriceDisplay sellPrice={sellPrice} />
-            <motion.div
-              initial="initial"
-              animate="animate"
-              variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-              className="mt-16 flex flex-col gap-6"
-            >
-              <CustomerInfoForm
-                formState={formState}
-                handleInputChange={handleInputChange}
-                formVariants={formVariants}
-              />
-              <LocationSelector
-                locationType={locationType}
-                handleLocationTypeChange={handleLocationTypeChange}
-                formVariants={formVariants}
-              />
-              {locationType && (
-                <div
-                  className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${
-                    locationType === "store"
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                      : "border-blue-300 bg-blue-50 text-blue-800"
-                  }`}
-                >
+            <CustomerInfoForm
+              formState={formState}
+              handleInputChange={handleInputChange}
+              formVariants={formVariants}
+            />
+            <LocationSelector
+              locationType={locationType}
+              handleLocationTypeChange={handleLocationTypeChange}
+              formVariants={formVariants}
+            />
+            {locationType && (
+              <div
+                className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 ${
+                  locationType === "store"
+                    ? "border-emerald-300 bg-green-50" // เส้นขอบสีเขียว
+                    : "border-blue-300 bg-blue-50" // เส้นขอบสีฟ้า
+                }`}
+              >
+                {/* === Text Content === */}
+                <div className="flex-1">
                   {locationType === "store" ? (
-                    <ShieldCheck className="mt-0.5 h-5 w-5" />
+                    <>
+                      <p className="font-semibold text-gray-900">รับซื้อที่ร้าน (ไม่ต้องมัดจำ)</p>
+                      <p className="text-sm text-gray-600">
+                        นำเครื่องมาที่สาขาเพื่อรับบริการได้ทันที
+                      </p>
+                    </>
                   ) : (
-                    <AlertTriangle className="mt-0.5 h-5 w-5" />
+                    <>
+                      <p className="font-semibold text-gray-900">บริการรับถึงที่ (มัดจำ 200 บาท)</p>
+                      <p className="text-sm text-gray-600">
+                        การจองนอกสถานที่จะมีค่ามัดจำการบริการและได้รับคืนหลังจบการบริการ
+                      </p>
+                    </>
                   )}
-                  <div>
-                    {locationType === "store" ? (
-                      <>
-                        <p className="font-semibold">ไม่มีการชำระมัดจำสำหรับรับซื้อที่ร้าน</p>
-                        <p className="text-sm">สามารถนำเครื่องมาที่สาขาเพื่อดำเนินการได้ทันที</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-semibold">ต้องชำระเงินมัดจำ 200 บาท</p>
-                        <p className="text-sm">
-                          ระบบจะแจ้งขั้นตอนและจำนวนเงินมัดจำหลังกรอกข้อมูลนัดหมายครบถ้วน
-                        </p>
-                      </>
-                    )}
-                  </div>
                 </div>
-              )}
-              <LocationDetails
-                locationType={locationType}
-                formState={formState}
-                handleInputChange={handleInputChange}
-                selectedBtsLine={selectedBtsLine}
-                setSelectedBtsLine={setSelectedBtsLine}
-                mapCenter={mapCenter}
-                setMapCenter={setMapCenter}
-                isLocationLoading={isLocationLoading}
-                locationError={locationError}
-                hasUserLocation={hasUserLocation}
-                onRetryLocate={ensurePermissionThenLocate}
-                geocodeData={geocodeData}
-                handleAddressChange={handleAddressChange}
-                formVariants={formVariants}
-              />
-              <AppointmentScheduler
-                formState={formState}
-                handleInputChange={handleInputChange}
-                locationType={locationType}
-                formVariants={formVariants}
-              />
-            </motion.div>
+              </div>
+            )}
+            {/* Location LongdoForm */}
+            <LocationDetails
+              locationType={locationType}
+              formState={formState}
+              handleInputChange={handleInputChange}
+              selectedBtsLine={selectedBtsLine}
+              setSelectedBtsLine={setSelectedBtsLine}
+              mapCenter={mapCenter}
+              setMapCenter={setMapCenter}
+              isLocationLoading={isLocationLoading}
+              locationError={locationError}
+              hasUserLocation={hasUserLocation}
+              onRetryLocate={ensurePermissionThenLocate}
+              geocodeData={geocodeData}
+              handleAddressChange={handleAddressChange}
+              formVariants={formVariants}
+            />
+            <AppointmentScheduler
+              formState={formState}
+              handleInputChange={handleInputChange}
+              locationType={locationType}
+              formVariants={formVariants}
+            />
+          </motion.div>
 
+          {!isDev && (
             <div ref={turnstileRef} className="mt-6">
               {showTurnstileError && (
                 <motion.p
@@ -417,19 +523,16 @@ export default function SellNowService({
               )}
               <Turnstile onVerify={handleTurnstileVerify} />
             </div>
+          )}
 
-            <Confirmation
-              isFormComplete={isFormComplete}
-              handleConfirmSell={handleConfirmSell}
-              disabled={updateAssessment.isPending}
-              isLoading={updateAssessment.isPending}
-            />
-          </motion.div>
-        ) : serviceStep === "awaiting_deposit" ? (
-          <motion.div key="awaiting_deposit">
-            <DepositPayment />
-          </motion.div>
-        ) : null}
+          <Confirmation
+            isFormComplete={isFormComplete}
+            handleConfirmSell={() => setIsShowConfirmModal(true)}
+            disabled={updateAssessment.isPending}
+            isLoading={updateAssessment.isPending}
+            handleShowConsent={handleShowConsent}
+          />
+        </motion.div>
       </AnimatePresence>
     </main>
   );
