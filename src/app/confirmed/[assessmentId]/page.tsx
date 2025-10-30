@@ -2,25 +2,20 @@
 
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 // --- Icons ---
-import {
-  ArrowLeft,
-  HardDrive,
-  Printer,
-  Star,
-  XCircle,
-  MessageCircle, // Kept for potential future use
-} from "lucide-react";
-import { FaLine } from "react-icons/fa6";
+import { ArrowLeft, HardDrive, Printer, Star, XCircle } from "lucide-react";
+import { FaLine, FaPhone } from "react-icons/fa6";
 
 // --- Hooks ---
 import { useAssessment } from "@/hooks/useAssessment";
 import { useMobile } from "@/hooks/useMobile";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useReactToPrint } from "react-to-print";
+import { useLiff } from "@/components/Provider/LiffProvider";
+import { useCancelAssessment, AssessmentCancelInput } from "../../../hooks/useUpdateAssessment";
 
 // --- UI Components ---
 import Layout from "../../../components/Layout/Layout";
@@ -29,56 +24,27 @@ import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-// --- Service Components ---
 import SellNowService from "./components/SellNowService";
 import ConsignmentService from "./components/ConsignmentService";
 import RefinanceService from "./components/RefinanceService";
 import IPhoneExchangeService from "./components/IPhoneExchangeService";
-import PawnService from "./components/PawnService";
 import TradeInService from "./components/TradeInService";
 import ConditionInfoDisplay from "./components/ConditionInfoDisplay";
 
-// --- Types ---
-import type { Assessment } from "@/types/assessment";
-import type { ConditionInfo, DeviceInfo } from "@/types/device";
-import type {
-  SellNowServiceInfo,
-  PawnServiceInfo,
-  ConsignmentServiceInfo,
-  RefinanceServiceInfo,
-  IPhoneExchangeServiceInfo,
-  TradeInServiceInfo,
-} from "@/types/service";
-import PrintableAssessment from "./components/PrintableAssessment";
+import type { ConditionInfo } from "@/types/device";
+import PrintableAssessment from "./components/(print-form)/PrintableAssessment";
+import ConfirmCancelModal from "./components/ConfirmCancelModal";
+import type { AssessmentServiceType } from "@/types/assessment";
+import WebMIcon from "../../../components/ui/WebMIcon";
+import { useDeviceDetection } from "../../../hooks/useDeviceDetection";
 
-// --- Constants ---
 const LINE_CONTACT_URL = "https://lin.ee/0ab3Rcl";
-
-// --- Sub-components for better organization ---
 
 const PageHeader = () => (
   <div className="py-8 text-center">
     <div className="mx-auto max-w-2xl">
-      <div className="mb-4 flex justify-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <svg
-            className="h-6 w-6 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
+      <div className="mb-8 flex justify-center">
+        <WebMIcon src={"/assets/verification-badge.gif"} />
       </div>
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
         ยืนยันการจองบริการ
@@ -93,11 +59,11 @@ const DeviceInformation = ({ assessment, productData, isImageLoading, grade, fin
     <CardContent className="p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         {/* Device Image - Compact */}
-        <div className="flex-shrink-0">
+        <div className="flex flex-1 items-center justify-center">
           {isImageLoading ? (
             <div className="h-24 w-24 animate-pulse rounded-xl bg-gray-200 md:h-28 md:w-28"></div>
           ) : productData?.image_url ? (
-            <div className="relative h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-white md:h-28 md:w-28">
+            <div className="relative h-24 w-24 overflow-hidden rounded-xl bg-white md:h-28 md:w-28">
               <Image
                 src={productData.image_url}
                 alt={assessment.deviceInfo?.model || "Device"}
@@ -110,23 +76,23 @@ const DeviceInformation = ({ assessment, productData, isImageLoading, grade, fin
               <HardDrive className="h-10 w-10 text-gray-400" />
             </div>
           )}
-        </div>
+          {/* Device Details - Compact */}
 
-        {/* Device Details - Compact */}
-        <div className="flex-1 space-y-2">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 md:text-xl">
-              {assessment.deviceInfo?.brand} {assessment.deviceInfo?.model}
-            </h3>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <Badge variant="secondary" className="gap-1 bg-blue-50 text-blue-700">
-                <HardDrive className="h-3 w-3" />
-                <span className="text-xs">{assessment.deviceInfo?.storage || "N/A"}</span>
-              </Badge>
-              <Badge variant="secondary" className="gap-1 bg-amber-50 text-amber-700">
-                <Star className="h-3 w-3" />
-                <span className="text-xs">เกรด {grade || "N/A"}</span>
-              </Badge>
+          <div className="flex-1 space-y-2">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 md:text-xl">
+                {assessment.deviceInfo?.brand} {assessment.deviceInfo?.model}
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <Badge variant="secondary" className="gap-1 bg-blue-50 text-blue-700">
+                  <HardDrive className="h-3 w-3" />
+                  <span className="text-xs">{assessment.deviceInfo?.storage || "N/A"}</span>
+                </Badge>
+                <Badge variant="secondary" className="gap-1 bg-amber-50 text-amber-700">
+                  <Star className="h-3 w-3" />
+                  <span className="text-xs">เกรด {grade || "N/A"}</span>
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
@@ -183,29 +149,40 @@ const ActionButtons = ({ onPrint, onLineContact, onCancel }: any) => (
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
+        {/* Print Document */}
         <Button
           onClick={onPrint}
           size="lg"
           variant="outline"
-          className="bg-secondary h-14 gap-3 text-white duration-300 ease-in-out hover:bg-pink-600 hover:text-white"
+          className="bg-secondary h-14 gap-1 text-white duration-300 ease-in-out hover:bg-pink-600 hover:text-white"
         >
           <Printer className="h-5 w-5" />
           <span className="font-medium">พิมพ์เอกสาร</span>
         </Button>
+        {/* Line Contact */}
         <Button
           onClick={onLineContact}
           size="lg"
-          className="h-14 gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+          className="h-14 gap-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
         >
           <FaLine className="h-5 w-5" />
           <span className="font-medium">ติดต่อผ่าน Line</span>
         </Button>
+        {/* Phone Contact */}
+        <a
+          href="tel:0947878783"
+          className="flex h-14 items-center justify-center gap-1 rounded-md bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700"
+        >
+          <FaPhone className="h-3 w-3" />
+          <span className="text-sm font-medium">ติดต่อผ่านโทรศัพท์</span>
+        </a>
+        {/* WhatsApp Contact */}
         <Button
           variant="outline"
           size="lg"
           onClick={onCancel}
-          className="h-14 gap-3 bg-red-500 text-white hover:bg-red-600 hover:text-white"
+          className="h-14 gap-1 bg-red-500 text-white hover:bg-red-600 hover:text-white"
         >
           <XCircle className="h-5 w-5" />
           <span className="font-medium">ยกเลิกการจอง</span>
@@ -215,161 +192,195 @@ const ActionButtons = ({ onPrint, onLineContact, onCancel }: any) => (
   </Card>
 );
 
-const CancelBookingModal = ({ open, onClose, onConfirm, isCancelling }: any) => (
-  <Dialog open={open} onOpenChange={onClose}>
-    <DialogContent className="sm:max-w-md">
-      <DialogHeader>
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <XCircle className="h-6 w-6 text-red-600" />
-        </div>
-        <DialogTitle className="text-center text-xl">ยืนยันการยกเลิกการจอง</DialogTitle>
-        <DialogDescription className="text-center text-base">
-          คุณต้องการยกเลิกการจองบริการนี้ใช่หรือไม่?
-          <br />
-          การดำเนินการนี้อาจส่งผลต่อเงื่อนไขการใช้บริการในอนาคต
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter className="flex flex-col gap-3 sm:flex-row">
-        <Button
-          variant="outline"
-          onClick={onClose}
-          disabled={isCancelling}
-          className="w-full sm:w-auto"
-        >
-          ปิด
-        </Button>
-        <Button
-          variant="destructive"
-          onClick={onConfirm}
-          disabled={isCancelling}
-          className="w-full gap-2 sm:w-auto"
-        >
-          {isCancelling ? (
-            <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              กำลังยกเลิก...
-            </>
-          ) : (
-            <>
-              <XCircle className="h-4 w-4" />
-              ยืนยันการยกเลิก
-            </>
-          )}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
-
-// --- Main Page Component ---
 export default function ConfirmedAssessmentPage() {
   const router = useRouter();
   const params = useParams();
+  const { lineUserId } = useLiff();
   const assessmentId = params?.assessmentId as string;
+  const { isDesktop } = useDeviceDetection();
 
-  const { data: assessment, isLoading, error } = useAssessment(assessmentId);
+  // Fetch assessment data from backend
+  const {
+    data: assessment,
+    isLoading,
+    error,
+    refetch: refetchAssessment,
+  } = useAssessment(assessmentId);
+
+  // Product Image Url from Supabase Storage
   const { data: productData, isLoading: isImageLoading } = useMobile(
     assessment?.deviceInfo?.brand,
     assessment?.deviceInfo?.model,
   );
+  // Price calculation
   const { grade, finalPrice } = usePriceCalculation(
     assessment?.deviceInfo,
     assessment?.conditionInfo,
   );
 
+  // Cancel assessment mutation
+  const cancelAssessment = useCancelAssessment(assessmentId);
+
   const componentRef = useRef<HTMLDivElement>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  const handlePrint = useReactToPrint({
-    documentTitle: `Assessment-Confirmation-${assessmentId}`,
-    contentRef: componentRef,
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 8mm;
-      }
-      @media print {
-        html, body {
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  const handlePrint = useReactToPrint(
+    // Print
+    {
+      documentTitle: `Assessment-Confirmation-${assessmentId}`,
+      contentRef: componentRef,
+      pageStyle: `
+        @font-face {
+          font-family: 'LINESeedSansTH';
+          src: url('https://fonts.linecorp.com/lineseed-sans-thai/LINESeedSansTH_W_Rg.woff2') format('woff2'),
+               url('https://fonts.linecorp.com/lineseed-sans-thai/LINESeedSansTH_W_Rg.woff') format('woff');
+          font-weight: 400;
         }
-        body {
-          overflow: hidden;
+        @font-face {
+          font-family: 'LINESeedSansTH';
+          src: url('https://fonts.linecorp.com/lineseed-sans-thai/LINESeedSansTH_W_Bd.woff2') format('woff2'),
+               url('https://fonts.linecorp.com/lineseed-sans-thai/LINESeedSansTH_W_Bd.woff') format('woff');
+          font-weight: 700;
         }
-      }
-    `,
-  });
+        @page { size: A4; margin: 8mm; }
+        @media print {
+          html, body {
+            font-family: "LINESeedSansTH", sans-serif;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          body {
+            overflow: hidden;
+          }
+        }
+      `,
+      suppressErrors: true,
+    },
+  );
 
-  const serviceComponentMap: Record<string, React.ReactElement | null> = useMemo(() => {
-    if (!assessment) return {};
-    return {
-      sellNow: assessment.sellNowServiceInfo ? (
-        <SellNowService info={assessment.sellNowServiceInfo} assessment={assessment} />
-      ) : null,
-      pawn: assessment.pawnServiceInfo ? (
-        <PawnService info={assessment.pawnServiceInfo} assessment={assessment} />
-      ) : null,
-      consignment: assessment.consignmentServiceInfo ? (
-        <ConsignmentService info={assessment.consignmentServiceInfo} assessment={assessment} />
-      ) : null,
-      refinance: assessment.refinanceServiceInfo ? (
-        <RefinanceService info={assessment.refinanceServiceInfo} assessment={assessment} />
-      ) : null,
-      iphoneExchange: assessment.iphoneExchangeServiceInfo ? (
-        <IPhoneExchangeService
-          info={assessment.iphoneExchangeServiceInfo}
-          assessment={assessment}
-        />
-      ) : null,
-      tradeIn: assessment.tradeInServiceInfo ? (
-        <TradeInService info={assessment.tradeInServiceInfo} assessment={assessment} />
-      ) : null,
-    };
-  }, [assessment]);
-
+  /**
+   * Determines the active service using the type field at root level
+   * Much cleaner and simpler than checking for existence of each service info
+   */
   const activeService = useMemo(() => {
     if (!assessment) return null;
-    const services = [
-      { key: "sellNow", info: assessment.sellNowServiceInfo },
-      { key: "pawn", info: assessment.pawnServiceInfo },
-      { key: "consignment", info: assessment.consignmentServiceInfo },
-      { key: "refinance", info: assessment.refinanceServiceInfo },
-      { key: "iphoneExchange", info: assessment.iphoneExchangeServiceInfo },
-      { key: "tradeIn", info: assessment.tradeInServiceInfo },
-    ];
-    const found = services.find((service) => service.info);
-    return found ? { type: found.key, component: serviceComponentMap[found.key] } : null;
-  }, [assessment, serviceComponentMap]);
+
+    // Use the type from root level (new structure)
+    const serviceType = assessment.type;
+
+    // Map service type to component
+    switch (serviceType) {
+      case "SELL_NOW":
+        if (assessment.sellNowServiceInfo) {
+          return {
+            type: serviceType,
+            info: assessment.sellNowServiceInfo,
+            component: (
+              <SellNowService info={assessment.sellNowServiceInfo} assessment={assessment} />
+            ),
+          };
+        }
+        break;
+      case "CONSIGNMENT":
+        if (assessment.consignmentServiceInfo) {
+          return {
+            type: serviceType,
+            info: assessment.consignmentServiceInfo,
+            component: (
+              <ConsignmentService
+                info={assessment.consignmentServiceInfo}
+                assessment={assessment}
+              />
+            ),
+          };
+        }
+        break;
+      case "REFINANCE":
+        if (assessment.refinanceServiceInfo) {
+          return {
+            type: serviceType,
+            info: assessment.refinanceServiceInfo,
+            component: (
+              <RefinanceService info={assessment.refinanceServiceInfo} assessment={assessment} />
+            ),
+          };
+        }
+        break;
+      case "IPHONE_EXCHANGE":
+        if (assessment.iphoneExchangeServiceInfo) {
+          return {
+            type: serviceType,
+            info: assessment.iphoneExchangeServiceInfo,
+            component: (
+              <IPhoneExchangeService
+                info={assessment.iphoneExchangeServiceInfo}
+                assessment={assessment}
+              />
+            ),
+          };
+        }
+        break;
+      case "TRADE_IN":
+        if (assessment.tradeInServiceInfo) {
+          return {
+            type: serviceType,
+            info: assessment.tradeInServiceInfo,
+            component: (
+              <TradeInService info={assessment.tradeInServiceInfo} assessment={assessment} />
+            ),
+          };
+        }
+        break;
+    }
+
+    return null;
+  }, [assessment]);
+
+  const getAppointmentId = (type: AssessmentServiceType) => {
+    switch (type) {
+      case "SELL_NOW":
+        return assessment?.sellNowServiceInfo?.appointmentId;
+      case "CONSIGNMENT":
+        return assessment?.consignmentServiceInfo?.appointmentId;
+      case "TRADE_IN":
+        return assessment?.tradeInServiceInfo?.appointmentId;
+      default:
+        return undefined;
+    }
+  };
 
   const handleCancelBooking = async () => {
     setIsCancelling(true);
     try {
-      // TODO: Implement the actual API call to cancel the booking
-      // await cancelBookingAPI(assessmentId);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Use a toast notification for better UX
-      // toast.success("ยกเลิกการจองเรียบร้อยแล้ว");
-      alert("ยกเลิกการจองเรียบร้อยแล้ว");
-
-      router.back();
+      const input: AssessmentCancelInput = {
+        docId: assessment.docId,
+        appointmentId: getAppointmentId(assessment.type),
+      };
+      await cancelAssessment.mutateAsync(input);
+      setIsCancelling(false);
+      // const targetPage = lineUserId ? "/line-assessments" : "/my-assessments";
+      // router.replace(targetPage);
+      // TODO: Show success message
     } catch (err) {
       console.error("Failed to cancel booking:", err);
-      // toast.error("เกิดข้อผิดพลาดในการยกเลิกการจอง");
-      alert("เกิดข้อผิดพลาดในการยกเลิกการจอง");
-    } finally {
-      setIsCancelling(false);
-      setShowCancelModal(false);
     }
   };
 
-  const handleBack = () => router.back();
+  const handleBack = () => {
+    // Navigate to appropriate page based on user type (LINE or web)
+    const targetPage = lineUserId ? "/line-assessments" : "/my-assessments";
+    router.push(targetPage);
+  };
+
+  useEffect(() => {
+    if (assessment?.status !== "reserved") {
+      router.replace(`/details/${assessmentId}`);
+    }
+  }, [assessment, assessmentId]);
 
   if (isLoading) {
     return (
@@ -422,13 +433,15 @@ export default function ConfirmedAssessmentPage() {
                 finalPrice={finalPrice}
               />
 
-              {assessment.conditionInfo && (
-                <ConditionDetails conditionInfo={assessment.conditionInfo} />
-              )}
+              <ConditionDetails conditionInfo={assessment.conditionInfo} />
 
               <ActionButtons
                 onPrint={handlePrint}
-                onLineContact={() => window.open(LINE_CONTACT_URL, "_blank")}
+                onLineContact={() =>
+                  isDesktop
+                    ? window.open(LINE_CONTACT_URL, "_blank")
+                    : window.open("https://line.me/R/oaMessage/@okmobile/?ติดต่อเจ้าหน้าที่")
+                }
                 onCancel={() => setShowCancelModal(true)}
               />
 
@@ -440,18 +453,25 @@ export default function ConfirmedAssessmentPage() {
                   className="group gap-2 rounded-xl border-2 border-gray-300 bg-white px-8 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 hover:text-black hover:shadow-md"
                 >
                   <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-                  <span className="font-medium">กลับ</span>
+                  <span className="font-medium">กลับไปหน้าค้นหาการประเมิน</span>
                 </Button>
               </div>
             </main>
           </div>
         </div>
 
-        <CancelBookingModal
-          open={showCancelModal}
-          onClose={() => !isCancelling && setShowCancelModal(false)}
+        <ConfirmCancelModal
+          assessmentId={assessment?.id}
+          isOpen={showCancelModal}
+          setIsOpen={setShowCancelModal}
           onConfirm={handleCancelBooking}
-          isCancelling={isCancelling}
+          isSuccess={cancelAssessment.isSuccess}
+          title="ยืนยันการยกเลิก?"
+          isLoading={isCancelling}
+          refetchAfterSuccess={() => {
+            refetchAssessment();
+          }}
+          description="ข้อมูลการประเมินจะยังคงอยู่ ท่านสามารถจองบริการอื่นๆได้ทันที หลังจากยกเลิกบริการ"
         />
       </Layout>
 
