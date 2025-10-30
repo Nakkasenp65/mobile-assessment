@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from "next/link";
-import { PiYoutubeLogo } from "react-icons/pi";
 
 export default function Footer() {
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -115,17 +114,17 @@ export default function Footer() {
                 <AccordionContent>
                   <ul className="space-y-2 pt-2">
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         คำถามบ่อยๆ
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         วิธีการขายสินค้า
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         วิธีการรับเงิน
                       </a>
                     </li>
@@ -139,17 +138,17 @@ export default function Footer() {
                 <AccordionContent>
                   <ul className="space-y-2 pt-2">
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         เกี่ยวกับ OK Mobile
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         ข้อกำหนดและเงื่อนไข
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="text-muted-foreground text-sm">
+                      <a href="#top" className="text-muted-foreground text-sm">
                         นโยบายความเป็นส่วนตัว
                       </a>
                     </li>
@@ -170,7 +169,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   คำถามบ่อยๆ
@@ -178,7 +177,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   วิธีการขายสินค้า
@@ -186,7 +185,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   วิธีการรับเงิน
@@ -205,7 +204,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   เกี่ยวกับ OK Mobile
@@ -213,7 +212,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   ข้อกำหนดและเงื่อนไข
@@ -223,6 +222,7 @@ export default function Footer() {
                 <a
                   href="https://pdpa.no1.mobi/"
                   target="_blank"
+                  rel="noreferrer"
                   className="text-muted-foreground text-sm transition-colors hover:text-gray-900"
                 >
                   นโยบายความเป็นส่วนตัว
@@ -242,7 +242,9 @@ export default function Footer() {
             <ul className="flex gap-2" aria-label="โซเชียลมีเดีย">
               <li>
                 <a
-                  href="#"
+                  href="https://www.facebook.com/okmobilebkk"
+                  target="_blank"
+                  rel="noreferrer"
                   aria-label="Facebook"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877f2] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
@@ -251,7 +253,9 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://lin.ee/0ab3Rcl"
+                  target="_blank"
+                  rel="noreferrer"
                   aria-label="LINE"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06c755] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
@@ -260,7 +264,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   aria-label="Twitter/X"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white shadow-sm transition-transform hover:-translate-y-1"
                 >
@@ -269,7 +273,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="#top"
                   aria-label="YouTube"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff0000] text-white shadow-sm transition-transform hover:-translate-y-1"
                 >

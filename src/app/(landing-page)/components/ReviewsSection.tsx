@@ -1,4 +1,4 @@
-// src\app\(landing-page)\components\ReviewsSection.tsx
+// src/app/(landing-page)/components/ReviewsSection.tsx
 
 "use client";
 
@@ -10,42 +10,10 @@ import type { EmblaCarouselType } from "embla-carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { useReview } from "@/hooks/useReview"; // Adjust the import path as needed
+import Image from "next/image";
 
-// [MOD] ปรับปรุงข้อมูลรีวิวให้เข้ากับดีไซน์ใหม่
-const reviews = [
-  {
-    img: "https://i.pravatar.cc/150?img=1",
-    name: "คุณสมหญิง",
-    handle: "@somying_k",
-    text: "ประทับใจความเป็นมืออาชีพและความใส่ใจในรายละเอียดมากๆ เลยค่ะ",
-  },
-  {
-    img: "https://i.pravatar.cc/150?img=2",
-    name: "คุณกรกนก",
-    handle: "@kornkanok_p",
-    text: "ประสบการณ์ราบรื่นไร้ที่ติเลยค่ะ ตั้งแต่ต้นจนจบ แนะนำเลย!",
-  },
-  {
-    img: "https://i.pravatar.cc/150?img=3",
-    name: "คุณเจนวิทย์",
-    handle: "@jane_witt",
-    text: "เชื่อถือได้และไว้วางใจได้จริงๆ ทำให้ชีวิตผมง่ายขึ้นเยอะเลยครับ",
-  },
-  {
-    img: "https://i.pravatar.cc/150?img=4",
-    name: "คุณธนพล",
-    handle: "@thanapon.p",
-    text: "ให้ราคายุติธรรม บริการรวดเร็วมาก ไม่ต้องรอนาน ได้เงินสดทันที ชอบมากครับ",
-  },
-  {
-    img: "https://i.pravatar.cc/150?img=5",
-    name: "คุณอารยา",
-    handle: "@araya.s",
-    text: "ขั้นตอนไม่ยุ่งยากเลยค่ะ แค่ประเมินราคาออนไลน์แล้วไปที่สาขา สะดวกมากๆ",
-  },
-];
-
-// [ADD] Component สำหรับปุ่ม Dot ด้านล่าง
+// Dot button component remains the same
 const DotButton = ({ selected, onClick }: { selected: boolean; onClick: () => void }) => (
   <button
     className={cn(
@@ -57,13 +25,18 @@ const DotButton = ({ selected, onClick }: { selected: boolean; onClick: () => vo
   />
 );
 
-const ReviewsSection = () => {
+export default function ReviewsSection() {
   const plugin = React.useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
 
-  // [ADD] State สำหรับจัดการ Carousel API และ Dot Indicators
+  // State for carousel API and dot indicators remains the same
   const [api, setApi] = useState<EmblaCarouselType | undefined>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+
+  // Fetch data using the custom hook
+  const { data, isLoading, isError, error } = useReview();
+
+  console.log("review data", data);
 
   const scrollTo = useCallback((index: number) => api && api.scrollTo(index), [api]);
 
@@ -80,13 +53,39 @@ const ReviewsSection = () => {
     };
   }, [api, onSelect]);
 
+  // Handle Loading State
+  if (isLoading) {
+    return (
+      <section className="py-20">
+        <div className="container mx-auto text-center">
+          <p className="text-muted-foreground">Loading testimonials...</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Handle Error State
+  if (isError) {
+    return (
+      <section className="py-20">
+        <div className="container mx-auto text-center">
+          <p className="text-red-500">Failed to load reviews: {error.message}</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase">Testimonial</p>
-          <h2 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">ลูกค้าพูดถึงเรา</h2>
+          <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase">
+            Testimonial
+          </p>
+          <h2 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            ลูกค้าพูดถึงเรา
+          </h2>
         </div>
 
         {/* Carousel */}
@@ -99,18 +98,26 @@ const ReviewsSection = () => {
           onMouseLeave={plugin.current.reset}
         >
           <CarouselContent className="my-4 -ml-6">
-            {reviews.map((review, index) => (
+            {/* Map over the fetched reviews data */}
+            {data?.reviews.map((review, index) => (
               <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
-                {/* [MOD] การ์ดรีวิวดีไซน์ใหม่ทั้งหมด */}
                 <Card className="from-secondary/5 via-card to-card flex h-full flex-col rounded-3xl rounded-bl-[75px] border-none bg-gradient-to-br p-8 shadow-sm">
                   <CardContent className="flex h-full flex-col p-0">
                     <Quote className="h-10 w-10 text-slate-200 dark:text-zinc-700" />
-                    <p className="text-foreground mt-6 flex-grow text-lg font-medium">{review.text}</p>
+                    <p className="text-foreground mt-6 flex-grow text-lg font-medium">
+                      {review.text}
+                    </p>
                     <div className="mt-8 flex items-center gap-4">
-                      <img src={review.img} alt={review.name} className="h-12 w-12 rounded-full object-cover" />
+                      <Image
+                        src={review.profilePhotoUrl}
+                        alt={review.author}
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
                       <div>
-                        <h4 className="text-foreground font-bold">{review.name}</h4>
-                        <p className="text-muted-foreground text-sm">{review.handle}</p>
+                        <h4 className="text-foreground font-bold">{review.author}</h4>
+                        <p className="text-muted-foreground text-sm">{review.timeDescription}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -118,18 +125,19 @@ const ReviewsSection = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* [DEL] ลบลูกศรซ้าย-ขวาออก */}
         </Carousel>
 
-        {/* [ADD] Dot Indicators */}
+        {/* Dot Indicators */}
         <div className="mt-10 flex justify-center gap-2">
           {scrollSnaps.map((_, index) => (
-            <DotButton key={index} selected={index === selectedIndex} onClick={() => scrollTo(index)} />
+            <DotButton
+              key={index}
+              selected={index === selectedIndex}
+              onClick={() => scrollTo(index)}
+            />
           ))}
         </div>
       </div>
     </section>
   );
-};
-
-export default ReviewsSection;
+}
