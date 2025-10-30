@@ -12,7 +12,9 @@ import {
 } from "./dialog";
 import { Input } from "./input";
 import { Button } from "./button";
-
+import { Label } from "@/components/ui/label";
+import FramerButton from "./framer/FramerButton";
+import WebMIcon from "./WebMIcon";
 interface PhoneNumberEditModalProps {
   open: boolean;
   initialPhone?: string;
@@ -31,7 +33,7 @@ export function PhoneNumberEditModal({
   open,
   initialPhone = "",
   title = "ยืนยันเบอร์โทรศัพท์",
-  description = "กรุณากรอกเบอร์โทรศัพท์ 10 หลัก เพื่อใช้ค้นหาและติดตามรายการของคุณ",
+  description,
   onCancel,
   onSave,
 }: PhoneNumberEditModalProps) {
@@ -55,21 +57,29 @@ export function PhoneNumberEditModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => (!v ? onCancel() : void 0)}>
-      <DialogContent className="sm:max-w-sm md:max-w-md rounded-2xl border border-slate-200/70 bg-white p-6 sm:p-8 shadow-2xl backdrop:blur-sm">
+      <DialogContent
+        showCloseButton={false}
+        className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-2xl backdrop:blur-sm sm:max-w-sm sm:p-8 md:max-w-md"
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-slate-900">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md">
-              <Phone className="h-4 w-4" />
-            </span>
+          <DialogTitle className="flex flex-col items-center gap-3 text-slate-900">
+            <WebMIcon src={"/assets/incoming-call.gif"} delay={2} />
             <span className="text-xl font-semibold tracking-tight">{title}</span>
           </DialogTitle>
-          <DialogDescription className="mt-2 text-sm leading-relaxed text-slate-600">
-            {description}
+          <DialogDescription className="text-sm leading-relaxed text-slate-600">
+            {description ? (
+              description
+            ) : (
+              <span>
+                เบอร์โทรศัพท์จะถูกใช้เพื่อค้นหาการประเมิน ท่านจะ{" "}
+                <b>สามารถค้นหาบริการได้จากเบอร์โทรศัพท์นี้เท่านั้น</b>
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 space-y-3">
-          <label className="text-sm font-medium text-slate-800">เบอร์โทรศัพท์</label>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-slate-800">เบอร์โทรศัพท์</Label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
               <Phone className="h-4 w-4 text-slate-400" />
@@ -79,10 +89,10 @@ export function PhoneNumberEditModal({
               inputMode="numeric"
               value={sanitized || phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              className={`h-12 w-full rounded-xl border-slate-200 bg-slate-50 pr-4 pl-10 text-base transition-all duration-200 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 ${
+              className={`h-12 w-full rounded-xl border-slate-200 pr-4 pl-10 text-base transition-all duration-200 focus:bg-white focus:ring-2 ${
                 error ? "aria-invalid" : ""
               }`}
-              placeholder="0987654321"
+              placeholder="098*******"
               maxLength={10}
               aria-invalid={!isValid}
               aria-describedby={error ? "phone-error" : undefined}
@@ -102,12 +112,12 @@ export function PhoneNumberEditModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel} className="h-11 rounded-xl px-5">
+          <FramerButton variant="ghost" onClick={onCancel} className="h-12 rounded-xl px-5">
             ยกเลิก
-          </Button>
-          <Button onClick={handleSave} disabled={!isValid} className="h-11 rounded-xl px-6">
+          </FramerButton>
+          <FramerButton onClick={handleSave} disabled={!isValid} className="h-12 rounded-xl px-6">
             บันทึก
-          </Button>
+          </FramerButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Layout, Link } from "lucide-react";
+import { Link } from "lucide-react";
 
 export default function Error() {
   return (

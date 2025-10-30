@@ -1,6 +1,12 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, addDays } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -28,7 +34,7 @@ export function DateSelect({ value, onValueChange, className }: DateSelectProps)
       </SelectTrigger>
       <SelectContent>
         {dateOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem key={option.value} value={option.value} className="h-12">
             {option.label}
           </SelectItem>
         ))}

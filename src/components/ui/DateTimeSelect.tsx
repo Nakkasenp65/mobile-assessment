@@ -3,10 +3,16 @@
 
 import React from "react";
 import { DateSelect } from "@/components/ui/date-select";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCheckAvailability } from "@/hooks/useCheckAvailability";
 import {
-  toApiServiceType,
   inferApiLocationFromService,
   generateTimeSlots,
   todayStringTZ,
@@ -15,7 +21,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 export interface DateTimeSelectProps {
-  serviceType: string;
+  serviceType: "เทิร์นเครื่อง" | "ซื้อขายมือถือ" | "ขายฝากมือถือ" | "รีไฟแนนซ์" | "ไอโฟนแลกเงิน";
   serviceData: unknown;
   dateValue?: string; // YYYY-MM-DD
   onDateChange: (value: string) => void;
@@ -34,10 +40,7 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
   timeValue,
   onTimeChange,
   className,
-  labelDate = "วัน",
-  labelTime = "เวลา",
 }) => {
-  const apiServiceName = toApiServiceType(serviceType);
   const inferredLocation = inferApiLocationFromService(serviceData);
   const dateReady = Boolean(dateValue);
 
@@ -102,7 +105,9 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
       // Offsite policy: when daily quota exists, show 10:00–20:00 directly
       if (isDaily && dailyQuota > 0) {
         const base = offsiteDailyTimes;
-        return isToday ? base.filter((slot) => Number(slot.slice(0, 2)) > (nowHour as number)) : base;
+        return isToday
+          ? base.filter((slot) => Number(slot.slice(0, 2)) > (nowHour as number))
+          : base;
       }
       // If non-daily offsite returns explicit times, show them (filter to 10:00–20:00)
       const base = Array.from(availableSet.values())
@@ -115,49 +120,23 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
     }
     // Onsite
     return onsiteAvailableTimes;
-  }, [dateReady, isOffsite, isDaily, dailyQuota, offsiteDailyTimes, availableSet, onsiteAvailableTimes, dateValue]);
+  }, [
+    dateReady,
+    isOffsite,
+    isDaily,
+    dailyQuota,
+    offsiteDailyTimes,
+    availableSet,
+    onsiteAvailableTimes,
+    dateValue,
+  ]);
 
   const selectionDisabled = !dateReady || isLoading;
-
-  const postPreferredTime = React.useCallback(
-    async (selectedTime: string) => {
-      try {
-        if (!dateReady || !selectedTime) return;
-        if (!isOffsite) return; // Only post for OFFSITE per requirement
-        const rec = (serviceData ?? {}) as Record<string, unknown>;
-        const customerName = (rec.customerName as string) ?? (rec.name as string) ?? "";
-        const phone = (rec.phone as string) ?? (rec.phoneNumber as string) ?? "";
-        const payload = {
-          serviceType: apiServiceName,
-          type: inferredLocation ?? "OFFSITE",
-          date: dateValue,
-          time: selectedTime,
-          customerName,
-          phone,
-          extra: { serviceData: rec },
-        };
-        // Fire-and-forget; do not block UI
-        fetch("/api/preferred-time", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch((err) => {
-          console.error("post preferred-time failed", err);
-        });
-      } catch (err) {
-        console.error("preferred-time error", err);
-      }
-    },
-    [dateReady, isOffsite, apiServiceName, inferredLocation, dateValue, serviceData],
-  );
 
   return (
     <div className={className ?? "w-full"}>
       <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">เลือกวันและเวลา</label>
-        {/* <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
-          {apiServiceName} · {inferredLocation ?? "-"}
-        </span> */}
+        <Label className="text-sm font-medium text-gray-700">เลือกวันและเวลา</Label>
       </div>
 
       {/* Date Select */}
@@ -173,13 +152,18 @@ export const DateTimeSelect: React.FC<DateTimeSelectProps> = ({
             onValueChange={(v) => {
               onTimeChange?.(v);
               // Auto POST for OFFSITE once time is chosen
-              postPreferredTime(v);
             }}
             disabled={selectionDisabled}
           >
             <SelectTrigger className="h-12 w-full">
               <SelectValue
-                placeholder={!dateReady ? "โปรดเลือกวันที่ก่อน" : isLoading ? "กำลังตรวจสอบเวลาว่าง..." : "เลือกเวลา"}
+                placeholder={
+                  !dateReady
+                    ? "โปรดเลือกวันที่ก่อน"
+                    : isLoading
+                      ? "กำลังตรวจสอบเวลาว่าง..."
+                      : "เลือกเวลา"
+                }
               />
             </SelectTrigger>
             <SelectContent>
