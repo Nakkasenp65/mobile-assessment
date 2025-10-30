@@ -2,12 +2,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Calculator,
   DollarSign,
-  Facebook,
   FileText,
   HelpCircle,
   Home,
   Info,
-  MessageCircle,
   Search,
   Shield,
   Smartphone,
@@ -17,6 +15,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { FaFacebook, FaLine } from "react-icons/fa6";
 
 export default function MobileMenu({
   isOpen,
@@ -80,13 +79,13 @@ export default function MobileMenu({
   const socialItems = [
     {
       href: "https://www.facebook.com/okmobilebkk",
-      icon: Facebook,
+      icon: FaFacebook,
       color: "bg-[#1877f2]",
       label: "Facebook",
     },
     {
       href: "https://lin.ee/0ab3Rcl",
-      icon: MessageCircle,
+      icon: FaLine,
       color: "bg-[#06c755]",
       label: "LINE",
     },
@@ -230,11 +229,12 @@ export default function MobileMenu({
                     <li key={item.label}>
                       <a
                         target="_blank"
+                        rel="noreferrer"
                         href={item.href}
                         aria-label={item.label}
-                        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl ${item.color}`}
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl ${item.color}`}
                       >
-                        <Icon size={20} />
+                        <Icon size={24} />
                       </a>
                     </li>
                   );
