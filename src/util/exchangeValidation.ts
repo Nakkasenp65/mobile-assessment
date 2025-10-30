@@ -7,28 +7,26 @@ export type LocationType = "store" | "bts" | null;
 export interface ExchangeFormState {
   customerName: string;
   phone: string;
-  btsStation: string;
-  storeLocation: string;
-  date: string | Date | undefined;
-  time: string | Date | undefined;
   occupation: OccupationType;
   documentFile: File | null;
 }
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-const ALLOWED_MIME_TYPES = new Set([
-  "application/pdf",
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-]);
+const ALLOWED_MIME_TYPES = new Set(["application/pdf", "image/jpeg", "image/jpg", "image/png"]);
 
 function hasAllowedExtension(name: string): boolean {
   const lower = name.toLowerCase();
-  return lower.endsWith(".pdf") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
+  return (
+    lower.endsWith(".pdf") ||
+    lower.endsWith(".jpg") ||
+    lower.endsWith(".jpeg") ||
+    lower.endsWith(".png")
+  );
 }
 
-export function validateUploadFile(file: Pick<File, "name" | "type" | "size">): { ok: true } | { ok: false; error: string } {
+export function validateUploadFile(
+  file: Pick<File, "name" | "type" | "size">,
+): { ok: true } | { ok: false; error: string } {
   if (!ALLOWED_MIME_TYPES.has(file.type) && !hasAllowedExtension(file.name)) {
     return { ok: false, error: "ประเภทไฟล์ไม่ถูกต้อง (รองรับ: PDF, JPG, PNG)" };
   }
@@ -38,13 +36,12 @@ export function validateUploadFile(file: Pick<File, "name" | "type" | "size">): 
   return { ok: true };
 }
 
-export function computeIsFormComplete(state: ExchangeFormState, locationType: LocationType): boolean {
-  const hasPhone = typeof state.phone === "string" && state.phone.replace(/[^0-9]/g, "").length === 10;
-  const hasLocation = locationType !== null && (locationType === "bts" ? !!state.btsStation : locationType === "store" ? true : false);
-  const hasAppointment = !!state.date && !!state.time;
+export function computeIsFormComplete(state: ExchangeFormState): boolean {
+  const hasPhone =
+    typeof state.phone === "string" && state.phone.replace(/[^0-9]/g, "").length === 10;
   const hasOccupationAndDoc = !!state.occupation && !!state.documentFile;
   const hasName = !!state.customerName && state.customerName.trim().length > 0;
-  return hasName && hasPhone && hasAppointment && hasLocation && hasOccupationAndDoc;
+  return hasName && hasPhone && /*hasAppointment && hasLocation &&*/ hasOccupationAndDoc;
 }
 
 export function buildExchangeServiceInfoForPersist(params: {

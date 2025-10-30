@@ -7,7 +7,7 @@ export type ServiceId =
   | "tradein"
   | "refinance"
   | "iphone-exchange"
-  | "pawn"
+  // | "pawn"
   | "maintenance";
 
 export interface ServiceStatus {
@@ -24,10 +24,13 @@ const serviceFieldMap: Record<Exclude<ServiceId, "maintenance">, keyof Assessmen
   tradein: "tradeInServiceInfo",
   refinance: "refinanceServiceInfo",
   "iphone-exchange": "iphoneExchangeServiceInfo",
-  pawn: "pawnServiceInfo",
+  // pawn: "pawnServiceInfo",
 };
 
-export function getServiceStatus(assessment: Assessment | undefined, serviceId: ServiceId): ServiceStatus {
+export function getServiceStatus(
+  assessment: Assessment | undefined,
+  serviceId: ServiceId,
+): ServiceStatus {
   // Maintenance service is special — not reservable by payload presence
   if (serviceId === "maintenance") {
     return {
@@ -42,7 +45,9 @@ export function getServiceStatus(assessment: Assessment | undefined, serviceId: 
   const hasPayload = !!assessment && !!assessment[serviceFieldMap[serviceId]];
 
   const now = Date.now();
-  const expiresAt = assessment?.priceLockExpiresAt ? Date.parse(assessment.priceLockExpiresAt) : null;
+  const expiresAt = assessment?.priceLockExpiresAt
+    ? Date.parse(assessment.priceLockExpiresAt)
+    : null;
   const expired = typeof expiresAt === "number" ? now > expiresAt : false;
 
   if (hasPayload) {
@@ -66,7 +71,10 @@ export function getServiceStatus(assessment: Assessment | undefined, serviceId: 
   };
 }
 
-export function isServiceReserved(assessment: Assessment | undefined, serviceId: ServiceId): boolean {
+export function isServiceReserved(
+  assessment: Assessment | undefined,
+  serviceId: ServiceId,
+): boolean {
   return getServiceStatus(assessment, serviceId).reserved;
 }
 
@@ -75,6 +83,13 @@ export function isServiceReserved(assessment: Assessment | undefined, serviceId:
  * Falls back to undefined if none reserved.
  */
 export function pickReservedServiceId(assessment: Assessment | undefined): ServiceId | undefined {
-  const order: ServiceId[] = ["sell", "consignment", "tradein", "refinance", "iphone-exchange", "pawn"];
+  const order: ServiceId[] = [
+    "sell",
+    "consignment",
+    "tradein",
+    "refinance",
+    "iphone-exchange",
+    // "pawn",
+  ];
   return order.find((id) => isServiceReserved(assessment, id));
 }
