@@ -6,14 +6,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import AssessStep1 from "./components/(step1)/AssessStep1";
 import AssessStep2 from "./components/(step2)/AssessStep2";
-// Step3/Step4 are moved to AssessmentRecordPage flow
 import ProgressBar from "./components/ProgressBar";
 import Layout from "@/components/Layout/Layout";
 import { ConditionInfo, DeviceInfo } from "../../types/device";
 import { useRouter } from "next/navigation";
-
-// Helper function to check if the device qualifies for skipping Step 2
-// Keep flow strict: Step1 -> Step2 -> AssessmentRecordPage
 
 export default function AssessComponent() {
   const router = useRouter();
@@ -106,7 +102,9 @@ export default function AssessComponent() {
       if (typeof window !== "undefined") {
         window.localStorage.setItem(`assessment:${id}`, JSON.stringify(payload));
       }
-    } catch {}
+    } catch (error) {
+      console.error("Set Local Item Error: ", error);
+    }
     router.push(`/details/${encodeURIComponent(id)}`);
   };
 
@@ -125,9 +123,12 @@ export default function AssessComponent() {
     setIsUserDevice(value);
   }, []);
 
-  const handleConditionUpdate = useCallback((info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => {
-    setConditionInfo(info);
-  }, []);
+  const handleConditionUpdate = useCallback(
+    (info: ConditionInfo | ((prev: ConditionInfo) => ConditionInfo)) => {
+      setConditionInfo(info);
+    },
+    [],
+  );
 
   // SECTION: Render Component
   return (
@@ -159,8 +160,6 @@ export default function AssessComponent() {
               onBack={handleBack}
             />
           )}
-
-          {/* Step3/Step4 rendering moved to AssessmentRecordPage */}
         </div>
       </div>
     </Layout>
