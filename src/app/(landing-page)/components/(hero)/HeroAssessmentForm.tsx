@@ -279,7 +279,7 @@ export default function HeroAssessmentForm() {
           เมื่อเริ่มประเมินราคา ถือว่าท่านได้ยอมรับ{" "}
           <button
             type="button"
-            onClick={handleShowConsent}
+            onClick={() => window.open("https://pdpa.no1.mobi", "_blank")}
             className="text-pink-600 underline hover:text-pink-700"
           >
             ข้อตกลงและเงื่อนไข
