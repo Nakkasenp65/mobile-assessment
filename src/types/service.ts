@@ -1,6 +1,8 @@
 // src/types/serviceInfo.ts
 import type { LucideIcon } from "lucide-react";
 
+// TODO: เพิ่มราคาของแต่ละ service เป็น number
+
 /**
  * @interface SellNowServiceInfo
  * @description ข้อมูลสำหรับบริการขายทันที (Sell Now)
@@ -32,6 +34,7 @@ export interface SellNowServiceInfo {
   appointmentAt?: string; // ISO 8601 format for queue booking
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
+  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
 
   nextSteps?: string[];
 }
@@ -62,6 +65,7 @@ export interface TradeInServiceInfo {
   appointmentAt?: string; // ISO 8601 format for queue booking
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
+  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
 
   nextSteps?: string[];
 }
@@ -85,6 +89,7 @@ export interface ConsignmentServiceInfo {
   appointmentAt?: string; // ISO 8601 format for queue booking
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
+  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
 
   nextSteps?: string[];
 }
@@ -100,14 +105,12 @@ export interface RefinanceServiceInfo {
   occupation: "salaried" | "freelance" | "";
   documentFileUrl: string; // ในการเก็บลง DB อาจจะต้องเปลี่ยนเป็น URL ของไฟล์ที่อัปโหลดแล้ว
 
-  // วันและเวลานัดหมาย
-  appointmentTime: string;
-  appointmentDate?: string; // For queue booking
+  // วันและเวลานัดหมาย (optional - for record keeping only, manual booking)
+  appointmentTime?: string;
+  appointmentDate?: string;
 
-  // Queue booking fields
-  appointmentAt?: string; // ISO 8601 format for queue booking
-  branchId?: string; // Branch ID for queue booking
-  serviceType?: string; // Service type identifier for queue booking
+  // No queue booking - manual booking only
+  // These fields are intentionally removed as Refinance uses manual appointment booking
 
   nextSteps?: string[];
 }
@@ -121,18 +124,16 @@ export interface IPhoneExchangeServiceInfo {
   customerName: string;
   phone: string;
 
-  // วันและเวลานัดหมาย (ปรับชื่อให้เป็นมาตรฐาน)
-  appointmentTime: string;
-  appointmentDate?: string; // For queue booking
+  // วันและเวลานัดหมาย (optional - for record keeping only, manual booking)
+  appointmentTime?: string;
+  appointmentDate?: string;
 
   // ข้อมูลอาชีพและเอกสาร
   occupation: "salaried" | "freelance" | "";
   documentFileUrl: string; // เช่นเดียวกัน ควรเปลี่ยนเป็น URL ของไฟล์
 
-  // Queue booking fields
-  appointmentAt?: string; // ISO 8601 format for queue booking
-  branchId?: string; // Branch ID for queue booking
-  serviceType?: string; // Service type identifier for queue booking
+  // No queue booking - manual booking only
+  // These fields are intentionally removed as iPhone Exchange uses manual appointment booking
 
   nextSteps?: string[];
 }
@@ -169,6 +170,7 @@ export interface PawnServiceInfo {
   appointmentAt?: string; // ISO 8601 format for queue booking
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
+  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
 
   nextSteps?: string[];
 }
