@@ -17,12 +17,11 @@ import { cn } from "@/lib/utils";
 interface AssessStep3Props {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
-  docId?: string;
+  docId: string;
   onBack: () => void;
   onNext: () => void;
   setSelectedService: React.Dispatch<React.SetStateAction<string>>;
-  priceLockExpiresAt?: string; // Optional for price lock countdown
-  assessmentId?: string; // For "View Details" links
+  priceLockExpiresAt: string; // Optional for price lock countdown
   assessmentData?: Assessment; // Full assessment data to check service info
 }
 
@@ -34,29 +33,23 @@ export default function AssessStep3({
   onNext,
   setSelectedService,
   priceLockExpiresAt,
-  assessmentId,
   assessmentData,
 }: AssessStep3Props) {
-  const isIcloudLocked = !conditionInfo.canUnlockIcloud;
-  const isPriceable = conditionInfo.canUnlockIcloud;
-
-  const servicesRef = useRef<HTMLDivElement>(null);
-
   const {
     totalRepairCost,
     repairs,
     isLoading: isLoadingRepairPrices,
   } = useRepairPrices(deviceInfo.model, conditionInfo);
 
+  const isIcloudLocked = !conditionInfo.canUnlockIcloud;
+  const isPriceable = conditionInfo.canUnlockIcloud;
+  const servicesRef = useRef<HTMLDivElement>(null);
   const [localSelectedService, setLocalSelectedService] = useState<string>("");
-
   const { finalPrice, grade } = usePriceCalculation(deviceInfo, conditionInfo);
-
   const { data: mobileData, isLoading: isImageLoading } = useMobile(
     deviceInfo.brand,
     deviceInfo.model,
   );
-
   const assessmentDate =
     new Date().toLocaleString("th-TH", {
       day: "numeric",
@@ -66,8 +59,6 @@ export default function AssessStep3({
       minute: "2-digit",
       hour12: false,
     }) + " น.";
-
-  // ✨ Determine expiration status from priceLockExpiresAt
   const isExpired = useMemo(() => {
     if (!priceLockExpiresAt) return false;
     const ts = new Date(priceLockExpiresAt).getTime();
@@ -135,7 +126,6 @@ export default function AssessStep3({
                 deviceInfo={deviceInfo}
                 onNext={onNext}
                 finalPrice={isPriceable ? finalPrice : 0}
-                assessmentId={assessmentId}
                 assessmentData={assessmentData}
               />
             )}
@@ -144,13 +134,9 @@ export default function AssessStep3({
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t pt-6 dark:border-zinc-800">
-        <FramerButton
-          variant="ghost"
-          onClick={onBack}
-          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-xl border bg-white px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-        >
+        <FramerButton variant="outline" onClick={onBack} className="h-12">
           <ArrowLeft className="h-4 w-4" />
-          <span className="ml-2 hidden font-semibold sm:inline">ย้อนกลับ</span>
+          กลับไปผลการค้นหา
         </FramerButton>
       </div>
 

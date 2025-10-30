@@ -1,4 +1,5 @@
 // src/app/assess/components/(step3)/(services)/sell-now-components/CustomerInfoForm.tsx
+
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,11 @@ interface CustomerInfoFormProps {
   formVariants: Variants;
 }
 
-const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ formState, handleInputChange, formVariants }) => {
+export default function CustomerInfoForm({
+  formState,
+  handleInputChange,
+  formVariants,
+}: CustomerInfoFormProps) {
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const handleEditPhoneClick = () => {
@@ -52,12 +57,12 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ formState, handleIn
             inputMode="numeric"
             pattern="[0-9]{10}"
             maxLength={10}
-            className="h-12 pl-10 pr-12"
+            className="h-12 bg-white pl-10"
           />
           <button
             type="button"
             onClick={handleEditPhoneClick}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border bg-white p-2 text-slate-600 hover:bg-slate-50"
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md border bg-white p-2 hover:bg-slate-50"
             aria-label="แก้ไขเบอร์โทรศัพท์"
           >
             <Pencil className="h-4 w-4" />
@@ -76,6 +81,4 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ formState, handleIn
       />
     </motion.div>
   );
-};
-
-export default CustomerInfoForm;
+}

@@ -17,7 +17,7 @@ export const getReservedService = (assessmentData?: Assessment): ServiceId | nul
   if (assessmentData.tradeInServiceInfo) return "tradein";
   if (assessmentData.refinanceServiceInfo) return "refinance";
   if (assessmentData.iphoneExchangeServiceInfo) return "iphone-exchange";
-  if (assessmentData.pawnServiceInfo) return "pawn";
+  // if (assessmentData.pawnServiceInfo) return "pawn";
 
   return null;
 };

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Layout from "../../../components/Layout/Layout";
 import AssessStep3 from "../(step3)/AssessStep3";
@@ -11,21 +11,36 @@ import { useAssessment } from "@/hooks/useAssessment";
 import { useLiff } from "@/components/Provider/LiffProvider";
 import Loading from "../../../components/ui/Loading";
 import Error from "../../../components/ui/Error";
-// Removed useMobile call here to keep Hooks order consistent across renders
+import DPOConsent from "../../../components/ui/DpoConsent";
 
 export default function AssessmentDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const assessmentId = params.id as string;
-  const [step, setStep] = useState(1); // 1 = Service Selection (AssessStep3), 2 = Service Form (AssessStep4)
-  const [selectedService, setSelectedService] = useState<string>("");
-  const { lineUserId } = useLiff(); // ดึง LINE User ID จาก LIFF context
-
   const {
     data: assessmentData,
     isLoading: assessmentLoading,
     error: assessmentError,
   } = useAssessment(assessmentId);
+  const [step, setStep] = useState<number | 1 | 2>(1);
+  const [selectedService, setSelectedService] = useState<string>("");
+  const { lineUserId } = useLiff();
+  const [isDpoConsentVisible, setIsDpoConsentVisible] = useState(false);
+
+  const handleShowConsent = () => {
+    setIsDpoConsentVisible(true);
+  };
+
+  const handleCloseConsent = () => {
+    setIsDpoConsentVisible(false);
+  };
+
+  // Redirect to confirmed page if assessment is already reserved
+  useEffect(() => {
+    if (assessmentData?.status === "reserved") {
+      router.push(`/confirmed/${assessmentId}`);
+    }
+  }, [assessmentData, assessmentId, router]);
 
   if (assessmentLoading) {
     return (
@@ -43,9 +58,6 @@ export default function AssessmentDetailsPage() {
     );
   }
 
-  const { deviceInfo, conditionInfo, priceLockExpiresAt } = assessmentData;
-
-  // Handler to advance to service form
   const handleNext = () => {
     if (step === 1 && selectedService) {
       setStep(2);
@@ -53,19 +65,25 @@ export default function AssessmentDetailsPage() {
     }
   };
 
-  // Handler for back navigation
   const handleBack = () => {
     if (step === 2) {
-      setStep(1); // Return to service selection
+      setStep(1);
       window.scrollTo(0, 0);
     } else {
-      router.push("/my-assessments"); // Exit to assessments list
+      window.location.assign(`${window.location.origin}/my-assessments`);
     }
   };
 
+  const { deviceInfo, conditionInfo, expiredAt } = assessmentData;
+
+  console.log("Price Lock ", expiredAt);
+
   return (
     <Layout>
-      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center overflow-x-hidden bg-white px-4 py-8 text-center sm:py-16">
+      {isDpoConsentVisible && (
+        <DPOConsent onAccept={handleCloseConsent} onClose={handleCloseConsent} />
+      )}
+      <main className="relative flex h-full flex-col items-center overflow-x-hidden bg-white px-4 py-8 text-center sm:py-16">
         <div className="z-10 container flex w-full flex-col items-center">
           {step === 1 && (
             <AssessStep3
@@ -75,25 +93,26 @@ export default function AssessmentDetailsPage() {
               onBack={handleBack}
               onNext={handleNext}
               setSelectedService={setSelectedService}
-              priceLockExpiresAt={priceLockExpiresAt}
-              assessmentId={assessmentId}
+              priceLockExpiresAt={expiredAt}
               assessmentData={assessmentData}
             />
           )}
 
+          {/* เมื่อสำเร็จจะ push ไปที่หน้า confirmed */}
           {step === 2 && (
             <AssessStep4
               phoneNumber={assessmentData?.phoneNumber}
+              customerName={assessmentData?.customerName}
               assessmentId={assessmentId}
               deviceInfo={deviceInfo}
               conditionInfo={conditionInfo}
               selectedService={selectedService}
               lineUserId={lineUserId}
+              docId={assessmentData?.docId}
+              handleShowConsent={handleShowConsent}
               onBack={handleBack}
               onSuccess={() => {
-                // หลังบันทึกสำเร็จ กลับไปหน้าก่อนฟอร์ม (เลือกบริการ)
-                setStep(1);
-                window.scrollTo(0, 0);
+                router.push(`/confirmed/${assessmentId}`);
               }}
             />
           )}

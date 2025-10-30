@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
-import { User, Phone, RefreshCcw, Sparkles, Pencil } from "lucide-react";
+import { User, Phone, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
 // DateSelect is now handled inside DateTimeSelect
 import { useRouter } from "next/navigation";
@@ -26,16 +26,21 @@ import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import Image from "next/image";
 import { combineDateTime } from "@/util/dateTime";
 import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
+import PDPA from "../../../../components/ui/pdpa";
+import ConfirmServiceNoDepositModal from "./ConfirmServiceNoDepositModal";
 
 interface TradeInServiceProps {
   assessmentId: string;
   deviceInfo: DeviceInfo;
   tradeInPrice: number;
   phoneNumber: string;
-  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
+  customerName: string;
+  lineUserId?: string | null;
   onSuccess?: () => void;
+  handleShowConsent: () => void;
 }
 
+// MOCK
 const newDevices = [
   { id: "iphone15pro", name: "iPhone 15 Pro", price: 39900 },
   { id: "iphone15", name: "iPhone 15", price: 32900 },
@@ -43,8 +48,9 @@ const newDevices = [
   { id: "iphone14", name: "iPhone 14", price: 28900 },
   { id: "iphone13", name: "iPhone 13", price: 24900 },
 ];
-
+// MOCK
 const storageOptions = ["128GB", "256GB", "512GB", "1TB"];
+// MOCK
 const colorOptions = ["Natural Titanium", "Blue Titanium", "White Titanium", "Black Titanium"];
 
 const THB = (n: number) =>
@@ -56,15 +62,16 @@ const THB = (n: number) =>
 
 export default function TradeInService({
   assessmentId,
-  deviceInfo,
   tradeInPrice,
   phoneNumber,
-  lineUserId, // รับ lineUserId
+  customerName,
+  lineUserId,
   onSuccess,
+  handleShowConsent,
 }: TradeInServiceProps) {
   const router = useRouter();
   const [formState, setFormState] = useState({
-    customerName: "",
+    customerName: customerName,
     phone: phoneNumber,
     storeLocation: BRANCHES[0].name,
     newDevice: "",
@@ -86,6 +93,7 @@ export default function TradeInService({
   };
 
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
 
   const handleEditPhoneClick = () => {
     setIsPhoneModalOpen(true);
@@ -123,7 +131,7 @@ export default function TradeInService({
     scrollTo(0, 0);
   }, []);
 
-  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+  const updateAssessment = useUpdateAssessment(assessmentId, "TRADE_IN", lineUserId);
 
   const handleConfirmTradeIn = () => {
     // Combine date and time for queue booking
@@ -263,16 +271,13 @@ export default function TradeInService({
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
                 onClick={() => handleInputChange("phoneCondition", "first_hand")}
-                className={`h-14 rounded-xl border text-base font-semibold ${
+                className={`h-12 rounded-lg border text-base font-semibold ${
                   formState.phoneCondition === "first_hand"
                     ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
+                    : "border-border bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
                 }`}
               >
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  มือหนึ่ง (เครื่องใหม่)
-                </div>
+                <div className="flex items-center justify-center gap-2">มือหนึ่ง (เครื่องใหม่)</div>
               </motion.button>
               <motion.button
                 type="button"
@@ -280,16 +285,13 @@ export default function TradeInService({
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
                 onClick={() => handleInputChange("phoneCondition", "second_hand")}
-                className={`h-14 rounded-xl border text-base font-semibold ${
+                className={`h-12 rounded-lg border text-base font-semibold ${
                   formState.phoneCondition === "second_hand"
                     ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
+                    : "border-border bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50/50"
                 }`}
               >
-                <div className="flex items-center justify-center gap-2">
-                  <RefreshCcw className="h-5 w-5" />
-                  มือสอง (สภาพดี)
-                </div>
+                <div className="flex items-center justify-center gap-2">มือสอง (สภาพดี)</div>
               </motion.button>
             </div>
           </div>
@@ -300,7 +302,7 @@ export default function TradeInService({
               value={formState.newDevice}
               onValueChange={(value) => handleInputChange("newDevice", value)}
             >
-              <SelectTrigger id="newDevice-tradein" className="h-14 w-full">
+              <SelectTrigger id="newDevice-tradein" className="h-12 w-full">
                 <SelectValue placeholder="เลือกเครื่องที่ต้องการ" />
               </SelectTrigger>
               <SelectContent>
@@ -324,7 +326,7 @@ export default function TradeInService({
                 value={formState.storage}
                 onValueChange={(value) => handleInputChange("storage", value)}
               >
-                <SelectTrigger id="storage-tradein" className="h-14 w-full">
+                <SelectTrigger id="storage-tradein" className="h-12 w-full">
                   <SelectValue placeholder="เลือกความจุ" />
                 </SelectTrigger>
                 <SelectContent>
@@ -342,7 +344,7 @@ export default function TradeInService({
                 value={formState.color}
                 onValueChange={(value) => handleInputChange("color", value)}
               >
-                <SelectTrigger id="color-tradein" className="h-14 w-full">
+                <SelectTrigger id="color-tradein" className="h-12 w-full">
                   <SelectValue placeholder="เลือกสี" />
                 </SelectTrigger>
                 <SelectContent>
@@ -364,6 +366,14 @@ export default function TradeInService({
               handleInputChange("phone", newPhone);
               setIsPhoneModalOpen(false);
             }}
+          />
+          <ConfirmServiceNoDepositModal
+            isOpen={isShowConfirmModal}
+            setIsOpen={setIsShowConfirmModal}
+            title={"ยืนยันการแลกเปลี่ยนเครื่อง"}
+            description="เมื่อยืนยันการแลกเปลี่ยนระบบจะนำคุณไปยังหน้าสรุปรายการ"
+            onConfirm={handleConfirmTradeIn}
+            isLoading={updateAssessment.isPending}
           />
         </motion.div>
 
@@ -432,7 +442,7 @@ export default function TradeInService({
           {/* ✨ ใช้คอมโพเนนต์ DateTimeSelect แบบรวม วัน+เวลา และบังคับเลือกวันก่อน */}
           <div className="grid grid-cols-1 gap-4">
             <DateTimeSelect
-              serviceType="บริการขายทันที"
+              serviceType="เทิร์นเครื่อง"
               serviceData={formState}
               dateValue={formState.appointmentDate}
               onDateChange={(value) => handleInputChange("appointmentDate", value)}
@@ -459,24 +469,13 @@ export default function TradeInService({
         <FramerButton
           size="lg"
           disabled={!isFormComplete || updateAssessment.isPending}
-          className="h-14 w-full"
-          onClick={handleConfirmTradeIn}
+          className="h-12 w-full"
+          onClick={() => setIsShowConfirmModal(true)}
         >
           {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการแลกเปลี่ยนเครื่อง"}
         </FramerButton>
-        <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-          การคลิก &quot;ยืนยันการแลกเปลี่ยนเครื่อง&quot;
-          ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-amber-600 underline hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-          >
-            ข้อตกลงและเงื่อนไขการใช้บริการ
-          </a>
-        </p>
       </motion.div>
+      <PDPA handleShowConsent={handleShowConsent} serviceName="tradein" />
     </main>
   );
 }

@@ -18,7 +18,6 @@ interface ServicesProps {
   deviceInfo: DeviceInfo;
   onNext: () => void;
   finalPrice: number;
-  assessmentId?: string;
   assessmentData?: Assessment;
 }
 
@@ -31,7 +30,6 @@ export default function Services({
   deviceInfo,
   onNext,
   finalPrice,
-  assessmentId,
   assessmentData,
 }: ServicesProps) {
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -41,9 +39,7 @@ export default function Services({
 
   // ตรวจสอบว่ามี service ที่จองแล้วหรือไม่
   const reservedServiceId = getReservedService(assessmentData);
-  const isReservedMode = hasReservedService(assessmentData);
-
-  // Build services based on device type
+  const isReservedMode = assessmentData.status === "reserved";
   const allServices = buildServiceOptions(isAppleDevice, finalPrice, totalCost);
 
   // ถ้ามี service ที่จองแล้ว ให้แสดงเฉพาะ service นั้น
@@ -90,19 +86,17 @@ export default function Services({
           const theme = getTheme(service.id);
           const benefits = serviceBenefits[service.id] || [];
           const payload = getServicePayload(assessmentData, service.id as ServiceId);
-          const isReserved = !!payload && !isMaintenance;
 
           return (
             <ServiceCard
               key={service.id}
               service={service}
               isSelected={isSelected}
-              isReserved={isReserved}
               isMaintenance={isMaintenance}
               theme={theme}
               benefits={benefits}
               payload={payload}
-              assessmentId={assessmentId}
+              assessmentId={assessmentData?.docId}
               repairs={repairs}
               totalCost={totalCost}
               isLoading={isLoading}

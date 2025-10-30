@@ -18,15 +18,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { DeviceInfo } from "../../../../types/device";
 import { User, Phone, Pencil } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { DateSelect } from "@/components/ui/date-select";
 import { combineDateTime } from "@/util/dateTime";
 import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
 import type { ConsignmentServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
+import PDPA from "../../../../components/ui/pdpa";
+import ConfirmServiceNoDepositModal from "./ConfirmServiceNoDepositModal";
 
 // Interface for Component Props
 interface ConsignmentServiceProps {
@@ -34,8 +34,10 @@ interface ConsignmentServiceProps {
   deviceInfo: DeviceInfo;
   consignmentPrice: number;
   phoneNumber: string;
-  lineUserId?: string | null; // เพิ่ม lineUserId (optional)
+  customerName: string;
+  lineUserId?: string | null;
   onSuccess?: () => void;
+  handleShowConsent: () => void;
 }
 
 const SERVICE_FEE_RATE = 0.1; // 10% ค่าบริการ
@@ -50,15 +52,15 @@ const THB = (n: number) =>
 
 export default function ConsignmentService({
   assessmentId,
-  deviceInfo,
   consignmentPrice,
   phoneNumber,
-  lineUserId, // รับ lineUserId
+  customerName,
+  lineUserId,
   onSuccess,
+  handleShowConsent,
 }: ConsignmentServiceProps) {
-  const router = useRouter();
   const [formState, setFormState] = useState({
-    customerName: "",
+    customerName: customerName,
     phone: phoneNumber,
     storeLocation: BRANCHES[0].name,
     additionalNotes: "",
@@ -80,6 +82,8 @@ export default function ConsignmentService({
   const handleEditPhoneClick = () => {
     setIsPhoneModalOpen(true);
   };
+
+  const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
 
   const { serviceFeeAmount, netAmount } = useMemo(() => {
     const fee = consignmentPrice * SERVICE_FEE_RATE;
@@ -106,7 +110,7 @@ export default function ConsignmentService({
     scrollTo(0, 0);
   }, []);
 
-  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+  const updateAssessment = useUpdateAssessment(assessmentId, "CONSIGNMENT", lineUserId);
 
   const handleConfirmConsignment = () => {
     // Combine date and time for queue booking
@@ -152,6 +156,14 @@ export default function ConsignmentService({
 
   return (
     <main className="w-full space-y-6">
+      <ConfirmServiceNoDepositModal
+        isOpen={isShowConfirmModal}
+        setIsOpen={setIsShowConfirmModal}
+        title={"ยืนยันการฝากขาย"}
+        description="เมื่อยืนยันการฝากขายระบบจะนำคุณไปยังหน้าสรุปรายการ"
+        onConfirm={handleConfirmConsignment}
+        isLoading={updateAssessment.isPending}
+      />
       <div className="mt-2 flex flex-col gap-6 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -278,14 +290,6 @@ export default function ConsignmentService({
                     <span className="bg-gradient-to-r from-cyan-600 to-sky-500 bg-clip-text text-xl font-bold text-transparent dark:from-cyan-400 dark:to-sky-400">
                       {THB(netAmount)}
                     </span>
-                    <Image
-                      src={"https://lh3.googleusercontent.com/d/1X_QS-ahnw2ubo0brwEt-oZwLX64JpNiK"}
-                      width={100}
-                      height={100}
-                      alt="animated-coin"
-                      className="-m-6"
-                      priority
-                    />
                   </div>
                 </div>
               </div>
@@ -331,7 +335,7 @@ export default function ConsignmentService({
             {/* Unified Date & Time selection to mirror SellNowService */}
             <div className="grid grid-cols-1 gap-4">
               <DateTimeSelect
-                serviceType="บริการขายฝาก"
+                serviceType="ขายฝากมือถือ"
                 serviceData={formState}
                 dateValue={formState.dropoffDate}
                 onDateChange={(value) => handleInputChange("dropoffDate", value)}
@@ -357,24 +361,13 @@ export default function ConsignmentService({
           <FramerButton
             size="lg"
             disabled={!isFormComplete || updateAssessment.isPending}
-            className="h-14 w-full"
-            onClick={handleConfirmConsignment}
+            className="h-12 w-full"
+            onClick={() => setIsShowConfirmModal(true)}
           >
             {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการฝากขาย"}
           </FramerButton>
-          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการฝากขาย&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-sky-600 underline hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-            >
-              ข้อตกลงและเงื่อนไขการใช้บริการ
-            </a>
-          </p>
         </motion.div>
+        <PDPA handleShowConsent={handleShowConsent} serviceName="consignment" />
       </div>
     </main>
   );

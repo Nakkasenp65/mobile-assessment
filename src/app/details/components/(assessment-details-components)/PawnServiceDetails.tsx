@@ -1,28 +1,20 @@
+import { Calendar, ClipboardList, Home, MapPin, Phone, Store, User } from "lucide-react";
 import {
-  Calendar,
-  ClipboardList,
-  Home,
-  MapPin,
-  Phone,
-  Store,
-  User,
-} from "lucide-react";
-import {
-  AssessmentRecord,
+  // AssessmentRecord,
   PawnServiceInfo,
 } from "../AssessmentDetails";
-import Image from "next/image";
+// import Image from "next/image";
 
 export default function PawnServiceDetails({
   pawnServiceInfo,
-  selectedService,
+  // selectedService,
 }: {
   pawnServiceInfo: PawnServiceInfo;
-  selectedService: AssessmentRecord["selectedService"];
+  // selectedService: AssessmentRecord["selectedService"];
 }) {
   return (
     <div className="md:rounded-xl md:border md:border-[#e3dace] md:p-5">
-      <div className="mb-3 flex items-center gap-3">
+      {/* <div className="mb-3 flex items-center gap-3">
         <div
           className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500`}
         >
@@ -66,7 +58,7 @@ export default function PawnServiceDetails({
             />
           </div>
         </div>
-      </div>
+      </div> */}
       <div className="flex flex-col gap-2 text-xs lg:text-sm">
         <div className="flex items-center gap-3">
           <User className="h-5 w-5 text-violet-500" />
@@ -82,18 +74,13 @@ export default function PawnServiceDetails({
             <Store className="h-5 w-5 flex-shrink-0 text-yellow-700" />
           )}
           <div className="flex items-start text-left">
-            <span className="font-semibold">
-              สถานที่นัดหมาย:
-            </span>
+            <span className="font-semibold">สถานที่นัดหมาย:</span>
             <span>
               {pawnServiceInfo.locationType === "home" &&
-                `รับถึงบ้าน (${
-                  pawnServiceInfo.homeAddress || ""
-                })`}
+                `รับถึงบ้าน (${pawnServiceInfo.homeAddress || ""})`}
               {pawnServiceInfo.locationType === "bts" &&
                 `${pawnServiceInfo.btsLine} - สถานี ${pawnServiceInfo.btsStation}`}
-              {pawnServiceInfo.locationType === "store" &&
-                `${pawnServiceInfo.storeBranch}`}
+              {pawnServiceInfo.locationType === "store" && `${pawnServiceInfo.storeBranch}`}
             </span>
           </div>
         </div>

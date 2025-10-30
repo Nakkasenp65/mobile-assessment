@@ -15,9 +15,9 @@ import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { LongdoAddressData } from "../../LongdoAddressForm";
 import type { LatLng } from "leaflet";
-import { useBtsStations } from "@/hooks/useBtsStations"; // ✨ 1. Import Hook ใหม่
+import { useBtsStations } from "@/hooks/useBtsStations";
 import { Button } from "@/components/ui/button";
-import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
+import { mergeTrainDataWithApi } from "@/util/trainLines";
 import { BRANCHES } from "@/constants/queueBooking";
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
@@ -68,9 +68,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   handleAddressChange,
   formVariants,
 }) => {
-  // ✨ 3. เรียกใช้ Hook เพื่อดึงข้อมูล BTS
   const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
   const merged = mergeTrainDataWithApi(btsData);
+
+  console.log(merged);
 
   return (
     <AnimatePresence mode="wait">
@@ -101,7 +102,9 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
               )}
               {!isLocationLoading && !locationError && hasUserLocation && mapCenter && (
                 <>
+                  {/* MAP ELEMENT FOR LEAFLET */}
                   <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
+                  {/* LONGDO ADDRESS FORM */}
                   <LongdoAddressForm
                     initialData={geocodeData}
                     onAddressChange={handleAddressChange}
@@ -121,9 +124,8 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
             <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="bts-line-sell">สายรถไฟ</Label>
-                {/* ✨ 4. ใช้ข้อมูลจาก API+Static มาแสดงใน Select */}
                 <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
-                  <SelectTrigger id="bts-line-sell" className="w-full">
+                  <SelectTrigger id="bts-line-sell" className="h-12 w-full">
                     <SelectValue
                       placeholder={
                         isLoadingBts ? "กำลังโหลด..." : btsError ? "เกิดข้อผิดพลาด" : "เลือกสายรถไฟ"
@@ -131,11 +133,13 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {merged.lines.map((line) => (
-                      <SelectItem key={line.LineId} value={line.LineName_TH}>
-                        {line.LineName_TH}
-                      </SelectItem>
-                    ))}
+                    {merged.lines.map((line) => {
+                      return (
+                        <SelectItem key={line.LineId} value={line.LineName_TH} className="h-12">
+                          {line.LineName_TH}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -145,13 +149,16 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                   disabled={!selectedBtsLine}
                   onValueChange={(value) => handleInputChange("btsStation", value)}
                 >
-                  <SelectTrigger id="bts-station-sell" className="w-full">
+                  <SelectTrigger id="bts-station-sell" className="h-12 w-full">
                     <SelectValue placeholder="เลือกสถานี" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* ✨ 5. ใช้ข้อมูลสถานีจากชุดรวมตามสายที่เลือก */}
                     {(merged.stationsByLine[selectedBtsLine] || []).map((station) => (
-                      <SelectItem key={station.StationId} value={station.StationNameTH}>
+                      <SelectItem
+                        key={station.StationId}
+                        value={station.StationNameTH}
+                        className="h-12"
+                      >
                         {station.StationNameTH}
                       </SelectItem>
                     ))}
@@ -168,12 +175,12 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                 value={formState.storeLocation}
                 onValueChange={(value) => handleInputChange("storeLocation", value)}
               >
-                <SelectTrigger id="store-branch-sell" className="w-full">
+                <SelectTrigger id="store-branch-sell" className="h-12 w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {BRANCHES.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.name}>
+                    <SelectItem key={branch.id} value={branch.name} className="h-12">
                       {branch.name}
                     </SelectItem>
                   ))}

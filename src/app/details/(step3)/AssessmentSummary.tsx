@@ -12,7 +12,7 @@ import Image from "next/image";
 interface AssessmentSummaryProps {
   deviceInfo: DeviceInfo;
   conditionInfo: ConditionInfo;
-  docId?: string;
+  docId: string;
   isImageLoading: boolean;
   mobileData: { image_url?: string } | null | undefined;
   grade: string;

@@ -20,17 +20,15 @@ import {
   Pencil,
 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
-import type { RefinanceServiceInfo } from "@/types/service";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
 import { buildRefinanceFormData } from "@/util/servicePayloads";
-import { combineDateTime } from "@/util/dateTime";
-import { SERVICE_TYPES, BRANCH_IDS } from "@/constants/queueBooking";
+import PDPA from "../../../../components/ui/pdpa";
+import ConfirmServiceNoDepositModal from "./ConfirmServiceNoDepositModal";
 
 // Dynamically import Turnstile (SSR-safe)
 const Turnstile = dynamic(() => import("@/components/Turnstile"), {
@@ -45,8 +43,10 @@ interface RefinanceServiceProps {
   deviceInfo: DeviceInfo;
   refinancePrice: number;
   phoneNumber: string;
+  customerName: string;
   lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
+  handleShowConsent: () => void;
 }
 
 const PERIOD_OPTIONS = [3, 6, 10] as const;
@@ -66,23 +66,21 @@ const THB = (n: number) =>
 
 export default function RefinanceService({
   assessmentId,
-  deviceInfo,
   refinancePrice,
   phoneNumber,
+  customerName,
   lineUserId, // รับ lineUserId
   onSuccess,
+  handleShowConsent,
 }: RefinanceServiceProps) {
-  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
-  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+  const updateAssessment = useUpdateAssessment(assessmentId, "REFINANCE", lineUserId);
   const isDev = process.env.NODE_ENV !== "production";
 
   const [formState, setFormState] = useState({
-    customerName: "",
+    customerName: customerName,
     phone: phoneNumber,
-    // CHIRON: Forensic Linguist - ลบ `termsAccepted` ออกจาก state
-    // การยอมรับเงื่อนไขจะถูกผูกกับการกระทำหลัก (Primary Action) โดยตรง
     occupation: "",
     documentFile: null as File | null,
   });
@@ -93,8 +91,6 @@ export default function RefinanceService({
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const handleInputChange = (field: keyof typeof formState, value: string) => {
-    // CHIRON: Counter-intelligence Analyst - ดักจับและกรองข้อมูลที่ไม่ใช่ตัวเลขสำหรับเบอร์โทรศัพท์ ณ จุดกำเนิด
-    // ป้องกันข้อมูล "ปนเปื้อน" (Contaminated Data) ไม่ให้เข้าสู่ระบบ State
     if (field === "phone") {
       const numericValue = value.replace(/[^0-9]/g, "");
       setFormState((prev) => {
@@ -115,6 +111,8 @@ export default function RefinanceService({
   const handleEditPhoneClick = () => {
     setIsPhoneModalOpen(true);
   };
+
+  const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -139,8 +137,6 @@ export default function RefinanceService({
     return refinancePrice / selectedMonths;
   }, [refinancePrice, selectedMonths]);
 
-  // CHIRON: Structural Engineer - ปรับแก้ตรรกะการตรวจสอบความสมบูรณ์ของฟอร์ม
-  // โดยนำเงื่อนไขการยอมรับข้อตกลงออก และเพิ่มการตรวจสอบความยาวเบอร์โทร
   const isFormComplete =
     formState.customerName &&
     formState.phone.length === 10 &&
@@ -221,25 +217,19 @@ export default function RefinanceService({
       return;
     }
 
-    // For refinance, we don't have specific appointment date/time from UI
-    // Using current date + 1 day as default for queue booking
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const appointmentDate = tomorrow.toISOString().split("T")[0];
-    const appointmentTime = "10:00"; // Default time
-    const appointmentAt = combineDateTime(appointmentDate, appointmentTime);
+    // Refinance service uses manual booking - no queue booking API call
+    // Only basic date/time for record keeping
+    const currentDate = new Date().toISOString().split("T")[0];
+    const currentTime = new Date().toTimeString().split(" ")[0].substring(0, 5);
 
     const formData = buildRefinanceFormData({
       customerName: formState.customerName,
       phone: formState.phone,
       occupation: (formState.occupation as "salaried" | "freelance" | "") ?? "",
-      appointmentTime: appointmentTime,
-      appointmentDate: appointmentDate,
+      appointmentTime: currentTime,
+      appointmentDate: currentDate,
       documentFile: formState.documentFile,
-      // Queue booking fields
-      appointmentAt,
-      branchId: BRANCH_IDS.CENTER_ONE, // Default branch for refinance
-      serviceType: SERVICE_TYPES.REFINANCE,
+      // No queue booking fields - manual booking only
     });
 
     updateAssessment.mutate(formData, {
@@ -267,6 +257,14 @@ export default function RefinanceService({
 
   return (
     <main className="w-full space-y-6">
+      <ConfirmServiceNoDepositModal
+        isOpen={isShowConfirmModal}
+        setIsOpen={setIsShowConfirmModal}
+        title={"ยืนยันการรีไฟแนนซ์"}
+        description="เมื่อยืนยันการรีไฟแนนซ์ระบบจะนำคุณไปยังหน้าสรุปรายการ"
+        onConfirm={handleConfirmRefinance}
+        isLoading={updateAssessment.isPending}
+      />
       <div className="mt-2 flex flex-col gap-6 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -351,6 +349,7 @@ export default function RefinanceService({
           </div>
         </motion.div>
 
+        {/* รายละเอียดการผ่อนชำระ */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -580,25 +579,16 @@ export default function RefinanceService({
             size="lg"
             disabled={!isFormComplete || updateAssessment.isPending}
             className="h-14 w-full"
-            onClick={handleConfirmRefinance}
+            onClick={() => setIsShowConfirmModal(true)}
           >
             {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการรีไฟแนนซ์"}
           </FramerButton>
-          {/* CHIRON: Forensic Linguist - เปลี่ยนกลไกการยอมรับเงื่อนไข */}
-          {/* ลบ Checkbox และสร้างข้อความแสดงเจตจำนงที่ชัดเจนและไม่กำกวม */}
-          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการรีไฟแนนซ์&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-            <a
-              href="#" // CHIRON: ควรเปลี่ยนเป็นลิงก์ไปยังหน้าข้อตกลงจริง
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-purple-600 underline hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
-            >
-              ข้อตกลงและเงื่อนไขการใช้บริการ
-            </a>
-          </p>
         </motion.div>
+        <PDPA
+          serviceName="refinance"
+          key={"refinance-service-pdpa-button"}
+          handleShowConsent={handleShowConsent}
+        />
       </div>
     </main>
   );

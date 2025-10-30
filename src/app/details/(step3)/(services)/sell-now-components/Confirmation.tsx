@@ -5,15 +5,23 @@
 import FramerButton from "@/components/ui/framer/FramerButton";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import PDPA from "../../../../../components/ui/pdpa";
 
 interface ConfirmationProps {
   isFormComplete: boolean;
   handleConfirmSell: () => void;
   disabled?: boolean;
   isLoading?: boolean;
+  handleShowConsent: () => void;
 }
 
-export default function Confirmation({ isFormComplete, handleConfirmSell, disabled = false, isLoading = false }: ConfirmationProps) {
+export default function Confirmation({
+  isFormComplete,
+  handleConfirmSell,
+  disabled = false,
+  isLoading = false,
+  handleShowConsent,
+}: ConfirmationProps) {
   const router = useRouter();
   void router;
 
@@ -29,19 +37,9 @@ export default function Confirmation({ isFormComplete, handleConfirmSell, disabl
         className="h-14 w-full"
         onClick={handleConfirmSell}
       >
-        {isLoading ? "กำลังบันทึก..." : "ยืนยันการขาย"}
+        ยืนยันการขาย
       </FramerButton>
-      <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-        การคลิก &quot;ยืนยันการขาย&quot; ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-pink-600 underline hover:text-pink-700 dark:text-pink-400 dark:hover:text-pink-300"
-        >
-          ข้อตกลงและเงื่อนไขการใช้บริการ
-        </a>
-      </p>
+      <PDPA handleShowConsent={handleShowConsent} serviceName="sellnow" />
     </motion.div>
   );
 }

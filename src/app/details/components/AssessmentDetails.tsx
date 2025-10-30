@@ -5,6 +5,7 @@ import SupportSection from "./SupportSection";
 import { motion } from "framer-motion";
 import PawnServiceDetails from "./(assessment-details-components)/PawnServiceDetails";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import { Assessment } from "../../../types/assessment";
 
 interface ConditionInfo {
   modelType: string;
@@ -37,29 +38,7 @@ export interface PawnServiceInfo {
   phone: string;
 }
 
-export interface AssessmentRecord {
-  id: string; // ✨ 2. เพิ่ม ID เข้าไปใน Interface
-  phoneNumber: string;
-  assessmentDate: string;
-  device: {
-    brand: string;
-    model: string;
-    storage: string;
-  };
-  conditionInfo: ConditionInfo;
-  pawnServiceInfo: PawnServiceInfo;
-  selectedService: {
-    name: string;
-    price: number;
-    appointmentDate: string;
-  };
-  status: "completed" | "pending" | "in-progress";
-  estimatedValue: number;
-  priceLockExpiresAt: string;
-  nextSteps: string[];
-}
-
-export default function AssessmentDetails({ record }: { record: AssessmentRecord }) {
+export default function AssessmentDetails({ record }: { record: Assessment }) {
   return (
     <div className="relative container w-full">
       {/* HEAD */}
@@ -85,14 +64,14 @@ export default function AssessmentDetails({ record }: { record: AssessmentRecord
                   <Cpu className="h-5 w-5 text-[#78716c]" />
                   <span className="font-medium text-[#78716c]">รุ่น</span>
                   <span className="ml-auto font-semibold text-[#110e0c]">
-                    {record.device.brand} {record.device.model}
+                    {record.deviceInfo.brand} {record.deviceInfo.model}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <HardDrive className="h-5 w-5 text-[#78716c]" />
                   <span className="font-medium text-[#78716c]">ความจุ</span>
                   <span className="ml-auto font-semibold text-[#110e0c]">
-                    {record.device.storage}
+                    {record.deviceInfo.storage}
                   </span>
                 </div>
                 <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-3">
@@ -116,30 +95,30 @@ export default function AssessmentDetails({ record }: { record: AssessmentRecord
           </div>
 
           <div className="flex w-full flex-col gap-6 md:flex-1">
-            <PawnServiceDetails
+            {/* <PawnServiceDetails
               pawnServiceInfo={record.pawnServiceInfo}
               selectedService={record.selectedService}
-            />
+            /> */}
 
             <div className="md:rounded-xl md:border md:border-[#e3dace] md:p-5">
-              <div className="mb-3 flex items-center gap-3">
+              {/* <div className="mb-3 flex items-center gap-3">
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500`}
                 >
                   <CheckCircle className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-base font-bold text-slate-800 md:text-lg">ขั้นตอนต่อไป</span>
-              </div>
-              <div className="mb-4 flex flex-col gap-3">
-                {record.nextSteps.map((step, index) => (
+              </div> */}
+              {/* <div className="mb-4 flex flex-col gap-3"> */}
+              {/* {record.nextSteps.map((step, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#eff6ff]">
                       <span className="text-sm font-bold text-[#2563eb]">{index + 1}</span>
                     </div>
                     <span className="text-left text-[#110e0c]">{step}</span>
                   </div>
-                ))}
-              </div>
+                ))} */}
+              {/* </div> */}
               <div className="mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-4">
                 <p className="flex items-start gap-2 text-left text-sm text-[#1e40af]">
                   <ShieldCheck className="h-4 w-4 flex-shrink-0" />

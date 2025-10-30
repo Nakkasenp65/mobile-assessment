@@ -3,39 +3,27 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import {} from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import DateTimeSelect from "@/components/ui/DateTimeSelect";
 import { DeviceInfo } from "../../../../types/device";
 import {
-  Store,
   User,
   Phone,
-  Train,
   Briefcase,
   Sparkles,
   Check,
   FileUp,
   Pencil,
+  Receipt,
+  CalendarDays,
 } from "lucide-react";
 import FramerButton from "@/components/ui/framer/FramerButton";
-import { useBtsStations } from "@/hooks/useBtsStations";
 import { Card } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { useUpdateAssessment } from "@/hooks/useUpdateAssessment";
-import type { IPhoneExchangeServiceInfo } from "@/types/service";
 import Swal from "sweetalert2";
 import { PhoneNumberEditModal } from "@/components/ui/PhoneNumberEditModal";
-import { mergeTrainDataWithApi } from "@/util/trainLines"; // ✨ Merge API + static MRT/SRT
 import { buildIPhoneExchangeFormData } from "@/util/servicePayloads";
 import {
   validateUploadFile,
@@ -44,8 +32,10 @@ import {
   type OccupationType,
 } from "@/util/exchangeValidation";
 import Image from "next/image";
-import { combineDateTime } from "@/util/dateTime";
-import { SERVICE_TYPES, BRANCHES, getBranchIdFromName } from "@/constants/queueBooking";
+import { BRANCHES } from "@/constants/queueBooking";
+import PDPA from "../../../../components/ui/pdpa";
+import ConfirmServiceNoDepositModal from "./ConfirmServiceNoDepositModal";
+import { MoneyIcon } from "@phosphor-icons/react";
 
 // Interface for Component Props
 interface IPhoneExchangeServiceProps {
@@ -53,18 +43,17 @@ interface IPhoneExchangeServiceProps {
   deviceInfo: DeviceInfo;
   exchangePrice: number;
   phoneNumber: string;
+  customerName: string;
   lineUserId?: string | null; // เพิ่ม lineUserId (optional)
   onSuccess?: () => void;
+  handleShowConsent: () => void;
 }
-
-const SERVICE_FEE_RATE = 0.15; // 15%
 
 const OCCUPATION_TYPES = {
   SALARIED: "salaried" as OccupationType,
   FREELANCE: "freelance" as OccupationType,
 };
 
-// Helper function for currency formatting
 const THB = (n: number) =>
   n.toLocaleString("th-TH", {
     style: "currency",
@@ -74,26 +63,20 @@ const THB = (n: number) =>
 
 export default function IPhoneExchangeService({
   assessmentId,
-  deviceInfo,
   exchangePrice,
   phoneNumber,
-  lineUserId, // รับ lineUserId
+  customerName,
+  lineUserId,
   onSuccess,
+  handleShowConsent,
 }: IPhoneExchangeServiceProps) {
-  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [locationType, setLocationType] = useState<"store" | "bts" | null>(null);
+  const [locationType, setLocationType] = useState<"store" | "bts">(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
-  const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
-  const merged = mergeTrainDataWithApi(btsData);
 
   const [formState, setFormState] = useState<ExchangeFormState>({
-    customerName: "",
+    customerName: customerName,
     phone: phoneNumber,
-    btsStation: "",
-    storeLocation: BRANCHES[0].name,
-    date: "",
-    time: "",
     occupation: "",
     documentFile: null,
   });
@@ -105,7 +88,7 @@ export default function IPhoneExchangeService({
     setFormState((prev) => ({ ...prev, phone: phoneNumber || "" }));
   }, [phoneNumber]);
 
-  const updateAssessment = useUpdateAssessment(assessmentId, lineUserId); // ส่ง lineUserId
+  const updateAssessment = useUpdateAssessment(assessmentId, "IPHONE_EXCHANGE", lineUserId);
 
   const handleInputChange = (field: keyof ExchangeFormState, value: string | Date | undefined) => {
     if (field === "phone") {
@@ -159,11 +142,7 @@ export default function IPhoneExchangeService({
     setIsPhoneModalOpen(true);
   };
 
-  const { feeAmount, netAmount } = useMemo(() => {
-    const fee = exchangePrice * SERVICE_FEE_RATE;
-    const net = exchangePrice - fee;
-    return { feeAmount: fee, netAmount: net };
-  }, [exchangePrice]);
+  const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
 
   const documentUploadDetails = useMemo(() => {
     if (formState.occupation === OCCUPATION_TYPES.SALARIED) {
@@ -181,7 +160,7 @@ export default function IPhoneExchangeService({
     return null;
   }, [formState.occupation]);
 
-  const isFormComplete = computeIsFormComplete(formState, locationType);
+  const isFormComplete = computeIsFormComplete(formState);
 
   const formVariants = {
     initial: { opacity: 0, y: 10 },
@@ -203,26 +182,19 @@ export default function IPhoneExchangeService({
       return;
     }
 
-    // Combine date and time for queue booking
-    const appointmentAt = combineDateTime(formState.date as string, formState.time as string);
-
-    // Determine branch ID based on location type
-    let branchId: string | undefined;
-    if (locationType === "store" && formState.storeLocation) {
-      branchId = getBranchIdFromName(formState.storeLocation);
-    }
+    // iPhone Exchange uses manual booking - no queue booking API call
+    // Date/time fields kept for potential future use or record keeping
+    const currentDate = new Date().toISOString().split("T")[0];
+    const currentTime = new Date().toTimeString().split(" ")[0].substring(0, 5);
 
     const formData = buildIPhoneExchangeFormData({
       customerName: formState.customerName,
       phone: formState.phone,
-      time: formState.time as string,
-      date: formState.date as string,
+      time: currentTime,
+      date: currentDate,
       occupation: formState.occupation as "salaried" | "freelance" | "",
       documentFile: formState.documentFile,
-      // Queue booking fields
-      appointmentAt,
-      branchId,
-      serviceType: SERVICE_TYPES.IPHONE_EXCHANGE,
+      // No queue booking fields - manual booking only
     });
 
     updateAssessment.mutate(formData, {
@@ -246,6 +218,14 @@ export default function IPhoneExchangeService({
 
   return (
     <main className="w-full space-y-6">
+      <ConfirmServiceNoDepositModal
+        isOpen={isShowConfirmModal}
+        setIsOpen={setIsShowConfirmModal}
+        title={"ยืนยันการแลกเปลี่ยน iPhone"}
+        description="เมื่อยืนยันการแลกเปลี่ยนระบบจะนำคุณไปยังหน้าสรุปรายการ"
+        onConfirm={handleConfirmExchange}
+        isLoading={updateAssessment.isPending}
+      />
       <div className="flex flex-col gap-6 dark:border-zinc-700/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -275,6 +255,51 @@ export default function IPhoneExchangeService({
             <p className="mt-2 text-sm text-green-800/80 dark:text-green-200/80">
               รับเครื่องใหม่พร้อมส่วนต่างทันที
             </p>
+          </div>
+        </motion.div>
+
+        {/* รายละเอียดการผ่อนชำระ */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="rounded-xl border border-green-100 bg-green-50/50 p-4 dark:border-green-400/30 dark:bg-green-400/10"
+        >
+          <h4 className="mb-3 text-sm font-semibold text-green-900 dark:text-green-100">
+            รายละเอียดการผ่อนชำระ
+          </h4>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <span className="text-green-800 dark:text-green-200">ยอดผ่อนชำระต่อเดือน</span>
+            </div>
+            <span className="text-2xl font-bold text-green-700 dark:text-green-300">
+              {/* TODO: ยอดเงินต่อเดืือน */}
+              {(exchangePrice / 6).toLocaleString("th-TH", {
+                style: "currency",
+                currency: "THB",
+                minimumFractionDigits: 0,
+              })}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MoneyIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <span className="text-green-800 dark:text-green-200">หักยอดเดือนแรก</span>
+            </div>
+            <span className="font-semibold text-green-800 dark:text-green-200">
+              {/* TODO: จำนวนเดือน */}
+              ลดบริการรอบแรกทันที 10%
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <span className="text-green-800 dark:text-green-200">ระยะเวลา</span>
+            </div>
+            <span className="font-semibold text-green-800 dark:text-green-200">
+              {/* TODO: จำนวนเดือน */}6 เดือน
+            </span>
           </div>
         </motion.div>
 
@@ -339,7 +364,7 @@ export default function IPhoneExchangeService({
 
           {/* Occupation Selection */}
           <motion.div variants={formVariants} className="space-y-4">
-            <Label className="block text-lg font-semibold">อาชีพของคุณ</Label>
+            <Label className="mb-2">อาชีพของคุณ</Label>
             <div className="flex flex-row gap-4">
               {[OCCUPATION_TYPES.SALARIED, OCCUPATION_TYPES.FREELANCE].map((value) => (
                 <Card
@@ -370,115 +395,6 @@ export default function IPhoneExchangeService({
                   )}
                 </Card>
               ))}
-            </div>
-          </motion.div>
-
-          {/* Location Selection */}
-          <motion.div variants={formVariants} className="space-y-4">
-            <Label className="block text-lg font-semibold">เลือกรูปแบบสถานที่รับบริการ</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <motion.button
-                type="button"
-                onClick={() => handleLocationTypeChange("bts")}
-                className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "bts" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}
-              >
-                <Train className="h-6 w-6" />
-                <span className="font-semibold">นัดรับที่สถานีรถไฟ</span>
-              </motion.button>
-              <motion.button
-                type="button"
-                onClick={() => handleLocationTypeChange("store")}
-                className={`flex h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 shadow-sm transition ${locationType === "store" ? "border-primary bg-primary/5 text-primary" : "bg-card text-card-foreground hover:bg-accent hover:border-primary/50"}`}
-              >
-                <Store className="h-6 w-6" />
-                <span className="font-semibold">รับบริการที่สาขา</span>
-              </motion.button>
-            </div>
-
-            {/* รายละเอียดสถานที่ */}
-            {locationType === "bts" && (
-              <motion.div key="bts-form" variants={formVariants} className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bts-line-exchange">สายรถไฟ</Label>
-                  <Select onValueChange={setSelectedBtsLine} disabled={isLoadingBts || !!btsError}>
-                    <SelectTrigger id="bts-line-exchange" className="w-full">
-                      <SelectValue
-                        placeholder={
-                          isLoadingBts
-                            ? "กำลังโหลด..."
-                            : btsError
-                              ? "เกิดข้อผิดพลาด"
-                              : "เลือกสายรถไฟ"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {merged.lines.map((line) => (
-                        <SelectItem key={line.LineId} value={line.LineName_TH}>
-                          {line.LineName_TH}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bts-station-exchange">ระบุสถานี</Label>
-                  <Select
-                    disabled={!selectedBtsLine}
-                    onValueChange={(value) => handleInputChange("btsStation", value)}
-                  >
-                    <SelectTrigger id="bts-station-exchange" className="w-full">
-                      <SelectValue placeholder="เลือกสถานี" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(merged.stationsByLine[selectedBtsLine] || []).map((station) => (
-                        <SelectItem key={station.StationId} value={station.StationNameTH}>
-                          {station.StationNameTH}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </motion.div>
-            )}
-
-            {locationType === "store" && (
-              <motion.div key="store-form" variants={formVariants} className="space-y-2">
-                <Label htmlFor="store-branch-exchange">สาขา</Label>
-                <Select
-                  value={formState.storeLocation}
-                  onValueChange={(value) => handleInputChange("storeLocation", value)}
-                >
-                  <SelectTrigger id="store-branch-exchange" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BRANCHES.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.name}>
-                        {branch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-            )}
-          </motion.div>
-
-          {/* เลือกวันและเวลา */}
-          <motion.div variants={formVariants} className="space-y-4">
-            <Label className="block text-lg font-semibold">เลือกวันและเวลา</Label>
-            <div className="grid grid-cols-1 gap-4">
-              <DateTimeSelect
-                serviceType="บริการแลกเปลี่ยน iPhone"
-                serviceData={{ ...formState, locationType }}
-                dateValue={formState.date as string}
-                onDateChange={(value) => handleInputChange("date", value)}
-                timeValue={formState.time as string}
-                onTimeChange={(value) => handleInputChange("time", value)}
-                className="w-full"
-                labelDate="วัน"
-                labelTime="เวลา"
-              />
             </div>
           </motion.div>
 
@@ -527,14 +443,14 @@ export default function IPhoneExchangeService({
                   <div className="mt-2 flex items-center gap-2 text-sm">
                     <FileUp className="h-4 w-4 text-green-600" />
                     <span>{formState.documentFile.name}</span>
-                    <Button
+                    <FramerButton
                       variant="outline"
                       size="sm"
                       onClick={() => setFormState((prev) => ({ ...prev, documentFile: null }))}
                       disabled={updateAssessment.isPending}
                     >
                       ลบไฟล์
-                    </Button>
+                    </FramerButton>
                   </div>
                 ) : (
                   <p className="text-muted-foreground mt-1 text-xs">
@@ -564,24 +480,13 @@ export default function IPhoneExchangeService({
           <FramerButton
             size="lg"
             disabled={!isFormComplete || updateAssessment.isPending}
-            className="h-14 w-full"
-            onClick={handleConfirmExchange}
+            className="h-12 w-full"
+            onClick={() => setIsShowConfirmModal(true)}
           >
             {updateAssessment.isPending ? "กำลังบันทึก..." : "ยืนยันการแลกเปลี่ยน iPhone"}
           </FramerButton>
-          <p className="text-center text-xs text-slate-500 dark:text-zinc-400">
-            การคลิก &quot;ยืนยันการแลกเปลี่ยน iPhone&quot;
-            ถือว่าท่านได้รับรองว่าข้อมูลที่ให้ไว้เป็นความจริงทุกประการ และยอมรับใน{" "}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-green-600 underline hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
-            >
-              ข้อตกลงและเงื่อนไขการใช้บริการ
-            </a>
-          </p>
         </motion.div>
+        <PDPA handleShowConsent={handleShowConsent} serviceName="iphone-exchange" />
       </div>
     </main>
   );

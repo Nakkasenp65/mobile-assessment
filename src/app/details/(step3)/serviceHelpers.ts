@@ -20,8 +20,8 @@ export const getServicePayload = (assessmentData: Assessment | undefined, servic
       return assessmentData.refinanceServiceInfo;
     case "iphone-exchange":
       return assessmentData.iphoneExchangeServiceInfo;
-    case "pawn":
-      return assessmentData.pawnServiceInfo;
+    // case "pawn":
+    // return assessmentData.pawnServiceInfo;
     default:
       return null;
   }

@@ -35,7 +35,6 @@ interface ServiceCardProps {
 export default function ServiceCard({
   service,
   isSelected,
-  isReserved,
   isMaintenance,
   theme,
   benefits,
@@ -64,25 +63,20 @@ export default function ServiceCard({
       layout
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-300",
-        isSelected || isReserved
+        "relative flex h-full w-full cursor-pointer flex-col rounded-2xl border p-5 text-left transition-all duration-300",
+        isSelected
           ? `ring-2 ${theme.ring} ${theme.borderColor} shadow-lg ${theme.shadow}`
           : "border-border hover:border-slate-300",
-        isReserved ? "cursor-default" : "cursor-pointer",
         isMaintenance && "lg:hidden",
       )}
-      role={isReserved ? "article" : "button"}
-      aria-disabled={isReserved}
       aria-selected={isSelected}
-      aria-label={`${service.title}${isReserved ? " (จองแล้ว)" : ""}`}
       onClick={() => {
-        if (isReserved) return;
         onSelect(service.id);
       }}
     >
       {/* Selection indicator */}
       <AnimatePresence>
-        {(isSelected || isReserved) && (
+        {isSelected && (
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -109,22 +103,7 @@ export default function ServiceCard({
           <Icon className="h-7 w-7 text-white" />
         </div>
         <div className="flex-1">
-          <h4 className="text-foreground font-bold">
-            {service.title}
-            {isReserved && (
-              <span
-                className={cn(
-                  "ml-2 rounded-full px-2 py-0.5 text-xs font-semibold",
-                  theme.soft,
-                  theme.text,
-                  theme.borderColor,
-                  "border",
-                )}
-              >
-                จองแล้ว
-              </span>
-            )}
-          </h4>
+          <h4 className="text-foreground font-bold">{service.title}</h4>
           <p className="text-muted-foreground text-sm">{service.description}</p>
         </div>
         <div className="flex items-center gap-1">
@@ -136,48 +115,35 @@ export default function ServiceCard({
       {!isMaintenance && (
         <>
           <div className="bg-border my-4 h-px w-full" />
-          {isReserved ? (
-            <ReservedServiceDetails
-              payload={payload}
-              serviceId={service.id}
-              serviceTitle={service.title}
-              assessmentId={assessmentId}
-              benefits={benefits}
-              theme={theme}
-              onNavError={onNavError}
-            />
-          ) : (
-            <>
-              <ServiceBenefits benefits={benefits} theme={theme} />
 
-              <AnimatePresence>
-                {isSelected && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
-                    exit={{ opacity: 0, height: 0, marginTop: "0px" }}
-                    transition={{ duration: 0.3 }}
-                    className="flex justify-end overflow-hidden"
-                  >
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNext();
-                      }}
-                      size="lg"
-                      className={cn(
-                        "h-12 w-full text-base font-bold text-white shadow-lg transition-all duration-300 sm:w-max",
-                        theme.solidBg,
-                        `hover:${theme.solidBg} hover:brightness-110`,
-                      )}
-                    >
-                      ยืนยันบริการนี้
-                    </Button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          )}
+          <ServiceBenefits benefits={benefits} theme={theme} />
+
+          <AnimatePresence>
+            {isSelected && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: "16px" }}
+                exit={{ opacity: 0, height: 0, marginTop: "0px" }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-end overflow-hidden"
+              >
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNext();
+                  }}
+                  size="lg"
+                  className={cn(
+                    "h-12 w-full text-base font-bold text-white shadow-lg transition-all duration-300 sm:w-max",
+                    theme.solidBg,
+                    `hover:${theme.solidBg} hover:brightness-110`,
+                  )}
+                >
+                  ยืนยันบริการนี้
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
 

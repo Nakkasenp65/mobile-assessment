@@ -36,7 +36,7 @@ export default function AppointmentScheduler({
       <Label className="block text-lg font-semibold">เลือกวันและเวลาที่สะดวก</Label>
       <div className="grid grid-cols-1 gap-4">
         <DateTimeSelect
-          serviceType="บริการขายทันที"
+          serviceType="ซื้อขายมือถือ"
           serviceData={serviceData}
           dateValue={formState.date}
           onDateChange={(value) => handleInputChange("date", value)}
@@ -47,6 +47,6 @@ export default function AppointmentScheduler({
           labelTime="เวลา"
         />
       </div>
-   </motion.div>
- );
+    </motion.div>
+  );
 }
