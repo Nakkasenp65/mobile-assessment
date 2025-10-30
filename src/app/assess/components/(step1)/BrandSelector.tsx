@@ -24,11 +24,22 @@ export default function BrandSelector({
 }: BrandSelectorProps) {
   const [hoveredBrand, setHoveredBrand] = useState<string | null>(null);
   const { isAndroid } = useDeviceDetection();
-  const renderBrands = isOwnDevice && isAndroid ? PHONE_DATA.brands.filter((b) => b.id !== "Apple") : PHONE_DATA.brands;
+  const renderBrands =
+    isOwnDevice && isAndroid
+      ? PHONE_DATA.brands.filter((b) => b.id !== "Apple")
+      : PHONE_DATA.brands;
 
   return (
-    <Accordion type="single" collapsible className="w-full" value={accordionValue} onValueChange={onAccordionChange}>
-      <span className="text-foreground">{selectedBrand ? `แบรนด์ที่เลือก: ${selectedBrand}` : "เลือกแบรนด์"}</span>
+    <Accordion
+      type="single"
+      collapsible
+      className="w-full"
+      value={accordionValue}
+      onValueChange={onAccordionChange}
+    >
+      <span className="text-foreground">
+        {selectedBrand ? `แบรนด์ที่เลือก: ${selectedBrand}` : "เลือกแบรนด์"}
+      </span>
       <div className="grid grid-cols-3 gap-2 pt-4 sm:grid-cols-4">
         {renderBrands.map((brand) => {
           const isSelected = selectedBrand === brand.id;

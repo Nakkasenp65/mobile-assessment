@@ -52,14 +52,22 @@ const AssessStep1 = ({
   isFromMainPage,
   paramsReady,
 }: AssessStep1Props) => {
-  const { isDesktop, isAndroid, isIOS } = useDeviceDetection();
+  const { isDesktop, isIOS } = useDeviceDetection();
   const [currentStep, setCurrentStep] = useState<StepName>("initializing");
   const [direction, setDirection] = useState(1);
-  const { data: productData, isLoading: isImageLoading } = useMobile(deviceInfo.brand, deviceInfo.model);
-  const [userDeviceSelection, setUserDeviceSelection] = useState<"this_device" | "other_device" | null>(null);
+  const { data: productData, isLoading: isImageLoading } = useMobile(
+    deviceInfo.brand,
+    deviceInfo.model,
+  );
+  const [userDeviceSelection, setUserDeviceSelection] = useState<
+    "this_device" | "other_device" | null
+  >(null);
   const [simpleValid, setSimpleValid] = useState<boolean>(false);
-  const [simpleData, setSimpleData] = useState<{ imageFile: File; description: string } | null>(null);
-  const [skipBrandAfterDeviceSelection, setSkipBrandAfterDeviceSelection] = useState<boolean>(!!isFromMainPage);
+  const [simpleData, setSimpleData] = useState<{ imageFile: File; description: string } | null>(
+    null,
+  );
+  const [skipBrandAfterDeviceSelection, setSkipBrandAfterDeviceSelection] =
+    useState<boolean>(!!isFromMainPage);
 
   useEffect(() => {
     // Wait until URL params are processed to avoid race conditions
@@ -96,7 +104,8 @@ const AssessStep1 = ({
             // Preserve existing behavior for non-main-page flows
             if (deviceInfo.brand === "Apple") {
               if (deviceInfo.productType) {
-                const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+                const isDetailed =
+                  deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
                 setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
               } else {
                 setCurrentStep("selectProduct");
@@ -183,7 +192,8 @@ const AssessStep1 = ({
     if (skipBrandAfterDeviceSelection && deviceInfo.brand) {
       if (deviceInfo.brand === "Apple") {
         if (deviceInfo.productType) {
-          const isDetailed = deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
+          const isDetailed =
+            deviceInfo.productType === "iPhone" || deviceInfo.productType === "iPad";
           setCurrentStep(isDetailed ? "selectModelStorage" : "simpleAssessment");
         } else {
           setCurrentStep("selectProduct");
@@ -301,7 +311,10 @@ const AssessStep1 = ({
             description="เลือกเพื่อดำเนินการในขั้นตอนถัดไป"
             direction={direction}
           >
-            <UserDeviceSelection selectedValue={userDeviceSelection} onSelect={handleUserDeviceSelect} />
+            <UserDeviceSelection
+              selectedValue={userDeviceSelection}
+              onSelect={handleUserDeviceSelect}
+            />
           </StepWrapper>
         );
 
@@ -341,11 +354,7 @@ const AssessStep1 = ({
             />
             {/* Step Navigation */}
             <div className="mt-auto flex w-full justify-start">
-              <FramerButton
-                variant="ghost"
-                onClick={prevStep}
-                className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-              >
+              <FramerButton variant="outline" onClick={prevStep} className="h-12">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="font-semibold">ย้อนกลับ</span>
               </FramerButton>

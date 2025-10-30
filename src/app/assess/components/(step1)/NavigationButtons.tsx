@@ -19,11 +19,7 @@ export default function NavigationButtons({
       className={`flex w-full ${onBack ? "justify-between" : "justify-end"} mt-auto items-center pt-6`}
     >
       {onBack && (
-        <FramerButton
-          variant="ghost"
-          onClick={onBack}
-          className="bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-12 items-center rounded-full border px-6 transition-colors dark:bg-zinc-800 dark:hover:bg-zinc-700"
-        >
+        <FramerButton variant="outline" onClick={onBack} className="h-12">
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span className="font-semibold">ย้อนกลับ</span>
         </FramerButton>

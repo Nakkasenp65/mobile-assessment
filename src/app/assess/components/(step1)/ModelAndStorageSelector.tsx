@@ -94,7 +94,6 @@ const ModelAndStorageSelector = ({
         </Select>
       </div>
 
-      {/* ✨ [เพิ่ม] ส่วนของคำถาม iCloud */}
       <AnimatePresence>
         {localInfo.brand === "Apple" && (
           <motion.div
@@ -154,7 +153,6 @@ const ModelAndStorageSelector = ({
           </motion.div>
         )}
       </AnimatePresence>
-      {/* ✨ [เพิ่ม] ข้อความแจ้งเรื่องข้อตกลงและเงื่อนไข */}
       <p className="mt-4 text-center text-xs text-gray-500">
         เมื่อเริ่มประเมินถือว่าท่านได้ยอมรับ{" "}
         <a
