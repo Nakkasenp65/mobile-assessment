@@ -1,14 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   env: {
     NEXT_PUBLIC_TURNSTILE_SITEKEY: process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY,
   },
   // Transpile TensorFlow and MediaPipe packages for Next.js compatibility
-  transpilePackages: [
-    "@mediapipe/face_detection",
-  ],
+  transpilePackages: ["@mediapipe/face_detection"],
   images: {
     domains: [
       "lh3.googleusercontent.com",
