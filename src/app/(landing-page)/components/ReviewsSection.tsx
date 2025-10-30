@@ -93,15 +93,15 @@ export default function ReviewsSection() {
           setApi={setApi}
           plugins={[plugin.current]}
           opts={{ loop: true, align: "start" }}
-          className="mt-16 w-full"
+          className="mt-16 w-full select-none"
           onMouseEnter={plugin.current.stop}
           onMouseLeave={plugin.current.reset}
         >
-          <CarouselContent className="my-4 -ml-6">
+          <CarouselContent className="my-4 -ml-6 px-4 py-4">
             {/* Map over the fetched reviews data */}
             {data?.reviews.map((review, index) => (
               <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
-                <Card className="from-secondary/5 via-card to-card flex h-full flex-col rounded-3xl rounded-bl-[75px] border-none bg-gradient-to-br p-8 shadow-sm">
+                <Card className="from-secondary/5 via-card to-card flex h-full flex-col rounded-3xl rounded-bl-[75px] border-none bg-gradient-to-br p-8 shadow-sm duration-200 ease-in-out hover:shadow-xl">
                   <CardContent className="flex h-full flex-col p-0">
                     <Quote className="h-10 w-10 text-slate-200 dark:text-zinc-700" />
                     <p className="text-foreground mt-6 flex-grow text-lg font-medium">
