@@ -12,29 +12,20 @@ export interface SellNowServiceInfo {
   customerName: string;
   phone: string;
   locationType: "home" | "bts" | "store";
-
-  // ที่อยู่ (กรณีเลือก "ที่บ้าน")
-  addressDetails?: string;
-  province?: string;
-  district?: string;
-  subdistrict?: string;
-  postcode?: string;
-
-  // BTS/MRT (กรณีเลือก "bts")
-  btsStation?: string;
-
-  // สาขา (กรณีเลือก "ที่ร้าน")
-  storeLocation?: string;
-
-  // วันและเวลานัดหมาย
-  appointmentDate: string; // หรือ Date
-  appointmentTime: string;
-
-  // Queue booking fields
+  addressDetails?: string; // รายละเอียดที่อยู่ บ้านเลขที่ ถนน หมู่บ้าน ชื่ออาคาร
+  province?: string; // จังหวัด
+  district?: string; // อำเภอ เขต
+  subdistrict?: string; // ตำบล แขวง
+  postcode?: string; // รหัสไปรษณีย์
+  btsStation?: string; // BTS/MRT (กรณีเลือก "bts")
+  storeLocation?: string; // สาขา (กรณีเลือก "ที่ร้าน")
+  appointmentDate: string; // วันที่นัดหมาย
+  appointmentTime: string; // เวลานัดหมาย
+  // สำหรับแอปจองคิว
+  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
   appointmentAt?: string; // ISO 8601 format for queue booking
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
-  appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
 
   nextSteps?: string[];
 }
@@ -66,8 +57,6 @@ export interface TradeInServiceInfo {
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
   appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
-
-  nextSteps?: string[];
 }
 
 /**
@@ -90,8 +79,6 @@ export interface ConsignmentServiceInfo {
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
   appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
-
-  nextSteps?: string[];
 }
 
 /**
@@ -111,8 +98,6 @@ export interface RefinanceServiceInfo {
 
   // No queue booking - manual booking only
   // These fields are intentionally removed as Refinance uses manual appointment booking
-
-  nextSteps?: string[];
 }
 
 /**
@@ -134,13 +119,11 @@ export interface IPhoneExchangeServiceInfo {
 
   // No queue booking - manual booking only
   // These fields are intentionally removed as iPhone Exchange uses manual appointment booking
-
-  nextSteps?: string[];
 }
 
 /**
  * @interface PawnServiceInfo
- * @description ข้อมูลสำหรับบริการจำนำ
+ * @description ข้อมูลสำหรับบริการจำนำ (ไม่ได้ใช้)
  * @basedOn src/app/assess/components/(step3)/(services)/PawnService.tsx
  */
 export interface PawnServiceInfo {
@@ -171,13 +154,11 @@ export interface PawnServiceInfo {
   branchId?: string; // Branch ID for queue booking
   serviceType?: string; // Service type identifier for queue booking
   appointmentId?: string; // Queue appointment ID from booking API (for future cancellation)
-
-  nextSteps?: string[];
 }
 
 /**
  * @interface IcloudServiceInfo
- * @description ข้อมูลสำหรับบริการ iCloud
+ * @description ข้อมูลสำหรับบริการ iCloud (ไม่ได้ใช้)
  */
 export interface IcloudServiceInfo {
   customerName: string;
@@ -188,7 +169,6 @@ export interface IcloudServiceInfo {
   // วันและเวลานัดหมาย
   appointmentDate: string; // หรือ Date
   appointmentTime: string;
-  nextSteps?: string[];
 }
 
 /**
