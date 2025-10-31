@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Phone, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Turnstile from "@/components/Turnstile";
-
+import { Label } from "../../../components/ui/label";
 
 interface InputPhoneNumberProps {
   phoneNumber: string;
@@ -26,7 +26,6 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
 }) => {
   const sanitizedPhone = phoneNumber.replace(/\D/g, "").slice(0, 10);
   const isValidPhone = /^\d{10}$/.test(sanitizedPhone);
-
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,11 +61,10 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({
           </div>
         )}
 
-
         {/* Form */}
         <form onSubmit={onSubmit} className="space-y-6 sm:space-y-8">
           <div className="space-y-4">
-            <label className="block text-sm font-semibold text-gray-700">หมายเลขโทรศัพท์</label>
+            <Label className="block text-sm font-semibold text-gray-700">หมายเลขโทรศัพท์</Label>
             <div className="relative">
               <Input
                 type="tel"
