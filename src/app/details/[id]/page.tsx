@@ -38,7 +38,7 @@ export default function AssessmentDetailsPage() {
   // Redirect to confirmed page if assessment is already reserved
   useEffect(() => {
     if (assessmentData?.status === "reserved") {
-      router.push(`/confirmed/${assessmentId}`);
+      window.location.assign(`/confirmed/${assessmentId}`);
     }
   }, [assessmentData, assessmentId, router]);
 
@@ -75,8 +75,6 @@ export default function AssessmentDetailsPage() {
   };
 
   const { deviceInfo, conditionInfo, expiredAt } = assessmentData;
-
-  console.log("Price Lock ", expiredAt);
 
   return (
     <Layout>

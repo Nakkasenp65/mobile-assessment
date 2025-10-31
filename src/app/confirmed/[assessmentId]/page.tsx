@@ -377,10 +377,16 @@ export default function ConfirmedAssessmentPage() {
   };
 
   useEffect(() => {
-    if (assessment?.status !== "reserved") {
+    // Don't redirect while loading or before assessment is available
+    if (isLoading) return;
+    // If we couldn't load assessment, let the error handling render the fallback UI
+    if (!assessment) return;
+
+    const confirmed = assessment.status === "reserved" || assessment.status === "completed";
+    if (!confirmed) {
       router.replace(`/details/${assessmentId}`);
     }
-  }, [assessment, assessmentId]);
+  }, [isLoading, assessment, assessmentId, router]);
 
   if (isLoading) {
     return (
