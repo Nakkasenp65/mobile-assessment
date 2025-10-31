@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import type { Assessment } from "@/types/assessment";
 import type { SellNowServiceInfo } from "@/types/service";
-import { Calendar, MapPin, Phone, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Calendar, MapPin, Phone, CreditCard, AlertCircle, CheckCircle2, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DocumentIcon } from "@heroicons/react/24/solid";
@@ -23,6 +23,9 @@ export default function SellNowService({ assessment, info }: SellNowServiceProps
   const phone = info?.phone || assessment.phoneNumber || "-";
   const locationType = info?.locationType || "-";
   const { data: paymentLinkData } = usePaymentLink(assessment.docId);
+
+  // NEW: Check if the province is Bangkok for correct labeling
+  const isBangkok = info?.province === "กรุงเทพมหานคร";
 
   // Check if this service requires payment (BTS or Home)
   const requiresPayment = locationType === "bts" || locationType === "home";
@@ -50,19 +53,18 @@ export default function SellNowService({ assessment, info }: SellNowServiceProps
     window.open(paymentLinkData?.payment_link, "_blank");
   };
 
+  const stripLocationPrefix = (value?: string) => {
+    if (!value) return "";
+    return value.replace(/^(จังหวัด|อำเภอ|ตำบล|เขต|แขวง)/, "").trim();
+  };
+
   const locationDetail = (() => {
     if (!info) return "-";
     if (locationType === "store") return info.storeLocation || "สาขาไม่ระบุ";
     if (locationType === "bts")
       return info.btsStation ? `สถานี BTS: ${info.btsStation}` : "สถานี BTS ไม่ระบุ";
-    const parts = [
-      info.addressDetails,
-      info.subdistrict,
-      info.district,
-      info.province,
-      info.postcode,
-    ].filter(Boolean);
-    return parts.length ? parts.join(" ") : "สถานที่นัดหมายไม่ระบุ";
+    // Home address is now rendered separately
+    return "สถานที่นัดหมายไม่ระบุ";
   })();
 
   const renderLocationTypeWord = (type: string) => {
@@ -164,25 +166,80 @@ export default function SellNowService({ assessment, info }: SellNowServiceProps
             เวลา: <span className="font-normal text-gray-900">{time}</span>
           </span>
         </div>
+
+        {/* Phone Number */}
         <div className="flex items-center gap-2 text-sm text-gray-700">
-          <MapPin className="h-4 w-4" />
-          <span className="font-bold">ประเภทสถานที่บริการ: </span>
-          {renderLocationTypeWord(locationType)}
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-700 sm:col-span-2">
-          <MapPin className="h-4 w-4" />
-          <span className="truncate font-bold">
-            {renderLocationDetailsPrefix(locationType)}{" "}
-            <span className="font-normal text-gray-900">
-              {locationDetail.replace(renderLocationDetailsPrefix(locationType), "")}
-            </span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-700 sm:col-span-2">
           <Phone className="h-4 w-4" />
           <span className="font-bold">
             โทร: <span className="font-normal text-gray-900">{phone}</span>
           </span>
+        </div>
+      </div>
+
+      {/* Location Details Section */}
+      <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+        <h4 className="mb-3 text-base font-semibold text-gray-800">ข้อมูลสถานที่นัดหมาย</h4>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <Map className="h-4 w-4" />
+            <span className="font-bold">ประเภทสถานที่บริการ: </span>
+            <span className="font-normal text-gray-900">
+              {renderLocationTypeWord(locationType)}
+            </span>
+          </div>
+
+          {/* For Store and BTS */}
+          {locationType !== "home" && (
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <MapPin className="h-4 w-4" />
+              <span className="truncate font-bold">
+                {renderLocationDetailsPrefix(locationType)}{" "}
+                <span className="font-normal text-gray-900">
+                  {locationDetail.replace(renderLocationDetailsPrefix(locationType), "")}
+                </span>
+              </span>
+            </div>
+          )}
+
+          {/* For Home Service - Display address in separate fields */}
+          {locationType === "home" && (
+            <>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-bold">
+                  ที่อยู่: <span className="font-normal text-gray-900">{info.addressDetails}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-bold">
+                  {isBangkok ? "แขวง:" : "ตำบล:"}{" "}
+                  <span className="font-normal text-gray-900">
+                    {stripLocationPrefix(info.subdistrict)}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-bold">
+                  {isBangkok ? "เขต:" : "อำเภอ:"}{" "}
+                  <span className="font-normal text-gray-900">
+                    {stripLocationPrefix(info.district)}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-bold">
+                  จังหวัด:{" "}
+                  <span className="font-normal text-gray-900">
+                    {stripLocationPrefix(info.province)}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-bold">
+                  รหัสไปรษณีย์: <span className="font-normal text-gray-900">{info.postcode}</span>
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
