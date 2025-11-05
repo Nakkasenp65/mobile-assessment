@@ -122,8 +122,10 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_CLIENT_URL=""
+NEXT_PUBLIC_SUPABASE_CLIENT_ANON_KEY=""
+NEXT_PUBLIC_SUPABASE_ADDRESS_URL=""
+NEXT_PUBLIC_SUPABASE_ADDRESS_ANON_KEY=""
 NEXT_PUBLIC_SUPABASE_PAYMENT_LINK_STORAGE=your_payment_edge_url
 
 # LINE LIFF Configuration

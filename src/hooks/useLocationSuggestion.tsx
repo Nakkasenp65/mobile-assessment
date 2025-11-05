@@ -41,7 +41,7 @@ export function useLocationSuggestion(search: string, options: Options = {}) {
   const enabled = true;
 
   // ดึง URL และ Key จาก environment variables
-  const functionUrl = process.env.NEXT_PUBLIC_SUPABASE_ADDRESS_QUERY;
+  const functionUrl = process.env.NEXT_PUBLIC_SUPABASE_ADDRESS_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ADDRESS_ANON_KEY;
 
   return useQuery<LocationResult[], Error>({
