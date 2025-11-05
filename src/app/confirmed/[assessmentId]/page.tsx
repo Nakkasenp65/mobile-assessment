@@ -388,23 +388,22 @@ export default function ConfirmedAssessmentPage() {
     }
   }, [isLoading, assessment, assessmentId, router]);
 
-  if (isLoading) {
+  if (/*(isLoading)*/ false) {
     return (
       <Layout>
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center">
           <div className="text-center">
             <Loading />
-            <p className="mt-4 text-gray-600">กำลังโหลดข้อมูลการจอง...</p>
           </div>
         </div>
       </Layout>
     );
   }
 
-  if (error || !assessment) {
+  /* if (error || !assessment)*/ if (true) {
     return (
       <Layout>
-        <div className="flex min-h-screen flex-col items-center justify-center border bg-gray-50 p-4 text-center">
+        <div className="flex w-full flex-1 flex-col items-center justify-center p-4 text-center">
           <div className="rounded-full bg-red-100 p-4">
             <XCircle className="h-12 w-12 text-red-600" />
           </div>
