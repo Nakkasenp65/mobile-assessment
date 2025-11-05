@@ -19,6 +19,10 @@ import { useBtsStations } from "@/hooks/useBtsStations";
 import { Button } from "@/components/ui/button";
 import { mergeTrainDataWithApi } from "@/util/trainLines";
 import { BRANCHES } from "@/constants/queueBooking";
+import DefaultAddressForm from "./DefaultAddressForm";
+import React from "react";
+import { SellnowServiceFormState } from "../SellNowService";
+import { useLongdoMapScript } from "../../../../../components/Script/LongdoScriptLoader";
 
 const LeafletMap = dynamic(() => import("../../LeafletMap"), {
   ssr: false,
@@ -28,6 +32,7 @@ const LeafletMap = dynamic(() => import("../../LeafletMap"), {
     </div>
   ),
 });
+
 const LongdoAddressForm = dynamic(() => import("../../LongdoAddressForm"), {
   ssr: false,
   loading: () => <p className="text-muted-foreground text-sm">กำลังโหลดฟอร์มที่อยู่...</p>,
@@ -35,9 +40,8 @@ const LongdoAddressForm = dynamic(() => import("../../LongdoAddressForm"), {
 
 interface LocationDetailsProps {
   locationType: "home" | "bts" | "store" | null;
-  formState: {
-    storeLocation: string;
-  };
+  formState: SellnowServiceFormState;
+  setFormState: React.Dispatch<React.SetStateAction<Partial<SellnowServiceFormState>>>;
   handleInputChange: (field: string, value: string) => void;
   selectedBtsLine: string;
   setSelectedBtsLine: (line: string) => void;
@@ -52,9 +56,10 @@ interface LocationDetailsProps {
   formVariants: Variants;
 }
 
-const LocationDetails: React.FC<LocationDetailsProps> = ({
+export default function LocationDetails({
   locationType,
   formState,
+  setFormState,
   handleInputChange,
   selectedBtsLine,
   setSelectedBtsLine,
@@ -67,11 +72,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   geocodeData,
   handleAddressChange,
   formVariants,
-}) => {
+}: LocationDetailsProps) {
   const { data: btsData, isLoading: isLoadingBts, error: btsError } = useBtsStations();
+  const { scriptLoadStatus } = useLongdoMapScript();
   const merged = mergeTrainDataWithApi(btsData);
-
-  console.log(merged);
 
   return (
     <AnimatePresence mode="wait">
@@ -105,10 +109,16 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                   {/* MAP ELEMENT FOR LEAFLET */}
                   <LeafletMap center={mapCenter} onLatLngChange={setMapCenter} />
                   {/* LONGDO ADDRESS FORM */}
-                  <LongdoAddressForm
-                    initialData={geocodeData}
-                    onAddressChange={handleAddressChange}
-                  />
+                  {/* {scriptLoadStatus === "error" ? ( */}
+
+                  <DefaultAddressForm formData={formState} setFormData={setFormState} />
+
+                  {/* ) : ( */}
+                  {/* <LongdoAddressForm */}
+                  {/* initialData={geocodeData} */}
+                  {/* onAddressChange={handleAddressChange} */}
+                  {/* /> */}
+                  {/* )} */}
                 </>
               )}
               {!isLocationLoading && !locationError && !hasUserLocation && (
@@ -192,6 +202,4 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
       )}
     </AnimatePresence>
   );
-};
-
-export default LocationDetails;
+}

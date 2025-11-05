@@ -64,17 +64,6 @@ export default function PawnService({ assessment, info }: PawnServiceProps) {
           </span>
         </div>
       </div>
-
-      {Array.isArray(info?.nextSteps) && info.nextSteps.length > 0 && (
-        <div className="mt-4 rounded-lg bg-gray-50 p-4">
-          <p className="text-sm font-semibold text-gray-900">ขั้นตอนถัดไป</p>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-gray-700">
-            {info.nextSteps.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </section>
   );
 }

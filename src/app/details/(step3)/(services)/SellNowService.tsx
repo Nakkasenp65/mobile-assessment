@@ -43,6 +43,20 @@ interface SellNowServiceProps {
   handleShowConsent: () => void;
 }
 
+export interface SellnowServiceFormState {
+  customerName: string;
+  phone: string;
+  addressDetails: string;
+  province: string;
+  district: string;
+  subdistrict: string;
+  postcode: string;
+  btsStation: string;
+  storeLocation: "สาขาห้างเซ็นเตอร์วัน (อนุสาวรีย์ชัยสมรภูมิ)" | "สาขากุดปลาดุก";
+  date: string;
+  time: string;
+}
+
 export default function SellNowService({
   assessmentId,
   deviceInfo, // TODO: ใช้ deviceInfo ในการคิดราคาเพิ่มเติม
@@ -61,7 +75,7 @@ export default function SellNowService({
   const [showTurnstileError, setShowTurnstileError] = useState(false);
   const [locationType, setLocationType] = useState<"home" | "bts" | "store" | null>(null);
   const [selectedBtsLine, setSelectedBtsLine] = useState("");
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<SellnowServiceFormState>({
     customerName: customerName,
     phone: phoneNumber,
     addressDetails: "",
@@ -445,7 +459,7 @@ export default function SellNowService({
             initial="initial"
             animate="animate"
             variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-            className="mt-16 flex flex-col gap-6"
+            className="mt-16 flex flex-col gap-4"
           >
             <CustomerInfoForm
               formState={formState}
@@ -489,6 +503,7 @@ export default function SellNowService({
             <LocationDetails
               locationType={locationType}
               formState={formState}
+              setFormState={setFormState}
               handleInputChange={handleInputChange}
               selectedBtsLine={selectedBtsLine}
               setSelectedBtsLine={setSelectedBtsLine}

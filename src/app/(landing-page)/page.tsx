@@ -16,15 +16,15 @@ export default function LandingPage() {
   return (
     <Layout>
       <AnimatedButton />
-      <main className="mx-auto flex flex-col bg-white">
+      <main className="flex w-full flex-col bg-white">
         <HeroSection />
         <HowItWorksSection />
         <AboutSection />
         <ReviewsSection />
         <FaqSection />
         <CtaSection />
+        <Footer />
       </main>
-      <Footer />
     </Layout>
   );
 }

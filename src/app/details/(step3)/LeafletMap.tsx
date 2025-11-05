@@ -18,7 +18,7 @@ interface LeafletMapProps {
   onLatLngChange: (newLatLng: LatLng) => void;
 }
 
-const LeafletMap = ({ center, onLatLngChange }: LeafletMapProps) => {
+export default function LeafletMap({ center, onLatLngChange }: LeafletMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const markerRef = useRef<Marker | null>(null);
@@ -58,7 +58,7 @@ const LeafletMap = ({ center, onLatLngChange }: LeafletMapProps) => {
     }
   }, [center]);
 
-  return <div ref={mapContainerRef} className="min-h-[300px] w-full rounded border border-gray-300" />;
-};
-
-export default LeafletMap;
+  return (
+    <div ref={mapContainerRef} className="min-h-[300px] w-full rounded border border-gray-300" />
+  );
+}
