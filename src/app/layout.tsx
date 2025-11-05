@@ -5,7 +5,7 @@ import "./globals.css";
 // [ลบ] บรรทัดนี้ออก: import Script from "next/script";
 
 // ✨ [เพิ่ม] Import Component ใหม่ที่เราสร้าง
-import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
+// import LongdoScriptLoader from "@/components/Script/LongdoScriptLoader";
 
 export const metadata: Metadata = {
   title: "OK Mobile ประเมินสภาพเครื่อง",
@@ -29,7 +29,7 @@ export default function RootLayout({
       <body>
         <Providers>{children}</Providers>
       </body>
-      <LongdoScriptLoader />
+      {/* <LongdoScriptLoader /> */}
     </html>
   );
 }

@@ -149,7 +149,7 @@ export default function ResultsView({
       </div>
 
       {/* Actions Footer */}
-      <div className="flex w-full items-center justify-center border-t border-slate-200 py-4">
+      <div className="flex w-full items-center justify-center border-t border-slate-200 pt-4">
         <div className="flex w-full items-center justify-end gap-2 sm:gap-3">
           {/* Pagination  */}
           {totalPages > 1 && (
