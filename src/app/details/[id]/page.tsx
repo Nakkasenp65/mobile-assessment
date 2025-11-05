@@ -81,7 +81,7 @@ export default function AssessmentDetailsPage() {
       {isDpoConsentVisible && (
         <DPOConsent onAccept={handleCloseConsent} onClose={handleCloseConsent} />
       )}
-      <main className="relative flex h-full flex-col items-center overflow-x-hidden bg-white px-4 py-8 text-center sm:py-16">
+      <main className="relative flex h-full w-full flex-col items-center overflow-x-hidden bg-white px-4 py-8 text-center sm:py-16">
         <div className="z-10 container flex w-full flex-col items-center">
           {step === 1 && (
             <AssessStep3

@@ -21,7 +21,6 @@ export function buildIPhoneExchangePayload(params: {
     appointmentTime: String(params.time ?? ""),
     occupation: params.occupation ?? "",
     documentFileUrl: params.documentFileUrl ?? "",
-    nextSteps: params.nextSteps,
   };
 }
 
@@ -42,7 +41,6 @@ export function buildRefinancePayload(params: {
     occupation: params.occupation ?? "",
     documentFileUrl: params.documentFileUrl ?? "",
     appointmentTime: String(params.appointmentTime ?? ""),
-    nextSteps: params.nextSteps,
   };
 }
 

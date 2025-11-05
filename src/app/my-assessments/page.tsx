@@ -411,7 +411,7 @@ export default function MyAssessmentsPage() {
 
   return (
     <Layout>
-      <main className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] p-4 sm:px-6 lg:px-8">
+      <main className="relative flex w-full flex-1 flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-[#fff8f0] via-white to-[#ffeaf5] p-4 sm:px-6 lg:px-8">
         <div className="relative z-10 flex h-full w-full max-w-7xl flex-1 flex-col items-center justify-center">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
           <AnimatePresence>

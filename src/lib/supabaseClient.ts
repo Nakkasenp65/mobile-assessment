@@ -1,12 +1,13 @@
 // src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
 
-// อ่านค่าจาก Environment Variables ที่เราตั้งค่าไว้
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// description: supabase client มาจาก project ที่ใช้ appointment และ mobile assessment เก็บข้อมูล:
+// - queue
+// - payment link
+// - รูปโทรศัพท์ตาม model
+// - ราคาซ่อมของโทรศัพท์
 
-// การใส่ ! (Non-null Assertion Operator) เป็นการยืนยันกับ TypeScript ว่า
-// เรามั่นใจว่าค่าเหล่านี้จะมีอยู่จริงในตอนที่โค้ดทำงาน
-// ซึ่งเป็นความรับผิดชอบของเราในการตรวจสอบไฟล์ .env.local
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_CLIENT_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_CLIENT_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
